@@ -27,6 +27,13 @@ impl Component for Probe {
         }
         Ok(())
     }
+    // Probes are scheduling fixtures, mounted as coincident roots by design,
+    // so development validation must not report them as overlapping.
+    fn inspect(&self) -> ComponentDetails {
+        let mut details = ComponentDetails::default();
+        details.validation.overlap = OverlapPolicy::Allow;
+        details
+    }
 }
 fn probe(value: &Signal<i32>, live: bool) -> (Probe, ProbeLog) {
     let seen = Rc::new(RefCell::new(Vec::new()));

@@ -211,7 +211,7 @@ impl ListItems for FilteredRows {
     fn key(&self, index: usize) -> Option<String> {
         self.inner.key(*self.shown.get(index)?)
     }
-    fn build(&self, index: usize) -> Option<Element> {
+    fn build(&self, index: usize) -> Option<crate::RowItem> {
         self.inner.build(*self.shown.get(index)?)
     }
     fn index_of(&self, key: &str) -> Option<usize> {
@@ -311,8 +311,8 @@ pub(crate) fn nearest(before: &dyn ListItems, after: &dyn ListItems, key: &str) 
 /// impl ListItems for Fruit {
 ///     fn len(&self) -> usize { NAMES.len() }
 ///     fn key(&self, index: usize) -> Option<String> { NAMES.get(index).map(|n| n.to_lowercase()) }
-///     fn build(&self, index: usize) -> Option<Element> {
-///         Some(Element::new(self.key(index)?, Label::new(NAMES[index])))
+///     fn build(&self, index: usize) -> Option<RowItem> {
+///         Some(Label::new(*NAMES.get(index)?).into())
 ///     }
 ///     fn text(&self, index: usize) -> Option<String> { NAMES.get(index).map(|n| n.to_string()) }
 /// }
@@ -602,8 +602,8 @@ struct Parts {
 /// impl ListItems for Fruit {
 ///     fn len(&self) -> usize { NAMES.len() }
 ///     fn key(&self, index: usize) -> Option<String> { NAMES.get(index).map(|n| n.to_lowercase()) }
-///     fn build(&self, index: usize) -> Option<Element> {
-///         Some(Element::new(self.key(index)?, Label::new(NAMES[index])))
+///     fn build(&self, index: usize) -> Option<RowItem> {
+///         Some(Label::new(*NAMES.get(index)?).into())
 ///     }
 ///     fn text(&self, index: usize) -> Option<String> { NAMES.get(index).map(|n| n.to_string()) }
 /// }
@@ -781,8 +781,8 @@ impl CollectionFilter {
     /// impl ListItems for Fruit {
     ///     fn len(&self) -> usize { NAMES.len() }
     ///     fn key(&self, index: usize) -> Option<String> { NAMES.get(index).map(|n| n.to_lowercase()) }
-    ///     fn build(&self, index: usize) -> Option<Element> {
-    ///         Some(Element::new(self.key(index)?, Label::new(NAMES[index])))
+    ///     fn build(&self, index: usize) -> Option<RowItem> {
+    ///         Some(Label::new(*NAMES.get(index)?).into())
     ///     }
     ///     fn text(&self, index: usize) -> Option<String> { NAMES.get(index).map(|n| n.to_string()) }
     /// }

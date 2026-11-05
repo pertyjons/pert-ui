@@ -338,10 +338,10 @@ fn a_bounded_row_keeps_virtual_list_work_bounded() {
         fn key(&self, index: usize) -> Option<String> {
             (index < self.len()).then(|| format!("item-{index}"))
         }
-        fn build(&self, index: usize) -> Option<Element> {
+        fn build(&self, index: usize) -> Option<RowItem> {
             let key = self.key(index)?;
             self.0.set(self.0.get() + 1);
-            Some(Element::new(key, Label::new("Row")))
+            Some(Element::new(key, Label::new("Row")).into())
         }
     }
     for height in [20.0, 200.0] {

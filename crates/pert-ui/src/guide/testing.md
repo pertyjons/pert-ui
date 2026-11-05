@@ -4,6 +4,7 @@ inspection. It needs no window, GPU or operating-system service. One `use` block
 covers ordinary input, semantic inspection and capture:
 
 ```rust
+# #![allow(unused_imports)] // the two globs alone, shown for reference
 use pert_ui::prelude::*;
 use pert_ui::testing::*;
 ```
@@ -452,8 +453,8 @@ impl ListItems for Numbers {
     fn key(&self, index: usize) -> Option<String> {
         (index < 100).then(|| format!("row-{index}"))
     }
-    fn build(&self, index: usize) -> Option<Element> {
-        self.key(index).map(|key| Element::new(key, Label::new(format!("Row {index}"))))
+    fn build(&self, index: usize) -> Option<RowItem> {
+        (index < 100).then(|| Label::new(format!("Row {index}")).into())
     }
 }
 

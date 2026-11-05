@@ -118,17 +118,17 @@ impl TreeItems for Sources {
     fn can_expand(&self, key: &str) -> bool {
         key.starts_with("s:")
     }
-    fn build(&self, key: &str) -> Option<Element> {
+    fn build(&self, key: &str) -> Option<RowItem> {
         if let Some(source) = key.strip_prefix("s:") {
             let count = self.lines.borrow().get(source).map_or(0, Vec::len);
-            return Some(Label::new(format!("{source} ({count})")).key("row"));
+            return Some(Label::new(format!("{source} ({count})")).into());
         }
         let store = self.store.borrow();
         let entry = store.get(LineId::from_key(key)?)?;
         Some(
             Label::new(format!("{} {}", entry.level.name(), entry.preview()))
                 .overflow(TextOverflow::Ellipsis)
-                .key("row"),
+                .into(),
         )
     }
     fn text(&self, key: &str) -> Option<String> {

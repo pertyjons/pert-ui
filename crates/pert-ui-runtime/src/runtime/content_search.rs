@@ -13,7 +13,10 @@ impl Runtime {
     /// The search looks at what components already report through their
     /// [`Semantics`](crate::Semantics): the resolved name (a component's own,
     /// its element's label, or the one a wrapping `Field` gives it) and the
-    /// value text (text, a number, a choice's label). Hidden components are
+    /// value text (text, a number, a choice's label), and the names of its
+    /// [semantic items](crate::Semantics::items), such as a toast's message, a
+    /// menu command or an unselected tab's title, each reported as a
+    /// [`ContentField::Item`] hit on its component. Hidden components are
     /// included unless the query excludes them, so content in an unselected
     /// tab or a collapsed section is found; [`Self::jump_to_content`] then
     /// opens the way to it. A collection that offers
@@ -24,9 +27,10 @@ impl Runtime {
     ///
     /// Never found: a subtree excluded with
     /// [`Element::with_searchable`](crate::Element::with_searchable), the value
-    /// of a [protected](crate::Semantics::protected) component, components a
-    /// modal surface blocks, drawing without semantics, and rows a source does
-    /// not describe. Nothing runs until [`ContentSearch::step`] is called; each
+    /// and items of a [protected](crate::Semantics::protected) component, the
+    /// items of a component that names its children, components a modal
+    /// surface blocks, drawing without semantics, and rows a source does not
+    /// describe. Nothing runs until [`ContentSearch::step`] is called; each
     /// step visits components and rows within the query's work budget and
     /// result limit. Beyond that budget a step also reads the revision of each
     /// collection the search has already entered, once, to detect a replaced
@@ -43,7 +47,7 @@ impl Runtime {
     /// # use pert_ui_runtime as pert_ui;
     /// use pert_ui::prelude::*;
     /// use pert_ui::testing::*;
-    /// use pert_ui::{ContentQuery, ContentTarget, RevealOutcome, ContentJump};
+    /// use pert_ui::{ContentQuery, RevealOutcome, ContentJump};
     ///
     /// let mut ui = Runtime::new();
     /// ui.set_viewport(Viewport::new(400.0, 300.0, 1.0)?)?;
@@ -142,6 +146,35 @@ impl Runtime {
                 }
                 continue;
             }
+            // A visited component's items come before its rows and children.
+            if let Some(scan) = search.items.as_mut() {
+                // A modal surface opened over the component since it was
+                // visited blocks its remaining items, as it blocks rows.
+                if !self.modal_allows_in_own_window(scan.component.0.serial) {
+                    search.items = None;
+                    continue;
+                }
+                while scan.next < scan.texts.len() && work < budget && hits.len() < limit {
+                    let (index, text) = &scan.texts[scan.next];
+                    scan.next += 1;
+                    work += 1;
+                    if search.query.matches(text) {
+                        hits.push(ContentHit {
+                            target: ContentTarget::Widget(scan.component.clone()),
+                            role: Some(scan.role),
+                            text: text.clone(),
+                            field: ContentField::Item { index: *index },
+                            other: scan.name.clone(),
+                            path: scan.path.clone(),
+                            visible: scan.visible,
+                        });
+                    }
+                }
+                if scan.next >= scan.texts.len() {
+                    search.items = None;
+                }
+                continue;
+            }
             if let Some(scan) = search.rows.as_mut() {
                 let Some(entry) = self.entries.get(&scan.collection) else {
                     return Err(ContentSearchError::Stale);
@@ -226,9 +259,13 @@ impl Runtime {
             if mounted_current {
                 search.pending.extend(entry.children.iter().rev().copied());
             }
-            if let Some(hit) = self.content_hit(entry, &search.query, visible) {
+            let (hit, items) = self.content_hit(entry, &search.query, visible);
+            if let Some(hit) = hit {
                 hits.push(hit);
             }
+            // Recorded before a full result limit can end the step, so the
+            // next step continues with the items without inspecting again.
+            search.items = items;
             if let Some(rows) = rows {
                 search.visited.push(crate::content_search::VisitedRows {
                     collection: serial,
@@ -252,7 +289,11 @@ impl Runtime {
                 });
             }
         }
-        if search.discover.is_none() && search.pending.is_empty() && search.rows.is_none() {
+        if search.discover.is_none()
+            && search.pending.is_empty()
+            && search.items.is_none()
+            && search.rows.is_none()
+        {
             search.done = true;
         }
         Ok(ContentStep {
@@ -262,18 +303,22 @@ impl Runtime {
         })
     }
 
-    /// The hit `entry` makes for `query`, if its name or value matches.
+    /// The hit `entry` makes for `query`, if its name or value matches, and
+    /// the scan of its semantic items' names, copied from the same single
+    /// inspection, when it has any the search may examine.
     fn content_hit(
         &self,
         entry: &Entry,
         query: &ContentQuery,
         visible: bool,
-    ) -> Option<ContentHit> {
-        let semantics = entry.component.inspect().semantics?;
+    ) -> (Option<ContentHit>, Option<crate::content_search::ItemScan>) {
+        let Some(semantics) = entry.component.inspect().semantics else {
+            return (None, None);
+        };
         // A component that names its child, such as a `Field`, is found
         // through that child, which carries its name.
         if semantics.names_children || !self.modal_allows_in_own_window(entry.node.serial) {
-            return None;
+            return (None, None);
         }
         let name = semantics
             .name
@@ -292,20 +337,46 @@ impl Runtime {
             })
         };
         let value = value.filter(|value| !value.trim().is_empty());
+        let path = self.content_path(entry.node.serial);
+        // A protected component conceals its content, its items included.
+        let texts: Vec<(usize, String)> = if semantics.protected {
+            Vec::new()
+        } else {
+            semantics
+                .items
+                .into_iter()
+                .enumerate()
+                .filter_map(|(index, item)| {
+                    item.name
+                        .filter(|name| !name.trim().is_empty())
+                        .map(|name| (index, name))
+                })
+                .collect()
+        };
+        let items = (!texts.is_empty()).then(|| crate::content_search::ItemScan {
+            component: WidgetId(entry.node.clone()),
+            role: semantics.role,
+            name: name.clone(),
+            path: path.clone(),
+            visible,
+            texts,
+            next: 0,
+        });
         let (text, field, other) = match (name, value) {
             (Some(name), value) if query.matches(&name) => (name, ContentField::Name, value),
             (name, Some(value)) if query.matches(&value) => (value, ContentField::Value, name),
-            _ => return None,
+            _ => return (None, items),
         };
-        Some(ContentHit {
+        let hit = ContentHit {
             target: ContentTarget::Widget(WidgetId(entry.node.clone())),
             role: Some(semantics.role),
             text,
             field,
             other,
-            path: self.content_path(entry.node.serial),
+            path,
             visible,
-        })
+        };
+        (Some(hit), items)
     }
 
     /// The addressable path of `serial`, or of its nearest addressable

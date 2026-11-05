@@ -102,8 +102,10 @@ mod choice {
         fn key(&self, index: usize) -> Option<String> {
             (index == 0).then(|| "row".to_owned())
         }
-        fn build(&self, index: usize) -> Option<Element> {
-            (index == 0).then(|| Label::new("Row").key("row"))
+        fn build(&self, index: usize) -> Option<RowItem> {
+            (index == 0)
+                .then(|| Label::new("Row").key("row"))
+                .map(Into::into)
         }
     }
 
@@ -271,8 +273,10 @@ mod collections {
         fn key(&self, index: usize) -> Option<String> {
             (index < 2).then(|| index.to_string())
         }
-        fn build(&self, index: usize) -> Option<Element> {
-            (index < 2).then(|| Label::new(format!("Row {index}")).key("label"))
+        fn build(&self, index: usize) -> Option<RowItem> {
+            (index < 2)
+                .then(|| Label::new(format!("Row {index}")).key("label"))
+                .map(Into::into)
         }
         fn text(&self, index: usize) -> Option<String> {
             (index < 2).then(|| format!("Row {index}"))
@@ -298,8 +302,8 @@ mod collections {
         fn children(&self, _key: &str) -> Vec<String> {
             Vec::new()
         }
-        fn build(&self, key: &str) -> Option<Element> {
-            Some(Label::new(key.to_owned()).key("label"))
+        fn build(&self, key: &str) -> Option<RowItem> {
+            Some(Label::new(key.to_owned()).key("label").into())
         }
     }
 

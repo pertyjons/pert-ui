@@ -34,8 +34,8 @@ impl TreeItems for Outline {
     fn text(&self, key: &str) -> Option<String> {
         Some(key.to_owned())
     }
-    fn build(&self, key: &str) -> Option<Element> {
-        Some(Element::new(key, Label::new(key)))
+    fn build(&self, key: &str) -> Option<RowItem> {
+        Some(Element::new(key, Label::new(key)).into())
     }
 }
 

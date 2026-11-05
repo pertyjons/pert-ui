@@ -23,9 +23,7 @@ its source's capture, and a closed surface cancels the components it hides.
 Native repeats remain repeats after window focus loss.
 
 ```rust
-use pert_ui::{
-    Button, Column, Element, FocusDirection, Label, Runtime, RuntimeError, Viewport,
-};
+use pert_ui::{Button, Column, Element, FocusDirection, Label, Runtime, Viewport};
 use std::time::Duration;
 let mut ui = Runtime::new();
 ui.set_viewport(Viewport::new(400.0, 200.0, 1.0)?)?;
@@ -654,7 +652,7 @@ only its name's first letter. [`Icon`] covers transport roles such as
 
 ```rust
 use pert_ui::{Button, Choice, Element, Icon, InlineChoice, InlineReadout, InlineSelect,
-    InlineText, InlineToggle, Runtime, RuntimeError, ToolGroup, Toolbar};
+    InlineText, InlineToggle, Runtime, ToolGroup, Toolbar};
 let mut ui = Runtime::new();
 let looping = ui.signal(false);
 let snap = ui.signal("1/16");

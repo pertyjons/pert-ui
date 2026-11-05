@@ -130,7 +130,9 @@ impl Error for ApplicationError {
 ///
 /// This is the one list of leaf errors; the facade's `AppError` converts from
 /// whatever `DrawError` converts from. The test at the end of this module fails
-/// to compile when `RuntimeError` gains a leaf this list lacks.
+/// to compile when `RuntimeError` gains a leaf this list lacks. A new leaf also
+/// goes into the facade's `tests/foundation/app_error_conversions.rs`, which
+/// checks that `AppError` accepts each one.
 macro_rules! leaf_conversions {
     ($target:ty => $variant:path) => {
         $crate::error::leaf_conversions!(@each $target => $variant;

@@ -557,3 +557,669 @@ fn a_pointer_context_request_opens_its_scoped_menu_and_a_row_click_runs_it() -> 
     ));
     Ok(())
 }
+
+#[test]
+fn accordion_headers_have_their_painted_rectangles_and_click_through_them() -> TestResult {
+    // A narrow accordion wraps its long titles over several lines.
+    let mut ui = runtime(140.0)?;
+    let accordion = ui.mount_tree(
+        Accordion::new([
+            Section::new(
+                "first",
+                "A first section title long enough to wrap",
+                Label::new("1").key("one"),
+            ),
+            Section::new("second", "Second", Label::new("2").key("two")),
+            Section::new(
+                "third",
+                "A third section title long enough to wrap",
+                Label::new("3").key("three"),
+            ),
+        ])
+        .key("accordion"),
+    )?;
+    assert!(
+        items(&ui, &accordion)
+            .iter()
+            .all(|item| item.bounds.is_none()),
+        "no rectangle before the first layout"
+    );
+    let mut driver = Driver::new(&mut ui);
+    driver.settle()?;
+    let bounds: Vec<[f32; 4]> = items(driver.runtime(), &accordion)
+        .iter()
+        .map(|item| item.bounds.expect("laid out"))
+        .collect();
+    // Headers stack top to bottom, and a wrapped title makes its header taller.
+    assert!(bounds[0][3] > bounds[1][3], "{bounds:?}");
+    assert!(
+        bounds[1][1] >= bounds[0][1] + bounds[0][3] - 0.01,
+        "{bounds:?}"
+    );
+    driver.click_item(&accordion, 2)?;
+    let third = &items(driver.runtime(), &accordion)[2];
+    assert_eq!(
+        third.expanded,
+        Some(true),
+        "the click reached the third header"
+    );
+    Ok(())
+}
+
+#[test]
+fn radio_and_segmented_choices_click_through_their_rectangles() -> TestResult {
+    for segmented in [false, true] {
+        let mut ui = runtime(400.0)?;
+        let value = ui.signal(0_u32);
+        let choices = [
+            Choice::new(0, "Low"),
+            Choice::new(1, "Medium"),
+            Choice::new(2, "High"),
+        ];
+        let element = if segmented {
+            SegmentedControl::new(value.clone(), choices)?.key("choice")
+        } else {
+            RadioGroup::new(value.clone(), choices)?.key("choice")
+        };
+        let group = ui.mount_tree(element)?;
+        let mut driver = Driver::new(&mut ui);
+        driver.settle()?;
+        let bounds: Vec<[f32; 4]> = items(driver.runtime(), &group)
+            .iter()
+            .map(|item| item.bounds.expect("laid out"))
+            .collect();
+        // Segments go left to right, radio rows top to bottom.
+        let along = if segmented { 0 } else { 1 };
+        assert!(bounds[2][along] > bounds[1][along] && bounds[1][along] > bounds[0][along]);
+        driver.click_item(&group, 2)?;
+        assert_eq!(value.get()?, 2, "segmented {segmented}");
+        driver.click_item(&group, 1)?;
+        assert_eq!(value.get()?, 1, "segmented {segmented}");
+    }
+    Ok(())
+}
+
+#[test]
+fn tool_window_stripe_buttons_click_through_their_rectangles() -> TestResult {
+    let mut ui = runtime(800.0)?;
+    let window = |key: &str| {
+        ToolWindow::new(
+            key,
+            format!("{key} title"),
+            Label::new(key).key(format!("{key}-body")),
+        )
+        .icon(Icon::Folder)
+        .edge(ToolEdge::Left)
+    };
+    let root = ui.mount_tree(
+        ToolWindowLayout::new(Label::new("main").key("main"))
+            .edge(ToolEdge::Left, EdgeMode::Stripe)
+            .window(window("files"))
+            .window(window("search"))
+            .key("frame"),
+    )?;
+    let mut driver = Driver::new(&mut ui);
+    driver.settle()?;
+    let stripe = driver
+        .runtime()
+        .find_descendant(&root, "stripe-left")?
+        .ok_or("the left stripe")?;
+    let before = items(driver.runtime(), &stripe);
+    assert!(
+        before.iter().all(|item| item.bounds.is_some()),
+        "{before:?}"
+    );
+    assert_eq!(before[1].expanded, Some(false));
+    driver.click_item(&stripe, 1)?;
+    assert_eq!(
+        items(driver.runtime(), &stripe)[1].expanded,
+        Some(true),
+        "the click reached the second button"
+    );
+    Ok(())
+}
+
+#[test]
+fn a_header_below_open_content_and_variable_width_choices_click_through() -> TestResult {
+    // The first section's content displaces the later headers.
+    let mut ui = runtime(300.0)?;
+    let accordion = ui.mount_tree(
+        Accordion::new([
+            Section::new(
+                "first",
+                "First",
+                Column::new([
+                    Label::new("line one").key("a"),
+                    Label::new("line two").key("b"),
+                    Label::new("line three").key("c"),
+                ])
+                .key("content"),
+            ),
+            Section::new("second", "Second", Label::new("2").key("two")),
+        ])
+        .mode(ExpandMode::Multiple)
+        .key("accordion"),
+    )?;
+    let mut driver = Driver::new(&mut ui);
+    driver.settle()?;
+    driver.click_item(&accordion, 0)?;
+    let before = items(driver.runtime(), &accordion);
+    assert_eq!(before[0].expanded, Some(true));
+    let [_, first_y, _, first_h] = before[0].bounds.ok_or("laid out")?;
+    let [_, second_y, _, _] = before[1].bounds.ok_or("laid out")?;
+    assert!(
+        second_y > first_y + first_h + 20.0,
+        "content between the headers"
+    );
+    driver.click_item(&accordion, 1)?;
+    assert_eq!(items(driver.runtime(), &accordion)[1].expanded, Some(true));
+
+    // Inline choices are as wide as their labels.
+    let mut ui = runtime(500.0)?;
+    let value = ui.signal(0_u32);
+    let inline = ui.mount_tree(
+        InlineChoice::new(
+            value.clone(),
+            [
+                Choice::new(0, "A"),
+                Choice::new(1, "A much longer label"),
+                Choice::new(2, "B"),
+            ],
+        )?
+        .key("inline"),
+    )?;
+    let mut driver = Driver::new(&mut ui);
+    driver.settle()?;
+    let widths: Vec<f32> = items(driver.runtime(), &inline)
+        .iter()
+        .map(|item| item.bounds.expect("laid out")[2])
+        .collect();
+    assert!(widths[1] > widths[0] * 2.0, "{widths:?}");
+    driver.click_item(&inline, 2)?;
+    assert_eq!(value.get()?, 2);
+    driver.click_item(&inline, 1)?;
+    assert_eq!(value.get()?, 1);
+    Ok(())
+}
+
+#[test]
+fn a_scrolled_stripe_reports_the_buttons_it_shows() -> TestResult {
+    let ui = Runtime::new();
+    ui.set_viewport(Viewport::new(800.0, 160.0, 1.0)?)?;
+    let mut ui = ui;
+    let mut layout = ToolWindowLayout::new(Label::new("main").key("main"))
+        .edge(ToolEdge::Left, EdgeMode::Stripe);
+    for index in 0..12 {
+        layout = layout.window(
+            ToolWindow::new(
+                format!("w{index}"),
+                format!("Window {index}"),
+                Label::new("body").key(format!("w{index}-body")),
+            )
+            .icon(Icon::Folder)
+            .edge(ToolEdge::Left),
+        );
+    }
+    let root = ui.mount_tree(layout.key("frame"))?;
+    let mut driver = Driver::new(&mut ui);
+    driver.settle()?;
+    let stripe = driver
+        .runtime()
+        .find_descendant(&root, "stripe-left")?
+        .ok_or("the left stripe")?;
+    let shown = |ui: &Runtime| -> Vec<bool> {
+        items(ui, &stripe)
+            .iter()
+            .map(|item| item.bounds.is_some())
+            .collect()
+    };
+    let before = shown(driver.runtime());
+    assert!(before[0] && !before[11], "the stripe overflows: {before:?}");
+    // Scrolling the stripe moves its buttons with it.
+    let [x, y, w, h] = driver
+        .runtime()
+        .bounds(&stripe)?
+        .ok_or("laid out")?
+        .values();
+    let center = Point::new(x + w / 2.0, y + h / 2.0)?;
+    drop(driver);
+    for _ in 0..20 {
+        ui.pointer_input(PointerEvent::new(
+            center,
+            PointerKind::Scroll(Point::new(0.0, 60.0)?),
+        ))?;
+    }
+    let mut driver = Driver::new(&mut ui);
+    driver.settle()?;
+    let after = shown(driver.runtime());
+    assert!(!after[0] && after[11], "scrolled to the end: {after:?}");
+    driver.click_item(&stripe, 11)?;
+    assert_eq!(items(driver.runtime(), &stripe)[11].expanded, Some(true));
+    Ok(())
+}
+
+#[test]
+fn a_partly_scrolled_stripe_clips_its_edge_button_and_clicks_its_visible_part() -> TestResult {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(800.0, 160.0, 1.0)?)?;
+    let mut layout = ToolWindowLayout::new(Label::new("main").key("main"))
+        .edge(ToolEdge::Left, EdgeMode::Stripe);
+    for index in 0..12 {
+        layout = layout.window(
+            ToolWindow::new(
+                format!("w{index}"),
+                format!("Window {index}"),
+                Label::new("body").key(format!("w{index}-body")),
+            )
+            .icon(Icon::Folder)
+            .edge(ToolEdge::Left),
+        );
+    }
+    let root = ui.mount_tree(layout.key("frame"))?;
+    ui.flush(Duration::ZERO)?;
+    let stripe = ui.find_descendant(&root, "stripe-left")?.ok_or("stripe")?;
+    let full = items(&ui, &stripe)[0].bounds.ok_or("laid out")?[3];
+    // A small scroll leaves the first button partly above the stripe.
+    let [x, y, w, h] = ui.bounds(&stripe)?.ok_or("laid out")?.values();
+    let center = Point::new(x + w / 2.0, y + h / 2.0)?;
+    ui.pointer_input(PointerEvent::new(
+        center,
+        PointerKind::Scroll(Point::new(0.0, full / 3.0)?),
+    ))?;
+    ui.flush(ui.now())?;
+    let scrolled = items(&ui, &stripe);
+    let [_, first_y, _, first_h] = scrolled[0].bounds.ok_or("partly visible")?;
+    assert!(
+        first_h < full - 0.5 && first_h > 0.5,
+        "clipped to {first_h} of {full}"
+    );
+    assert!(
+        (first_y - y).abs() < 0.5,
+        "the clipped part starts at the stripe's top"
+    );
+    assert!(
+        scrolled.iter().any(|item| item.bounds.is_none()),
+        "others clipped away"
+    );
+    let mut driver = Driver::new(&mut ui);
+    driver.click_item(&stripe, 0)?;
+    assert_eq!(items(driver.runtime(), &stripe)[0].expanded, Some(true));
+    Ok(())
+}
+
+// ---- MultiSelect and QuickPick popups ----
+
+/// A chooser over `count` options "Option 0", "Option 1" and so on, with
+/// `disabled` disabled.
+struct Chooser {
+    ui: Runtime,
+    root: WidgetId,
+    value: Signal<Vec<usize>>,
+    changes: Rc<RefCell<Vec<Vec<usize>>>>,
+}
+fn chooser(count: usize, disabled: &[usize], commit: MultiSelectCommit) -> TestResult<Chooser> {
+    let mut ui = runtime(400.0)?;
+    let value = ui.signal(Vec::new());
+    let changes = Rc::new(RefCell::new(Vec::new()));
+    let record = changes.clone();
+    let options = (0..count).map(|index| {
+        let choice = Choice::new(index, format!("Option {index}"));
+        if disabled.contains(&index) {
+            choice.disabled()
+        } else {
+            choice
+        }
+    });
+    let control = MultiSelect::new(&ui, value.clone(), options)?
+        .commit(commit)
+        .on_change(move |_, values| {
+            record.borrow_mut().push(values.to_vec());
+            Ok(())
+        });
+    let root = ui.mount_tree(
+        Column::new([
+            control.key("tags"),
+            Button::new("After", |_| Ok(())).key("after"),
+        ])
+        .key("root"),
+    )?;
+    Driver::new(&mut ui).settle()?;
+    Ok(Chooser {
+        ui,
+        root,
+        value,
+        changes,
+    })
+}
+impl Chooser {
+    fn part(&self, name: &str) -> TestResult<WidgetId> {
+        let tags = self.ui.find(&self.root, &["tags"])?.ok_or("tags")?;
+        Ok(self
+            .ui
+            .find_exposed_part(&tags, name)?
+            .ok_or_else(|| format!("no part {name}"))?)
+    }
+    /// Opens the popup from the keyboard, as the trigger's rustdoc says.
+    fn open(&mut self) -> TestResult {
+        let control = self.part("control")?;
+        let mut driver = Driver::new(&mut self.ui);
+        driver.runtime_mut().focus(&control)?;
+        driver.key(KeyCode::Enter)?;
+        Ok(())
+    }
+    fn is_open(&self) -> TestResult<bool> {
+        let tags = self.ui.find(&self.root, &["tags"])?.ok_or("tags")?;
+        let tags = self.ui.inspection_id(&tags)?;
+        Ok(self
+            .ui
+            .inspect()
+            .components
+            .into_iter()
+            .find(|component| component.id == tags)
+            .is_some_and(|component| {
+                component.details.properties["open"] == InspectValue::Bool(true)
+            }))
+    }
+    /// The index of the popup item named `name`.
+    fn index(&self, name: &str) -> TestResult<usize> {
+        let options = self.part("options")?;
+        items(&self.ui, &options)
+            .iter()
+            .position(|item| item.name.as_deref() == Some(name))
+            .ok_or_else(|| format!("no item {name}").into())
+    }
+    /// The mounted row of the option named `name`, cut to the list's box.
+    fn row_bounds(&self, name: &str) -> TestResult<[f32; 4]> {
+        let options = self.part("options")?;
+        let list = self.ui.bounds(&options)?.ok_or("laid out")?;
+        let row = row_box(&self.ui, SemanticRole::Checkbox, name)?;
+        let row = Rect::new(row[0], row[1], row[2], row[3])?;
+        Ok(row.intersection(list).values())
+    }
+}
+
+/// The border box of the visible component with `role` named `name`.
+fn row_box(ui: &Runtime, role: SemanticRole, name: &str) -> TestResult<[f32; 4]> {
+    ui.inspect()
+        .components
+        .into_iter()
+        .find(|component| {
+            component.visible
+                && component
+                    .details
+                    .semantics
+                    .as_ref()
+                    .is_some_and(|semantics| {
+                        semantics.role == role && semantics.name.as_deref() == Some(name)
+                    })
+        })
+        .and_then(|component| component.details.box_model.border_box)
+        .ok_or_else(|| format!("no mounted row {name}").into())
+}
+
+/// Scrolls with the wheel at the middle of `bounds`, then settles.
+fn wheel(ui: &mut Runtime, bounds: [f32; 4], dy: f32) -> TestResult {
+    let [x, y, w, h] = bounds;
+    ui.pointer_input(PointerEvent::new(
+        Point::new(x + w / 2.0, y + h / 2.0)?,
+        PointerKind::Scroll(Point::new(0.0, dy)?),
+    ))?;
+    Driver::new(ui).settle()?;
+    Ok(())
+}
+
+#[test]
+fn multi_select_options_click_through_their_rectangles_and_toggle_once() -> TestResult {
+    let mut c = chooser(6, &[], MultiSelectCommit::EachToggle)?;
+    let control = c.part("control")?;
+    assert!(
+        items(&c.ui, &control)
+            .iter()
+            .all(|item| item.bounds.is_none())
+    );
+    c.open()?;
+    let options = c.part("options")?;
+    let index = c.index("Option 3")?;
+    assert!(index > 0);
+    Driver::new(&mut c.ui).click_item(&options, index)?;
+    assert_eq!(c.value.get()?, [3]);
+    assert_eq!(*c.changes.borrow(), [vec![3]], "reported once");
+    let item = &items(&c.ui, &options)[index];
+    assert_eq!(item.checked, Some(true));
+    assert_eq!(item.actions, [SemanticAction::Toggle]);
+    // The popup stays open across toggles.
+    Driver::new(&mut c.ui).click_item(&options, 1)?;
+    assert_eq!(c.value.get()?, [3, 1]);
+    // The trigger's items describe the options but never have bounds.
+    assert!(
+        items(&c.ui, &control)
+            .iter()
+            .all(|item| item.bounds.is_none())
+    );
+    assert!(items(&c.ui, &control)[3].selected);
+    Ok(())
+}
+
+#[test]
+fn multi_select_on_close_clicks_edit_the_draft() -> TestResult {
+    let mut c = chooser(4, &[], MultiSelectCommit::OnClose)?;
+    c.open()?;
+    let options = c.part("options")?;
+    Driver::new(&mut c.ui).click_item(&options, 2)?;
+    assert!(c.value.get()?.is_empty(), "a draft until the popup closes");
+    assert!(c.changes.borrow().is_empty());
+    assert_eq!(items(&c.ui, &options)[2].checked, Some(true));
+    let control = c.part("control")?;
+    assert!(
+        !items(&c.ui, &control)[2].selected,
+        "the trigger shows the committed value"
+    );
+    // Focus leaving the popup closes it and commits the draft.
+    Driver::new(&mut c.ui).key(KeyCode::Tab)?;
+    assert!(!c.is_open()?);
+    assert_eq!(c.value.get()?, [2]);
+    assert!(items(&c.ui, &control)[2].selected);
+    Ok(())
+}
+
+#[test]
+fn a_disabled_multi_select_option_keeps_its_rectangle_and_arms_nothing() -> TestResult {
+    let mut c = chooser(4, &[1], MultiSelectCommit::EachToggle)?;
+    c.open()?;
+    let options = c.part("options")?;
+    let item = items(&c.ui, &options)[1].clone();
+    assert!(item.disabled && item.actions.is_empty() && item.bounds.is_some());
+    Driver::new(&mut c.ui).click_item(&options, 1)?;
+    assert!(c.value.get()?.is_empty());
+    assert!(c.changes.borrow().is_empty());
+    assert!(c.is_open()?, "the popup stays open");
+    Ok(())
+}
+
+#[test]
+fn filtered_and_scrolled_multi_select_options_have_their_rows_rectangles() -> TestResult {
+    let mut c = chooser(30, &[], MultiSelectCommit::EachToggle)?;
+    c.open()?;
+    let options = c.part("options")?;
+    // Rows beyond the popup's eight are not in view.
+    let late = c.index("Option 20")?;
+    assert_eq!(items(&c.ui, &options)[late].bounds, None);
+    assert!(matches!(
+        Driver::new(&mut c.ui).click_item(&options, late),
+        Err(TestError::ItemWithoutBounds { .. })
+    ));
+    // Half a row down: the first row is partly visible.
+    let first = items(&c.ui, &options)[0].bounds.ok_or("first row")?;
+    wheel(&mut c.ui, first, first[3] / 2.0)?;
+    let partial = items(&c.ui, &options)[0].bounds.ok_or("partly visible")?;
+    assert!(partial[3] < first[3], "{partial:?}");
+    assert_eq!(partial, c.row_bounds("Option 0")?);
+    // Further down, a later row is clicked through its row's rectangle.
+    wheel(&mut c.ui, first, 15.0 * first[3])?;
+    let index = c.index("Option 20")?;
+    let bounds = items(&c.ui, &options)[index]
+        .bounds
+        .ok_or("scrolled into view")?;
+    assert_eq!(bounds, c.row_bounds("Option 20")?);
+    Driver::new(&mut c.ui).click_item(&options, index)?;
+    assert_eq!(c.value.get()?, [20]);
+
+    // Filtering lists only the matches, in the popup's order.
+    Driver::new(&mut c.ui).type_text("2")?;
+    let names: Vec<_> = items(&c.ui, &options)
+        .into_iter()
+        .map(|item| item.name.unwrap_or_default())
+        .collect();
+    assert_eq!(names[..3], ["Option 2", "Option 12", "Option 20"]);
+    // Every match in view has its row's rectangle; the list kept its offset.
+    let shown: Vec<_> = items(&c.ui, &options)
+        .into_iter()
+        .filter_map(|item| Some((item.name?, item.bounds?)))
+        .collect();
+    assert!(shown.len() >= 4, "{shown:?}");
+    for (name, bounds) in &shown {
+        assert_eq!(*bounds, c.row_bounds(name)?, "{name}");
+    }
+    let index = c.index("Option 25")?;
+    Driver::new(&mut c.ui).click_item(&options, index)?;
+    assert_eq!(c.value.get()?, [20, 25]);
+    Ok(())
+}
+
+#[test]
+fn closed_and_empty_multi_select_lists_are_refused_before_input() -> TestResult {
+    let mut c = chooser(3, &[], MultiSelectCommit::EachToggle)?;
+    c.open()?;
+    let options = c.part("options")?;
+    // Closed: the list is hidden, so the reveal refuses it.
+    Driver::new(&mut c.ui).key(KeyCode::Escape)?;
+    assert!(!c.is_open()?);
+    assert!(
+        items(&c.ui, &options)
+            .iter()
+            .all(|item| item.bounds.is_none())
+    );
+    assert!(matches!(
+        Driver::new(&mut c.ui).click_item(&options, 1),
+        Err(TestError::NotRevealed { .. })
+    ));
+    // Open with no match: the list has no items.
+    c.open()?;
+    Driver::new(&mut c.ui).type_text("zzz")?;
+    assert!(items(&c.ui, &options).is_empty());
+    assert!(matches!(
+        Driver::new(&mut c.ui).click_item(&options, 0),
+        Err(TestError::NoItem { count: 0, .. })
+    ));
+    assert!(c.value.get()?.is_empty());
+    Ok(())
+}
+
+type Picked = (
+    Runtime,
+    WidgetId,
+    QuickPickController,
+    Rc<RefCell<Vec<String>>>,
+);
+
+/// A picker presenting `items`, recording each chosen key.
+fn picker(items: Vec<PickItem>) -> TestResult<Picked> {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(800.0, 600.0, 1.0)?)?;
+    let controller = QuickPickController::new(&ui);
+    let chosen = Rc::new(RefCell::new(Vec::new()));
+    let record = chosen.clone();
+    let app = ui.mount_tree(
+        QuickPick::new(
+            controller.clone(),
+            Label::new("Document").key("doc"),
+            move |_, item| {
+                record.borrow_mut().push(item.key.clone());
+                Ok(PickChoice::Done)
+            },
+        )
+        .key("app"),
+    )?;
+    controller.open(items)?;
+    Driver::new(&mut ui).settle()?;
+    Ok((ui, app, controller, chosen))
+}
+
+#[test]
+fn quick_pick_results_click_through_their_rectangles_including_disabled_ones() -> TestResult {
+    let pages = || {
+        vec![
+            PickItem::new("colors", "Colors"),
+            PickItem::new("knobs", "Knobs").shortcut("Ctrl+K"),
+            PickItem::new("old", "Old page").disabled(true),
+        ]
+    };
+    let (mut ui, app, controller, chosen) = picker(pages())?;
+    let mut driver = Driver::new(&mut ui);
+    let surface = driver.find(&app, &["surface"])?;
+    let options = driver.exposed_part(&surface, "options")?;
+    let semantics = driver.semantics(&options)?;
+    assert_eq!(semantics.role, SemanticRole::ListBox);
+    assert_eq!(semantics.items[1].shortcut.as_deref(), Some("Ctrl+K"));
+    assert!(semantics.items.iter().all(|item| item.bounds.is_some()));
+    driver.click_item(&options, 1)?;
+    assert_eq!(*chosen.borrow(), ["knobs"]);
+    // Closed: the surface is hidden, so the reveal refuses the list.
+    assert!(matches!(
+        driver.click_item(&options, 0),
+        Err(TestError::NotRevealed { .. })
+    ));
+    // A disabled result offers no action, yet a click passes it to the
+    // callback, as a press and release on its row do.
+    controller.open(pages())?;
+    driver.settle()?;
+    let options = driver.exposed_part(&surface, "options")?;
+    let disabled = driver.semantics(&options)?.items[2].clone();
+    assert!(disabled.disabled && disabled.actions.is_empty() && disabled.bounds.is_some());
+    driver.click_item(&options, 2)?;
+    assert_eq!(*chosen.borrow(), ["knobs", "old"]);
+    Ok(())
+}
+
+#[test]
+fn filtered_quick_pick_results_have_their_rows_rectangles() -> TestResult {
+    let (mut ui, app, _, chosen) = picker(
+        (0..20)
+            .map(|index| PickItem::new(format!("p{index}"), format!("Page {index}")))
+            .collect(),
+    )?;
+    let mut driver = Driver::new(&mut ui);
+    let surface = driver.find(&app, &["surface"])?;
+    let options = driver.exposed_part(&surface, "options")?;
+    // Results beyond the visible rows have no rectangle.
+    assert_eq!(driver.semantics(&options)?.items[15].bounds, None);
+    driver.type_text("12")?;
+    // A query makes a new list: look the part up again.
+    let options = driver.exposed_part(&surface, "options")?;
+    let items = driver.semantics(&options)?.items;
+    let index = items
+        .iter()
+        .position(|item| item.name.as_deref() == Some("Page 12"))
+        .ok_or("listed")?;
+    let bounds = items[index].bounds.ok_or("in view")?;
+    assert_eq!(
+        bounds,
+        row_box(driver.runtime(), SemanticRole::Button, "Page 12")?
+    );
+    driver.click_item(&options, index)?;
+    assert_eq!(*chosen.borrow(), ["p12"]);
+    Ok(())
+}
+
+#[test]
+fn a_quick_pick_without_results_has_no_options_part() -> TestResult {
+    let (mut ui, app, _, _) = picker(vec![PickItem::new("a", "Alpha")])?;
+    let mut driver = Driver::new(&mut ui);
+    let surface = driver.find(&app, &["surface"])?;
+    driver.type_text("zzz")?;
+    assert!(matches!(
+        driver.exposed_part(&surface, "options"),
+        Err(TestError::ExposedPartNotFound { .. })
+    ));
+    Ok(())
+}

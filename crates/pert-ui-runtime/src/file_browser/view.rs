@@ -67,6 +67,12 @@ use std::rc::Rc;
 /// of whitespace,
 /// making legal filesystem names visible without changing path identity or
 /// navigation. Other names retain their ordinary presentation.
+/// Tree and list rows have a fixed height, so their text stays on one line: a
+/// name too long for the row keeps its start and its end around "…"
+/// ([`TextOverflow::MiddleEllipsis`](crate::TextOverflow::MiddleEllipsis)),
+/// and failure and placeholder messages end in "…"
+/// ([`TextOverflow::Ellipsis`](crate::TextOverflow::Ellipsis)). The label's
+/// semantic name keeps the full text.
 /// Later string-table changes redescribe them from the
 /// retained controller. Incoming browser descriptions supply no replacement
 /// child bindings; all parts continue to use the mounted controller.
@@ -373,7 +379,10 @@ pub(super) fn placeholder(
         PlaceholderText::Bound(text) => Label::new(text),
         PlaceholderText::Fixed(text) => Label::new(text),
     }
-    .style(TextStyle::Caption);
+    .style(TextStyle::Caption)
+    // One line in the list's fixed row height, however long a listing
+    // error or a translated message is.
+    .overflow(crate::TextOverflow::Ellipsis);
     let label = match error {
         Some(_) => label.leading_icon(Icon::Error).color_role(ColorRole::Error),
         None => label.color_role(ColorRole::Muted),
@@ -404,7 +413,10 @@ impl FolderRow {
             hooks,
             children: vec![Element::new(
                 "name",
-                Label::new(visible_name(&name)).leading_icon(Icon::Folder),
+                // One line in the tree's fixed row height.
+                Label::new(visible_name(&name))
+                    .leading_icon(Icon::Folder)
+                    .overflow(crate::TextOverflow::MiddleEllipsis),
             )],
         }
     }
@@ -471,6 +483,8 @@ impl EntryRow {
                 reason: error.message(),
             })
         });
+        // A row has the list's fixed height, so its text stays on one line:
+        // a name keeps its start and its ending, which tells the file type.
         let label = match (failed.clone(), entry.kind()) {
             (Some(text), _) => failure_label(text),
             (None, EntryKind::Directory) => Label::new(name).leading_icon(Icon::Folder),
@@ -482,6 +496,12 @@ impl EntryRow {
                 })
                 .trailing_icon(Icon::Link),
             (None, _) => Label::new(name).leading_icon(Icon::File),
+        };
+        // A failure label already ends in an ellipsis.
+        let label = if failed.is_some() {
+            label
+        } else {
+            label.overflow(crate::TextOverflow::MiddleEllipsis)
         };
         Self {
             key,
@@ -496,11 +516,13 @@ impl EntryRow {
     }
 }
 
-/// The label of an entry that could not be read.
+/// The label of an entry that could not be read, on one line in the row's
+/// fixed height, as it is after a string-table replacement too.
 fn failure_label(text: String) -> Label {
     Label::new(text)
         .leading_icon(Icon::Error)
         .color_role(ColorRole::Error)
+        .overflow(crate::TextOverflow::Ellipsis)
 }
 impl Component for EntryRow {
     fn reconcile(&mut self, next: Self) -> Option<Invalidation> {

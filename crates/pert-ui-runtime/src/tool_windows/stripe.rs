@@ -1064,6 +1064,10 @@ impl Component for Stripe {
     fn inspect(&self) -> ComponentDetails {
         let model = self.link.model();
         let model = model.borrow();
+        // Each button's rectangle as the last arrangement placed it, scrolled
+        // with the stripe, which painting and hit testing use; a button
+        // scrolled out of view is clipped away by inspection.
+        let placed = self.placed.borrow();
         let items = self
             .buttons_with(&model)
             .into_iter()
@@ -1074,6 +1078,10 @@ impl Component for Stripe {
                     .selected(self.active.as_ref() == Some(&key))
                     .disabled(!allowed)
                     .expanded(expanded);
+                let item = match placed.iter().find(|placed| placed.key == key) {
+                    Some(placed) => item.local_bounds(placed.rect),
+                    None => item,
+                };
                 if allowed {
                     item.action(if expanded {
                         SemanticAction::Collapse

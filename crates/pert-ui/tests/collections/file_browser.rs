@@ -1452,3 +1452,114 @@ fn a_redescription_replaces_and_removes_the_folder_filter_offer()
     assert_eq!(offered(&ui), Some(InspectValue::Bool(true)));
     Ok(())
 }
+
+#[cfg(debug_assertions)]
+#[test]
+fn long_names_and_failures_stay_on_one_line_in_narrow_rows_after_localization() {
+    let mut stage = stage(SelectionMode::Single);
+    stage
+        .ui
+        .set_viewport(Viewport::new(320.0, 400.0, 1.0).unwrap())
+        .unwrap();
+    let long = "/r/a quarterly report whose file name is much longer than the row.txt";
+    let failed = "/r/an unreadable folder";
+    stage.answer(
+        "/r",
+        vec![
+            file(long),
+            DirectoryEntry::unreadable(
+                failed,
+                ListingError::new(
+                    ListingErrorKind::PermissionDenied,
+                    "the operating system refused access to this entry for this user",
+                ),
+            ),
+        ],
+    );
+    let too_tall = |stage: &Stage| {
+        stage
+            .ui
+            .validation_report()
+            .issues
+            .into_iter()
+            .filter(|issue| issue.code == ValidationCode::ExceedsFixedHeight)
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(too_tall(&stage), [], "rows fit before localization");
+    // The semantic name keeps the full text the row shortens.
+    assert!(row_name(&stage, "entries", long).ends_with("longer than the row.txt"));
+    stage
+        .ui
+        .ui_settings()
+        .set_strings(
+            UiStrings::english()
+                .with_text(
+                    StringRole::EntryFailed,
+                    "The entry {name} could not be read, because: {reason}",
+                )
+                .unwrap(),
+        )
+        .unwrap();
+    settle(&mut stage.ui);
+    assert_eq!(
+        too_tall(&stage),
+        [],
+        "a replaced failure label stays one line"
+    );
+}
+
+#[cfg(debug_assertions)]
+#[test]
+fn long_placeholders_stay_on_one_line_in_narrow_rows() {
+    let too_tall = |stage: &Stage| {
+        stage
+            .ui
+            .validation_report()
+            .issues
+            .into_iter()
+            .filter(|issue| issue.code == ValidationCode::ExceedsFixedHeight)
+            .collect::<Vec<_>>()
+    };
+    let long = |what: &str| -> String {
+        format!("{what}: a message far longer than a narrow file list can show on one line")
+    };
+    let narrow = |stage: &mut Stage| {
+        stage
+            .ui
+            .set_viewport(Viewport::new(320.0, 400.0, 1.0).unwrap())
+            .unwrap();
+        settle(&mut stage.ui);
+    };
+    // Loading, then empty, with replaced long strings.
+    let mut stage = stage(SelectionMode::Single);
+    stage
+        .ui
+        .ui_settings()
+        .set_strings(
+            UiStrings::english()
+                .with_text(StringRole::FileBrowserLoading, long("Loading"))
+                .unwrap()
+                .with_text(StringRole::FileBrowserEmptyFolder, long("Empty"))
+                .unwrap(),
+        )
+        .unwrap();
+    narrow(&mut stage);
+    assert_eq!(stage.entries(), ["loading"]);
+    assert_eq!(too_tall(&stage), [], "a long loading row fits");
+    stage.answer("/r", Vec::new());
+    assert_eq!(stage.entries(), ["empty"]);
+    assert_eq!(too_tall(&stage), [], "a long empty row fits");
+    // A failed listing shows the host's message.
+    let mut failed = self::stage(SelectionMode::Single);
+    narrow(&mut failed);
+    let request = failed.take("/r");
+    failed
+        .controller
+        .deliver(request.respond(Err(ListingError::new(
+            ListingErrorKind::PermissionDenied,
+            long("Denied"),
+        ))))
+        .unwrap();
+    settle(&mut failed.ui);
+    assert_eq!(too_tall(&failed), [], "a long listing error fits");
+}

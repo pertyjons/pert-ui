@@ -156,9 +156,10 @@ impl Driver {
         // (and headlessly in tests/foundation/capture.rs).
         let png = square.image.encode_png();
         assert_eq!(&png[..8], b"\x89PNG\r\n\x1a\n");
-        assert!(
-            png.len() > square.image.pixels().len(),
-            "stored blocks add framing"
+        assert_eq!(
+            &png[png.len() - 8..png.len() - 4],
+            b"IEND",
+            "a complete PNG"
         );
         #[cfg(feature = "png")]
         {

@@ -76,6 +76,9 @@ pub struct Canvas {
     rename_editor: Option<WidgetId>,
     /// The document last described as children.
     described: Option<Rc<Diagram>>,
+    /// The node described as being renamed, whose view leaves its label to
+    /// the rename editor.
+    described_renaming: Option<NodeId>,
     initial: Vec<Element>,
 }
 
@@ -97,6 +100,7 @@ impl Canvas {
             renaming: None,
             rename_editor: None,
             described: None,
+            described_renaming: None,
         }
     }
 
@@ -440,7 +444,16 @@ impl Canvas {
         self.doc
             .nodes
             .iter()
-            .map(|node| Element::new(node.id.key(), NodeView { node: node.clone() }))
+            .map(|node| {
+                let renaming = self.described_renaming == Some(node.id);
+                Element::new(
+                    node.id.key(),
+                    NodeView {
+                        node: node.clone(),
+                        renaming,
+                    },
+                )
+            })
             .chain([rename_element(&self.rename)])
             .collect()
     }
@@ -448,7 +461,11 @@ impl Canvas {
 
 /// The rename editor, named for inspection since it has no visible label.
 fn rename_element(rename: &DraftEditorController) -> Element {
-    Element::new(RENAME, DraftEditor::new(rename.clone())).with_label("Node name")
+    Element::new(
+        RENAME,
+        DraftEditor::new(rename.clone()).align(DraftAlign::Center),
+    )
+    .with_label("Node name")
 }
 
 fn band_rect(a: Point, b: Point) -> Result<Rect, RuntimeError> {
@@ -512,6 +529,7 @@ impl Component for Canvas {
             .iter()
             .find(|child| child.key() == RENAME)
             .map(|child| child.id().clone());
+        let mut describe = false;
         if self
             .described
             .as_ref()
@@ -519,8 +537,7 @@ impl Component for Canvas {
         {
             self.doc = doc.clone();
             self.described = Some(doc);
-            cx.request_children(self.describe());
-            cx.request_layout();
+            describe = true;
         }
         // A rename belongs to one node of one document: it ends when the
         // node goes away (an undo) or another document replaces this one,
@@ -531,6 +548,17 @@ impl Component for Canvas {
         {
             self.rename.end();
             self.renaming = None;
+            cx.request_layout();
+        }
+        // The renamed node's view leaves its label out, so starting or ending
+        // a rename describes the node views again.
+        let renaming = self.renaming.map(|(id, _)| id);
+        if renaming != self.described_renaming {
+            self.described_renaming = renaming;
+            describe = true;
+        }
+        if describe {
+            cx.request_children(self.describe());
             cx.request_layout();
         }
         Ok(())
@@ -873,9 +901,19 @@ impl Component for Canvas {
     }
 }
 
-/// One node, drawn as its shape with a centered label.
+/// Dark text on a node's own light fill, whatever the theme. Only node labels
+/// use it, so the headless session finds them in a painted scene by it.
+pub fn label_ink() -> Color {
+    Color::from_srgb8(0x10, 0x18, 0x20, 0xff)
+}
+
+/// One node, drawn as its shape with a centered label. While the node is
+/// renamed, the rename editor shows the label in its place, centered as the
+/// label is, so the view leaves the label out rather than draw it under the
+/// editor's text.
 pub struct NodeView {
     node: Node,
+    renaming: bool,
 }
 
 impl Component for NodeView {
@@ -884,11 +922,12 @@ impl Component for NodeView {
     }
 
     fn reconcile(&mut self, next: Self) -> Option<Invalidation> {
-        if next.node == self.node {
+        if next.node == self.node && next.renaming == self.renaming {
             return None;
         }
         let resized = (next.node.width, next.node.height) != (self.node.width, self.node.height);
         self.node = next.node;
+        self.renaming = next.renaming;
         Some(if resized {
             Invalidation::Layout
         } else {
@@ -916,8 +955,10 @@ impl Component for NodeView {
                 painter.stroke_ellipse(rect, StrokeStyle::new(width), border)?;
             }
         }
-        // Dark text on the node's own light fill, whatever the theme.
-        let ink = Color::from_srgb8(0x10, 0x18, 0x20, 0xff);
+        if self.renaming {
+            return Ok(());
+        }
+        let ink = label_ink();
         let text = painter.text(
             &self.node.label,
             Some((size.width() - 12.0).max(1.0)),

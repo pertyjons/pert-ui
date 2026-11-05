@@ -257,9 +257,9 @@ impl ListItems for Words {
     fn key(&self, index: usize) -> Option<String> {
         self.0.get(index).map(|word| (*word).to_owned())
     }
-    fn build(&self, index: usize) -> Option<Element> {
+    fn build(&self, index: usize) -> Option<RowItem> {
         let word = *self.0.get(index)?;
-        Some(Element::new(word, Label::new(word)))
+        Some(Element::new(word, Label::new(word)).into())
     }
     fn text(&self, index: usize) -> Option<String> {
         self.0.get(index).map(|word| (*word).to_owned())

@@ -1,0 +1,29 @@
+# 2026-11-04T18:36:54+01:00 commit 9aaacca export; taskset -c 2;  18:36:54 up  2:03,  1 user,  load average: 2,77, 1,62, 3,03
+-- edit latency: TextArea filling 800 x 600 logical px at scale 1, monospace default
+ 3958 B start,  4023 B end, caret  2036 | insert total median   5.822  p95   6.107  max   6.329 ms
+      input median   5.809  flush median   0.007  paint median   0.007 ms
+      heap: after mount+frame   1435.6 KiB, transient peak above settled during series  13764.5 KiB, retained after series  11019.9 KiB
+ 3958 B start,  4023 B end, caret  2036 | Enter  total median   6.111  p95   6.443  max   6.853 ms
+      input median   6.106  flush median   0.000  paint median   0.006 ms
+      heap: after mount+frame   1435.6 KiB, transient peak above settled during series  17836.8 KiB, retained after series  11691.5 KiB
+ 8054 B start,  8119 B end, caret  4050 | insert total median  11.630  p95  12.303  max  15.662 ms
+      input median  11.605  flush median   0.011  paint median   0.008 ms
+      heap: after mount+frame   2810.8 KiB, transient peak above settled during series  15563.3 KiB, retained after series  10090.4 KiB
+ 8054 B start,  8119 B end, caret  4050 | Enter  total median  12.747  p95  13.157  max  13.288 ms
+      input median  12.738  flush median   0.000  paint median   0.009 ms
+      heap: after mount+frame   2810.8 KiB, transient peak above settled during series  18792.5 KiB, retained after series  11483.2 KiB
+16246 B start, 16311 B end, caret  8165 | insert total median  23.249  p95  23.694  max  23.927 ms
+      input median  23.217  flush median   0.020  paint median   0.012 ms
+      heap: after mount+frame   5664.8 KiB, transient peak above settled during series  17153.1 KiB, retained after series   6047.9 KiB
+16246 B start, 16311 B end, caret  8165 | Enter  total median  25.128  p95  25.726  max  26.106 ms
+      input median  25.112  flush median   0.000  paint median   0.012 ms
+      heap: after mount+frame   5664.8 KiB, transient peak above settled during series  21000.8 KiB, retained after series   8002.1 KiB
+-- limits (MAX_TEXT_BYTES = 16384)
+binding of 16385 B at mount: frame Ok; binding_error Some(Text("text exceeds the 16384 byte limit")); shown text length Some(0); heap after mount 106.1 KiB
+  typing into it: text_input Ok(()), frame Ok(()), binding length 16385
+binding of 16384 B, typing one byte: text_input Ok(()), frame Ok(()), binding length 16384, binding_error None
+320 x 600 filled, scale 1, 16384 B at mount: Err(first frame: flush: text preparation exceeds its limit of 8192 physical pixels per side)
+320 x 600 filled, scale 1, 8192 B at mount: Ok(())
+800 x 600 filled, scale 2, 16384 B at mount: Err(first frame: flush: text preparation exceeds its limit of 8192 physical pixels per side)
+800 x 600 filled, scale 2, 8192 B at mount: Ok(())
+Enter repeatedly, 320 x 600 filled, scale 1, from 8192 B: after 136 presses key_input failed: text preparation exceeds its limit of 8192 physical pixels per side; binding length 8327; next frame Ok(())

@@ -9,7 +9,8 @@ use crate::model::{Diagram, NodeId};
 use pert_ui::prelude::*;
 use pert_ui::testing::*;
 use pert_ui::{
-    CommandKey, CommandKeyInput, CommandSource, KeyAction, KeyCode, ViewTransform, Viewport,
+    CommandKey, CommandKeyInput, CommandSource, DrawCommand, KeyAction, KeyCode, ViewTransform,
+    Viewport,
 };
 use std::{collections::BTreeSet, path::PathBuf, rc::Rc, time::Duration};
 
@@ -49,6 +50,37 @@ impl Session {
     }
     fn selected(&self) -> Result<BTreeSet<NodeId>, RuntimeError> {
         Ok(self.app.editor.selected_nodes()?.into_iter().collect())
+    }
+    /// The nodes whose label a freshly painted frame shows: a label-colored
+    /// text run inside the node's own bounds.
+    fn labelled(&mut self) -> Result<BTreeSet<NodeId>, Box<dyn std::error::Error>> {
+        self.settle()?;
+        let ink = crate::canvas::label_ink();
+        let runs: Vec<Rect> = self
+            .ui
+            .paint()?
+            .commands()
+            .iter()
+            .filter_map(|command| match command {
+                DrawCommand::DrawMask { rect, color, .. } if *color == ink => Some(*rect),
+                _ => None,
+            })
+            .collect();
+        let mut labelled = BTreeSet::new();
+        for node in &self.doc()?.nodes {
+            let view = self
+                .ui
+                .find_descendant(&self.app.canvas, &node.id.key())?
+                .ok_or("node view")?;
+            let [x, y, w, h] = self.ui.bounds(&view)?.ok_or("node bounds")?.values();
+            if runs.iter().any(|run| {
+                let (cx, cy) = (run.x() + run.width() / 2.0, run.y() + run.height() / 2.0);
+                (x..x + w).contains(&cx) && (y..y + h).contains(&cy)
+            }) {
+                labelled.insert(node.id);
+            }
+        }
+        Ok(labelled)
     }
     fn label(&self, id: NodeId) -> Result<String, Box<dyn std::error::Error>> {
         Ok(self.doc()?.node(id).ok_or("node")?.label.clone())
@@ -273,13 +305,23 @@ pub fn run(dir: PathBuf) -> Outcome {
     ));
     s.click(s.node_point(finish)?)?;
 
-    // Renaming in place: F2 opens the editor with the label selected.
+    // Renaming in place: F2 opens the editor with the label selected. The
+    // renamed node leaves its label to the editor, so the two never overlap.
+    let every: BTreeSet<NodeId> = s.doc()?.nodes.iter().map(|node| node.id).collect();
+    let except =
+        |id: NodeId| -> BTreeSet<NodeId> { every.iter().copied().filter(|&n| n != id).collect() };
+    assert_eq!(s.labelled()?, every, "every node shows its label");
     s.ui.focus(&s.app.canvas)?;
     s.driver().key(KeyCode::F2)?;
     let rename =
         s.ui.find_descendant(&s.app.canvas, "rename")?
             .ok_or("rename editor")?;
     assert_eq!(s.ui.focused(), Some(rename));
+    assert_eq!(
+        s.labelled()?,
+        except(finish),
+        "only the renamed node leaves its label to the editor"
+    );
     s.driver().type_text("Done")?;
     s.driver().key(KeyCode::Enter)?;
     assert_eq!(
@@ -288,11 +330,16 @@ pub fn run(dir: PathBuf) -> Outcome {
         "typing replaced the selected label"
     );
     assert_eq!(s.ui.focused().as_ref(), Some(&s.app.canvas));
+    assert_eq!(s.labelled()?, every, "committing restores the label");
     s.driver().key(KeyCode::F2)?;
     s.driver().type_text("Discarded")?;
     s.driver().key(KeyCode::Escape)?;
     assert_eq!(s.label(finish)?, "Done");
-    // A double click on a node opens it too.
+    assert_eq!(s.labelled()?, every, "cancelling restores the label");
+    // A double click on a node opens it too, here while another node is
+    // renamed: the first node gets its label back.
+    s.driver().key(KeyCode::F2)?;
+    assert_eq!(s.labelled()?, except(finish));
     let point = s.node_point(start)?;
     s.click(point)?;
     s.pointer(point, PointerKind::Press(PointerButton::Primary))?;
@@ -300,6 +347,11 @@ pub fn run(dir: PathBuf) -> Outcome {
     assert_eq!(
         s.ui.focused(),
         s.ui.find_descendant(&s.app.canvas, "rename")?
+    );
+    assert_eq!(
+        s.labelled()?,
+        except(start),
+        "renaming another node restores the first one's label"
     );
     s.driver().key(KeyCode::Escape)?;
     // The editor is named for inspection.
@@ -338,6 +390,11 @@ pub fn run(dir: PathBuf) -> Outcome {
     s.ui.set_visible(&s.app.canvas, true)?;
     s.settle()?;
     assert_eq!(s.label(start)?, "Start");
+    assert_eq!(
+        s.labelled()?,
+        every,
+        "a rename ended by hiding restores the label"
+    );
     let rename =
         s.ui.find_descendant(&s.app.canvas, "rename")?
             .ok_or("rename")?;

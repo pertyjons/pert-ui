@@ -579,6 +579,201 @@ fn end_alignment_places_a_short_draft_at_the_trailing_edge() -> TestResult {
     Ok(())
 }
 
+/// The caret's x after opening the fixture's draft with `align`, optionally
+/// typing `text` over the selected value, then pressing `key`.
+fn aligned_caret(align: DraftAlign, text: Option<&str>, key: KeyCode) -> Result<f32, Error> {
+    let mut f = Fixture::new(align, None)?;
+    f.press(KeyCode::Enter);
+    if let Some(text) = text {
+        f.ui.text_input(text)?;
+        frame(&mut f.ui);
+    }
+    f.press(key);
+    let (_, state) = f.ui.text_input_state().ok_or("no input state")?;
+    Ok(state.caret.x())
+}
+
+#[test]
+fn center_alignment_centers_a_short_draft_between_start_and_end() -> TestResult {
+    for key in [KeyCode::End, KeyCode::Home] {
+        let start = aligned_caret(DraftAlign::Start, None, key)?;
+        let end = aligned_caret(DraftAlign::End, None, key)?;
+        let center = aligned_caret(DraftAlign::Center, None, key)?;
+        // Each alignment moves the same text by part of one spare width, so
+        // the centered caret, which the IME anchor follows, is halfway.
+        assert!(
+            (center - (start + end) / 2.0).abs() < 0.5,
+            "{key:?}: centered caret {center} is not halfway between {start} and {end}"
+        );
+        assert!(end > start + 40.0, "{key:?}: the draft is not short");
+    }
+    Ok(())
+}
+
+/// What a centered, started or ended draft shows: the left edge of the
+/// selection fill with the whole draft selected, the left edge of the preedit
+/// underline and the IME anchor while composing at the end, and the caret
+/// after a press just inside the text's leading and trailing edges.
+struct Placed {
+    selection: f32,
+    underline: f32,
+    anchor: f32,
+    pressed_home: f32,
+    pressed_end: f32,
+}
+
+fn placed(align: DraftAlign) -> Result<Placed, Error> {
+    let palette = Palette::dark();
+    let (highlight, underline) = (
+        palette.color(ColorRole::TextSelection),
+        palette.color(ColorRole::Primary),
+    );
+    let left = |f: &mut Fixture, color: Color, thin: bool| -> Result<f32, Error> {
+        f.ui.paint()?
+            .commands()
+            .iter()
+            .filter_map(|command| match command {
+                DrawCommand::FillRect { rect, color: found }
+                    if *found == color && (!thin || rect.height() == 1.0) =>
+                {
+                    Some(rect.x())
+                }
+                _ => None,
+            })
+            .reduce(f32::min)
+            .ok_or_else(|| format!("{align:?}: nothing painted in {color:?}").into())
+    };
+    let caret = |f: &Fixture| -> Result<f32, Error> {
+        Ok(f.ui.text_input_state().ok_or("no input state")?.1.caret.x())
+    };
+    let mut f = Fixture::new(align, None)?;
+    // Opening selects the whole draft.
+    f.press(KeyCode::Enter);
+    let selection = left(&mut f, highlight, false)?;
+    f.press(KeyCode::Home);
+    let home = caret(&f)?;
+    f.press(KeyCode::End);
+    let end = caret(&f)?;
+    f.ui.text_preedit(&TextPreedit::new("ab", Some(2..2))?)?;
+    frame(&mut f.ui);
+    let underline = left(&mut f, underline, true)?;
+    let anchor = caret(&f)?;
+    f.ui.text_preedit(&TextPreedit::new("", None)?)?;
+    frame(&mut f.ui);
+    // A press just inside each edge of the text puts the caret at that edge
+    // only when hit testing uses the same origin as painting.
+    let editor = f.editor();
+    let y = center(&f.ui, &editor)?.y();
+    let mut press_at = |x: f32| -> Result<f32, Error> {
+        let at = Point::new(x, y)?;
+        pointer(&mut f.ui, at, PointerKind::Press(PointerButton::Primary))?;
+        pointer(&mut f.ui, at, PointerKind::Release(PointerButton::Primary))?;
+        frame(&mut f.ui);
+        caret(&f)
+    };
+    let pressed_home = press_at(home + 1.0)?;
+    let pressed_end = press_at(end - 1.0)?;
+    assert!(
+        (pressed_home - home).abs() < 0.5,
+        "{align:?}: press at the start"
+    );
+    assert!(
+        (pressed_end - end).abs() < 0.5,
+        "{align:?}: press at the end"
+    );
+    Ok(Placed {
+        selection,
+        underline,
+        anchor,
+        pressed_home,
+        pressed_end,
+    })
+}
+
+#[test]
+fn center_alignment_moves_selection_preedit_and_hit_testing_with_the_text() -> TestResult {
+    let (start, end, center) = (
+        placed(DraftAlign::Start)?,
+        placed(DraftAlign::End)?,
+        placed(DraftAlign::Center)?,
+    );
+    for (what, s, e, c) in [
+        (
+            "selection fill",
+            start.selection,
+            end.selection,
+            center.selection,
+        ),
+        (
+            "preedit underline",
+            start.underline,
+            end.underline,
+            center.underline,
+        ),
+        ("IME anchor", start.anchor, end.anchor, center.anchor),
+        (
+            "press at the start",
+            start.pressed_home,
+            end.pressed_home,
+            center.pressed_home,
+        ),
+        (
+            "press at the end",
+            start.pressed_end,
+            end.pressed_end,
+            center.pressed_end,
+        ),
+    ] {
+        assert!(e > s + 40.0, "{what}: start {s} and end {e} do not differ");
+        assert!(
+            (c - (s + e) / 2.0).abs() < 0.5,
+            "{what}: centered {c} is not halfway between {s} and {e}"
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn center_alignment_scrolls_a_wide_draft_as_start_does() -> TestResult {
+    let wide = "1234567890123456789012345678901234567890";
+    for key in [KeyCode::End, KeyCode::Home] {
+        let start = aligned_caret(DraftAlign::Start, Some(wide), key)?;
+        let center = aligned_caret(DraftAlign::Center, Some(wide), key)?;
+        assert!(
+            (center - start).abs() < 0.01,
+            "{key:?}: a wide centered draft's caret {center} differs from start's {start}"
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn describing_center_alignment_again_moves_the_open_draft() -> TestResult {
+    let mut f = Fixture::new(DraftAlign::Start, None)?;
+    f.press(KeyCode::Enter);
+    f.ui.text_input("7")?;
+    f.press(KeyCode::End);
+    let caret = |f: &Fixture| -> Result<f32, Error> {
+        Ok(f.ui.text_input_state().ok_or("no input state")?.1.caret.x())
+    };
+    let before = caret(&f)?;
+    let row = f.row.clone();
+    f.ui.reconcile_children(
+        &row,
+        vec![Element::new(
+            "editor",
+            DraftEditor::new(f.draft.clone()).align(DraftAlign::Center),
+        )],
+    )?;
+    frame(&mut f.ui);
+    assert_eq!(f.draft.text(), "7", "the session survived the description");
+    assert!(
+        caret(&f)? > before + 20.0,
+        "the caret did not move to the center"
+    );
+    Ok(())
+}
+
 fn center(ui: &Runtime, id: &WidgetId) -> Result<Point, Error> {
     let [x, y, w, h] = ui.bounds(id)?.ok_or("unplaced")?.values();
     Ok(Point::new(x + w / 2.0, y + h / 2.0)?)

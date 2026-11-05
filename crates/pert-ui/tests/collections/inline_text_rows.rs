@@ -21,9 +21,9 @@ impl ListItems for Labels {
     fn key(&self, index: usize) -> Option<String> {
         KEYS.get(index).map(|key| (*key).to_owned())
     }
-    fn build(&self, index: usize) -> Option<Element> {
+    fn build(&self, index: usize) -> Option<RowItem> {
         let label = InlineText::new(self.names.get(index)?).in_row(self.in_row);
-        Some(Element::new("title", label))
+        Some(Element::new("title", label).into())
     }
 }
 

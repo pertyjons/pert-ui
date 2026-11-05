@@ -20,9 +20,9 @@ impl ListItems for Rows {
     fn key(&self, index: usize) -> Option<String> {
         self.0.get(index).cloned()
     }
-    fn build(&self, index: usize) -> Option<Element> {
+    fn build(&self, index: usize) -> Option<RowItem> {
         let key = self.key(index)?;
-        Some(Element::new(key.clone(), Label::new(key)))
+        Some(Element::new(key.clone(), Label::new(key)).into())
     }
     fn index_of(&self, key: &str) -> Option<usize> {
         self.0.iter().position(|candidate| candidate == key)
@@ -581,8 +581,8 @@ impl ListItems for UnkeyedRows {
     fn key(&self, index: usize) -> Option<String> {
         self.0.get(index).cloned()
     }
-    fn build(&self, index: usize) -> Option<Element> {
-        Some(Label::new(self.0.get(index)?.as_str()).key(""))
+    fn build(&self, index: usize) -> Option<RowItem> {
+        Some(Label::new(self.0.get(index)?.as_str()).key("").into())
     }
 }
 
@@ -617,9 +617,9 @@ impl ListItems for Fields {
     fn key(&self, index: usize) -> Option<String> {
         self.0.get(index).map(|(key, _)| key.clone())
     }
-    fn build(&self, index: usize) -> Option<Element> {
+    fn build(&self, index: usize) -> Option<RowItem> {
         let (key, value) = self.0.get(index)?;
-        Some(Element::new(key.clone(), TextField::new(value.clone())))
+        Some(Element::new(key.clone(), TextField::new(value.clone())).into())
     }
     fn index_of(&self, key: &str) -> Option<usize> {
         self.0.iter().position(|(candidate, _)| candidate == key)

@@ -22,8 +22,9 @@ struct Staged {
 }
 
 /// Where a parent placed a child in its content space, with the local clip it
-/// gave.
-type Placement = (Rect, Option<Rect>);
+/// gave and the fixed slot height it declared with
+/// [`ArrangeContext::place_fixed_slot`](crate::ArrangeContext::place_fixed_slot).
+pub(crate) type Placement = (Rect, Option<Rect>, Option<(crate::Orientation, f32)>);
 /// A reconciled child's new metadata, which a re-description refreshes
 /// without remounting: its serial, label, rich label, label source and
 /// leading label icon, detach permission and searchability.
@@ -1987,6 +1988,7 @@ impl Runtime {
                     },
                     placements: vec![None; children.len()],
                     clips: vec![None; children.len()],
+                    slots: vec![None; children.len()],
                 };
                 // The component's own retained geometry follows this call
                 // whether or not the pass commits.
@@ -1999,7 +2001,10 @@ impl Runtime {
                     .placements
                     .into_iter()
                     .zip(context.clips)
-                    .map(|(placement, clip)| placement.map(|placement| (placement, clip)))
+                    .zip(context.slots)
+                    .map(|((placement, clip), slot)| {
+                        placement.map(|placement| (placement, clip, slot))
+                    })
                     .collect::<Option<Vec<_>>>()
                     .ok_or(LayoutError::InvalidChild)
                     // A child the container left unplaced is its failure.
@@ -2007,7 +2012,7 @@ impl Runtime {
             }
         };
         let arranged = fresh.then(|| (children.clone(), placements.clone()));
-        for (child, (placement, local_clip)) in children.iter().zip(placements) {
+        for (child, (placement, local_clip, _)) in children.iter().zip(placements) {
             let [_, _, w, h] = placement.values();
             let [bx, by, _, _] = bounds.values();
             // Content space reaches the window through this component's origin,
@@ -2184,8 +2189,14 @@ impl Runtime {
             let entry = &self.entries[&serial];
             if let Some((children, placements)) = arranged {
                 for (child, placement) in children.iter().zip(placements) {
-                    if let Some(child) = self.entries.get(child) {
-                        child.node.placement.set(Some(placement));
+                    if let Some(child_entry) = self.entries.get(child) {
+                        child_entry.node.placement.set(Some(placement));
+                        // The child's own geometry committed before its
+                        // parent's, so its scale is current here. A fresh
+                        // ordinary placement clears a declared slot; a
+                        // retained arrangement skips this and keeps it.
+                        #[cfg(debug_assertions)]
+                        self.validator.slot(*child, child_entry.node.slot_extent());
                     }
                 }
                 *entry.node.arranged_children.borrow_mut() = children;
@@ -2234,10 +2245,15 @@ impl Runtime {
                     bounds.values(),
                     clip.values(),
                     measured_height,
+                    entry.node.measured_width(),
                     (entry.component.as_ref() as &dyn std::any::Any)
                         .downcast_ref::<crate::VirtualList>()
                         .map(crate::VirtualList::extent_for_validation),
                 );
+                // A retained arrangement keeps the parent's slot but not
+                // this node's scale, which a zoom changes: refresh the slot's
+                // window extent with the scale just committed.
+                self.validator.slot(serial, entry.node.slot_extent());
             }
         }
         self.window.shared.layout_pending.set(false);
@@ -2261,7 +2277,8 @@ impl Runtime {
                 continue;
             }
             let height = entry.node.measured_height();
-            self.validator.measured(serial, height);
+            self.validator
+                .measured(serial, height, entry.node.measured_width());
         }
     }
 }

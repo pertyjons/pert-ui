@@ -129,14 +129,14 @@ impl ListItems for Tasks {
     fn key(&self, index: usize) -> Option<String> {
         Some(self.0.get(index)?.0.to_string())
     }
-    fn build(&self, index: usize) -> Option<Element> {
+    fn build(&self, index: usize) -> Option<RowItem> {
         let (id, progress) = *self.0.get(index)?;
         Some(
             Row::new([
                 Label::new(format!("Task {id}")).key("title"),
                 ProgressBar::new(progress).key("progress"),
             ])
-            .key("row"),
+            .into(),
         )
     }
 }

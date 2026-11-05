@@ -424,8 +424,8 @@ impl InlineText {
     /// impl ListItems for Names {
     ///     fn len(&self) -> usize { 1 }
     ///     fn key(&self, index: usize) -> Option<String> { (index == 0).then(|| "a".to_owned()) }
-    ///     fn build(&self, index: usize) -> Option<Element> {
-    ///         (index == 0).then(|| Element::new("title", InlineText::new(&self.0).in_row(true)))
+    ///     fn build(&self, index: usize) -> Option<RowItem> {
+    ///         (index == 0).then(|| InlineText::new(&self.0).in_row(true).into())
     ///     }
     /// }
     ///

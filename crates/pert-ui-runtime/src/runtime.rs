@@ -899,7 +899,7 @@ pub(crate) struct Node {
     view_offset: Cell<crate::Point>,
     /// Where the presentation parent's last `arrange` placed this component, in
     /// the parent's content space, with the local clip it gave.
-    placement: Cell<Option<(crate::Rect, Option<crate::Rect>)>>,
+    placement: Cell<Option<crate::runtime::tree::Placement>>,
     /// The visible children this component's last `arrange` placed, in order;
     /// their placements are reused while it is only moved.
     arranged_children: RefCell<Vec<u64>>,
@@ -929,6 +929,11 @@ pub(crate) struct Node {
 }
 
 impl Node {
+    /// Whether the runtime applied this component's latest child request
+    /// ([`UpdateContext::request_children`]); true before any request.
+    pub(crate) fn children_adopted(&self) -> bool {
+        self.children_current.get()
+    }
     /// Effective visibility, the condition a focus request checks.
     pub(crate) fn is_visible(&self) -> bool {
         self.visible.get()
@@ -955,6 +960,23 @@ impl Node {
     pub(crate) fn measured_height(&self) -> Option<f64> {
         let height = f64::from(self.measured.get().latest()?.height());
         Some(height * f64::from(self.committed_scale.get().unwrap_or(self.scale.get())))
+    }
+    /// The width this node was last measured at, in window pixels, as
+    /// [`Self::measured_height`] gives its height.
+    #[cfg(debug_assertions)]
+    pub(crate) fn measured_width(&self) -> Option<f64> {
+        let width = f64::from(self.measured.get().latest()?.width());
+        Some(width * f64::from(self.committed_scale.get().unwrap_or(self.scale.get())))
+    }
+    /// The fixed slot its parent last placed it into with
+    /// [`ArrangeContext::place_fixed_slot`](crate::ArrangeContext::place_fixed_slot):
+    /// the fixed axis and its extent, in window pixels like
+    /// [`Self::measured_height`].
+    #[cfg(debug_assertions)]
+    pub(crate) fn slot_extent(&self) -> Option<(crate::Orientation, f64)> {
+        let (axis, extent) = self.placement.get()?.2?;
+        let scale = f64::from(self.committed_scale.get().unwrap_or(self.scale.get()));
+        Some((axis, f64::from(extent) * scale))
     }
     /// The constraints this node was last measured under.
     #[cfg(debug_assertions)]
@@ -2264,12 +2286,12 @@ pub trait Component: std::any::Any {
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
-    /// use pert_ui::{Component, Element, ListItems, ListSource, Runtime, VirtualList};
+    /// use pert_ui::{Component, ListItems, ListSource, RowItem, Runtime, VirtualList};
     /// struct EmptyRows;
     /// impl ListItems for EmptyRows {
     ///     fn len(&self) -> usize { 0 }
     ///     fn key(&self, _: usize) -> Option<String> { None }
-    ///     fn build(&self, _: usize) -> Option<Element> { None }
+    ///     fn build(&self, _: usize) -> Option<RowItem> { None }
     /// }
     /// let ui = Runtime::new();
     /// let source = ui.signal(ListSource::new(EmptyRows));
@@ -2962,6 +2984,59 @@ impl UpdateContext {
         let mut queued = self.node.shared.requested_children.borrow_mut();
         queued.retain(|(owner, _)| owner.as_ptr() != Rc::as_ptr(&self.node));
         queued.push((Rc::downgrade(&self.node), children));
+    }
+
+    /// Whether the runtime applied this component's latest
+    /// [`Self::request_children`]: false from the request until it is
+    /// applied, and after the runtime rejected it (a reconciliation error,
+    /// such as a duplicate key, leaves the previous children mounted), until
+    /// a later request succeeds; true before any request.
+    ///
+    /// A component that builds its children from a source, as
+    /// [`VirtualList`](crate::VirtualList) does, reads it to tell a rejected
+    /// request from an applied one even when the requested keys equal the
+    /// mounted ones, and requests its children again at its next update
+    /// instead of assuming they are current. Reading it neither subscribes
+    /// nor schedules anything. A rejection fails the flush that applied the
+    /// request and does not update the component again by itself: the retry
+    /// happens at its next update, from a binding it reads or another
+    /// invalidation.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::component::*;
+    /// use pert_ui::prelude::*;
+    ///
+    /// /// Requests two children with the same key once, then valid ones, and
+    /// /// updates again whenever `tick` changes.
+    /// struct Retrying { attempts: u32, tick: ReadSignal<u32> }
+    /// impl Component for Retrying {
+    ///     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+    ///         cx.read(&self.tick)?;
+    ///         if self.attempts == 0 || !cx.children_adopted() {
+    ///             self.attempts += 1;
+    ///             let second = if self.attempts == 1 { "a" } else { "b" };
+    ///             cx.request_children(vec![
+    ///                 Label::new("one").key("a"),
+    ///                 Label::new("two").key(second),
+    ///             ]);
+    ///         }
+    ///         Ok(())
+    ///     }
+    /// }
+    ///
+    /// let mut ui = Runtime::new();
+    /// let tick = ui.signal(0_u32);
+    /// let id = ui.mount_tree(Element::new("rows", Retrying { attempts: 0, tick: tick.read_only() }))?;
+    /// assert!(ui.flush(ui.now()).is_err(), "the duplicate keys are rejected");
+    /// // Its next update sees the rejection and requests valid children.
+    /// tick.set(1)?;
+    /// ui.flush(ui.now())?;
+    /// assert_eq!(ui.children(&id)?.len(), 2, "the retry was applied");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn children_adopted(&self) -> bool {
+        self.node.children_adopted()
     }
 
     /// Runtime elapsed time for deterministic shared deadlines, never wall-clock time.
@@ -6245,6 +6320,8 @@ impl Runtime {
                     serial,
                     crate::validation::development::NodeData {
                         measured_height,
+                        measured_width: entry.node.measured_width(),
+                        slot: entry.node.slot_extent(),
                         collection: (entry.component.as_ref() as &dyn std::any::Any)
                             .downcast_ref::<crate::VirtualList>()
                             .map(crate::VirtualList::extent_for_validation),

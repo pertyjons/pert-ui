@@ -1230,3 +1230,228 @@ fn a_title_change_while_the_window_opens_retitles_it_once_open() -> TestResult {
     );
     Ok(())
 }
+
+/// The detach requests waiting for the host.
+fn detach_requests(ui: &Runtime) -> Vec<PresentationRequest> {
+    ui.take_presentation_requests()
+        .unwrap()
+        .into_iter()
+        .filter(|request| matches!(request.action(), PresentationAction::Detach { .. }))
+        .collect()
+}
+
+fn window_mode_layout(expanded: bool, detachable: bool) -> ToolWindowLayout {
+    ToolWindowLayout::new(button("main"))
+        .edge(ToolEdge::Left, EdgeMode::Stripe)
+        .window(
+            ToolWindow::new("files", "Files", button("files-body"))
+                .edge(ToolEdge::Left)
+                .mode(ToolWindowMode::Window)
+                .expanded(expanded)
+                .detachable(detachable),
+        )
+}
+
+#[test]
+fn an_expanded_window_mode_tool_window_requests_its_own_window_at_mount() {
+    // Application authority: the user's `detachable` restriction does not
+    // stop the application's own description.
+    for detachable in [true, false] {
+        let mut ui = ui();
+        let root = ui
+            .mount_tree(Element::new("frame", window_mode_layout(true, detachable)))
+            .unwrap();
+        flush(&mut ui);
+        let requests = detach_requests(&ui);
+        assert_eq!(requests.len(), 1, "detachable {detachable}");
+        // While pending, further flushes ask nothing more.
+        flush(&mut ui);
+        flush(&mut ui);
+        assert!(
+            detach_requests(&ui).is_empty(),
+            "no duplicate while pending"
+        );
+        let panel = find(&ui, &root, "files");
+        assert!(
+            matches!(requests[0].action(), PresentationAction::Detach { view, .. } if view == &panel),
+            "the panel itself moves"
+        );
+    }
+}
+
+#[test]
+fn a_collapsed_window_mode_tool_window_requests_its_window_when_expanded() {
+    let mut ui = ui();
+    let root = ui
+        .mount_tree(Element::new("frame", window_mode_layout(false, true)))
+        .unwrap();
+    flush(&mut ui);
+    assert!(detach_requests(&ui).is_empty(), "collapsed: no window yet");
+    // Expand it as the user does: a click on its stripe button.
+    let stripe = find(&ui, &root, "stripe-left");
+    let id = ui.inspection_id(&stripe).unwrap();
+    let [x, y, w, h] = ui
+        .inspect()
+        .components
+        .into_iter()
+        .find(|component| component.id == id)
+        .and_then(|component| component.details.semantics)
+        .and_then(|semantics| semantics.items.first().and_then(|item| item.bounds))
+        .expect("the stripe button's rectangle");
+    let center = Point::new(x + w / 2.0, y + h / 2.0).unwrap();
+    for kind in [
+        PointerKind::Press(PointerButton::Primary),
+        PointerKind::Release(PointerButton::Primary),
+    ] {
+        ui.pointer_input(PointerEvent::new(center, kind)).unwrap();
+    }
+    flush(&mut ui);
+    let panel = find(&ui, &root, "files");
+    let window = host_detach(&mut ui, &panel);
+    assert_ne!(window, ui.primary_window());
+    flush(&mut ui);
+    assert!(detach_requests(&ui).is_empty(), "presented: nothing more");
+}
+
+type ChangeLog = Rc<RefCell<Vec<(ToolWindowChangeKind, ToolWindowMode, bool, ChangeOrigin)>>>;
+
+/// A window-mode layout, expanded at mount, with a controller and a log of
+/// its reported changes.
+fn logged_window_mode(ui: &mut Runtime) -> (WidgetId, ToolWindowController, ChangeLog) {
+    let controller = ToolWindowController::new();
+    let log: ChangeLog = Rc::default();
+    let record = log.clone();
+    let root = ui
+        .mount_tree(Element::new(
+            "frame",
+            window_mode_layout(true, true)
+                .controller(&controller)
+                .on_change(move |_, change| {
+                    record.borrow_mut().push((
+                        change.kind,
+                        change.mode,
+                        change.expanded,
+                        change.origin,
+                    ));
+                    Ok(())
+                }),
+        ))
+        .unwrap();
+    flush(ui);
+    (root, controller, log)
+}
+
+#[test]
+fn a_mount_time_detach_that_fails_returns_the_tool_window_to_docking() {
+    let mut ui = ui();
+    let (root, controller, log) = logged_window_mode(&mut ui);
+    let mut requests = detach_requests(&ui);
+    assert_eq!(requests.len(), 1);
+    requests
+        .remove(0)
+        .complete(PresentationStatus::Failed(WindowError::Cancelled))
+        .unwrap();
+    flush(&mut ui);
+    flush(&mut ui);
+    assert!(detach_requests(&ui).is_empty(), "a failure is not retried");
+    // Back to docking, still expanded and shown docked, reported as a
+    // presentation change.
+    assert_eq!(controller.mode("files").unwrap(), ToolWindowMode::Docked);
+    assert!(controller.is_expanded("files").unwrap());
+    assert!(shown(&ui, "files-body"));
+    assert!(
+        log.borrow()
+            .iter()
+            .any(
+                |(kind, mode, expanded, origin)| *kind == ToolWindowChangeKind::Mode
+                    && *mode == ToolWindowMode::Docked
+                    && *expanded
+                    && *origin == ChangeOrigin::Presentation
+            ),
+        "{:?}",
+        log.borrow()
+    );
+    let _ = root;
+}
+
+#[test]
+fn collapsing_while_a_mount_time_detach_is_pending_cancels_it() {
+    let mut ui = ui();
+    let (root, controller, _) = logged_window_mode(&mut ui);
+    let panel = find(&ui, &root, "files");
+    let mut requests = detach_requests(&ui);
+    assert_eq!(requests.len(), 1);
+    // The user collapses it before the host has presented the window, so
+    // the host finds the panel hidden and reports the failure.
+    assert!(controller.collapse("files").unwrap());
+    flush(&mut ui);
+    let error = ui
+        .prepare_detach(&panel, NativeWindowOptions::new("Files").unwrap())
+        .expect_err("a collapsed panel cannot be presented");
+    requests
+        .remove(0)
+        .complete(PresentationStatus::Failed(WindowError::Runtime(error)))
+        .unwrap();
+    flush(&mut ui);
+    flush(&mut ui);
+    assert!(detach_requests(&ui).is_empty(), "no second detach");
+    assert!(
+        !controller.is_expanded("files").unwrap(),
+        "it stays collapsed"
+    );
+    assert!(!shown(&ui, "files-body"));
+}
+
+#[test]
+fn a_mount_time_detach_refused_by_a_full_queue_docks_the_tool_window() {
+    let mut ui = ui();
+    // A full window request queue makes the detach request fail at once.
+    let primary = ui.primary_window();
+    let receipts: Vec<PresentationReceipt> = (0..Runtime::MAX_WINDOW_REQUESTS)
+        .map(|_| ui.request_close(&primary).unwrap())
+        .collect();
+    assert_eq!(receipts.len(), Runtime::MAX_WINDOW_REQUESTS);
+    let controller = ToolWindowController::new();
+    let log: ChangeLog = Rc::default();
+    let record = log.clone();
+    ui.mount_tree(Element::new(
+        "frame",
+        window_mode_layout(true, true)
+            .controller(&controller)
+            .on_change(move |_, change| {
+                record.borrow_mut().push((
+                    change.kind,
+                    change.mode,
+                    change.expanded,
+                    change.origin,
+                ));
+                Ok(())
+            }),
+    ))
+    .unwrap();
+    // The refusal is reported from the flush that delivered it, as for a
+    // detach the controller asks for.
+    assert_eq!(
+        ui.flush(Duration::ZERO),
+        Err(RuntimeError::WindowRequestFull)
+    );
+    ui.flush(ui.now()).unwrap();
+    // The queued closes are all the host receives; no detach was queued.
+    assert!(detach_requests(&ui).is_empty());
+    assert_eq!(controller.mode("files").unwrap(), ToolWindowMode::Docked);
+    assert!(
+        controller.is_expanded("files").unwrap(),
+        "it stays expanded"
+    );
+    flush(&mut ui);
+    assert!(shown(&ui, "files-body"), "shown docked");
+    assert!(
+        log.borrow().iter().any(
+            |(kind, mode, _, origin)| *kind == ToolWindowChangeKind::Mode
+                && *mode == ToolWindowMode::Docked
+                && *origin == ChangeOrigin::Presentation
+        ),
+        "{:?}",
+        log.borrow()
+    );
+}

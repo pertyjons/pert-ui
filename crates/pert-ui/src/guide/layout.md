@@ -733,7 +733,7 @@ impl ListItems for Rows {
     fn key(&self, index: usize) -> Option<String> {
         Some(self.tasks.get(index)?.id.to_string())
     }
-    fn build(&self, index: usize) -> Option<Element> {
+    fn build(&self, index: usize) -> Option<RowItem> {
         let task = self.tasks.get(index)?;
         // Controlled: the row's description carries the record's values.
         let (store, id) = (self.store.clone(), task.id);
@@ -748,12 +748,12 @@ impl ListItems for Rows {
         .in_row(true);
         // A display control takes the record's value itself.
         let progress = ProgressBar::new(task.progress);
-        // The list keys the row with the task's key, replacing "row".
+        // The list keys the row with the task's key.
         Some(Row::new([
             check.key("done"),
             title.key("title").with_grow(1),
             progress.key("progress"),
-        ]).key("row"))
+        ]).into())
     }
     fn text(&self, index: usize) -> Option<String> {
         Some(self.tasks.get(index)?.title.clone())
@@ -969,7 +969,7 @@ struct NoRows;
 impl ListItems for NoRows {
     fn len(&self) -> usize { 0 }
     fn key(&self, _index: usize) -> Option<String> { None }
-    fn build(&self, _index: usize) -> Option<Element> { None }
+    fn build(&self, _index: usize) -> Option<RowItem> { None }
 }
 
 /// Opens a file from its row Button, then hands the keyboard to the list.
@@ -982,7 +982,7 @@ struct Files {
 impl ListItems for Files {
     fn len(&self) -> usize { self.names.len() }
     fn key(&self, index: usize) -> Option<String> { self.names.get(index).cloned() }
-    fn build(&self, index: usize) -> Option<Element> {
+    fn build(&self, index: usize) -> Option<RowItem> {
         let name = self.names.get(index)?.clone();
         let (list, selection, opened) =
             (self.list.clone(), self.selection.clone(), self.opened.clone());
@@ -992,7 +992,7 @@ impl ListItems for Files {
             selection.set_active(Some(name.clone()))?;
             cx.request_focus_for(&list)
         });
-        Some(open.key("row")) // the list keys the row with its name
+        Some(open.into()) // the list keys the row with its name
     }
 }
 

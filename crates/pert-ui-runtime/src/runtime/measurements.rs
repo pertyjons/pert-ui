@@ -50,8 +50,9 @@ impl Measurements {
     pub(crate) fn latest_constraints(&self) -> Option<Constraints> {
         self.entries[0].map(|(constraints, _)| constraints)
     }
-    /// Whether no measurement is retained.
-    #[cfg(test)]
+    /// Whether no measurement is retained. Its only caller is a debug-only
+    /// test, so it has the same cfg.
+    #[cfg(all(test, debug_assertions))]
     pub(crate) fn is_empty(&self) -> bool {
         self.entries.iter().all(Option::is_none)
     }

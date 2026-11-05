@@ -13,6 +13,13 @@ pub(crate) struct NodeData {
     /// The height the component was last measured at, by the parent that
     /// laid it out, in window pixels; for `ExceedsFixedHeight`.
     pub(crate) measured_height: Option<f64>,
+    /// The width the component was last measured at, in window pixels; for
+    /// `ExceedsFixedWidth`.
+    pub(crate) measured_width: Option<f64>,
+    /// The fixed slot its parent placed it into with
+    /// `ArrangeContext::place_fixed_slot`: the fixed axis's extent, in window
+    /// pixels; for `ExceedsFixedHeight` and `ExceedsFixedWidth`.
+    pub(crate) slot: Option<(crate::Orientation, f64)>,
     pub(crate) window: u64,
     pub(crate) parent: Option<u64>,
     pub(crate) key: String,
@@ -82,6 +89,7 @@ impl Validator {
             node.box_model.border_box = None;
             node.hints.clip = None;
             node.measured_height = None;
+            node.measured_width = None;
             self.dirty = true;
         }
     }
@@ -101,6 +109,7 @@ impl Validator {
             node.box_model.border_box = None;
             node.hints.clip = None;
             node.measured_height = None;
+            node.measured_width = None;
             self.dirty = true;
         }
     }
@@ -114,12 +123,14 @@ impl Validator {
         bounds: [f32; 4],
         clip: [f32; 4],
         measured_height: Option<f64>,
+        measured_width: Option<f64>,
         collection: Option<CollectionExtent>,
     ) {
         if let Some(node) = self.nodes.get_mut(&id) {
             if node.box_model.border_box == Some(bounds)
                 && node.hints.clip == Some(clip)
                 && same_height(node.measured_height, measured_height)
+                && same_height(node.measured_width, measured_width)
                 && same_collection(node.collection, collection)
             {
                 return;
@@ -127,6 +138,7 @@ impl Validator {
             node.box_model.border_box = Some(bounds);
             node.hints.clip = Some(clip);
             node.measured_height = measured_height;
+            node.measured_width = measured_width;
             node.collection = collection;
             self.dirty = true;
         }
@@ -134,11 +146,23 @@ impl Validator {
     /// Records a measurement that changed without the node being arranged or
     /// updated again: a parent measured it under new constraints and placed
     /// it where it was.
-    pub(crate) fn measured(&mut self, id: u64, height: Option<f64>) {
+    pub(crate) fn measured(&mut self, id: u64, height: Option<f64>, width: Option<f64>) {
         if let Some(node) = self.nodes.get_mut(&id)
-            && !same_height(node.measured_height, height)
+            && (!same_height(node.measured_height, height)
+                || !same_height(node.measured_width, width))
         {
             node.measured_height = height;
+            node.measured_width = width;
+            self.dirty = true;
+        }
+    }
+    /// Records the fixed slot height a parent's committed arrangement gave the
+    /// component, or its absence.
+    pub(crate) fn slot(&mut self, id: u64, slot: Option<(crate::Orientation, f64)>) {
+        if let Some(node) = self.nodes.get_mut(&id)
+            && !same_slot(node.slot, slot)
+        {
+            node.slot = slot;
             self.dirty = true;
         }
     }
@@ -417,6 +441,7 @@ fn geometric(code: ValidationCode) -> bool {
             | ValidationCode::CollapsedParent
             | ValidationCode::UnboundedCollection
             | ValidationCode::ExceedsFixedHeight
+            | ValidationCode::ExceedsFixedWidth
     )
 }
 
@@ -441,6 +466,13 @@ fn same_height(a: Option<f64>, b: Option<f64>) -> bool {
     a.map(f64::to_bits) == b.map(f64::to_bits)
 }
 
+fn same_slot(a: Option<(crate::Orientation, f64)>, b: Option<(crate::Orientation, f64)>) -> bool {
+    match (a, b) {
+        (Some((axis, a)), Some((other, b))) => axis == other && same_height(Some(a), Some(b)),
+        (None, None) => true,
+        _ => false,
+    }
+}
 fn same_array(a: Option<[f32; 4]>, b: Option<[f32; 4]>) -> bool {
     a.map(|v| v.map(f32::to_bits)) == b.map(|v| v.map(f32::to_bits))
 }
@@ -453,6 +485,8 @@ fn same_border(a: Option<crate::BorderInspection>, b: Option<crate::BorderInspec
 fn same_node(a: &NodeData, b: &NodeData) -> bool {
     same_collection(a.collection, b.collection)
         && same_height(a.measured_height, b.measured_height)
+        && same_height(a.measured_width, b.measured_width)
+        && same_slot(a.slot, b.slot)
         && a.window == b.window
         && a.parent == b.parent
         && a.key == b.key
@@ -519,6 +553,128 @@ const OVERLAP_TOLERANCE: f64 = 1.0 / 32.0;
 /// one for [`OVERLAP_TOLERANCE`]: sums of fractional coordinates differ by
 /// amounts that can never become a pixel.
 const GEOMETRY_TOLERANCE: f64 = OVERLAP_TOLERANCE;
+
+/// At most this many overlapping pairs under one parent are reported one
+/// issue per pair; more are summarized in one issue for that parent.
+const OVERLAP_PAIRS_LISTED: usize = 8;
+
+/// How many pairs a summary names as examples.
+const OVERLAP_PAIRS_SAMPLED: usize = 4;
+
+const OVERLAP_ADVICE: &str = "correct their layout, or allow an intentional overlay: report OverlapPolicy::Allow in ComponentDetails::validation, or let the parent stack its children (Component::stacks_children).";
+
+/// Appends `UnexpectedOverlap` issues for visible peers that disallow overlap
+/// and share a window and a parent, and returns how many candidate pairs it
+/// compared.
+///
+/// Peers are grouped by window and parent, and each group is swept along the
+/// axis on which their starts spread more: sorted by start, a peer is compared
+/// only with the peers that start before it ends on that axis. A disjoint row
+/// or column therefore costs O(n log n) comparisons. A two-dimensional
+/// arrangement, such as a disjoint grid, or many genuine overlaps can still
+/// make the comparisons quadratic in the group's size.
+///
+/// Up to [`OVERLAP_PAIRS_LISTED`] overlapping pairs under one parent are
+/// reported one issue per pair. More are reported as one issue for the
+/// parent, whose `components` name every participant (so overlays mark each
+/// one) and whose message gives the counts and the first
+/// [`OVERLAP_PAIRS_SAMPLED`] pairs.
+fn overlap_issues(nodes: &BTreeMap<u64, NodeData>, issues: &mut Vec<ValidationIssue>) -> usize {
+    // Peers by (window, parent), each with its visible rectangle.
+    type Groups = BTreeMap<(u64, Option<u64>), Vec<(u64, Rect)>>;
+    let mut groups = Groups::new();
+    for (&id, node) in nodes
+        .iter()
+        .filter(|(_, node)| node.hints.overlap == OverlapPolicy::Disallow)
+    {
+        if let Some(rect) = visible_rect(node) {
+            groups
+                .entry((node.window, node.parent))
+                .or_default()
+                .push((id, rect));
+        }
+    }
+    let key = |id: u64| nodes.get(&id).map_or("", |node| node.key.as_str());
+    let mut comparisons = 0;
+    for ((_, parent), mut group) in groups {
+        if group.len() < 2 {
+            continue;
+        }
+        let spread = |start: fn(&Rect) -> f64| {
+            let (low, high) = group.iter().fold(
+                (f64::INFINITY, f64::NEG_INFINITY),
+                |(low, high), (_, rect)| (low.min(start(rect)), high.max(start(rect))),
+            );
+            high - low
+        };
+        let horizontal = spread(|rect| rect.x) >= spread(|rect| rect.y);
+        let span = |rect: &Rect| {
+            if horizontal {
+                (rect.x, rect.x + rect.w)
+            } else {
+                (rect.y, rect.y + rect.h)
+            }
+        };
+        group.sort_by(|(a, first), (b, second)| {
+            span(first).0.total_cmp(&span(second).0).then(a.cmp(b))
+        });
+        let mut listed: Vec<(u64, u64)> = Vec::new();
+        let mut pairs = 0_usize;
+        let mut members = BTreeSet::new();
+        for (index, &(a, first)) in group.iter().enumerate() {
+            let end = span(&first).1;
+            for &(b, second) in &group[index + 1..] {
+                // Later peers start later still, so none shares more than the
+                // tolerance with `first` along the sweep axis.
+                if span(&second).0 >= end - OVERLAP_TOLERANCE {
+                    break;
+                }
+                comparisons += 1;
+                if first.intersect(second).is_some_and(|shared| {
+                    shared.w > OVERLAP_TOLERANCE && shared.h > OVERLAP_TOLERANCE
+                }) {
+                    pairs += 1;
+                    members.insert(a);
+                    members.insert(b);
+                    if listed.len() <= OVERLAP_PAIRS_LISTED {
+                        listed.push((a.min(b), a.max(b)));
+                    }
+                }
+            }
+        }
+        listed.sort_unstable();
+        let pair = |&(a, b): &(u64, u64)| format!("{:?} (#{a}) and {:?} (#{b})", key(a), key(b));
+        if pairs <= OVERLAP_PAIRS_LISTED {
+            for (a, b) in listed {
+                issues.push(ValidationIssue {
+                    code: ValidationCode::UnexpectedOverlap,
+                    components: vec![a, b],
+                    message: format!("Components {} overlap; {OVERLAP_ADVICE}", pair(&(a, b))),
+                });
+            }
+        } else {
+            let under = parent.map_or_else(
+                || "at the window's root".to_owned(),
+                |parent| format!("under {:?} (#{parent})", key(parent)),
+            );
+            let sample: Vec<String> = listed
+                .iter()
+                .take(OVERLAP_PAIRS_SAMPLED)
+                .map(pair)
+                .collect();
+            issues.push(ValidationIssue {
+                code: ValidationCode::UnexpectedOverlap,
+                message: format!(
+                    "{pairs} pairs of components overlap {under}, among {} components; first pairs: {}; {OVERLAP_ADVICE}",
+                    members.len(),
+                    sample.join(", "),
+                ),
+                components: members.into_iter().collect(),
+            });
+        }
+    }
+    comparisons
+}
 
 /// A length for a message: at most two decimals, without trailing zeros.
 fn pixels(value: f64) -> String {
@@ -740,25 +896,52 @@ fn check(nodes: &BTreeMap<u64, NodeData>) -> Vec<ValidationIssue> {
                 });
             }
         }
-    }
-    let peers: Vec<_> = nodes
-        .iter()
-        .filter(|(_, node)| node.hints.overlap == OverlapPolicy::Disallow)
-        .filter_map(|(&id, node)| visible_rect(node).map(|rect| (id, node, rect)))
-        .collect();
-    for (index, &(a, first, first_rect)) in peers.iter().enumerate() {
-        for &(b, second, second_rect) in &peers[index + 1..] {
-            if first.window == second.window
-                && first.parent == second.parent
-                && first_rect.intersect(second_rect).is_some_and(|shared| {
-                    shared.w > OVERLAP_TOLERANCE && shared.h > OVERLAP_TOLERANCE
-                })
+        // A parent declared a fixed slot for this component, as a fixed-extent
+        // list does for its rows, and measured it across the slot. Geometry
+        // checks need committed geometry in a measured window, which
+        // `validated_nodes` withholds otherwise.
+        if node.visible
+            && node.box_model.border_box.is_some()
+            && let Some((axis, slot)) = node.slot.filter(|(_, slot)| slot.is_finite())
+        {
+            let (measured, code, extent, advice) = match axis {
+                crate::Orientation::Vertical => (
+                    node.measured_height,
+                    ValidationCode::ExceedsFixedHeight,
+                    "tall",
+                    "give the rows more height, such as a larger list row extent",
+                ),
+                crate::Orientation::Horizontal => (
+                    node.measured_width,
+                    ValidationCode::ExceedsFixedWidth,
+                    "wide",
+                    "give the items more width, such as a larger list item extent",
+                ),
+            };
+            if let Some(measured) = measured.filter(|measured| measured.is_finite())
+                && measured > slot + GEOMETRY_TOLERANCE
             {
-                issues.push(ValidationIssue { code: ValidationCode::UnexpectedOverlap, components: vec![a, b],
-                    message: format!("Components {:?} (#{a}) and {:?} (#{b}) overlap; correct their layout, or allow an intentional overlay: report OverlapPolicy::Allow in ComponentDetails::validation, or let the parent stack its children (Component::stacks_children).", first.key, second.key) });
+                let parent_id = node.parent;
+                let parent = parent_id
+                    .and_then(|parent| nodes.get(&parent).map(|node| (parent, node)))
+                    .map_or_else(
+                        || "its parent".to_owned(),
+                        |(parent, node)| format!("{:?} (#{parent})", node.key),
+                    );
+                issues.push(ValidationIssue {
+                    code,
+                    components: std::iter::once(id).chain(parent_id).collect(),
+                    message: format!(
+                        "Component {:?} (#{id}): measured {} px {extent} in a fixed {} px slot of {parent}, so it is cut off; {advice}, or use smaller content",
+                        node.key,
+                        pixels(measured),
+                        pixels(slot),
+                    ),
+                });
             }
         }
     }
+    overlap_issues(nodes, &mut issues);
     type Chord = (u64, KeyCode, bool, bool, bool, bool);
     let mut chords: BTreeMap<Chord, Vec<(u64, &str, &str)>> = BTreeMap::new();
     for (&id, node) in nodes.iter().filter(|(_, node)| node.visible) {
@@ -796,6 +979,8 @@ mod tests {
         NodeData {
             collection: None,
             measured_height: None,
+            measured_width: None,
+            slot: None,
             window: 1,
             parent: None,
             key: "control".into(),
@@ -1023,6 +1208,175 @@ mod tests {
         validator.update(1, empty);
         validator.refresh_to(&mut log);
         assert_eq!(validator.logged_lines, 2);
+    }
+
+    fn peer(parent: Option<u64>, window: u64, bounds: [f32; 4]) -> NodeData {
+        let mut data = node();
+        data.parent = parent;
+        data.window = window;
+        data.box_model.border_box = Some(bounds);
+        data
+    }
+
+    /// `count` peers under `parent`, each 20 px wide and 10 px further along
+    /// than the previous one, so each overlaps only its neighbours: `count - 1`
+    /// pairs. Ids start at `first`.
+    fn chain(nodes: &mut BTreeMap<u64, NodeData>, first: u64, count: u64, parent: u64) {
+        for index in 0..count {
+            nodes.insert(
+                first + index,
+                peer(Some(parent), 1, [index as f32 * 10.0, 0.0, 20.0, 20.0]),
+            );
+        }
+    }
+
+    #[test]
+    fn disjoint_rows_and_columns_are_swept_without_pairwise_comparison() {
+        for horizontal in [true, false] {
+            let mut nodes = BTreeMap::new();
+            for index in 0..200_u64 {
+                let along = index as f32 * 30.0;
+                let bounds = if horizontal {
+                    [along, 0.0, 30.0, 24.0]
+                } else {
+                    [0.0, along, 120.0, 30.0]
+                };
+                nodes.insert(index + 1, peer(Some(1000), 1, bounds));
+            }
+            let mut issues = Vec::new();
+            let comparisons = overlap_issues(&nodes, &mut issues);
+            assert!(issues.is_empty(), "{issues:?}");
+            // Pairwise checking would make 19,900 comparisons.
+            assert!(
+                comparisons < 200,
+                "horizontal {horizontal}: {comparisons} comparisons"
+            );
+        }
+    }
+
+    #[test]
+    fn up_to_eight_overlapping_pairs_are_listed_and_more_are_summarized() {
+        let mut nodes = BTreeMap::new();
+        chain(&mut nodes, 1, 9, 100);
+        let mut issues = Vec::new();
+        overlap_issues(&nodes, &mut issues);
+        assert_eq!(issues.len(), 8, "{issues:?}");
+        assert!(issues.iter().all(|issue| issue.components.len() == 2));
+        assert_eq!(issues[0].components, [1, 2]);
+
+        let mut nodes = BTreeMap::new();
+        nodes.insert(100, peer(None, 1, [0.0, 0.0, 400.0, 100.0]));
+        if let Some(parent) = nodes.get_mut(&100) {
+            parent.key = "toolbar".into();
+        }
+        chain(&mut nodes, 1, 10, 100);
+        let mut issues = Vec::new();
+        overlap_issues(&nodes, &mut issues);
+        assert_eq!(issues.len(), 1, "{issues:?}");
+        let summary = &issues[0];
+        assert_eq!(summary.code, ValidationCode::UnexpectedOverlap);
+        assert_eq!(summary.components, (1..=10).collect::<Vec<u64>>());
+        assert!(
+            summary
+                .message
+                .starts_with("9 pairs of components overlap under \"toolbar\" (#100), among 10 components; first pairs: \"control\" (#1) and \"control\" (#2), "),
+            "{}",
+            summary.message
+        );
+        assert_eq!(
+            summary.message.matches(" and ").count(),
+            OVERLAP_PAIRS_SAMPLED
+        );
+    }
+
+    #[test]
+    fn overlaps_are_summarized_per_parent_and_never_across_windows() {
+        let mut nodes = BTreeMap::new();
+        chain(&mut nodes, 1, 10, 100);
+        chain(&mut nodes, 21, 10, 200);
+        // The same geometry in another window overlaps nothing of the first.
+        nodes.insert(41, peer(Some(100), 2, [5.0, 0.0, 20.0, 20.0]));
+        let mut issues = Vec::new();
+        overlap_issues(&nodes, &mut issues);
+        let members: Vec<Vec<u64>> = issues
+            .iter()
+            .map(|issue| issue.components.clone())
+            .collect();
+        assert_eq!(
+            members,
+            [(1..=10).collect::<Vec<u64>>(), (21..=30).collect()],
+            "one summary per parent, in a deterministic order"
+        );
+    }
+
+    #[test]
+    fn a_summary_marks_every_participant_logs_once_and_returns_after_a_fix() {
+        let mut validator = Validator::default();
+        validator.set_measured(BTreeSet::from([1]));
+        let mut nodes = BTreeMap::new();
+        chain(&mut nodes, 1, 10, 100);
+        for (&id, data) in &nodes {
+            validator.update(id, data.clone());
+        }
+        let mut log = Vec::new();
+        validator.refresh_to(&mut log);
+        let report = validator.report(false);
+        assert_eq!(report.issues.len(), 1);
+        assert_eq!(report.markers.len(), 10, "every participant is marked");
+        assert_eq!(validator.logged_lines, 1);
+        validator.refresh_to(&mut log);
+        assert_eq!(
+            validator.logged_lines, 1,
+            "an unchanged summary is not written again"
+        );
+
+        // Moving the peers apart clears it; overlapping again reports again.
+        for (&id, data) in &nodes {
+            let mut apart = data.clone();
+            apart.box_model.border_box = Some([id as f32 * 30.0, 0.0, 20.0, 20.0]);
+            validator.update(id, apart);
+        }
+        validator.refresh_to(&mut log);
+        assert!(validator.report(false).issues.is_empty());
+        for (&id, data) in &nodes {
+            validator.update(id, data.clone());
+        }
+        validator.refresh_to(&mut log);
+        assert_eq!(validator.report(false).issues.len(), 1);
+        assert_eq!(validator.logged_lines, 2);
+    }
+
+    #[test]
+    fn a_slot_is_checked_only_with_committed_geometry_in_a_measured_window() {
+        let mut row = peer(Some(100), 1, [0.0, 0.0, 200.0, 24.0]);
+        row.slot = Some((crate::Orientation::Vertical, 24.0));
+        row.measured_height = Some(32.0);
+        let mut validator = Validator::default();
+        validator.set_measured(BTreeSet::from([1]));
+        validator.update(1, row.clone());
+        validator.refresh_to(&mut Vec::new());
+        assert_eq!(
+            validator
+                .report(false)
+                .issues
+                .iter()
+                .map(|issue| issue.code)
+                .collect::<Vec<_>>(),
+            [ValidationCode::ExceedsFixedHeight]
+        );
+        // Its window loses its measurement: geometry is withheld, and so is
+        // the slot report, which returns with the measurement.
+        validator.set_measured(BTreeSet::new());
+        validator.refresh_to(&mut Vec::new());
+        assert!(validator.report(false).issues.is_empty());
+        validator.set_measured(BTreeSet::from([1]));
+        validator.refresh_to(&mut Vec::new());
+        assert_eq!(validator.report(false).issues.len(), 1);
+        // Without committed geometry there is nothing to report.
+        row.box_model.border_box = None;
+        validator.update(1, row);
+        validator.refresh_to(&mut Vec::new());
+        assert!(validator.report(false).issues.is_empty());
     }
 
     #[test]

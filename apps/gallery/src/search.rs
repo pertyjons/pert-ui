@@ -56,6 +56,8 @@ pub(crate) fn search_items(
             let label = match (hit.field, &hit.other) {
                 (ContentField::Name, Some(value)) => format!("{}: {value}", hit.text),
                 (ContentField::Value, Some(name)) => format!("{name}: {}", hit.text),
+                // An item, such as a menu command, is listed under its owner.
+                (ContentField::Item { .. }, Some(name)) => format!("{name}: {}", hit.text),
                 _ => hit.text.clone(),
             };
             let mut item =
@@ -127,7 +129,10 @@ pub(crate) fn search_picker(
     })
     .name("Search the gallery")
     .list_name("Results")
-    .placeholder("Search content and commands");
+    .placeholder("Search content and commands")
+    // Its results are content search hits: a later search must not list
+    // them as content again.
+    .searchable(false);
     // Structural, so wrapping the gallery adds no segment to its workspace
     // paths and saved workspaces stay valid.
     Element::new("gallery-search", picker).structural()

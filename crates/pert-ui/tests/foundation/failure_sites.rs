@@ -174,8 +174,10 @@ impl ListItems for OneRow {
     fn key(&self, index: usize) -> Option<String> {
         (index == 0).then(|| "only".to_owned())
     }
-    fn build(&self, index: usize) -> Option<Element> {
-        (index == 0).then(|| Label::new("row").key("text"))
+    fn build(&self, index: usize) -> Option<RowItem> {
+        (index == 0)
+            .then(|| Label::new("row").key("text"))
+            .map(Into::into)
     }
 }
 

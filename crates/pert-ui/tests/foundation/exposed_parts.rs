@@ -213,7 +213,7 @@ fn built_in_internal_composition_does_not_leak_clipboard_parts() -> TestResult {
             .iter()
             .map(|part| part.name.as_str())
             .collect::<Vec<_>>(),
-        ["search"]
+        ["search", "options"]
     );
     let search = driver.exposed_part(&surface, "search")?;
     assert!(driver.exposed_part(&search, "clipboard").is_ok());
@@ -321,7 +321,9 @@ fn multi_select_search_bounds_its_clipboard_scope() -> TestResult {
     )?;
     ui.flush(Duration::ZERO)?;
     let chooser = ui.find(&root, &["chooser"])?.ok_or("chooser")?;
-    let trigger = ui.find_descendant(&chooser, "anchor")?.ok_or("anchor")?;
+    let trigger = ui
+        .find_exposed_part(&chooser, "control")?
+        .ok_or("control")?;
     ui.focus(&trigger)?;
     ui.key_input(pert_ui::KeyCode::Enter, pert_ui::KeyAction::Press)?;
     ui.key_input(pert_ui::KeyCode::Enter, pert_ui::KeyAction::Release)?;
@@ -333,7 +335,7 @@ fn multi_select_search_bounds_its_clipboard_scope() -> TestResult {
             .iter()
             .map(|part| part.name.as_str())
             .collect::<Vec<_>>(),
-        ["search"]
+        ["control", "search", "options"]
     );
     let search = driver.exposed_part(&chooser, "search")?;
     assert!(driver.exposed_part(&search, "clipboard").is_ok());
@@ -391,12 +393,24 @@ fn clipboard_list_is_nested_and_the_palette_forwards_the_existing_surface_scope(
             .key("palette"),
     )?;
     ui.flush(Duration::ZERO)?;
+    ui.register_command(
+        "Play",
+        pert_ui::CommandScope::Application,
+        vec![],
+        |_, _| Ok(()),
+    )?;
     let context = ui.command_context(CommandSource::Programmatic);
     controller.open(&mut ui, &context)?;
     ui.flush(ui.now())?;
     let driver = Driver::new(&mut ui);
     assert!(driver.exposed_parts(&palette)?.is_empty());
     let surface = driver.find(&palette, &["surface"])?;
+    // The palette forwards the picker's result list inside the same scope.
+    let options = driver.exposed_part(&surface, "options")?;
+    assert_eq!(
+        driver.semantics(&options)?.role,
+        pert_ui::SemanticRole::ListBox
+    );
     let search = driver.exposed_part(&surface, "search")?;
     let clipboard = driver.exposed_part(&search, "clipboard")?;
     let rows = driver.exposed_part(&clipboard, "items")?;

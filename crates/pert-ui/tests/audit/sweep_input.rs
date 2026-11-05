@@ -395,9 +395,9 @@ impl ListItems for Rows {
     fn key(&self, index: usize) -> Option<String> {
         (index < self.0).then(|| format!("r{index}"))
     }
-    fn build(&self, index: usize) -> Option<Element> {
+    fn build(&self, index: usize) -> Option<RowItem> {
         let key = self.key(index)?;
-        Some(Element::new(key.clone(), Label::new(key)))
+        Some(Element::new(key.clone(), Label::new(key)).into())
     }
 }
 
@@ -480,8 +480,8 @@ impl TreeItems for Outline {
             Vec::new()
         }
     }
-    fn build(&self, key: &str) -> Option<Element> {
-        Some(Element::new(key, Label::new(key)))
+    fn build(&self, key: &str) -> Option<RowItem> {
+        Some(Element::new(key, Label::new(key)).into())
     }
 }
 /// Three rows whose cells show their column key.
@@ -606,7 +606,7 @@ fn modified_menu_and_dropdown_navigation_yields_to_commands() {
         "select trigger",
     );
     let tags = ui.find_descendant(&root, "tags").unwrap().unwrap();
-    let trigger = ui.find_descendant(&tags, "anchor").unwrap().unwrap();
+    let trigger = ui.find_exposed_part(&tags, "control").unwrap().unwrap();
     chord_yields(
         &mut ui,
         &trigger,

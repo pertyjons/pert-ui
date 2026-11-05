@@ -14,19 +14,14 @@ pub use headless::HeadlessApp;
 /// in [`ApplicationError`](crate::ApplicationError). `?` therefore works on all of
 /// them in the initialization closure.
 ///
-/// `From` and `?` accept exactly these errors: [`DrawError`], [`RuntimeError`],
-/// [`PathError`](crate::PathError), and the leaf errors `RuntimeError` wraps,
-/// [`GeometryError`](crate::GeometryError), [`LayoutError`](crate::LayoutError),
-/// [`ChoiceError`](crate::ChoiceError), [`BindingError`](crate::BindingError),
-/// [`EditError`](crate::EditError), [`DeliveryError`](crate::DeliveryError),
-/// [`ApplicationError`](crate::ApplicationError), [`TextError`](crate::TextError),
-/// [`TextEditError`](crate::TextEditError), [`FontError`](crate::FontError),
-/// [`ClipboardError`](crate::ClipboardError),
-/// [`NumberInputError`](crate::NumberInputError),
-/// [`ParameterError`](crate::ParameterError),
-/// [`ParameterIdError`](crate::ParameterIdError),
-/// [`NormalizedValueError`](crate::NormalizedValueError) and
-/// [`LiveError`](crate::LiveError). Any other error is wrapped first as an
+/// `From` and `?` accept exactly the errors [`DrawError`] converts from:
+/// `DrawError` itself, [`RuntimeError`], [`PathError`](crate::PathError) and
+/// every leaf error `RuntimeError` wraps, such as
+/// [`GeometryError`](crate::GeometryError) or
+/// [`TextEditError`](crate::TextEditError). `DrawError`'s `From`
+/// implementations are the complete, current list; the runtime keeps it in
+/// one place, so a new leaf error is accepted here without a change to this
+/// type. Any other error is wrapped first as an
 /// [`ApplicationError`](crate::ApplicationError): a `Send + Sync` error such
 /// as `std::io::Error` with [`ApplicationError::new`](crate::ApplicationError::new),
 /// and a `Box<dyn Error + Send + Sync>` with `.map_err(ApplicationError::from)?`.
@@ -194,8 +189,9 @@ impl std::error::Error for AppShutdownError {
 /// `DrawError` keeps the list of leaf errors in one place, the runtime.
 ///
 /// `#[diagnostic::do_not_recommend]` keeps rustc from reporting a failed
-/// conversion as a missing `From` for `DrawError`; it names `AppError`, and
-/// [`AppError`]'s own documentation lists the accepted errors.
+/// conversion as a missing `From` for `DrawError`; it names `AppError`, whose
+/// documentation states the rule and points to `DrawError`'s `From`
+/// implementations as the list of accepted errors.
 #[diagnostic::do_not_recommend]
 impl<E> From<E> for AppError
 where

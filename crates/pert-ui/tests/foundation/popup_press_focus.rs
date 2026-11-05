@@ -834,6 +834,13 @@ impl Chooser {
     fn id(&self, key: &str) -> WidgetId {
         widget(&self.ui, &self.root, key)
     }
+    /// The chooser's exposed part `name`.
+    fn part(&self, name: &str) -> WidgetId {
+        self.ui
+            .find_exposed_part(&self.id("tags"), name)
+            .unwrap()
+            .unwrap_or_else(|| panic!("no part {name}"))
+    }
     fn property(&self, id: &WidgetId, name: &str) -> Option<InspectValue> {
         let id = self.ui.inspection_id(id).unwrap();
         self.ui
@@ -873,7 +880,7 @@ impl Chooser {
             .map(|c| c.key)
             .unwrap_or_else(|| panic!("no row {label}"));
         self.ui
-            .find_descendant(&self.id("list"), &key)
+            .find_descendant(&self.part("options"), &key)
             .unwrap()
             .unwrap()
     }
@@ -935,7 +942,7 @@ fn a_short_multi_select_in_a_scrolling_page_keeps_its_row_click() {
     let mut observed = Vec::new();
     for commit in commits {
         let mut c = Chooser::new(commit);
-        let anchor = c.id("anchor");
+        let anchor = c.part("control");
         c.ui.focus(&anchor).unwrap();
         frame(&mut c.ui);
         c.key(KeyCode::Enter);

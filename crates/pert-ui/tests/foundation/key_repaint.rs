@@ -318,11 +318,8 @@ impl ListItems for Rows {
     fn key(&self, index: usize) -> Option<String> {
         (index < self.0).then(|| format!("row-{index}"))
     }
-    fn build(&self, index: usize) -> Option<Element> {
-        Some(Element::new(
-            self.key(index)?,
-            Label::new(format!("Row {index}")),
-        ))
+    fn build(&self, index: usize) -> Option<RowItem> {
+        Some(Element::new(self.key(index)?, Label::new(format!("Row {index}"))).into())
     }
     fn index_of(&self, key: &str) -> Option<usize> {
         key.strip_prefix("row-")?
@@ -346,8 +343,8 @@ impl TreeItems for Outline {
     fn can_expand(&self, key: &str) -> bool {
         key == "a"
     }
-    fn build(&self, key: &str) -> Option<Element> {
-        Some(Element::new(key, Label::new(key)))
+    fn build(&self, key: &str) -> Option<RowItem> {
+        Some(Element::new(key, Label::new(key)).into())
     }
 }
 struct Numbers;

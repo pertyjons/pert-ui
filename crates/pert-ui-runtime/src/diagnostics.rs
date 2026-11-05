@@ -368,11 +368,22 @@ pub enum SemanticAction {
 /// coordinates as [`bounds`](Self::bounds); a component gives bounds only where
 /// it reports them, and among the built-in components a
 /// [`Table`](crate::Table)'s column titles, [`Tabs`](crate::Tabs)' titles,
-/// open menu rows, the [`Select`](crate::Select) list's options and a
-/// [`ToastHost`](crate::ToastHost)'s toasts do. Offscreen rows have no bounds;
-/// menu separator bands are not items. A closed ComboBox's option descriptions
-/// carry no list geometry. Inspection does not scroll. A component whose rows are real
-/// child components reports none and lets the children describe themselves.
+/// open menu rows, the [`Select`](crate::Select) list's options, the options
+/// of an open [`MultiSelect`](crate::MultiSelect) popup and the results of an
+/// open [`QuickPick`](crate::QuickPick), a
+/// [`ToastHost`](crate::ToastHost)'s toasts, an
+/// [`Accordion`](crate::Accordion)'s headers, the options of a
+/// [`RadioGroup`](crate::RadioGroup), [`SegmentedControl`](crate::SegmentedControl)
+/// or [`InlineChoice`](crate::InlineChoice) and a tool-window stripe's
+/// buttons do. Offscreen rows have no bounds;
+/// menu separator bands are not items. A ComboBox's option descriptions, such
+/// as those of a Select's or a MultiSelect's trigger, carry no list geometry,
+/// open or closed. Inspection does not scroll. A component whose rows are real
+/// child components reports none and lets the children describe themselves,
+/// except a [`VirtualList`](crate::VirtualList) that
+/// [reports its rows as items](crate::VirtualList::report_items), as the
+/// MultiSelect and QuickPick lists do: its items carry the rectangles where it
+/// placed its rows, and the rows still describe themselves.
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
@@ -1216,15 +1227,15 @@ impl InspectionSnapshot {
     /// It changes when a field is added, removed or reinterpreted, not with the
     /// crate version. With the `serde` feature, deserializing a snapshot or a
     /// [`QueryResult`](crate::QueryResult) whose `schema_version` is any other
-    /// revision fails with the message "inspection schema version 16 is not
-    /// supported (this build writes 17)", naming the version found; unknown
+    /// revision fails with the message "inspection schema version 17 is not
+    /// supported (this build writes 18)", naming the version found; unknown
     /// fields are rejected as before. A document whose version is not its
     /// first field, as a format or an intermediate map may reorder it, can
     /// fail on an unknown or missing field of the other revision first. An
     /// external inspector that reads several revisions compares the version
     /// before decoding and treats an unknown revision as unsupported rather
     /// than reinterpreting it.
-    pub const SCHEMA_VERSION: u32 = 17;
+    pub const SCHEMA_VERSION: u32 = 18;
     /// The most events history retains. Recording one more evicts the oldest
     /// and counts it in [`Self::dropped_events`].
     pub const MAX_EVENTS: usize = 256;

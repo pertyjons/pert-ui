@@ -33,8 +33,8 @@ impl TreeItems for Outline {
     fn can_expand(&self, key: &str) -> bool {
         matches!(key, "a" | "a/1")
     }
-    fn build(&self, key: &str) -> Option<Element> {
-        Some(Element::new(key, Label::new(key)))
+    fn build(&self, key: &str) -> Option<RowItem> {
+        Some(Element::new(key, Label::new(key)).into())
     }
 }
 
@@ -237,8 +237,8 @@ impl TreeItems for Folders {
     fn can_expand(&self, key: &str) -> bool {
         key.ends_with('/')
     }
-    fn build(&self, key: &str) -> Option<Element> {
-        Some(Element::new(key, Label::new(key)))
+    fn build(&self, key: &str) -> Option<RowItem> {
+        Some(Element::new(key, Label::new(key)).into())
     }
 }
 fn folders(entries: &[(&str, &[&str])]) -> Folders {
@@ -393,8 +393,8 @@ impl TreeItems for Big {
     fn can_expand(&self, key: &str) -> bool {
         key == "big"
     }
-    fn build(&self, key: &str) -> Option<Element> {
-        Some(Element::new(key, Label::new(key)))
+    fn build(&self, key: &str) -> Option<RowItem> {
+        Some(Element::new(key, Label::new(key)).into())
     }
 }
 
@@ -560,8 +560,8 @@ impl TreeItems for SharedKeyNodes {
     fn children(&self, _: &str) -> Vec<String> {
         Vec::new()
     }
-    fn build(&self, key: &str) -> Option<Element> {
-        Some(Label::new(key).key("content"))
+    fn build(&self, key: &str) -> Option<RowItem> {
+        Some(Label::new(key).key("content").into())
     }
 }
 

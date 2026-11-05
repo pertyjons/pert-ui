@@ -373,6 +373,10 @@ impl Painter {
         if width.get() == 0.0 {
             return Ok(());
         }
+        #[cfg(test)]
+        if faults::fails(color) {
+            return Err(DrawError::CoverageTooLarge);
+        }
         let min_width = (1.0 / self.viewport().scale()).min(f64::from(f32::MAX)) as f32;
         self.shape(rect, shape, color, Some(width.get().max(min_width)))
     }
@@ -496,6 +500,40 @@ impl Painter {
         let image = self.shapes.borrow_mut().image(key)?;
         self.draw_mask(&image, rect, color);
         Ok(())
+    }
+}
+
+/// Fault injection for the crate's own tests: a stroke in the chosen color
+/// fails, so a test can show what a component keeps when a paint operation
+/// after its first ones fails. Not compiled outside tests.
+#[cfg(test)]
+pub(crate) mod faults {
+    use std::cell::Cell;
+
+    thread_local! {
+        static FAILING_STROKE: Cell<Option<[f32; 4]>> = const { Cell::new(None) };
+    }
+
+    /// Makes every stroke in `color` on this thread fail until the returned
+    /// guard is dropped, also when a test panics.
+    #[must_use = "strokes fail only while the guard lives"]
+    pub(crate) fn fail_strokes_in(color: crate::Color) -> FailingStrokes {
+        FAILING_STROKE.with(|cell| cell.set(Some(color.channels())));
+        FailingStrokes(())
+    }
+
+    /// Ends [`fail_strokes_in`] when dropped.
+    #[derive(Debug)]
+    pub(crate) struct FailingStrokes(());
+
+    impl Drop for FailingStrokes {
+        fn drop(&mut self) {
+            FAILING_STROKE.with(|cell| cell.set(None));
+        }
+    }
+
+    pub(super) fn fails(color: crate::Color) -> bool {
+        FAILING_STROKE.with(|cell| cell.get() == Some(color.channels()))
     }
 }
 

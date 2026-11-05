@@ -704,7 +704,7 @@ macro_rules! editor_api {
             ///
             /// ```
             /// # use pert_ui_runtime as pert_ui;
-            /// use pert_ui::{IntoElement, Runtime, TextArea, TextEditError, TextField};
+            #[doc = concat!(" use pert_ui::{IntoElement, Runtime, TextEditError, ", stringify!($name), "};")]
             /// use std::time::Duration;
             /// let mut ui = Runtime::new();
             /// let body = ui.signal(String::new());
@@ -1331,9 +1331,9 @@ pub(super) struct Editor<M = ()> {
     area: Cell<Option<Rect>>,
     bar_extents: Cell<scrollbar::Extents>,
     embedded: bool,
-    /// A single line shorter than the editing area sits flush with its end,
-    /// as a right-aligned value display does.
-    align_end: bool,
+    /// Where a single line shorter than the editing area sits: at its start,
+    /// centered, or flush with its end as a right-aligned value display does.
+    align: DraftAlign,
     active: bool,
     payload: M,
     value: Option<Signal<String>>,
@@ -1512,7 +1512,7 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             area: Cell::new(None),
             bar_extents: Cell::new(scrollbar::Extents::STANDARD),
             embedded: false,
-            align_end: false,
+            align: DraftAlign::Start,
             active: true,
             scroll: Cell::new([0.0; 2]),
             reveal: Cell::new(true),
@@ -2880,10 +2880,12 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
         scroll[1] = scroll[1].clamp(0.0, (layout.size().height() - h).max(0.0));
         self.scroll.set(scroll);
         let spare = w - layout.size().width() - cw;
-        let x = if self.align_end && !self.multi && spare > 0.0 {
-            px + spare
-        } else {
-            px - scroll[0]
+        // `spare` keeps room for the caret after the text, so a centered line
+        // is centered in the width the caret leaves.
+        let x = match self.align {
+            DraftAlign::End if !self.multi && spare > 0.0 => px + spare,
+            DraftAlign::Center if !self.multi && spare > 0.0 => px + spare / 2.0,
+            _ => px - scroll[0],
         };
         let y = if self.multi {
             py - scroll[1]

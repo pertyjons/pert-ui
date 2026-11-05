@@ -92,13 +92,8 @@ impl Setup {
             .any(|c| c.key == key && c.visible)
     }
     fn rows(&self) -> Vec<String> {
-        self.ui
-            .inspect()
-            .components
-            .iter()
-            .find(|c| c.key == "content" && c.details.properties.contains_key("results"))
-            .and_then(|c| c.details.semantics.clone())
-            .expect("history list")
+        support::picker_results(&self.ui, &widget(&self.ui, &self.root, "list"))
+            .unwrap_or_else(|| Semantics::new(SemanticRole::ListBox))
             .items
             .iter()
             .map(|item| item.name.clone().unwrap_or_default())

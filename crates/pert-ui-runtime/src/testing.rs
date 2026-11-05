@@ -12,6 +12,7 @@
 //! prelude, so one glob covers it:
 //!
 //! ```
+//! # #![allow(unused_imports)] // the two globs alone, shown for reference
 //! # use pert_ui_runtime as pert_ui;
 //! use pert_ui::prelude::*;
 //! use pert_ui::testing::*;
@@ -910,12 +911,16 @@ impl<'a> Driver<'a> {
     /// component, such as a [`Table`](crate::Table)'s column title, a menu
     /// command or a tab title; a component that gives an item its rectangle
     /// ([`SemanticItem::local_bounds`]) reports it as
-    /// [`SemanticItem::bounds`], and only such an item can be clicked. Among
-    /// the built-in components, table column titles, tab titles, menu command
-    /// rows and the open Select list's options do, as do a toast stack's toasts,
-    /// whose rectangle is the whole toast rather than its
-    /// action or Dismiss control, so a test activates a toast through the
-    /// stack's keys ([`ToastHost`](crate::ToastHost#inspection-and-tests)).
+    /// [`SemanticItem::bounds`], and only such an item can be clicked. The
+    /// built-in components that do are listed with [`SemanticItem::bounds`],
+    /// among them the open lists of a Select, a
+    /// [`MultiSelect`](crate::MultiSelect#inspection-and-tests) and a
+    /// [`QuickPick`](crate::QuickPick#inspection-and-tests), and a
+    /// [`VirtualList`](crate::VirtualList::report_items) that reports its rows
+    /// as items. A toast stack's toast has the whole toast as its rectangle
+    /// rather than its action or Dismiss control, so a test activates a toast
+    /// through the stack's keys
+    /// ([`ToastHost`](crate::ToastHost#inspection-and-tests)).
     ///
     /// The items are read with [`Self::semantics`]; the component is then
     /// revealed with [`Runtime::reveal`], as [`Self::click`] does, and its
@@ -936,12 +941,20 @@ impl<'a> Driver<'a> {
     /// keyboard, with Alt and Up or Down on the active column.
     ///
     /// Tab overflow arrows or wheel input bring offscreen titles into view;
-    /// arrow-key selection also reveals the selected title. For a menu or
-    /// Select, obtain its list with [`Self::exposed_part`], open it through
-    /// its trigger, then click an item. A part query does not open a closed
-    /// list; reveal refuses it. List wheel or keyboard navigation scrolls its
+    /// arrow-key selection also reveals the selected title. For a menu,
+    /// Select, MultiSelect or QuickPick, obtain its list with
+    /// [`Self::exposed_part`], open it through its trigger or controller, then
+    /// click an item. A part query does not open a closed list, and reveal
+    /// refuses a closed list's item; a list with no items, such as a
+    /// MultiSelect showing "No matches", returns `NoItem` first, since the
+    /// item is checked before the reveal, and a QuickPick without results has
+    /// no `options` part at all. List wheel or keyboard navigation scrolls its
     /// options. A clipped row reports only its visible rectangle; separators
-    /// have no item index, and clicking a disabled row runs no command.
+    /// have no item index. A disabled row keeps its rectangle and receives the
+    /// press, which decides the outcome: a disabled menu command or Select or
+    /// MultiSelect option does nothing, while a QuickPick passes a disabled
+    /// result to its choose callback, as a press and release on its row do,
+    /// although the item offers no action.
     ///
     /// The clock moves only by the settle, so two `click_item`s are
     /// [`Self::FRAME`] apart and a component that counts clicks sees a double

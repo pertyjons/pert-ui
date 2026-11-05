@@ -41,8 +41,10 @@ pub trait TreeItems {
         !self.children(key).is_empty()
     }
     /// The row content of `key`, or `None` for an unknown node. The tree keys
-    /// the content with `key`; its own key is replaced.
-    fn build(&self, key: &str) -> Option<Element>;
+    /// the content with `key` through
+    /// [`RowItem::into_element`](crate::RowItem::into_element), so the content
+    /// is built without a key.
+    fn build(&self, key: &str) -> Option<crate::RowItem>;
     /// Whether a [reorderable](Tree::reorderable) tree offers dropping into
     /// `key`, making the dropped nodes its children. `false` by default, so a
     /// reorderable tree moves nodes only before and after others until the
@@ -126,11 +128,10 @@ impl ListItems for Flat {
     fn key(&self, index: usize) -> Option<String> {
         self.rows.get(index).map(|row| row.key.clone())
     }
-    fn build(&self, index: usize) -> Option<Element> {
+    fn build(&self, index: usize) -> Option<crate::RowItem> {
         let row = self.rows.get(index)?;
-        let mut content = self.source.0.build(&row.key)?;
-        content.key.clone_from(&row.key);
-        Some(Element::new(
+        let content = self.source.0.build(&row.key)?.into_element(row.key.clone());
+        Some(crate::RowItem::from(Element::new(
             row.key.clone(),
             TreeRow {
                 content: Some(content),
@@ -142,7 +143,7 @@ impl ListItems for Flat {
                 slot: Cell::new(None),
                 hovered_expander: false,
             },
-        ))
+        )))
     }
     fn index_of(&self, key: &str) -> Option<usize> {
         self.index.get(key).copied()
@@ -886,7 +887,7 @@ impl Component for TreeRow {
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
-/// use pert_ui::{Element, Label, ListSelection, Runtime, SelectionMode, Tree,
+/// use pert_ui::{Element, Label, ListSelection, RowItem, Runtime, SelectionMode, Tree,
 ///     TreeItems, TreeSource, TreeController, Viewport};
 /// struct Files;
 /// impl TreeItems for Files {
@@ -896,8 +897,8 @@ impl Component for TreeRow {
 ///     fn children(&self, key: &str) -> Vec<String> {
 ///         if key == "src" { vec!["src/lib.rs".into()] } else { Vec::new() }
 ///     }
-///     fn build(&self, key: &str) -> Option<Element> {
-///         Some(Element::new(key, Label::new(key.rsplit('/').next()?)))
+///     fn build(&self, key: &str) -> Option<RowItem> {
+///         Some(Label::new(key.rsplit('/').next()?).into())
 ///     }
 /// }
 /// let mut ui = Runtime::new();
@@ -1015,8 +1016,8 @@ impl Tree {
     ///     fn can_drop_into(&self, key: &str) -> bool {
     ///         key.ends_with('/')
     ///     }
-    ///     fn build(&self, key: &str) -> Option<Element> {
-    ///         Some(Element::new(key, Label::new(key)))
+    ///     fn build(&self, key: &str) -> Option<RowItem> {
+    ///         Some(Label::new(key).into())
     ///     }
     /// }
     /// let model: Model = Rc::new(RefCell::new(BTreeMap::from([

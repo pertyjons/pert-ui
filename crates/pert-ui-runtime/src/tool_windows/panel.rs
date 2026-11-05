@@ -312,6 +312,20 @@ impl Component for Panel {
             .panel_notifiers
             .entry(self.key.clone())
             .or_insert_with(|| cx.notifier());
+        // A tool window described expanded in window mode, as one mounts
+        // with `ToolWindowMode::Window` and `expanded(true)`, asks its layout
+        // for a delivery, which requests the detach in the event phase once
+        // this panel is registered. The layout's detaching and detached
+        // records keep it from being asked again while it is pending or
+        // presented; a later dock and expansion asks anew.
+        let wants_window = model
+            .window(&self.key)
+            .is_some_and(|window| window.expanded && window.mode == super::ToolWindowMode::Window)
+            && !model.detached.contains_key(&self.key)
+            && !model.detaching.contains_key(&self.key);
+        if wants_window {
+            model.request();
+        }
         drop(model);
         // A floating move or resize ends when the panel stops floating.
         if (self.mode() != ToolWindowMode::Floating || !floatable)

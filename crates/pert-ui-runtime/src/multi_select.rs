@@ -1,7 +1,7 @@
 //! A chooser for several values of one choice set: the chosen values as chips
 //! in a trigger, and a popup list filtered by a search field.
 use crate::activation::{ActivationState, activation_key, key_result};
-use crate::choice_controls::{focus_ring, rounded};
+use crate::choice_controls::focus_ring;
 use crate::layout::{centered, rect};
 use crate::*;
 use std::cell::{Cell, RefCell};
@@ -149,6 +149,10 @@ struct Shared<T> {
     /// over the draft.
     observed: RefCell<Option<(Vec<T>, u64)>>,
     chain: RefCell<Option<Chain<T>>>,
+    /// What the popup's rows show, as the panel's last successful update
+    /// read it, for the popup list's items, which inspection reads without
+    /// reading signals.
+    presented: RefCell<Presented<T>>,
     list: ListController,
     /// Row and chip keys by value, kept for this incarnation's lifetime.
     keys: Rc<RefCell<OptionKeys<T>>>,
@@ -156,6 +160,15 @@ struct Shared<T> {
     /// owner's reconcile replaces it, because every part adopts the same
     /// incoming description.
     on_change: RefCell<Option<ChangeHandler<T>>>,
+}
+
+/// The state the popup's rows show, retained by the panel's update: the
+/// values shown chosen (the binding, or the draft), the highlighted row's key
+/// and whether the dropdown accepts input.
+struct Presented<T> {
+    shown: HashSet<T>,
+    highlighted: Option<String>,
+    allowed: bool,
 }
 
 /// Stable row and chip keys for option values: a deterministic hash of each
@@ -527,7 +540,7 @@ impl<T: Clone + Eq + Hash + 'static> ListItems for Items<T> {
     fn key(&self, index: usize) -> Option<String> {
         self.filtered.rows.get(index).map(|row| row.key.clone())
     }
-    fn build(&self, index: usize) -> Option<Element> {
+    fn build(&self, index: usize) -> Option<RowItem> {
         let row = self.filtered.rows.get(index)?;
         let shared = self.shared.upgrade()?;
         Some(
@@ -554,11 +567,24 @@ impl<T: Clone + Eq + Hash + 'static> ListItems for Items<T> {
                     text: RefCell::new(None),
                 },
             )
-            .structural(),
+            .structural()
+            .into(),
         )
     }
     fn index_of(&self, key: &str) -> Option<usize> {
         self.filtered.index.get(key).copied()
+    }
+    fn semantic_item(&self, index: usize) -> Option<SemanticItem> {
+        let row = self.filtered.rows.get(index)?;
+        let shared = self.shared.upgrade()?;
+        let presented = shared.presented.borrow();
+        Some(
+            SemanticItem::new(row.choice.label())
+                .checked(presented.shown.contains(row.choice.value()))
+                .selected(presented.highlighted.as_deref() == Some(row.key.as_str()))
+                .disabled(!presented.allowed || !row.choice.is_enabled())
+                .action(SemanticAction::Toggle),
+        )
     }
 }
 
@@ -829,7 +855,8 @@ impl<T: Clone + Eq + Hash + 'static> Component for Panel<T> {
         // denial, and a changed query must end ownership before the rows it
         // selects are published and laid out under the pointer. Redescribing
         // options, labels or the filter is not a keyboard action and keeps it.
-        if !enablement.read(cx)? {
+        let allowed = enablement.read(cx)?;
+        if !allowed {
             self.shared.pointer_owns.set(false);
         }
         cx.read(&self.shared.query)?;
@@ -862,6 +889,9 @@ impl<T: Clone + Eq + Hash + 'static> Component for Panel<T> {
         };
         let count = cx.read(&chain.filtered)?.rows.len();
         let source = cx.read(&chain.source)?;
+        // The rows read these too; the list's items read them from here.
+        let shown: HashSet<T> = cx.read_paint(&self.shared.shown())?.into_iter().collect();
+        let highlighted = cx.read_paint(&chain.highlighted)?;
         let rows = self
             .rows
             .get_or_insert_with(|| cx.signal(source.clone()))
@@ -878,12 +908,15 @@ impl<T: Clone + Eq + Hash + 'static> Component for Panel<T> {
                 .placeholder(search_placeholder.clone())
                 .on_key(move |cx, key| shared.key(cx, key));
             let list = VirtualList::estimated(rows.read_only(), ROW_ESTIMATE)?
-                .controller(self.shared.list.clone());
+                .controller(self.shared.list.clone())
+                .report_items(SemanticRole::ListBox);
             cx.request_children(vec![
                 Element::new("search", search)
                     .structural()
                     .expose_part("search"),
-                Element::new("list", list).structural(),
+                Element::new("list", list)
+                    .structural()
+                    .expose_part("options"),
             ]);
             self.described = Some(search_placeholder);
         }
@@ -896,6 +929,12 @@ impl<T: Clone + Eq + Hash + 'static> Component for Panel<T> {
             self.count = count;
             cx.request_layout();
         }
+        // Written last, so a failed update keeps the last valid state.
+        *self.shared.presented.borrow_mut() = Presented {
+            shown,
+            highlighted,
+            allowed,
+        };
         Ok(())
     }
     fn deliver_notifications(&mut self, _: &mut EventContext) -> Result<(), RuntimeError> {
@@ -1015,6 +1054,8 @@ struct Trigger<T> {
     /// The placeholder as last read.
     placeholder: RichText,
     prepared: RefCell<Option<(TextLayout, TextLayout)>>,
+    /// The colors the last paint used, which inspection reports.
+    painted: Cell<Option<crate::controls::Painted>>,
 }
 impl<T: Clone + Eq + Hash + 'static> Trigger<T> {
     /// Leading padding, trailing padding with the chevron, and vertical padding.
@@ -1198,10 +1239,12 @@ impl<T: Clone + Eq + Hash + 'static> Component for Trigger<T> {
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
         let s = p.size();
         let frame = Rect::from_size(s);
-        p.fill_shape(
+        // A disabled anchor uses the inactive-control frame a disabled Button
+        // uses, not only muted text.
+        let mut painted = crate::controls::control_frame(
+            p,
             frame,
-            rounded(p.metric(MetricRole::CornerRadius))?,
-            p.color(if self.input.hovered && self.focusable {
+            self.focusable.then_some(if self.input.hovered {
                 ColorRole::ButtonHover
             } else {
                 ColorRole::Button
@@ -1212,6 +1255,7 @@ impl<T: Clone + Eq + Hash + 'static> Component for Trigger<T> {
         } else {
             ColorRole::Muted
         });
+        painted.foreground = Some(text);
         if let Some((placeholder, chevron)) = self.prepared.borrow().as_ref() {
             if !self.shows_chips() {
                 let (lead, _, _) = Self::padding(|role| p.metric(role));
@@ -1233,10 +1277,14 @@ impl<T: Clone + Eq + Hash + 'static> Component for Trigger<T> {
         if self.input.focused {
             focus_ring(p, frame)?;
         }
+        // Recorded once every paint operation succeeded, so a failed paint
+        // leaves the previous record.
+        self.painted.set(Some(painted));
         Ok(())
     }
     fn inspect(&self) -> ComponentDetails {
         let mut details = ComponentDetails::default();
+        crate::controls::Painted::report(self.painted.get(), &mut details.box_model);
         let labels: Vec<&str> = self
             .chips
             .iter()
@@ -1368,35 +1416,87 @@ impl<T: Clone + Eq + Hash + 'static> Component for Trigger<T> {
 /// Replacing an option source or filter similarly publishes the validated rows
 /// through the retained list's stable binding, preserving surviving row identities.
 ///
-/// Inspection reports the trigger as a [`SemanticRole::ComboBox`] whose value
-/// is the chosen labels joined by ", ", with one item per option, and each
-/// popup row as a [`SemanticRole::Checkbox`]. The trigger's `placeholder`
-/// property is its placeholder text as last read. The popup's search is an
-/// exposed `search` part; its clipboard menu is nested under that part's
-/// `clipboard` scope, so it is not a menu of the outer chooser.
-///
 /// Describing the chooser again under the same key applies its binding,
 /// options, availability, placeholders, commit timing and filter, and keeps the popup's
 /// query, highlight and draft. A draft taken from a replaced binding is never
 /// written to the new one.
 ///
+/// # Inspection and tests
+///
+/// The chooser exposes `control` (the trigger), and in its popup `search`
+/// (the search field) and `options` (the list of matches), through
+/// [`Runtime::find_exposed_part`] and
+/// [`Driver::exposed_part`](crate::testing::Driver::exposed_part). The search
+/// field's clipboard menu is nested under that part's `clipboard` scope, so it
+/// is not a menu of the outer chooser. These names leave application and
+/// workspace paths unchanged.
+///
+/// - **Trigger.** A [`SemanticRole::ComboBox`] whose value is the chosen
+///   labels joined by ", ", with one item per option in option order that
+///   describes the committed selection: `selected` for a chosen value, even
+///   while an [`MultiSelectCommit::OnClose`] draft differs. These items never
+///   have bounds, open or closed, and their indices are not the popup's,
+///   which lists only the matches: find an option by its name. Its
+///   `placeholder` property is its placeholder text as last read. A test
+///   opens the popup from the keyboard, by focusing `control` and pressing
+///   Enter or Down, since the middle of the trigger can fall on a chip.
+/// - **Popup list.** A [`SemanticRole::ListBox`] with one item per match, in
+///   the popup's order: the option's label as its name, `checked` while the
+///   row shows the value chosen (the draft under
+///   [`MultiSelectCommit::OnClose`]), `selected` on the highlighted row,
+///   `disabled` when the option or the dropdown is, and the
+///   [`SemanticAction::Toggle`] action. The state is as of the popup's last
+///   update, as the rows show it. While the popup is open, a row placed in
+///   view gives its item its rectangle, so
+///   [`Driver::click_item`](crate::testing::Driver::click_item) clicks it; a
+///   row outside the view has none, a partly visible row reports its visible
+///   part, and Up or Down in the search field, which reveal the highlight,
+///   or the wheel bring a row into view. A click is pointer input, so on a
+///   disabled option it arms nothing: nothing is written and the popup stays
+///   open. Each row is also a [`SemanticRole::Checkbox`] component.
+/// - **Closed.** The popup is hidden, so its items have no bounds: `click_item`
+///   refuses a closed list's item through its reveal, and a list without
+///   matches, which shows "No matches", has no items, so `click_item` returns
+///   `NoItem` first.
+///
+/// [Content search](crate::Runtime::content_search) keeps distinct reports
+/// apart, so equal labels are never merged. While the popup is closed, the
+/// trigger is visible and its item names are found as
+/// [`ContentField::Item`](crate::ContentField::Item) hits on it; the popup's
+/// list and rows are hidden and found only by a search that includes hidden
+/// components. While it is open, one matching option can be found three
+/// times: as a trigger item, as a popup list item and as the mounted row's
+/// name.
+///
+/// A test opens the popup from the keyboard and clicks an option by name:
+///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
-/// use pert_ui::{Choice, Column, Element, MultiSelect, Runtime};
-/// use std::time::Duration;
+/// use pert_ui::prelude::*;
+/// use pert_ui::testing::*;
 ///
 /// let mut ui = Runtime::new();
+/// ui.set_viewport(Viewport::new(400.0, 300.0, 1.0)?)?;
 /// let tags = ui.signal(vec!["mix"]);
 /// let chooser = MultiSelect::new(&ui, tags.clone(), [
 ///     Choice::new("draft", "Draft"),
 ///     Choice::new("mix", "Mix"),
 ///     Choice::new("master", "Master"),
 /// ])?;
-/// ui.mount_tree(Element::new("form", Column::new([Element::new("tags", chooser)])))?;
-/// ui.flush(Duration::ZERO)?;
-/// let trigger = ui.inspect().components.into_iter().find(|c| c.key == "anchor")
-///     .and_then(|c| c.details.properties.get("text").cloned());
-/// assert_eq!(trigger, Some(pert_ui::InspectValue::Text("Mix".into())));
+/// let root = ui.mount_tree(Column::new([chooser.key("tags")]).key("form"))?;
+/// let mut driver = Driver::new(&mut ui);
+/// driver.settle()?;
+/// let tags_id = driver.find(&root, &["tags"])?;
+/// let control = driver.exposed_part(&tags_id, "control")?;
+/// assert_eq!(driver.semantics(&control)?.value, Some(SemanticValue::Text("Mix".into())));
+/// driver.runtime_mut().focus(&control)?;
+/// driver.key(KeyCode::Enter)?;
+/// let options = driver.exposed_part(&tags_id, "options")?;
+/// let items = driver.semantics(&options)?.items;
+/// let master = items.iter().position(|item| item.name.as_deref() == Some("Master"))
+///     .ok_or("listed")?;
+/// driver.click_item(&options, master)?;
+/// assert_eq!(tags.get()?, ["mix", "master"]);
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 #[must_use]
@@ -1461,6 +1561,11 @@ impl<T: Clone + Eq + Hash + 'static> MultiSelect<T> {
                 draft: ui.signal(Vec::new()),
                 observed: RefCell::new(None),
                 chain: RefCell::new(None),
+                presented: RefCell::new(Presented {
+                    shown: HashSet::new(),
+                    highlighted: None,
+                    allowed: true,
+                }),
                 list: ListController::new(ui),
                 keys: Rc::new(RefCell::new(OptionKeys::new())),
                 on_change: RefCell::new(None),
@@ -1660,6 +1765,7 @@ impl<T: Clone + Eq + Hash + 'static> Component for MultiSelect<T> {
             chosen: Vec::new(),
             placeholder,
             prepared: RefCell::new(None),
+            painted: Cell::new(None),
         };
         let panel = Panel {
             shared: self.shared.clone(),
@@ -1675,7 +1781,9 @@ impl<T: Clone + Eq + Hash + 'static> Component for MultiSelect<T> {
             query_revision: None,
         };
         vec![
-            Element::new("anchor", trigger).structural(),
+            Element::new("anchor", trigger)
+                .structural()
+                .expose_part("control"),
             Element::new(
                 "popup",
                 Container::new(Element::new("panel", panel).structural())

@@ -511,7 +511,13 @@ impl Component for DialogPanel {
 /// the owner's visibility. Its generated content occupies
 /// `dialog/confirmation`; the heading, message and action buttons are internal
 /// structure, so their keys are not further address segments. Their semantic
-/// Button names describe their actions in inspection.
+/// Button names describe their actions in inspection. The two buttons are
+/// [exposed parts](crate::Element::expose_part), named `cancel` and `accept`,
+/// of the generated content at `dialog/confirmation`: find that element with
+/// [`Runtime::find`] under the `AlertDialog`, then each button with
+/// [`Runtime::find_exposed_part`] or the testing driver's `exposed_part`,
+/// without depending on the buttons' internal keys. The parts keep their
+/// identity when a redescription changes their labels.
 /// Controller acceptance/cancellation and consuming the outcome follow
 /// [`DialogController`]; closing alone does not establish application success.
 #[must_use]
@@ -568,11 +574,16 @@ impl AlertDialog {
     ///     "Radera",
     /// )
     /// .cancel_label("Avbryt");
-    /// ui.mount_tree(Element::new("prompt", prompt))?;
+    /// let prompt = ui.mount_tree(Element::new("prompt", prompt))?;
     /// ui.flush(Duration::ZERO)?;
-    /// let cancel = ui.inspect().components.into_iter().find(|c| c.key == "cancel")
-    ///     .and_then(|c| c.details.properties.get("text").cloned());
-    /// assert_eq!(cancel, Some(pert_ui::InspectValue::Text("Avbryt".into())));
+    /// // The buttons are exposed parts of the generated confirmation.
+    /// let confirmation = ui.find(&prompt, &["dialog", "confirmation"])?.ok_or("mounted")?;
+    /// let cancel = ui.find_exposed_part(&confirmation, "cancel")?.ok_or("the cancel part")?;
+    /// let id = ui.inspection_id(&cancel)?;
+    /// let text = ui.inspect().components.into_iter()
+    ///     .find(|component| component.id == id)
+    ///     .and_then(|component| component.details.properties.get("text").cloned());
+    /// assert_eq!(text, Some(pert_ui::InspectValue::Text("Avbryt".into())));
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     pub fn cancel_label(mut self, label: impl Into<TextSource>) -> Self {
@@ -625,14 +636,16 @@ impl Component for AlertDialog {
                                 );
                                 Button::new(text, move |_| cancel.cancel().map(|_| ()))
                             })
-                            .structural(),
+                            .structural()
+                            .expose_part("cancel"),
                             Element::new(
                                 "accept",
                                 Button::new(std::mem::take(&mut self.accept_label), move |_| {
                                     accept.accept().map(|_| ())
                                 }),
                             )
-                            .structural(),
+                            .structural()
+                            .expose_part("accept"),
                         ]),
                     )
                     .structural(),

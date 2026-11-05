@@ -1,4 +1,7 @@
 #![doc = include_str!("../README.md")]
+// Doctests allow unused code by default; an example imports exactly what it
+// uses, so an unused import fails it.
+#![doc(test(attr(deny(unused_imports))))]
 
 /// Implements `Debug` for a description, showing its type name and, for a
 /// keyed item description, its key.
@@ -85,7 +88,7 @@ pub use views::{Divider, Group, ScrollArea, ScrollAxes, View};
 pub use virtual_axis::VirtualAxis;
 pub use virtual_list::{
     ListController, ListDropMark, ListDropPlacement, ListDropPoint, ListItems, ListRevealReceipt,
-    ListRevealStatus, ListSource, VirtualList,
+    ListRevealStatus, ListSource, RowItem, VirtualList,
 };
 mod axis_mapping;
 pub use axis_mapping::AxisMapping;
@@ -471,7 +474,7 @@ pub mod prelude {
         EditorOutcome, EditorTrigger, FilterCounts, FilterMatcher, FilterOutcome, FilterTarget,
         FocusDirection, HiddenActive, ListController, ListDrop, ListDropMark, ListDropPlacement,
         ListDropPoint, ListDropPosition, ListFilter, ListItems, ListRevealReceipt,
-        ListRevealStatus, ListSelection, ListSelectionChange, ListSource, SelectionMode,
+        ListRevealStatus, ListSelection, ListSelectionChange, ListSource, RowItem, SelectionMode,
         SortDirection, TableColumn, TableController, TableItems, TableSort, TableSource,
         TreeController, TreeItems, TreeSource,
     };

@@ -983,6 +983,8 @@ struct SelectAnchor<T> {
     /// installed string table's [`StringRole::SelectPlaceholder`](crate::StringRole::SelectPlaceholder).
     placeholder: TextSource,
     caption: RefCell<Option<TextLayout>>,
+    /// The colors the last paint used, which inspection reports.
+    painted: Cell<Option<crate::controls::Painted>>,
 }
 impl<T: Clone + Eq + 'static> SelectAnchor<T> {
     /// The keys a closed trigger with a session keeps: Escape cancels the
@@ -1078,6 +1080,8 @@ impl<T: Clone + Eq + 'static> Component for SelectAnchor<T> {
             prepared: _,
             text: _,
             caption: _,
+            // Paint metadata stays with the mounted anchor.
+            painted: _,
             parameter_name: _,
         } = next;
         *self.target.on_change.borrow_mut() = target.on_change.borrow_mut().take();
@@ -1348,36 +1352,46 @@ impl<T: Clone + Eq + 'static> Component for SelectAnchor<T> {
             }
             return Ok(());
         }
-        p.fill_shape(
+        // A disabled anchor uses the inactive-control frame a disabled Button
+        // uses, not only muted text.
+        let mut painted = crate::controls::control_frame(
+            p,
             rect,
-            rounded(p.metric(MetricRole::CornerRadius))?,
-            p.color(if self.input.hovered {
+            self.focusable().then_some(if self.input.hovered {
                 ColorRole::ButtonHover
             } else {
                 ColorRole::Button
             }),
         )?;
         if let Some(text) = self.prepared.borrow().as_ref() {
+            let foreground = p.color(if self.focusable() {
+                ColorRole::OnButton
+            } else {
+                ColorRole::Muted
+            });
             text.paint(
                 p,
                 crate::Point::new(
                     p.metric(MetricRole::ControlPaddingX),
                     centered(s.height(), text.size().height()),
                 )?,
-                p.color(if self.focusable() {
-                    ColorRole::OnButton
-                } else {
-                    ColorRole::Muted
-                }),
+                foreground,
             )?;
+            painted.foreground = Some(foreground);
         }
         if self.input.focused {
             focus_ring(p, rect)?;
         }
+        // Recorded once every paint operation succeeded, so a failed paint
+        // leaves the previous record.
+        self.painted.set(Some(painted));
         Ok(())
     }
     fn inspect(&self) -> ComponentDetails {
         let mut d = ComponentDetails::default();
+        // A framed anchor's colors as last painted; an inline anchor paints
+        // no frame and reports none.
+        crate::controls::Painted::report(self.painted.get(), &mut d.box_model);
         d.properties
             .insert("text".into(), InspectValue::Text(self.text.plain_text()));
         if self.inline {
@@ -1603,6 +1617,7 @@ impl<T: Clone + Eq + 'static> Select<T> {
             hint: None,
             placeholder: TextSource::from(crate::StringRole::SelectPlaceholder),
             caption: RefCell::new(None),
+            painted: Cell::new(None),
             parameter_name: None,
         };
         Self {
@@ -2193,5 +2208,84 @@ mod inline_typography_tests {
             (caption_base - value_base).abs() < 0.01,
             "caption baseline {caption_base}, value baseline {value_base}"
         );
+    }
+}
+
+#[cfg(test)]
+mod paint_failure_tests {
+    use crate::shapes::faults;
+    use crate::*;
+    use std::time::Duration;
+
+    fn background(ui: &Runtime, id: &WidgetId) -> Option<[f32; 4]> {
+        let inspection = ui.inspection_id(id).unwrap();
+        ui.inspect()
+            .components
+            .into_iter()
+            .find(|component| component.id == inspection)
+            .and_then(|component| component.details.box_model.background)
+    }
+
+    /// The descendant of `control` (or itself) that reports a painted frame.
+    fn framed(ui: &Runtime, control: WidgetId) -> WidgetId {
+        let mut pending = vec![control];
+        while let Some(id) = pending.pop() {
+            if background(ui, &id).is_some() {
+                return id;
+            }
+            pending.extend(ui.children(&id).unwrap());
+        }
+        panic!("no framed anchor");
+    }
+
+    /// A paint that fails after the frame, at the focus ring, leaves the
+    /// colors of the last successful paint, for both dropdown anchors.
+    #[test]
+    fn a_failed_paint_keeps_the_anchors_previous_record() {
+        for key in ["single", "multi"] {
+            let mut ui = Runtime::new();
+            ui.set_viewport(Viewport::new(400.0, 200.0, 1.0).unwrap())
+                .unwrap();
+            let choices = || [Choice::new(0_u32, "Low"), Choice::new(1, "High")];
+            let single = ui.signal(0_u32);
+            let several = ui.signal(vec![0_u32]);
+            let control = if key == "single" {
+                Select::new(&ui, single, choices()).unwrap().key(key)
+            } else {
+                MultiSelect::new(&ui, several, choices()).unwrap().key(key)
+            };
+            let root = ui.mount_tree(control).unwrap();
+            ui.flush(Duration::ZERO).unwrap();
+            ui.paint().unwrap();
+            let anchor = framed(&ui, root);
+            let before = background(&ui, &anchor);
+            // A new button color and a focus ring whose stroke fails.
+            let ring = Color::from_srgb8(1, 2, 3, 255);
+            let button = Color::from_srgb8(91, 23, 51, 255);
+            for mode in [ThemeMode::Dark, ThemeMode::Light] {
+                ui.theme()
+                    .set_color(mode, ColorRole::FocusRing, ring)
+                    .unwrap();
+                ui.theme()
+                    .set_color(mode, ColorRole::Button, button)
+                    .unwrap();
+            }
+            ui.focus(&anchor).unwrap();
+            ui.flush(ui.now()).unwrap();
+            let failing = faults::fail_strokes_in(ring);
+            assert!(ui.paint().is_err(), "{key}: the focus ring fails");
+            assert_eq!(
+                background(&ui, &anchor),
+                before,
+                "{key}: the record is kept"
+            );
+            drop(failing);
+            ui.paint().unwrap();
+            assert_eq!(
+                background(&ui, &anchor),
+                Some(button.channels()),
+                "{key}: a successful paint records"
+            );
+        }
     }
 }

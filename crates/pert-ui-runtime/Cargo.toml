@@ -25,6 +25,10 @@ serde = { workspace = true, optional = true }
 parley.workspace = true
 swash.workspace = true
 unicode-segmentation.workspace = true
+miniz_oxide.workspace = true
+
+[dev-dependencies]
+png.workspace = true
 
 [lints]
 workspace = true

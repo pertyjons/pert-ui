@@ -387,11 +387,9 @@ impl ApplicationHandler<Notice> for TextModeProbe {
             );
             let mut gpu = Renderer::new(window, PhysicalExtent::new(800, 500), |_| {})?;
             let mut cpu = pert_ui_cpu::CpuRenderer::new();
-            println!(
-                "Text mode adapter: {} ({:?})",
-                gpu.adapter.get_info().name,
-                gpu.adapter.get_info().backend
-            );
+            // `pert-ui-native-checks` finds the adapter by this `Hardware: `
+            // prefix and the `;` after it; its tests pin the text.
+            println!("Hardware: {:?}; text modes", gpu.adapter.get_info());
             for mode in [TextRenderingMode::LineMask, TextRenderingMode::PhaseLine] {
                 let mut ui = Runtime::new();
                 ui.set_viewport(Viewport::new(800.0, 500.0, 1.0)?)?;

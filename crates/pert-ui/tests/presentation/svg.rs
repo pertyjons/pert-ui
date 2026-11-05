@@ -318,6 +318,9 @@ fn an_oversized_raster_is_refused_before_it_is_rendered() {
 #[test]
 fn an_image_element_reads_no_file_and_no_embedded_data() {
     let directory = std::path::Path::new(env!("CARGO_TARGET_TMPDIR"));
+    // Cargo creates the directory when it builds the test, but a cleanup can
+    // remove it before the built binary runs again.
+    std::fs::create_dir_all(directory).unwrap();
     let referenced = directory.join("svg-external-red.svg");
     let red = r##"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect width="16" height="16" fill="#ff0000"/></svg>"##;
     std::fs::write(&referenced, red).unwrap();

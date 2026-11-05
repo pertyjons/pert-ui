@@ -149,9 +149,9 @@ impl ListItems for Names {
     fn key(&self, index: usize) -> Option<String> {
         (index < self.0.len()).then(|| index.to_string())
     }
-    fn build(&self, index: usize) -> Option<Element> {
+    fn build(&self, index: usize) -> Option<RowItem> {
         let name = self.0.get(index)?;
-        Some(Element::new("title", InlineText::new(name)))
+        Some(Element::new("title", InlineText::new(name)).into())
     }
 }
 

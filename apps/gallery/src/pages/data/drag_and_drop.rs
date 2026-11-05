@@ -16,12 +16,13 @@ impl ListItems for Tracks {
     fn key(&self, index: usize) -> Option<String> {
         self.0.get(index).cloned()
     }
-    fn build(&self, index: usize) -> Option<Element> {
+    fn build(&self, index: usize) -> Option<RowItem> {
         let key = self.key(index)?;
-        Some(Element::new(
-            key.clone(),
-            Container::new(Element::new("name", Label::new(key))).padding(Length::from(8)),
-        ))
+        Some(
+            Container::new(Element::new("name", Label::new(key)))
+                .padding(Length::from(8))
+                .into(),
+        )
     }
     fn index_of(&self, key: &str) -> Option<usize> {
         self.0.iter().position(|candidate| candidate == key)
@@ -80,7 +81,10 @@ fn track_lists(ui: &Runtime, status: &Signal<String>) -> Result<Element, Runtime
         .enumerate()
     {
         let (model, sources, status) = (model.clone(), sources.clone(), status.clone());
-        let list = VirtualList::new(sources[index].read_only(), 34.0)?
+        // A row is a body-text label inside 8 px of padding on each side, 36 px
+        // in all; development validation reports a row taller than the list's
+        // fixed row height, which a 34 px height cut off.
+        let list = VirtualList::new(sources[index].read_only(), 36.0)?
             .selection(ListSelection::new(ui, SelectionMode::Multiple))
             .drag_operations(DropOperations::MOVE | DropOperations::COPY)
             .reorderable(move |_, drop| {
@@ -138,8 +142,8 @@ impl TreeItems for Session {
     fn can_drop_into(&self, key: &str) -> bool {
         key.ends_with('/')
     }
-    fn build(&self, key: &str) -> Option<Element> {
-        Some(Element::new(key, Label::new(key.trim_end_matches('/'))))
+    fn build(&self, key: &str) -> Option<RowItem> {
+        Some(Label::new(key.trim_end_matches('/')).into())
     }
 }
 

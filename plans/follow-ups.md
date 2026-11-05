@@ -38,6 +38,16 @@ until then if one is being written.
 - **Default insets.** From the app-author plan slice 4: list rows and a
   bottom status region touch the window edge. It is a visual default
   decision, separate from flex layout.
+- **Retained-controller replacement, a universal rejection callback and a
+  shared reveal controller.** Declined by the maintainer during the
+  component API review and recorded in the former `NOW.md` handoff
+  (removed 2026-11-04). The maintainer chose to keep the current
+  ownership: a retained controller stays with its mounted component across
+  same-key redescription (see
+  [controller ownership](../docs/contracts.md#controller-ownership)),
+  refusals are reported per control family, and a reveal controller serves
+  one mounted view. Reopen only for an application need that the current
+  ownership cannot serve.
 
 ## Text and editing
 

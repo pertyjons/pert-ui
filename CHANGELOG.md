@@ -1,5 +1,457 @@
 # Changelog
 
+## 0.3.101 (2026-11-04)
+
+Slice 4b of the [TODO repair plan](plans/todo-repairs.md): `MultiSelect` and
+`QuickPick` popup items get rectangles (R14), as option C of
+[the design note](plans/todo-repairs-r14-popups.md) decided.
+
+- Added `VirtualList::report_items(role)`: the list reports its rows as its
+  `Semantics::items`, with `role` in place of `List`, one item per row of
+  the source it adopted. Its value and actions are unchanged.
+  - An item whose row is placed in view gets the visible part of the row's
+    slot as its `SemanticItem::local_bounds`, so `Driver::click_item` clicks
+    it. The rectangle is where the last successful arrangement placed the
+    row with that key, never recomputed from the live scroll offset.
+  - A replaced source forgets every rectangle, a row whose key leaves or
+    enters the requested rows forgets its own, and unfinished row
+    construction (`ListItems::build` returned `None`) reports none.
+  - Only rows the runtime adopted as children get a rectangle. After a
+    rejected child request the surviving rows keep theirs, a requested row
+    that was not adopted has none, and after a replaced source none has one.
+  - Each description sets, replaces or removes the setting, also for a list
+    whose owner adopts its callbacks. Inspection asks the source for every
+    row's item and key, so its cost grows with the source, content search
+    included.
+- Added `ListItems::semantic_item(index)`, `None` by default: the item
+  describing a row of a list that reports items. It may read only plain
+  data the source holds and plain cells its owner writes in its own update;
+  a rectangle it carries is replaced by the list's. `None` below `len`
+  reports an unnamed item without state or actions.
+- `VirtualList`: a child left mounted by a rejected child request no longer
+  fails every later layout with `InvalidChild`; the list lays it out with an
+  empty clip. While the runtime has not applied the list's latest child
+  request, the list requests its rows again at its next update, also when
+  the source and the wanted rows did not change (as after a rejected
+  description of rows with unchanged keys), so it recovers without a new
+  source once the rows can be admitted. It reads the runtime's own record
+  of that, the one content search uses, through a crate-internal accessor.
+- `MultiSelect` exposes `control` (the trigger) and `options` (the popup
+  list) beside `search`. Replacement usage: tests that reached the trigger
+  through the internal `anchor` key, or the popup list through `list`, use
+  `Runtime::find_exposed_part(&chooser, "control")` and `"options"`.
+  - The popup list is a `ListBox` with one item per match: the label,
+    `checked` while the row shows the value chosen (the draft under
+    `MultiSelectCommit::OnClose`), `selected` on the highlighted row,
+    `disabled` when the option or the dropdown is, and `Toggle`. The panel
+    retains this state in its update, so the items show it as the rows do.
+  - The trigger's items keep describing the committed selection and never
+    have bounds. A test opens the popup from the keyboard (focus `control`,
+    then Enter or Down).
+  - A click on a disabled option's item arms nothing; the popup stays open.
+- **Intentional inspection change:** `QuickPick`'s result `ListBox` moves
+  from its internal `content` component to the result list, exposed as
+  `options` inside the `surface` scope and named by `QuickPick::list_name`.
+  Replacement usage: tests that read the results through the `content` key
+  query `Runtime::find(&picker, &["surface"])`, then its `options` part.
+  - With no results there is no `ListBox` and no `options` part; the
+    empty-state text replaces the list. Before, `content` reported a named,
+    empty `ListBox`.
+  - The `ListBox` now has the list's numeric row-count value and its
+    `Scroll` action while it overflows.
+  - Its identity changes with every query edit and every new session, even
+    when the results are the same; a `WidgetId` held from before reports
+    `Unmounted` after the next flush. A changed message or a translated list
+    name keeps it.
+  - The highlight is retained by the picker's update instead of read at
+    inspection.
+  - A click on a disabled result still runs the choose callback with it,
+    although its item offers no action.
+  - Content search finds a searchable picker's result items beside its rows
+    as distinct hits; a picker with `QuickPick::searchable(false)` is never
+    found.
+  - `CommandPalette` forwards the `options` part inside its `surface`, as
+    `HistoryNavigator`'s list does.
+- **Intentional inspection change:** an open `MultiSelect` option can be
+  found by content search three times: as the trigger's item, as the popup
+  list's item and as the row's name. Search keeps distinct reports and
+  merges no equal labels. While the popup is closed only the visible
+  trigger's items are found, unless the search includes hidden components.
+- Documentation: `SemanticItem` lists the popups among the reporters with
+  bounds, and the `VirtualList` opt-in as the exception to "real child
+  components report none". `Driver::click_item` names the popups, the
+  closed and empty cases (`NotRevealed`; `NoItem` before the reveal;
+  `ExposedPartNotFound` for a QuickPick without results) and the disabled
+  QuickPick exception. `ListItems` documents the inspection exception to
+  "never iterates every row" and to `text`'s "found only while mounted".
+  `docs/contracts.md` describes the opt-in's rectangles and the distinct
+  content-search reports.
+- Tests (the facade's `collections` and `surfaces` binaries, and a runtime
+  unit test):
+  - generic lists: placed and partly visible rows, reorder, insert and
+    removal, a row that leaves and returns, a row kept mounted out of view,
+    a row that is not built, rejected admission with and without a dropped
+    row and for a replaced source, a rejected description of the same rows,
+    a failed arrangement, estimated,
+    horizontal and multi-lane lists, a scaling `child_transform`, the
+    opt-in set, replaced and removed (also through an owner that adopts the
+    callbacks), a default list without items, inspection scheduling
+    nothing, an external composite, and an external source whose unmounted
+    row gives both an `Item` and a `Row` hit;
+  - `MultiSelect`: clicks under both commit timings with one report,
+    disabled options, filtered and scrolled rows, closed and empty lists,
+    trigger items without bounds, permission redescription, external
+    writes, highlight moves without new rows, `OnClose` commit and cancel,
+    and content search open, closed, hidden-inclusive, offscreen, filtered
+    and with duplicate labels;
+  - `QuickPick`: clicks including a disabled result, filtered rows, no
+    results without a part, value and `Scroll`, the retained highlight, new
+    identities after a query and a session, a message and a translated list
+    name keeping the list, search not finding the results, and a click
+    through `CommandPalette`.
+  - Negative controls (each fix removed in turn) fail these tests: the
+    retry, the leftover child's placement, the record drops on request and
+    replacement, the replaced-source suppression, the construction check,
+    lookup by key, both lists' opt-in, the retained MultiSelect highlight,
+    permission and draft, the retained QuickPick highlight, the removed
+    `content` `ListBox` and the picker's search exclusion.
+- Repository tests that reached the MultiSelect trigger or popup list, or
+  the QuickPick results, through internal keys now use the parts. The
+  gallery's interaction check still reads the picker content's `query` and
+  `results` properties, which no part carries.
+- The TODO.md entry "`MultiSelect` and `QuickPick` items without
+  rectangles" is resolved and removed. A new entry records that an external
+  collection cannot observe whether its child request was applied, which
+  the built-in list now uses.
+- `api/` adds `ListItems::semantic_item` and `VirtualList::report_items`.
+- Headless evidence only; no native check was run for this change.
+- `QuickPick::searchable` (0.3.99 review fix) and this change's search
+  behavior fit together: the gallery's search picker opts out.
+- Added `UpdateContext::children_adopted` and
+  `ArrangeContext::children_adopted`: whether the runtime applied a
+  component's latest child request. `VirtualList` uses them to retry a
+  rejected request and to withhold item rectangles meanwhile, and an
+  external collection can now do the same (from the review of this slice:
+  the list first read a crate-internal record). A rejection does not update
+  the component again by itself; the retry happens at its next update.
+- Documentation: a disabled `QuickPick` or `CommandPalette` result offers no
+  semantic action, while a click or Enter still reaches the choose callback.
+  The `QuickPick` rustdoc and `docs/verification.md` had said it keeps
+  `Activate`. `VirtualList::report_items` no longer claims inspection
+  computes nothing: it builds no rows, lays nothing out and schedules
+  nothing.
+- Further tests from the reviews: the picker search's exact hits (the
+  list's item and the row's Button, with no obsolete content report), an
+  explicit order with targets for a mounted list's unmounted rows before its
+  mounted children, the light palette and inspection profiling for the
+  disabled frames.
+- Tests from the final review:
+  - a search held across a picker query or session change is stale;
+  - a list nested in an item-reporting component keeps its order and
+    targets across one-unit steps;
+  - disabled anchors mute icon captions and chips and follow overridden
+    `Outline` and `Muted` roles;
+  - a paint that fails at the focus ring keeps both dropdown anchors'
+    previous color record. The failure is forced with a stroke fault
+    compiled only into the runtime's own tests;
+  - the picker search's complete ordered result, and an icon caption and
+    chip label identified against a reference control that differs only
+    in that part.
+- Slice 6 review fixes:
+  - a disabled control frame with a zero `BorderWidth` reports no border, as
+    it paints none;
+  - Select and MultiSelect anchors record their painted colors only after
+    every paint operation succeeded;
+  - `FrameImage` no longer claims dependency-free encoding, and
+    `encode_png` documents its temporary allocations;
+  - new tests cover the colors drawn inside each disabled anchor, an
+    adaptive `Surface` override, a zero border width, a pressed frameless
+    button, inspection scheduling nothing, PNG round trips at extreme
+    aspect ratios and, in the release profile, at the 64 MiB limit.
+
+## 0.3.100 (2026-11-04)
+
+Slice 6 of the [TODO repair plan](plans/todo-repairs.md): paint consistency,
+inspection colors and dependencies.
+
+- Disabled `Select` and `MultiSelect` anchors use the neutral inactive-control
+  frame a disabled framed `Button` uses (`Surface` fill, `Muted` content and an
+  inward `Outline` at `BorderWidth`) instead of the enabled Button fill with
+  muted text. Button and both anchors paint it through one shared routine.
+  Permission and selection behavior are unchanged.
+- `Button` reports the colors it last painted in its inspection box model:
+  - `background` and `border` for a painted frame, `foreground` for its
+    caption;
+  - absent before the first paint, and replaced as a whole by each paint, so
+    enabling a disabled button removes its outline;
+  - a frameless button reports a background only while hover or a press
+    paints its frame.
+  The Select and MultiSelect anchors report theirs the same way. Inspecting
+  computes nothing.
+- `FrameImage::encode_png` compresses.
+  - Each row gets the PNG filter whose output has the smallest sum of
+    absolute signed bytes (ties to the lower filter), and the rows are
+    compressed at zlib level 6 with `miniz_oxide`.
+  - A synthetic 1040×600 interface frame, 2,496,000 pixel bytes, encodes to
+    4,370 bytes (measured 2026-11-04).
+  - The output stays deterministic for a given version: a dependency update
+    may change the bytes, never the decoded pixels.
+- Dependencies:
+  - `miniz_oxide` 0.9.1 (pure Rust, already in the graph through the image
+    decoders) is a new dependency of `pert-ui-runtime`, and `png` 0.18.1 a
+    dev-dependency for decoding captures in tests; both are in
+    `[workspace.dependencies]`.
+  - `clipboard-win` updated from the yanked 5.4.1 to 5.4.3. Its Windows
+    native clipboard check is still missing.
+- Tests cover:
+  - Button colors before and after paint, disabled and re-enabled,
+    frameless at rest and hovered, and after a theme change;
+  - disabled and enabled Select and MultiSelect anchors in both palettes,
+    read from each anchor's own inspection;
+  - PNG round trips through the independent `png` decoder (noise, flat
+    interface, translucent and transparent pixels, 1×1 and odd widths,
+    several deflate blocks), identical bytes for identical pixels, every
+    filter reversing exactly, and the compression of a window-sized frame.
+  - The native capture smoke check no longer assumes an uncompressed file.
+
+## 0.3.99 (2026-11-04)
+
+Slice 5 of the [TODO repair plan](plans/todo-repairs.md): API repairs, and
+fixes from the review of slice 4.
+
+- Content search (slice 4 review fixes):
+  - A step that resumes a component's items checks modality again, so a
+    modal surface opened over the component since its visit blocks the rest
+    of its items, as it blocks rows.
+  - Added `QuickPick::searchable(bool)`, true by default: whether content
+    search finds the picker's own content (its search field, results and
+    messages). A picker that presents content search results turns it off,
+    so a later search never lists its previous results as content; the
+    gallery's search picker does. The anchor is searched either way, and
+    other pickers, `CommandPalette` included, are searched as before.
+  - New tests cover a modal opened between steps, a searchable and an
+    unsearchable picker over repeated openings, one-unit steps keeping an
+    explicit order of a component's name, its items and its unmounted rows
+    before a sibling (with row keys), and a new search seeing an added item.
+  - Further R14, R16 and R19 tests cover clicking an Accordion header below
+    open content, variable-width `InlineChoice` segments, a scrolled and a
+    partly clipped tool-window stripe, an `AlertDialog` redescribed with new
+    fixed labels keeping its parts, paths, accept and cancel, and a
+    mount-time detach refused by a full window request queue.
+
+- **Breaking:** `ListItems::build` and `TreeItems::build` return
+  `Option<RowItem>` instead of `Option<Element>`, so a row is built without
+  a key the collection then replaces. Replacement usage:
+  - a component row: `fn build(&self, index: usize) -> Option<RowItem> {
+    Some(Label::new(name).into()) }`, without the former placeholder
+    `.key("row")`;
+  - a row described as an element with a label, part, hints or children:
+    `Some(Element::new("any", content).with_label("…").into())`, which keeps
+    everything but the key.
+  - Added `RowItem`: a keyless row wrapping a complete element (built while
+    the component's type is known, so reconciliation and initial children
+    work as for any element), with `From` for every component and for
+    `Element`.
+  - `RowItem::into_element(key)` keys it. The built-in `VirtualList`, `Tree`
+    and the collections built on them use it, and an external collection
+    does the same.
+  - Every implementation in the repository is migrated: runtime collections,
+    examples, the gallery, guide chapters, rustdoc examples, tests and the
+    `l05` diagnostics case (snapshots unchanged). The diagram editor, gallery
+    and examples no longer write placeholder keys.
+- A tool window described with `ToolWindowMode::Window` and `expanded(true)`
+  now opens its own native window from the start (TOOL-01). Once its panel
+  has mounted and updated, the layout requests the detach in the event
+  phase, as a later expansion would.
+  - The layout's detaching and detached records keep it from asking twice,
+    and a refused detach returns the tool window to docking as before.
+  - `ToolWindow::detachable` restricts only the user, so it does not stop an
+    application's own description; the rustdoc says so.
+- Tests cover:
+  - heterogeneous list rows keyed by the list, an element row keeping its
+    label and children, reordering keeping identities and a recreated row
+    getting a new one, an external collection keying rows through
+    `Rc<dyn ListItems>`, and a tree built through `Box<dyn TreeItems>`;
+  - the mount-time detach request (also with `detachable(false)`), no
+    duplicate while pending, a collapsed window-mode tool window detaching
+    when the user expands it, and a refused mount-time detach not being
+    retried. A negative control (the panel's request removed) fails the
+    mount test.
+
+## 0.3.98 (2026-11-04)
+
+Slice 4 of the [TODO repair plan](plans/todo-repairs.md): testing and
+inspection reach. MultiSelect and QuickPick item rectangles wait for the
+slice's design checkpoint (4a).
+
+- `Runtime::content_search` also matches the names of a component's
+  semantic items (`Semantics::items`), such as a toast's message, a menu
+  command or an unselected tab's title.
+  - Added `ContentField::Item { index }`. An item hit targets its component:
+    `index` is the item's position when the search visited the component,
+    not an identity. `other` carries the component's name, and
+    `jump_to_content` reveals and focuses the component, not the item.
+  - Order within a component is its name or value, its items, its unmounted
+    rows and then its children.
+  - A component's item names are copied once, at the visit, so a step that
+    stops inside them continues from that copy without inspecting again, and
+    no item is repeated or skipped; a later change is seen by a new search.
+    Each examined item costs one work unit; the copy is charged as the
+    visit, whatever its size.
+  - Items of a protected component, of one that names its children, and of
+    one behind a modal surface are not searched.
+  - The gallery's search lists an item hit as "owner: item".
+- `AlertDialog`'s Cancel and affirmation buttons are exposed parts named
+  `cancel` and `accept` of the generated content at `dialog/confirmation`.
+  Find that element with `Runtime::find`, then each button with
+  `Runtime::find_exposed_part` or the testing driver's `exposed_part`. The
+  `cancel_label` example uses that route instead of an internal key.
+- Item rectangles (`SemanticItem::local_bounds`) for more built-in reporters,
+  from the geometry their painting and hit testing use, so
+  `Driver::click_item` clicks them:
+  - `Accordion` headers;
+  - the options of `RadioGroup`, `SegmentedControl` and `InlineChoice`;
+  - tool-window stripe buttons.
+  `Collapsible` keeps reporting no item, since the component itself is its
+  header. `SemanticItem`'s rustdoc lists the components that give bounds.
+- Tests cover:
+  - content search finding a toast by its message and an unselected tab's
+    title, the name-before-items order, a protected component's items never
+    found, tiny limits and budgets continuing without duplicates or skips
+    while the items change, one inspection for a whole item scan, and a jump
+    focusing an item hit's component;
+  - clicking `AlertDialog`'s parts and their identity through a relabel;
+  - clicking a later Accordion header with wrapped titles, a later radio and
+    segmented choice, and a later stripe button.
+
+## 0.3.97 (2026-11-04)
+
+Slice 3 of the [TODO repair plan](plans/todo-repairs.md): development
+validation.
+
+- Added `ArrangeContext::place_fixed_slot(index, slot, clip, axis)`. It
+  places a child as `place_clipped` does and declares that the child must fit
+  the slot along `axis`: with `Orientation::Vertical` the slot's height is
+  fixed and the child is measured at the slot's width with an unbounded
+  height; with `Orientation::Horizontal` its width is fixed and the child is
+  measured at the slot's height with an unbounded width. The measurement goes
+  through `ArrangeContext::measure`: one more measurement request per call in
+  every build, answered from retained results while equal constraints remain.
+  - Development validation reports a child that measured more than the slot
+    as `ValidationCode::ExceedsFixedHeight` or the new
+    `ValidationCode::ExceedsFixedWidth`.
+  - A later ordinary placement clears the declaration, and a reused
+    arrangement keeps it, with the slot's window extent refreshed when only
+    the child's scale changes.
+  - Slot reports, like other geometry checks, need committed geometry in a
+    measured window.
+  - Internally the retained placement gains the slot, committed only with a
+    successful layout.
+- Added `ValidationCode::ExceedsFixedWidth`, so `InspectionSnapshot::SCHEMA_VERSION`
+  advances to 18; a snapshot of schema 17 is rejected as unsupported.
+- Every fixed-extent `VirtualList`, and so a `Tree`, places its items with
+  `place_fixed_slot` along its axis, so an item longer than its line is
+  reported instead of cut off silently. Estimated lists are unchanged.
+- The reports found rows that were already cut off:
+  - The built-in `FileBrowser` let long names, failure messages and loading or
+    error placeholders wrap in its fixed-height rows. Entry and folder names
+    now stay on one line with a middle ellipsis. Failure messages, also after
+    a string-table replacement, and placeholders end in an ellipsis. Semantic
+    names keep the full text.
+  - The gallery's drag-and-drop rows (36 px in 34 px), virtual-list catalog
+    rows (40 px in 36 px) and grid items (wrapping in narrow lanes) now fit
+    their rows.
+- `UnexpectedOverlap` compares peers only within one window and parent,
+  sweeping each group along the axis where their starts spread more, so a
+  disjoint row or column costs O(n log n) comparisons instead of a comparison
+  of every pair. Up to eight overlapping pairs under a parent are still
+  reported one issue per pair. More are reported as one issue for the parent,
+  whose components are every participant (so overlays mark each one) and whose
+  message gives the pair and component counts and the first four pairs. The
+  runtime's scheduling test, whose coincident probes overlap by design, now
+  reports allowed overlap, so its half-million-line output is gone.
+- Unit and facade tests cover:
+  - the sweep's comparison count for rows and columns, the eight/nine-pair
+    boundary, per-parent summaries, markers and log suppression;
+  - exactly one report per offending row of a fixed-extent list, reports from
+    trees and horizontal lists, and none from estimated lists;
+  - reports at scales 1, 1.5 and 2, removal on unmount, and zoom steps that
+    keep fitting rows clean;
+  - an external composite declaring and clearing a slot, a failing slot
+    measurement failing the layout, and the slot measurement being reused at
+    an unchanged width;
+  - slot reports withheld while a window is unmeasured;
+  - narrow `FileBrowser` rows before and after a string-table replacement.
+- The `log_explorer` and `inventory` headless sessions show no measurable
+  change. In "save a sorted rename and move", the 0.3.95 gate gave 117.6 ms,
+  0.3.96 gave 84.3 ms and this version 117.5 ms; three reruns gave 117–119 ms,
+  and so did reruns with the slot measurement disabled. These are single
+  debug-profile runs.
+
+## 0.3.96 (2026-11-04)
+
+Slice 2 of the [TODO repair plan](plans/todo-repairs.md): documentation checks
+and in-place editing.
+
+- Added `DraftAlign::Center`: a draft narrower than its editing area is
+  centered in the width the caret leaves, so a centered label keeps its place
+  when it opens for editing. Wider text scrolls from the start, as with
+  `DraftAlign::Start`. Caret, selection and IME anchoring share the editor's
+  one origin calculation. `Start` and `End` are unchanged. Tests cover the
+  caret halfway between the two other alignments, wide text scrolling like
+  `Start`, and redescription moving an open draft without ending it.
+- `AppError`'s rustdoc states the rule instead of listing every accepted
+  error: exactly the errors `DrawError` converts from, whose `From`
+  implementations are the current list. A facade test converts each of the
+  19 accepted types with `?` and checks the variant: `AppError::Runtime` for
+  `RuntimeError`, every leaf and `DrawError::Runtime`, and `AppError::Drawing`
+  for `PathError` and other drawing errors. `leaf_conversions!` names that
+  test.
+- Doctests of `pert-ui-runtime` and `pert-ui` deny unused imports
+  (`#![doc(test(attr(deny(unused_imports))))]`), as the maintainer agreed.
+  Examples that imported something they did not use are corrected:
+  `CommandPalette`, `Runtime::content_search`, `Runtime::reveal_child`,
+  `Runtime::capture_workspace`, `TextField`/`TextArea::on_binding_refusal`,
+  `DraftEditor`, `DraftEditorController::set_read_only` and the guide's
+  authoritative-values, appearance and controls chapters. The two blocks that
+  only show the testing globs, in the `testing` module and the guide's testing
+  chapter, carry a hidden `#![allow(unused_imports)]`.
+- The `diagram_editor` example no longer draws a node's label under the rename
+  editor. The node view leaves its label out while that node is renamed, the
+  canvas describes the node views again when a rename starts or ends, and the
+  editor uses `DraftAlign::Center`. The headless session counts the painted
+  labels while renaming, after committing, after cancelling and after hiding
+  the canvas.
+
+## 0.3.95 (2026-11-04)
+
+Slice 1 of the [TODO repair plan](plans/todo-repairs.md): hygiene and records.
+No public signature, schema, dependency or platform-adapter change.
+
+- `HeldCancellation::FocusLost`'s rustdoc names `HostIntegration::clear_focus`,
+  which its link already targeted, instead of a `Runtime::clear_focus` that
+  does not exist. It also names `Driver::clear_focus` for tests.
+- The runtime's internal `Measurements::is_empty` has the same cfg as its
+  only caller, a debug-only test, so release-profile test builds no longer
+  warn that it is unused.
+- The facade's SVG presentation test creates `CARGO_TARGET_TMPDIR` before
+  writing into it, so the built test binary passes after `target/tmp` has
+  been removed.
+- `pert-ui-wgpu`'s native text-mode probe reports its GPU adapter on the
+  runner's documented `Hardware: ADAPTER; details` line instead of
+  `Text mode adapter:`, so the `pert-ui-native-checks` summary names its
+  adapter. The runner's adapter extraction moved into a function with a unit
+  test, and the marker test also pins the text probe's line. No native run of
+  the probe is recorded for this change yet.
+- `docs/verification.md` refers to AGENTS.md and the CI workflow for the
+  workspace gate instead of a shorter copy of the command list. It documents
+  that rustc's implementor lists in diagnostics snapshots change when a
+  built-in type is added, and that only pert-ui's own `message`, `label` and
+  `note` texts are the snapshot contract.
+- `plans/follow-ups.md` records three decisions that only the local handoff
+  file held: no retained-controller replacement, no universal rejection
+  callback and no shared reveal controller.
+
 ## 0.3.94 (2026-10-29)
 
 Round 3 empty-raster bounds and wrapped hanging-caret presentation. These

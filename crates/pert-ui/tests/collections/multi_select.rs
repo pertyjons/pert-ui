@@ -163,7 +163,28 @@ fn keyed(ui: &Runtime, root: &WidgetId, container: &str, label: &str, marker: &s
 }
 
 fn row(ui: &Runtime, root: &WidgetId, label: &str) -> WidgetId {
-    keyed(ui, root, "list", label, "checked")
+    let key = ui
+        .inspect()
+        .components
+        .into_iter()
+        .find(|c| c.details.properties.contains_key("checked") && text(&c.details) == label)
+        .map(|c| c.key)
+        .unwrap_or_else(|| panic!("no row {label}"));
+    ui.find_descendant(&part(ui, root, "options"), &key)
+        .unwrap()
+        .unwrap()
+}
+
+/// The chooser's exposed part `name`: `control`, `search` or `options`.
+fn part(ui: &Runtime, root: &WidgetId, name: &str) -> WidgetId {
+    let tags = widget(ui, root, "tags");
+    ui.find_exposed_part(&tags, name)
+        .unwrap()
+        .unwrap_or_else(|| panic!("no part {name}"))
+}
+
+fn control(ui: &Runtime, root: &WidgetId) -> WidgetId {
+    part(ui, root, "control")
 }
 
 fn chip(ui: &Runtime, root: &WidgetId, label: &str) -> WidgetId {
@@ -175,7 +196,7 @@ fn focused_key(ui: &Runtime) -> Option<String> {
 }
 
 fn open_from_trigger(s: &mut Setup) {
-    let trigger = widget(&s.ui, &s.root, "anchor");
+    let trigger = control(&s.ui, &s.root);
     s.ui.focus(&trigger).unwrap();
     frame(&mut s.ui);
     press(&mut s.ui, KeyCode::Enter);
@@ -189,13 +210,7 @@ fn the_trigger_shows_chosen_values_as_chips_in_binding_order() {
     // shows one.
     assert_eq!(chips(&s.ui), ["Cherry", "Apple"]);
     assert_eq!(s.value.get().unwrap(), ["cherry", "apple", "kiwi", "apple"]);
-    let trigger =
-        s.ui.inspect()
-            .components
-            .into_iter()
-            .find(|c| c.key == "anchor")
-            .unwrap();
-    let semantics = trigger.details.semantics.unwrap();
+    let semantics = support::semantics_of(&s.ui, &control(&s.ui, &s.root)).unwrap();
     assert_eq!(semantics.role, SemanticRole::ComboBox);
     assert_eq!(
         semantics.value,
@@ -233,7 +248,7 @@ fn opening_focuses_the_search_field_and_closing_returns_to_the_trigger() {
     // Escape with an empty query closes; the choices stay.
     native(&mut s.ui, KeyCode::Escape);
     assert!(!is_open(&s.ui));
-    assert_eq!(focused_key(&s.ui).as_deref(), Some("anchor"));
+    assert_eq!(s.ui.focused(), Some(control(&s.ui, &s.root)));
     assert_eq!(s.value.get().unwrap(), ["banana"]);
     // Down opens the list too.
     press(&mut s.ui, KeyCode::ArrowDown);
@@ -373,7 +388,7 @@ fn on_close_writes_the_draft_once_on_an_outside_press_or_tab() {
     assert_eq!(writes.get(), before + 1, "one write for the whole draft");
 
     // Tab out of the popup commits as well.
-    let trigger = widget(&s.ui, &s.root, "anchor");
+    let trigger = control(&s.ui, &s.root);
     s.ui.focus(&trigger).unwrap();
     press(&mut s.ui, KeyCode::Enter);
     press(&mut s.ui, KeyCode::Enter); // Apple off
@@ -392,7 +407,7 @@ fn focus_moved_to_the_trigger_closes_the_popup_and_keeps_focus_there() {
         let mut s = plain(&["apple"]);
         open_from_trigger(&mut s);
         assert!(is_open(&s.ui), "{exit}: opened");
-        let trigger = widget(&s.ui, &s.root, "anchor");
+        let trigger = control(&s.ui, &s.root);
         if exit == "focus" {
             s.ui.focus(&trigger).unwrap();
             frame(&mut s.ui);
@@ -458,7 +473,7 @@ fn hiding_the_chooser_discards_an_open_draft() {
         ))
         .unwrap();
     frame(&mut ui);
-    let trigger = widget(&ui, &root, "anchor");
+    let trigger = control(&ui, &root);
     ui.focus(&trigger).unwrap();
     press(&mut ui, KeyCode::Enter);
     press(&mut ui, KeyCode::Enter);
@@ -484,7 +499,7 @@ fn removing_the_focused_chip_moves_focus_to_the_next_then_the_trigger() {
     assert_eq!(s.ui.focused().unwrap(), chip(&s.ui, &s.root, "Apple"));
     press(&mut s.ui, KeyCode::Delete);
     assert!(s.value.get().unwrap().is_empty());
-    assert_eq!(focused_key(&s.ui).as_deref(), Some("anchor"));
+    assert_eq!(s.ui.focused(), Some(control(&s.ui, &s.root)));
 }
 
 #[test]
@@ -503,7 +518,7 @@ fn chips_and_rows_keep_their_identity_when_options_are_reordered() {
         .unwrap();
     frame(&mut ui);
     let banana = chip(&ui, &root, "Banana");
-    let trigger = widget(&ui, &root, "anchor");
+    let trigger = control(&ui, &root);
     ui.focus(&trigger).unwrap();
     press(&mut ui, KeyCode::Enter);
     press(&mut ui, KeyCode::ArrowDown);
@@ -659,7 +674,7 @@ fn a_replaced_binding_never_receives_an_old_draft() {
         ))
         .unwrap();
     frame(&mut ui);
-    let trigger = widget(&ui, &root, "anchor");
+    let trigger = control(&ui, &root);
     ui.focus(&trigger).unwrap();
     press(&mut ui, KeyCode::Enter);
     press(&mut ui, KeyCode::ArrowDown);
@@ -680,7 +695,7 @@ fn pressing_the_trigger_while_open_closes_without_reopening() {
     let mut s = on_close(&[]);
     open_from_trigger(&mut s);
     press(&mut s.ui, KeyCode::Enter); // Apple into the draft
-    let trigger = widget(&s.ui, &s.root, "anchor");
+    let trigger = control(&s.ui, &s.root);
     let point = center(&s.ui, &trigger);
     click(&mut s.ui, point);
     assert!(!is_open(&s.ui), "the outside press closes and is consumed");
@@ -935,7 +950,7 @@ fn reactive_permission_cancels_chip_removal_and_hidden_controls_refresh() {
     assert_eq!(s.ui.flush(s.ui.now()).unwrap().components_updated, 0);
     s.ui.set_visible(&s.root, true).unwrap();
     frame(&mut s.ui);
-    let trigger = widget(&s.ui, &s.root, "anchor");
+    let trigger = control(&s.ui, &s.root);
     s.ui.focus(&trigger).unwrap();
     press(&mut s.ui, KeyCode::Enter);
     assert!(!is_open(&s.ui));
@@ -1327,7 +1342,7 @@ fn redescription_replaces_or_removes_the_handler_and_keeps_the_open_draft() {
         ))
         .unwrap();
     frame(&mut ui);
-    let trigger = widget(&ui, &root, "anchor");
+    let trigger = control(&ui, &root);
     ui.focus(&trigger).unwrap();
     press(&mut ui, KeyCode::Enter);
     press(&mut ui, KeyCode::ArrowDown);
@@ -1348,7 +1363,7 @@ fn redescription_replaces_or_removes_the_handler_and_keeps_the_open_draft() {
     ui.reconcile_children(&root, vec![describe(&ui, None)])
         .unwrap();
     frame(&mut ui);
-    ui.focus(&widget(&ui, &root, "anchor")).unwrap();
+    ui.focus(&control(&ui, &root)).unwrap();
     press(&mut ui, KeyCode::Enter);
     press(&mut ui, KeyCode::Enter); // Apple off
     click(&mut ui, Point::new(470.0, 410.0).unwrap());

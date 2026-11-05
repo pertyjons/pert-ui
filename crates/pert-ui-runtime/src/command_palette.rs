@@ -475,8 +475,8 @@ fn command_item(strings: &crate::UiStrings, index: usize, entry: &CommandEntry) 
 /// ```
 /// # use pert_ui_runtime as pert_ui;
 /// use pert_ui::{
-///     CommandPalette, CommandPaletteController, CommandPaletteStatus, CommandReceipt,
-///     CommandScope, CommandSource, CommandStatus, CommandOutcome, Element, KeyAction,
+///     CommandPalette, CommandPaletteController, CommandPaletteStatus, CommandScope,
+///     CommandSource, CommandStatus, CommandOutcome, Element, KeyAction,
 ///     KeyCode, Label, Runtime,
 /// };
 /// use std::{cell::Cell, rc::Rc, time::Duration};

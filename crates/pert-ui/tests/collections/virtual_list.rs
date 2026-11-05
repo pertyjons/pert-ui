@@ -20,10 +20,10 @@ impl ListItems for Rows {
     fn key(&self, index: usize) -> Option<String> {
         (index < self.count).then(|| format!("row-{index}"))
     }
-    fn build(&self, index: usize) -> Option<Element> {
+    fn build(&self, index: usize) -> Option<RowItem> {
         let key = self.key(index)?;
         let label = format!("Row {index} (gen {})", self.generation);
-        Some(Element::new(key, Button::new(label, |_| Ok(()))))
+        Some(Element::new(key, Button::new(label, |_| Ok(()))).into())
     }
     fn index_of(&self, key: &str) -> Option<usize> {
         key.strip_prefix("row-")?
@@ -383,8 +383,10 @@ impl ListItems for SharedKeyRows {
     fn key(&self, index: usize) -> Option<String> {
         (index < self.0).then(|| format!("row-{index}"))
     }
-    fn build(&self, index: usize) -> Option<Element> {
-        (index < self.0).then(|| Label::new(format!("Row {index}")).key("row"))
+    fn build(&self, index: usize) -> Option<RowItem> {
+        (index < self.0)
+            .then(|| Label::new(format!("Row {index}")).key("row"))
+            .map(Into::into)
     }
 }
 

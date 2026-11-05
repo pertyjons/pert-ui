@@ -494,12 +494,14 @@ impl ListItems for Titles {
     fn key(&self, index: usize) -> Option<String> {
         (index == 0).then(|| "a".to_owned())
     }
-    fn build(&self, index: usize) -> Option<Element> {
-        (index == 0).then(|| {
-            Field::new(InlineText::new(&self.0).in_row(true).key("title"))
-                .form(&self.1)
-                .key("title-field")
-        })
+    fn build(&self, index: usize) -> Option<RowItem> {
+        (index == 0)
+            .then(|| {
+                Field::new(InlineText::new(&self.0).in_row(true).key("title"))
+                    .form(&self.1)
+                    .key("title-field")
+            })
+            .map(Into::into)
     }
 }
 

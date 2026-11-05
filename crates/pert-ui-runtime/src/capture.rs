@@ -325,7 +325,7 @@ impl From<crate::DrawError> for CaptureError {
 /// background yields premultiplied color, not straight.
 ///
 /// Built by a host from its renderer's read-back and cropped by the runtime.
-/// [`FrameImage::encode_png`] encodes it without any dependency, converting to
+/// [`FrameImage::encode_png`] encodes it as a compressed PNG, converting to
 /// the straight alpha PNG stores.
 ///
 /// # Serialization
@@ -462,10 +462,20 @@ impl FrameImage {
         }
         Self::new(width, height, rgba)
     }
-    /// Encodes the image as a PNG: 8-bit RGBA, one IDAT chunk of stored
-    /// (uncompressed) deflate blocks, so the encoder needs no dependency and
-    /// the output is deterministic. The MIME type is `image/png`. An
-    /// application that wants smaller files re-encodes with its own codec.
+    /// Encodes the image as a PNG: 8-bit RGBA, compressed. Each row is
+    /// filtered with the PNG filter whose output has the smallest sum of
+    /// absolute signed bytes (ties go to the lower filter), and the rows are
+    /// compressed at zlib level 6 with the pure-Rust `miniz_oxide`. A window
+    /// of mostly flat interface encodes to a small fraction of its pixel
+    /// bytes. The MIME type is `image/png`.
+    ///
+    /// The output is deterministic for a given pert-ui version: the same
+    /// pixels give the same bytes. A dependency update may change the bytes,
+    /// never the decoded pixels.
+    ///
+    /// Encoding allocates temporarily: the filtered scanlines (the pixel
+    /// bytes plus one per row), the compressor's output and state, and, for
+    /// a translucent image, the straight-alpha copy described below.
     ///
     /// PNG stores straight alpha, so translucent pixels are un-premultiplied
     /// on the way out, in linear light as [`RasterImage`](crate::RasterImage)
@@ -613,9 +623,15 @@ impl CaptureJob {
     }
 }
 
-/// A dependency-free PNG writer: stored deflate blocks, zlib framing, CRC-32.
+/// A PNG writer: per-row filters chosen by a fixed rule, zlib compression
+/// through `miniz_oxide`, CRC-32 chunks.
 mod png {
     const SIGNATURE: [u8; 8] = [0x89, b'P', b'N', b'G', b'\r', b'\n', 0x1A, b'\n'];
+    /// The zlib level: miniz's default, a deterministic balance of size and
+    /// time.
+    const LEVEL: u8 = 6;
+    /// Bytes per pixel of 8-bit RGBA.
+    const BPP: usize = 4;
 
     fn crc_table() -> [u32; 256] {
         let mut table = [0u32; 256];
@@ -645,19 +661,6 @@ mod png {
         c ^ 0xFFFF_FFFF
     }
 
-    fn adler(bytes: &[u8]) -> u32 {
-        let (mut a, mut b) = (1u32, 0u32);
-        for chunk in bytes.chunks(5552) {
-            for byte in chunk {
-                a += u32::from(*byte);
-                b += a;
-            }
-            a %= 65521;
-            b %= 65521;
-        }
-        (b << 16) | a
-    }
-
     fn chunk(out: &mut Vec<u8>, table: &[u32; 256], kind: &[u8; 4], data: &[u8]) {
         out.extend_from_slice(&(data.len() as u32).to_be_bytes());
         let start = out.len();
@@ -667,39 +670,89 @@ mod png {
         out.extend_from_slice(&sum.to_be_bytes());
     }
 
+    /// The PNG Paeth predictor.
+    fn paeth(a: u8, b: u8, c: u8) -> u8 {
+        let p = i16::from(a) + i16::from(b) - i16::from(c);
+        let (pa, pb, pc) = (
+            (p - i16::from(a)).abs(),
+            (p - i16::from(b)).abs(),
+            (p - i16::from(c)).abs(),
+        );
+        if pa <= pb && pa <= pc {
+            a
+        } else if pb <= pc {
+            b
+        } else {
+            c
+        }
+    }
+
+    /// Writes `row` filtered with PNG filter `kind` (0 none, 1 sub, 2 up,
+    /// 3 average, 4 Paeth) against the row above, `prior`, into `out`.
+    fn filter(kind: u8, row: &[u8], prior: &[u8], out: &mut Vec<u8>) {
+        out.push(kind);
+        for (i, &x) in row.iter().enumerate() {
+            let a = if i >= BPP { row[i - BPP] } else { 0 };
+            let b = prior[i];
+            let c = if i >= BPP { prior[i - BPP] } else { 0 };
+            let predicted = match kind {
+                1 => a,
+                2 => b,
+                3 => ((u16::from(a) + u16::from(b)) / 2) as u8,
+                4 => paeth(a, b, c),
+                _ => 0,
+            };
+            out.push(x.wrapping_sub(predicted));
+        }
+    }
+
+    /// The scanlines, each filtered with the filter whose output has the
+    /// smallest sum of absolute signed bytes, the usual PNG heuristic, with
+    /// ties going to the lower filter number. The rule is fixed, so the same
+    /// pixels always give the same bytes.
+    fn filtered(width: u32, rgba: &[u8]) -> Vec<u8> {
+        let stride = width as usize * BPP;
+        let rows = rgba.len().checked_div(stride).unwrap_or(0);
+        let mut raw = Vec::with_capacity((stride + 1) * rows);
+        let zero = vec![0u8; stride];
+        let mut candidate = Vec::with_capacity(stride + 1);
+        let mut best = Vec::with_capacity(stride + 1);
+        for (index, row) in rgba.chunks_exact(stride.max(1)).enumerate() {
+            let prior = if index == 0 {
+                &zero[..]
+            } else {
+                &rgba[(index - 1) * stride..index * stride]
+            };
+            let mut best_cost = u64::MAX;
+            for kind in 0..5 {
+                candidate.clear();
+                filter(kind, row, prior, &mut candidate);
+                let cost: u64 = candidate[1..]
+                    .iter()
+                    .map(|&byte| u64::from((byte as i8).unsigned_abs()))
+                    .sum();
+                if cost < best_cost {
+                    best_cost = cost;
+                    std::mem::swap(&mut best, &mut candidate);
+                }
+            }
+            raw.extend_from_slice(&best);
+        }
+        raw
+    }
+
     pub(super) fn encode(width: u32, height: u32, rgba: &[u8]) -> Vec<u8> {
         let table = crc_table();
-        let stride = width as usize * 4;
-        // Each scanline is prefixed with filter type 0 (none).
-        let mut raw = Vec::with_capacity((stride + 1) * height as usize);
-        for row in rgba.chunks(stride) {
-            raw.push(0);
-            raw.extend_from_slice(row);
-        }
-        // zlib: CMF/FLG for deflate with a 32 KiB window and no preset
-        // dictionary, then stored blocks of at most 65535 bytes.
-        let mut zlib = Vec::with_capacity(raw.len() + raw.len() / 65535 * 5 + 11);
-        zlib.extend_from_slice(&[0x78, 0x01]);
-        let mut blocks = raw.chunks(65535).peekable();
-        if blocks.peek().is_none() {
-            zlib.extend_from_slice(&[1, 0, 0, 0xFF, 0xFF]);
-        }
-        while let Some(block) = blocks.next() {
-            let last = blocks.peek().is_none();
-            zlib.push(u8::from(last));
-            let len = block.len() as u16;
-            zlib.extend_from_slice(&len.to_le_bytes());
-            zlib.extend_from_slice(&(!len).to_le_bytes());
-            zlib.extend_from_slice(block);
-        }
-        zlib.extend_from_slice(&adler(&raw).to_be_bytes());
+        let raw = filtered(width, rgba);
+        let zlib = miniz_oxide::deflate::compress_to_vec_zlib(&raw, LEVEL);
 
         let mut out = Vec::with_capacity(zlib.len() + 64);
         out.extend_from_slice(&SIGNATURE);
         let mut header = Vec::with_capacity(13);
         header.extend_from_slice(&width.to_be_bytes());
         header.extend_from_slice(&height.to_be_bytes());
-        // Bit depth 8, color type 6 (RGBA), deflate, no filter, no interlace.
+        // Bit depth 8, color type 6 (RGBA), deflate, adaptive filtering, no
+        // interlace.
         header.extend_from_slice(&[8, 6, 0, 0, 0]);
         chunk(&mut out, &table, b"IHDR", &header);
         chunk(&mut out, &table, b"IDAT", &zlib);
@@ -715,51 +768,147 @@ mod png {
         fn crc_matches_the_reference_value() {
             let table = crc_table();
             assert_eq!(crc(&table, b"123456789"), 0xCBF4_3926);
-            assert_eq!(adler(b"Wikipedia"), 0x11E6_0398);
+        }
+
+        /// The pixels an independent decoder reads back.
+        fn decode(png: &[u8]) -> (u32, u32, Vec<u8>) {
+            let decoder = ::png::Decoder::new(std::io::Cursor::new(png));
+            let mut reader = decoder.read_info().expect("a valid PNG header");
+            let mut pixels = vec![0; reader.output_buffer_size().expect("a bounded image")];
+            let info = reader.next_frame(&mut pixels).expect("a valid image");
+            assert_eq!(
+                (info.color_type, info.bit_depth),
+                (::png::ColorType::Rgba, ::png::BitDepth::Eight)
+            );
+            pixels.truncate(info.buffer_size());
+            (info.width, info.height, pixels)
+        }
+
+        /// Deterministic noise, so no filter predicts it well.
+        fn noise(len: usize) -> Vec<u8> {
+            let mut state = 0x2545_F491_u32;
+            (0..len)
+                .map(|_| {
+                    state ^= state << 13;
+                    state ^= state >> 17;
+                    state ^= state << 5;
+                    state as u8
+                })
+                .collect()
+        }
+
+        /// A UI-like frame: flat panels, a few edges and rows of glyph-like
+        /// marks.
+        fn interface(width: u32, height: u32) -> Vec<u8> {
+            let mut rgba = Vec::with_capacity((width * height * 4) as usize);
+            for y in 0..height {
+                for x in 0..width {
+                    let panel: u8 = if x < width / 4 { 40 } else { 250 };
+                    let mark = (y % 24 < 12) && (x % 9 < 4) && x > width / 3;
+                    let value = if mark { 30 } else { panel };
+                    rgba.extend_from_slice(&[value, value, value.saturating_add(5), 255]);
+                }
+            }
+            rgba
         }
 
         #[test]
-        fn a_stored_stream_inflates_to_the_scanlines() {
-            let rgba: Vec<u8> = (0..2 * 3 * 4).map(|i| i as u8).collect();
-            let png = encode(2, 3, &rgba);
-            assert_eq!(&png[..8], &SIGNATURE);
-            assert_eq!(&png[12..16], b"IHDR");
-            let idat = 8 + 25;
-            assert_eq!(&png[idat + 4..idat + 8], b"IDAT");
-            let len = u32::from_be_bytes([png[idat], png[idat + 1], png[idat + 2], png[idat + 3]])
-                as usize;
-            let zlib = &png[idat + 8..idat + 8 + len];
-            assert_eq!(&zlib[..2], &[0x78, 0x01]);
-            // One final stored block holding three filtered scanlines.
-            assert_eq!(zlib[2], 1);
-            let stored = u16::from_le_bytes([zlib[3], zlib[4]]) as usize;
-            assert_eq!(stored, 3 * (2 * 4 + 1));
-            assert_eq!(!stored as u16, u16::from_le_bytes([zlib[5], zlib[6]]));
-            let raw = &zlib[7..7 + stored];
-            assert_eq!(raw[0], 0);
-            assert_eq!(&raw[1..9], &rgba[..8]);
-            assert_eq!(raw[9], 0);
-            let sum = u32::from_be_bytes([
-                zlib[7 + stored],
-                zlib[8 + stored],
-                zlib[9 + stored],
-                zlib[10 + stored],
-            ]);
-            assert_eq!(sum, adler(raw));
-            assert_eq!(&png[png.len() - 8..png.len() - 4], b"IEND");
+        fn encoded_images_decode_to_the_same_pixels() {
+            let cases: Vec<(u32, u32, Vec<u8>)> = vec![
+                (1, 1, vec![10, 20, 30, 255]),
+                (3, 2, vec![0; 3 * 2 * 4]),
+                (7, 5, noise(7 * 5 * 4)),
+                // Widths around the four-byte pixel and filter boundaries.
+                (1, 9, noise(9 * 4)),
+                (2, 3, noise(2 * 3 * 4)),
+                (17, 13, noise(17 * 13 * 4)),
+                (64, 64, interface(64, 64)),
+                // Several deflate blocks' worth of data.
+                (900, 300, interface(900, 300)),
+                // Translucent and fully transparent pixels.
+                (4, 4, (0..64).map(|i| (i * 13) as u8).collect()),
+            ];
+            for (width, height, rgba) in cases {
+                let png = encode(width, height, &rgba);
+                assert_eq!(&png[..8], &SIGNATURE);
+                assert_eq!(&png[png.len() - 8..png.len() - 4], b"IEND");
+                assert_eq!(
+                    decode(&png),
+                    (width, height, rgba),
+                    "{width}x{height} round trip"
+                );
+            }
         }
 
         #[test]
-        fn a_large_image_spans_several_stored_blocks() {
-            let width = 300u32;
-            let height = 100u32;
-            let rgba = vec![7u8; (width * height * 4) as usize];
-            let png = encode(width, height, &rgba);
-            let raw_len = (width as usize * 4 + 1) * height as usize;
-            assert!(raw_len > 65535);
-            // 8 signature + 25 IHDR + 12 chunk framing + zlib(2 + blocks*5 + raw + 4) + 12 IEND
-            let blocks = raw_len.div_ceil(65535);
-            assert_eq!(png.len(), 8 + 25 + 12 + 2 + blocks * 5 + raw_len + 4 + 12);
+        fn extreme_aspect_ratios_round_trip() {
+            for (width, height) in [(16_384, 1), (1, 16_384), (4096, 3)] {
+                let rgba = noise((width * height * 4) as usize);
+                let png = encode(width, height, &rgba);
+                assert_eq!(decode(&png), (width, height, rgba), "{width}x{height}");
+            }
+        }
+
+        // A full 64 MiB frame is slow to compress and decode without
+        // optimization, so it runs in the release profile, as CI's release
+        // tests do.
+        #[cfg(not(debug_assertions))]
+        #[test]
+        fn a_frame_at_the_size_limit_round_trips() {
+            let side = 4096u32;
+            assert_eq!(
+                (side * side * 4) as usize,
+                super::super::FrameImage::MAX_BYTES
+            );
+            let mut rgba = interface(side, side);
+            // Noise in one band keeps part of the frame incompressible.
+            let band = noise(side as usize * 4 * 64);
+            rgba[..band.len()].copy_from_slice(&band);
+            let png = encode(side, side, &rgba);
+            assert_eq!(decode(&png), (side, side, rgba));
+        }
+
+        #[test]
+        fn the_same_pixels_always_encode_to_the_same_bytes() {
+            let rgba = interface(200, 120);
+            assert_eq!(encode(200, 120, &rgba), encode(200, 120, &rgba));
+        }
+
+        #[test]
+        fn every_filter_reverses_exactly() {
+            let row = noise(6 * 4);
+            let prior = noise(7 * 4)[4..].to_vec();
+            for kind in 0..5 {
+                let mut out = Vec::new();
+                filter(kind, &row, &prior, &mut out);
+                assert_eq!(out[0], kind);
+                // Undo the filter as a decoder does.
+                let mut back = vec![0u8; row.len()];
+                for i in 0..row.len() {
+                    let a = if i >= BPP { back[i - BPP] } else { 0 };
+                    let b = prior[i];
+                    let c = if i >= BPP { prior[i - BPP] } else { 0 };
+                    let predicted = match kind {
+                        1 => a,
+                        2 => b,
+                        3 => ((u16::from(a) + u16::from(b)) / 2) as u8,
+                        4 => paeth(a, b, c),
+                        _ => 0,
+                    };
+                    back[i] = out[i + 1].wrapping_add(predicted);
+                }
+                assert_eq!(back, row, "filter {kind}");
+            }
+        }
+
+        #[test]
+        fn a_window_sized_interface_frame_compresses_well() {
+            let (width, height) = (1040u32, 600u32);
+            let png = encode(width, height, &interface(width, height));
+            let raw = (width * height * 4) as usize;
+            // Measured 2026-11-04 at well under 1% of the raw pixels; the
+            // bound leaves room for compressor changes.
+            assert!(png.len() < raw / 20, "{} bytes of {raw}", png.len());
         }
     }
 }
@@ -785,11 +934,15 @@ mod tests {
         srgb_encode(srgb_decode(straight) * (f32::from(alpha) / 255.0))
     }
 
-    /// The scanline bytes of an image `encode_png` wrote as one stored block.
-    fn scanlines(png: &[u8]) -> &[u8] {
-        let zlib = &png[8 + 25 + 8..];
-        let stored = usize::from(u16::from_le_bytes([zlib[3], zlib[4]]));
-        &zlib[7..7 + stored]
+    /// The straight-alpha pixels of an encoded image, read back by an
+    /// independent decoder.
+    fn decoded(png: &[u8]) -> Vec<u8> {
+        let decoder = ::png::Decoder::new(std::io::Cursor::new(png));
+        let mut reader = decoder.read_info().expect("a valid PNG header");
+        let mut pixels = vec![0; reader.output_buffer_size().expect("a bounded image")];
+        let info = reader.next_frame(&mut pixels).expect("a valid image");
+        pixels.truncate(info.buffer_size());
+        pixels
     }
 
     #[test]
@@ -801,10 +954,7 @@ mod tests {
         let frame =
             FrameImage::new(3, 1, vec![half, half, 0, 128, 7, 8, 9, 0, 1, 2, 3, 255]).unwrap();
         let png = frame.encode_png();
-        assert_eq!(
-            scanlines(&png),
-            &[0, 255, 255, 0, 128, 0, 0, 0, 0, 1, 2, 3, 255]
-        );
+        assert_eq!(decoded(&png), [255, 255, 0, 128, 0, 0, 0, 0, 1, 2, 3, 255]);
         // The frame keeps its premultiplied pixels.
         assert_eq!(frame.pixels()[0], half);
     }
@@ -819,7 +969,7 @@ mod tests {
                     break;
                 }
                 let frame = FrameImage::new(1, 1, vec![color, 0, 0, alpha]).unwrap();
-                let straight = scanlines(&frame.encode_png())[1];
+                let straight = decoded(&frame.encode_png())[0];
                 let again = premultiply(straight, alpha);
                 assert!(
                     again.abs_diff(color) <= 1,

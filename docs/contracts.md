@@ -1059,11 +1059,25 @@ this differs from an explicit `set_visible` refusal.
 ### Content search
 
 Content search reads what components already report: their semantic names and
-values, under the inspection phase, and the rows a collection such as
-`VirtualList` offers beyond its mounted children ([content search
-hooks](#content-search-hooks)). It does not read semantic items
-(`Semantics::items`), the rows a component draws itself, such as a toast
-stack's toasts or a table's column titles. Lists expose their current bound
+values, the names of their semantic items (`Semantics::items`), such as a
+toast stack's toasts, a menu's commands or an unselected tab's title, under
+the inspection phase, and the rows a collection such as `VirtualList` offers
+beyond its mounted children ([content search hooks](#content-search-hooks)).
+An item hit (`ContentField::Item { index }`) targets its component: the index
+is the item's position when the search visited the component, not an
+identity, and a jump reveals and focuses the component, not the item. Each
+component's items are copied once, when it is visited, so a continuation
+neither repeats nor skips one and a later change is seen by a new search; the
+copy is charged as the visit, whatever its size. Order within a component is
+its name or value, its items, its unmounted rows and then its children.
+Search keeps every report: distinct components that report the same text give
+distinct hits, with no merging of equal labels, since different options may
+share a label and the hits have different targets. A `VirtualList` that
+reports its rows as items (`VirtualList::report_items`) gives an item hit for
+every matching row of its source, mounted or not, beside its mounted rows' own
+hits and, for a source that also offers `ListItems::text`, an unmounted row's
+`Row` hit; so an open `MultiSelect` option can be found as its trigger's item,
+its popup list's item and its row. Lists expose their current bound
 source even when hidden after an earlier presentation, and search reads
 current source rows without updating, laying out or mounting presentation.
 After a requested reconciliation of a collection's rows fails, search skips
@@ -1072,15 +1086,16 @@ Unavailable bound rows propagate their typed read error, rather than exposing
 obsolete children. It keeps no index and schedules nothing; a held cursor retains
 the owned row sources it has visited until it is dropped. A search is
 a cursor whose every step is bounded by a work budget (one unit per component
-examined while finding the window roots, per component visited, per mounted
-row indexed and per row examined) and a result limit, so a search with no
+examined while finding the window roots, per component visited, per item
+examined, per mounted row indexed and per row examined) and a result limit, so a search with no
 matches over a large tree is bounded per call; a mount, unmount, changed
 searchability or a replaced source of any collection the search has started on
 makes the next step `Stale` instead of returning results from a tree that no
 longer exists. Modality is judged in each component's own window, and a
 collection a modal surface blocks offers no rows. A subtree excluded with `Element::with_searchable`,
-the value of a protected component, components a modal surface blocks and rows
-a source does not describe are never found.
+the value and items of a protected component, the items of a component that
+names its children, components a modal surface blocks and rows a source does
+not describe are never found.
 
 A jump reuses the reveal path and reports its typed outcome; a row is revealed
 by key through the collection
@@ -1595,7 +1610,7 @@ or removes the declaration without remounting or invalidating layout solely for
 that metadata. Queries do not flush, reveal, focus, select a window or schedule
 work. Returned `WidgetId`s remain the event targets, including when presented in
 another window, which must be selected before input. `ComponentInspection::exposed_part`
-is descriptive metadata in inspection schema 17, not a transport-level selector:
+is descriptive metadata since inspection schema 17, not a transport-level selector:
 the owned DTO does not reproduce the scope walk. Its serialized field is required
 and nullable, and a present blank name is invalid. Workspace schema 2 and its
 address markers are unchanged.
@@ -1623,7 +1638,14 @@ component: that arrangement already replaced the component's retained
 geometry, so the runtime arranges every component a failed pass arranged
 again at the next layout, which pairs the two again. A change not yet laid
 out shows in neither, as for the border box; state a component changes
-outside layout, such as a scroll offset, shows at once. A value a component
+outside layout, such as a scroll offset, shows at once. A `VirtualList` that
+reports its rows as items gives each item the visible part of the slot the
+last successful arrangement placed its row in, kept by row key: a scroll
+moves those rectangles at the layout it requests, a replaced source, a row
+entering or leaving the requested rows and unfinished row construction drop
+them, and only rows the runtime adopted as children are recorded, so a
+rejected child request leaves surviving rows their rectangles and requested
+rows none until the list's repeated request succeeds. A value a component
 assigns to `bounds` directly is replaced, and inspection never arranges or
 schedules anything for it. Development validation checks
 geometry only for a native window whose latest layout ran with a viewport that
@@ -2002,7 +2024,7 @@ rectangle.
 
 ### Content search hooks
 
-Content search reads semantic names and values through `Component::inspect`,
+Content search reads semantic names, values and item names through `Component::inspect`,
 under the inspection phase, and the rows a collection offers through the public
 `Component::try_content_rows` hook (whose default preserves existing
 `Component::content_rows` implementations), which `VirtualList` implements.
@@ -2108,11 +2130,23 @@ column titles give their rectangles with `SemanticItem::local_bounds`, which
 `Driver::click_item` clicks, and its cells report
 `ValidationHints::fixed_height`, so development validation reports content
 that measured or is laid out taller than the row
-(`ValidationCode::ExceedsFixedHeight`); an external grid does the same. Its
+(`ValidationCode::ExceedsFixedHeight`); an external grid does the same. A
+fixed-extent `VirtualList`, and so a `Tree`, places each item with
+`ArrangeContext::place_fixed_slot` along its axis, which measures the item
+across the slot and declares the slot's fixed extent, so development
+validation reports a row taller than the list's row height under the same
+code, and an item wider than a horizontal list's extent as
+`ValidationCode::ExceedsFixedWidth`; an external list places its items the
+same way. Its
 wrappers that forward their child's measurement call
 `ArrangeContext::refresh_forwarded` in `arrange`, so a measurement the runtime
 answers from its retained results leaves the child's current; an external
-forwarding wrapper calls it too.
+forwarding wrapper calls it too. The `MultiSelect` and `QuickPick` popups give
+their options rectangles through public items as well: their lists opt into
+`VirtualList::report_items`, their sources describe each row with
+`ListItems::semantic_item` from plain state their owner retains in its update,
+and the lists are exposed as `options` parts, QuickPick's named with
+`Element::with_label`; an external picker composes the same pieces.
 
 ### Custom hosts
 

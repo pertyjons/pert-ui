@@ -1260,3 +1260,154 @@ fn can_focus_answers_without_changing_state() {
     ui.unmount(&root).unwrap();
     assert_eq!(ui.can_focus(&field), Ok(false));
 }
+
+/// The confirmation's buttons, through its public parts.
+fn confirmation_parts(ui: &Runtime, alert: &WidgetId) -> (WidgetId, WidgetId) {
+    let confirmation = ui
+        .find(alert, &["dialog", "confirmation"])
+        .unwrap()
+        .expect("the generated confirmation");
+    let part = |name| {
+        ui.find_exposed_part(&confirmation, name)
+            .unwrap()
+            .unwrap_or_else(|| panic!("the {name} part"))
+    };
+    (part("cancel"), part("accept"))
+}
+
+#[test]
+fn alert_buttons_are_public_parts_that_click_and_keep_identity_through_relabels() {
+    for (name, expected) in [
+        ("accept", DialogOutcome::Accepted),
+        ("cancel", DialogOutcome::Cancelled),
+    ] {
+        let mut ui = ui();
+        let state = DialogController::new(&ui);
+        let label = ui.signal("Delete".to_owned());
+        let root = ui
+            .mount_tree(Element::new(
+                "root",
+                Column::new([Element::new(
+                    "alert",
+                    AlertDialog::new(
+                        state.clone(),
+                        Element::new("open", Button::new("Open", |_| Ok(()))),
+                        "Confirm",
+                        "Proceed?",
+                        label.read_only(),
+                    ),
+                )]),
+            ))
+            .unwrap();
+        state.open().unwrap();
+        ui.flush(Duration::ZERO).unwrap();
+        let alert = find(&ui, &root, "alert").unwrap();
+        let (cancel, accept) = confirmation_parts(&ui, &alert);
+        // A relabel keeps the parts' identities, and the semantic name follows.
+        let name_of = |ui: &Runtime, id: &WidgetId| {
+            let id = ui.inspection_id(id).unwrap();
+            ui.inspect()
+                .components
+                .into_iter()
+                .find(|component| component.id == id)
+                .and_then(|component| component.details.semantics)
+                .and_then(|semantics| semantics.name)
+        };
+        assert_eq!(name_of(&ui, &accept).as_deref(), Some("Delete"));
+        label.set("Remove".to_owned()).unwrap();
+        ui.flush(ui.now()).unwrap();
+        assert_eq!(
+            confirmation_parts(&ui, &alert),
+            (cancel.clone(), accept.clone())
+        );
+        assert_eq!(name_of(&ui, &accept).as_deref(), Some("Remove"));
+        let target = if name == "accept" { &accept } else { &cancel };
+        pert_ui::testing::Driver::new(&mut ui)
+            .click(target)
+            .unwrap();
+        assert_eq!(state.take_outcome().unwrap(), Some(expected), "{name}");
+    }
+}
+
+#[test]
+fn redescribing_an_alert_keeps_its_parts_and_applies_new_labels() {
+    let mut ui = ui();
+    let state = DialogController::new(&ui);
+    let describe = |accept: &'static str, cancel: &'static str| {
+        Element::new(
+            "alert",
+            AlertDialog::new(
+                state.clone(),
+                Element::new("open", Button::new("Open", |_| Ok(()))),
+                "Confirm",
+                "Proceed?",
+                accept,
+            )
+            .cancel_label(cancel),
+        )
+    };
+    let root = ui
+        .mount_tree(Element::new(
+            "root",
+            Column::new([describe("Delete", "Keep")]),
+        ))
+        .unwrap();
+    state.open().unwrap();
+    ui.flush(Duration::ZERO).unwrap();
+    let alert = find(&ui, &root, "alert").unwrap();
+    let (cancel, accept) = confirmation_parts(&ui, &alert);
+    let name_of = |ui: &Runtime, id: &WidgetId| {
+        let id = ui.inspection_id(id).unwrap();
+        ui.inspect()
+            .components
+            .into_iter()
+            .find(|component| component.id == id)
+            .and_then(|component| component.details.semantics)
+            .and_then(|semantics| semantics.name)
+    };
+    assert_eq!(name_of(&ui, &accept).as_deref(), Some("Delete"));
+    let paths = (path_of(&ui, &accept), path_of(&ui, &cancel));
+    // The same keyed confirmation, described again with other fixed labels.
+    ui.reconcile_children(&root, vec![describe("Remove", "Back")])
+        .unwrap();
+    ui.flush(ui.now()).unwrap();
+    assert_eq!(
+        find(&ui, &root, "alert").unwrap(),
+        alert,
+        "reconciled, not remounted"
+    );
+    assert_eq!(
+        confirmation_parts(&ui, &alert),
+        (cancel.clone(), accept.clone()),
+        "the parts keep their identities"
+    );
+    assert_eq!(name_of(&ui, &accept).as_deref(), Some("Remove"));
+    assert_eq!(name_of(&ui, &cancel).as_deref(), Some("Back"));
+    assert_eq!(path_of(&ui, &accept), paths.0, "unchanged workspace paths");
+    assert_eq!(path_of(&ui, &cancel), paths.1);
+    pert_ui::testing::Driver::new(&mut ui)
+        .click(&accept)
+        .unwrap();
+    assert_eq!(state.take_outcome().unwrap(), Some(DialogOutcome::Accepted));
+    // A separate opening: cancel works after the redescription too.
+    state.open().unwrap();
+    ui.flush(ui.now()).unwrap();
+    let (cancel_again, _) = confirmation_parts(&ui, &alert);
+    pert_ui::testing::Driver::new(&mut ui)
+        .click(&cancel_again)
+        .unwrap();
+    assert_eq!(
+        state.take_outcome().unwrap(),
+        Some(DialogOutcome::Cancelled)
+    );
+}
+
+/// The workspace path inspection reports for a component.
+fn path_of(ui: &Runtime, id: &WidgetId) -> Option<Vec<String>> {
+    let id = ui.inspection_id(id).unwrap();
+    ui.inspect()
+        .components
+        .into_iter()
+        .find(|component| component.id == id)
+        .and_then(|component| component.path)
+}

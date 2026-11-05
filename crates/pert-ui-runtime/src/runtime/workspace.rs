@@ -45,7 +45,7 @@ impl Runtime {
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;
-    /// use pert_ui::{Element, Runtime, RuntimeError, SplitAxis, SplitPane, Label};
+    /// use pert_ui::{Element, Runtime, SplitAxis, SplitPane, Label};
     /// let mut ui = Runtime::new();
     /// ui.mount_tree(Element::new(
     ///     "main",

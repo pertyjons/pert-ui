@@ -516,7 +516,7 @@ impl ListItems for Rows {
     fn key(&self, index: usize) -> Option<String> {
         self.source.0.key(index)
     }
-    fn build(&self, index: usize) -> Option<Element> {
+    fn build(&self, index: usize) -> Option<crate::RowItem> {
         let key = self.source.0.key(index)?;
         // Cells follow the current column order, which a move changes.
         let cells = self
@@ -552,8 +552,7 @@ impl ListItems for Rows {
                 )
             })
             .collect();
-        Some(Element::new(
-            key,
+        Some(
             TableRow {
                 cells,
                 key: self.source.0.key(index)?,
@@ -561,8 +560,9 @@ impl ListItems for Rows {
                 active: None,
                 clicks: crate::ClickCounter::new(),
                 clicked: None,
-            },
-        ))
+            }
+            .into(),
+        )
     }
     fn index_of(&self, key: &str) -> Option<usize> {
         self.source.0.index_of(key)

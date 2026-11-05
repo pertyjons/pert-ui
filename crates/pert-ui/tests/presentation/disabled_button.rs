@@ -344,3 +344,505 @@ fn cpu_border_width_changes_coverage_inward_and_zero_leaves_the_fill() -> TestRe
     }
     Ok(())
 }
+
+/// A background, foreground and border color, each as reported.
+type Colors = (Option<[f32; 4]>, Option<[f32; 4]>, Option<[f32; 4]>);
+
+/// The background, foreground and border color a component reports as last
+/// painted.
+fn painted(ui: &Runtime, id: &WidgetId) -> TestResult<Colors> {
+    let inspection = ui.inspection_id(id)?;
+    let component = ui
+        .inspect()
+        .components
+        .into_iter()
+        .find(|component| component.id == inspection)
+        .ok_or("inspected")?;
+    let model = component.details.box_model;
+    Ok((
+        model.background,
+        model.foreground,
+        model.border.map(|border| border.color),
+    ))
+}
+
+#[test]
+fn a_button_reports_the_colors_it_last_painted() -> TestResult {
+    let mut ui = runtime()?;
+    let enabled = ui.signal(true);
+    let framed = ui.mount_tree(
+        Button::new("Apply", |_| Ok(()))
+            .enabled(&enabled)
+            .key("framed"),
+    )?;
+    ui.flush(Duration::ZERO)?;
+    assert_eq!(
+        painted(&ui, &framed)?,
+        (None, None, None),
+        "nothing before a paint"
+    );
+    ui.paint()?;
+    let palette = ui.theme().palette(ThemeMode::Dark)?;
+    let channels = |role| Some(palette.color(role).channels());
+    assert_eq!(
+        painted(&ui, &framed)?,
+        (
+            channels(ColorRole::Button),
+            channels(ColorRole::OnButton),
+            None
+        )
+    );
+    enabled.set(false)?;
+    ui.flush(ui.now())?;
+    ui.paint()?;
+    assert_eq!(
+        painted(&ui, &framed)?,
+        (
+            channels(ColorRole::Surface),
+            channels(ColorRole::Muted),
+            channels(ColorRole::Outline)
+        ),
+        "the neutral inactive frame"
+    );
+    enabled.set(true)?;
+    ui.flush(ui.now())?;
+    ui.paint()?;
+    assert_eq!(
+        painted(&ui, &framed)?.2,
+        None,
+        "enabling removes the outline"
+    );
+    // A theme change shows after the next paint.
+    let custom = Color::from_srgb8(10, 120, 200, 255);
+    ui.theme()
+        .set_color(ThemeMode::Dark, ColorRole::Button, custom)?;
+    ui.flush(ui.now())?;
+    ui.paint()?;
+    assert_eq!(painted(&ui, &framed)?.0, Some(custom.channels()));
+    // Inspecting again changes nothing and needs no work.
+    let before = painted(&ui, &framed)?;
+    assert_eq!(painted(&ui, &framed)?, before);
+    Ok(())
+}
+
+#[test]
+fn a_frameless_button_reports_a_frame_only_while_it_paints_one() -> TestResult {
+    let mut ui = runtime()?;
+    let button = ui.mount_tree(Button::new("Tool", |_| Ok(())).frameless().key("tool"))?;
+    ui.flush(Duration::ZERO)?;
+    ui.paint()?;
+    assert_eq!(painted(&ui, &button)?.0, None, "no frame at rest");
+    let bounds = ui.bounds(&button)?.ok_or("laid out")?;
+    let center = Point::new(
+        bounds.x() + bounds.width() / 2.0,
+        bounds.y() + bounds.height() / 2.0,
+    )?;
+    ui.pointer_input(PointerEvent::new(center, PointerKind::Move))?;
+    ui.flush(ui.now())?;
+    ui.paint()?;
+    let hover = ui
+        .theme()
+        .palette(ThemeMode::Dark)?
+        .color(ColorRole::ButtonHover);
+    assert_eq!(painted(&ui, &button)?.0, Some(hover.channels()), "hovered");
+    Ok(())
+}
+
+#[test]
+fn disabled_dropdown_anchors_use_the_inactive_button_frame() -> TestResult {
+    for mode in [ThemeMode::Dark, ThemeMode::Light] {
+        let mut ui = runtime()?;
+        ui.theme().set_mode(mode)?;
+        let enabled = ui.signal(false);
+        let single = ui.signal(0_u32);
+        let several = ui.signal(Vec::<u32>::new());
+        let choices = || [Choice::new(0, "Low"), Choice::new(1, "High")];
+        let root = ui.mount_tree(
+            Column::new([
+                Select::new(&ui, single.clone(), choices())?
+                    .enabled(&enabled)
+                    .key("single-choice"),
+                MultiSelect::new(&ui, several.clone(), choices())?
+                    .enabled(&enabled)
+                    .key("multi-choice"),
+            ])
+            .key("root"),
+        )?;
+        ui.flush(Duration::ZERO)?;
+        ui.paint()?;
+        let palette = ui.theme().palette(mode)?;
+        let channels = |role| Some(palette.color(role).channels());
+        // Each control's anchor is the descendant that reports a frame.
+        let anchors: Vec<WidgetId> = ["single-choice", "multi-choice"]
+            .into_iter()
+            .map(|key| {
+                let control = ui.find_descendant(&root, key).unwrap().unwrap();
+                let mut pending = vec![control];
+                let mut found = None;
+                while let Some(id) = pending.pop() {
+                    if painted(&ui, &id).is_ok_and(|colors| colors.0.is_some()) {
+                        found = Some(id);
+                        break;
+                    }
+                    pending.extend(ui.children(&id).unwrap());
+                }
+                found.expect("a framed anchor")
+            })
+            .collect();
+        for anchor in &anchors {
+            assert_eq!(
+                painted(&ui, anchor)?,
+                (
+                    channels(ColorRole::Surface),
+                    channels(ColorRole::Muted),
+                    channels(ColorRole::Outline)
+                ),
+                "{mode:?}: a disabled anchor"
+            );
+        }
+        enabled.set(true)?;
+        ui.flush(ui.now())?;
+        ui.paint()?;
+        for anchor in &anchors {
+            let (background, foreground, border) = painted(&ui, anchor)?;
+            assert_eq!(background, channels(ColorRole::Button), "{mode:?}: enabled");
+            assert_eq!(foreground, channels(ColorRole::OnButton));
+            assert_eq!(border, None);
+        }
+    }
+    Ok(())
+}
+
+/// The colors a painted scene draws inside `bounds`: fills, vector shapes
+/// whose origin lies there and text masks inside it.
+fn drawn_in(scene: &DisplayList, bounds: Rect) -> Vec<Color> {
+    let inside = |rect: &Rect| {
+        let (x, y) = (
+            rect.x() + rect.width() / 2.0,
+            rect.y() + rect.height() / 2.0,
+        );
+        x >= bounds.x()
+            && x <= bounds.x() + bounds.width()
+            && y >= bounds.y()
+            && y <= bounds.y() + bounds.height()
+    };
+    scene
+        .commands()
+        .iter()
+        .filter_map(|command| match command {
+            DrawCommand::FillRect { rect, color } | DrawCommand::DrawMask { rect, color, .. }
+                if inside(rect) =>
+            {
+                Some(*color)
+            }
+            DrawCommand::DrawVector { origin, color, .. }
+                if origin.x() >= bounds.x() - 0.5
+                    && origin.x() <= bounds.x() + bounds.width()
+                    && origin.y() >= bounds.y() - 0.5
+                    && origin.y() <= bounds.y() + bounds.height() =>
+            {
+                Some(*color)
+            }
+            _ => None,
+        })
+        .collect()
+}
+
+/// The descendant of `control` (or itself) that reports a painted frame.
+fn framed_anchor(ui: &Runtime, control: WidgetId) -> TestResult<WidgetId> {
+    let mut pending = vec![control];
+    while let Some(id) = pending.pop() {
+        if painted(ui, &id)?.0.is_some() {
+            return Ok(id);
+        }
+        pending.extend(ui.children(&id)?);
+    }
+    Err("a framed anchor".into())
+}
+
+#[test]
+fn disabled_dropdown_anchors_draw_the_inactive_frame_and_follow_roles_and_border_width()
+-> TestResult {
+    let mut ui = runtime()?;
+    let several = ui.signal(vec![1_u32]);
+    let single = ui.signal(0_u32);
+    let choices = || [Choice::new(0, "Low"), Choice::new(1, "High")];
+    let root = ui.mount_tree(
+        Column::new([
+            Select::new(&ui, single.clone(), choices())?
+                .disabled()
+                .key("single-choice"),
+            // A selected option shows as a chip on the disabled trigger.
+            MultiSelect::new(&ui, several.clone(), choices())?
+                .disabled()
+                .key("multi-choice"),
+        ])
+        .key("root"),
+    )?;
+    ui.flush(Duration::ZERO)?;
+    // The anchors report their frame once painted.
+    let scene = ui.paint()?;
+    let anchors = ["single-choice", "multi-choice"]
+        .into_iter()
+        .map(|key| framed_anchor(&ui, ui.find_descendant(&root, key).unwrap().unwrap()))
+        .collect::<TestResult<Vec<_>>>()?;
+    let palette = ui.theme().palette(ThemeMode::Dark)?;
+    for anchor in &anchors {
+        let drawn = drawn_in(&scene, ui.bounds(anchor)?.ok_or("laid out")?);
+        for role in [ColorRole::Surface, ColorRole::Outline, ColorRole::Muted] {
+            assert!(
+                drawn.contains(&palette.color(role)),
+                "{role:?} drawn: {drawn:?}"
+            );
+        }
+        assert!(
+            !drawn.contains(&palette.color(ColorRole::Button)),
+            "no enabled fill"
+        );
+    }
+    // The light palette's inactive frame is drawn the same way.
+    ui.theme().set_mode(ThemeMode::Light)?;
+    ui.flush(ui.now())?;
+    let scene = ui.paint()?;
+    let light = ui.theme().palette(ThemeMode::Light)?;
+    for anchor in &anchors {
+        let drawn = drawn_in(&scene, ui.bounds(anchor)?.ok_or("laid out")?);
+        for role in [ColorRole::Surface, ColorRole::Outline, ColorRole::Muted] {
+            assert!(
+                drawn.contains(&light.color(role)),
+                "light {role:?}: {drawn:?}"
+            );
+        }
+        assert!(!drawn.contains(&light.color(ColorRole::Button)));
+    }
+    ui.theme().set_mode(ThemeMode::Dark)?;
+    ui.flush(ui.now())?;
+    // An adaptive override of the inactive fill reaches both anchors.
+    let surface = Color::from_srgb8(23, 51, 91, 255);
+    ui.theme()
+        .set_color(ThemeMode::Dark, ColorRole::Surface, surface)?;
+    ui.flush(ui.now())?;
+    let scene = ui.paint()?;
+    for anchor in &anchors {
+        assert_eq!(painted(&ui, anchor)?.0, Some(surface.channels()));
+        assert!(drawn_in(&scene, ui.bounds(anchor)?.ok_or("laid out")?).contains(&surface));
+    }
+    // A zero border width paints and reports no outline.
+    let metrics = ui
+        .theme()
+        .metrics(Density::Standard)?
+        .with_metric(MetricRole::BorderWidth, Length::from(0))?;
+    ui.theme().set_metrics(Density::Standard, metrics)?;
+    ui.flush(ui.now())?;
+    let scene = ui.paint()?;
+    for anchor in &anchors {
+        assert_eq!(painted(&ui, anchor)?.2, None, "no border reported");
+        let drawn = drawn_in(&scene, ui.bounds(anchor)?.ok_or("laid out")?);
+        assert!(
+            !drawn.contains(&palette.color(ColorRole::Outline)),
+            "none drawn"
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn a_pressed_frameless_button_reports_its_pressed_frame_and_inspection_schedules_nothing()
+-> TestResult {
+    let mut ui = runtime()?;
+    let button = ui.mount_tree(Button::new("Tool", |_| Ok(())).frameless().key("tool"))?;
+    ui.flush(Duration::ZERO)?;
+    ui.paint()?;
+    let bounds = ui.bounds(&button)?.ok_or("laid out")?;
+    let center = Point::new(
+        bounds.x() + bounds.width() / 2.0,
+        bounds.y() + bounds.height() / 2.0,
+    )?;
+    ui.pointer_input(PointerEvent::new(
+        center,
+        PointerKind::Press(PointerButton::Primary),
+    ))?;
+    ui.flush(ui.now())?;
+    ui.paint()?;
+    let pressed = ui
+        .theme()
+        .palette(ThemeMode::Dark)?
+        .color(ColorRole::ButtonPressed);
+    assert_eq!(painted(&ui, &button)?.0, Some(pressed.channels()));
+    // Inspecting reads the record: no deadline, no pending work, the same
+    // answer twice, and no layout or paint work follows from it.
+    let deadline = ui.next_deadline();
+    ui.set_profiling(true)?;
+    ui.clear_profile()?;
+    let first = painted(&ui, &button)?;
+    assert_eq!(painted(&ui, &button)?, first);
+    assert_eq!(ui.next_deadline(), deadline);
+    assert_eq!(
+        ui.flush(ui.now())?.components_updated,
+        0,
+        "nothing to update"
+    );
+    ui.paint()?;
+    let work: Vec<_> = ui
+        .profile()
+        .stats
+        .into_iter()
+        .filter(|stat| {
+            matches!(
+                stat.operation,
+                ProfileOperation::Layout
+                    | ProfileOperation::Measure
+                    | ProfileOperation::Arrange
+                    | ProfileOperation::Paint
+            )
+        })
+        .collect();
+    assert!(work.is_empty(), "the retained paint is reused: {work:?}");
+    Ok(())
+}
+
+/// The masks drawn wholly inside `bounds`, as mask and color.
+fn masks_in(scene: &DisplayList, bounds: Rect) -> Vec<(MaskId, Color)> {
+    scene
+        .commands()
+        .iter()
+        .filter_map(|command| match command {
+            DrawCommand::DrawMask {
+                rect, mask, color, ..
+            } if rect.x() >= bounds.x()
+                && rect.x() + rect.width() <= bounds.x() + bounds.width()
+                && rect.y() >= bounds.y()
+                && rect.y() + rect.height() <= bounds.y() + bounds.height() =>
+            {
+                Some((*mask, *color))
+            }
+            _ => None,
+        })
+        .collect()
+}
+
+/// The colors of the masks inside `bounds` that a reference control inside
+/// `reference` does not draw. Masks are shared within a scene by content,
+/// so two controls that differ in one part (an icon, a label) differ in
+/// exactly that part's masks: this identifies a part's coverage without
+/// guessing it from its shape.
+fn differing(scene: &DisplayList, bounds: Rect, reference: Rect) -> Vec<Color> {
+    let shared: Vec<MaskId> = masks_in(scene, reference)
+        .into_iter()
+        .map(|(mask, _)| mask)
+        .collect();
+    masks_in(scene, bounds)
+        .into_iter()
+        .filter(|(mask, _)| !shared.contains(mask))
+        .map(|(_, color)| color)
+        .collect()
+}
+
+fn bounds_of(ui: &Runtime, id: &WidgetId) -> TestResult<Rect> {
+    Ok(ui.bounds(id)?.ok_or("laid out")?)
+}
+
+/// Paints and checks the disabled anchors' muted parts in `muted`: the
+/// anchor's icon against its icon-less reference, the chip's label against
+/// a chip with another label, and both anchors' reported foreground.
+fn check_muted_parts(ui: &mut Runtime, parts: &[WidgetId; 5], muted: Color) -> TestResult {
+    let [anchor, reference, trigger, chip, other_chip] = parts;
+    let scene = ui.paint()?;
+    let palette = ui.theme().palette(ThemeMode::Dark)?;
+    // The icon is the anchor's only part the reference lacks: drawn, and
+    // muted.
+    let icon = differing(&scene, bounds_of(ui, anchor)?, bounds_of(ui, reference)?);
+    assert!(!icon.is_empty(), "the icon is drawn");
+    assert!(icon.iter().all(|color| *color == muted), "{icon:?}");
+    // The chip's label is its only part the other chip lacks: drawn, and
+    // muted. Its container keeps its color, and nothing in the chip uses the
+    // active label color.
+    let label = differing(&scene, bounds_of(ui, chip)?, bounds_of(ui, other_chip)?);
+    assert!(!label.is_empty(), "the label is drawn");
+    assert!(label.iter().all(|color| *color == muted), "{label:?}");
+    let own: Vec<Color> = masks_in(&scene, bounds_of(ui, chip)?)
+        .into_iter()
+        .map(|(_, color)| color)
+        .collect();
+    assert!(
+        !own.contains(&palette.color(ColorRole::OnSecondaryContainer)),
+        "{own:?}"
+    );
+    let fills = drawn_in(&scene, bounds_of(ui, chip)?);
+    assert!(
+        fills.contains(&palette.color(ColorRole::SecondaryContainer)),
+        "{fills:?}"
+    );
+    // Both anchors report the muted foreground they painted.
+    for framed in [anchor, trigger] {
+        assert_eq!(painted(ui, framed)?.1, Some(muted.channels()));
+    }
+    Ok(())
+}
+
+#[test]
+fn disabled_dropdown_anchors_mute_icon_captions_and_chips_and_follow_overridden_roles() -> TestResult
+{
+    let mut ui = runtime()?;
+    // Each control has a reference that differs in one part: the same
+    // caption without its icon, and a chip with another label.
+    let iconic = || {
+        [
+            Choice::new(0, "Low").leading_icon(Icon::Info),
+            Choice::new(1, "High"),
+        ]
+    };
+    let plain = || [Choice::new(0, "Low"), Choice::new(1, "High")];
+    let longer = || [Choice::new(0, "Low"), Choice::new(1, "Highest")];
+    let root = ui.mount_tree(
+        Column::new([
+            Select::new(&ui, ui.signal(0_u32), iconic())?
+                .disabled()
+                .key("single-choice"),
+            Select::new(&ui, ui.signal(0_u32), plain())?
+                .disabled()
+                .key("single-plain"),
+            MultiSelect::new(&ui, ui.signal(vec![1_u32]), plain())?
+                .disabled()
+                .key("multi-choice"),
+            MultiSelect::new(&ui, ui.signal(vec![1_u32]), longer())?
+                .disabled()
+                .key("multi-longer"),
+        ])
+        .key("root"),
+    )?;
+    ui.flush(Duration::ZERO)?;
+    ui.paint()?;
+    let find = |key: &str| -> TestResult<WidgetId> {
+        Ok(ui.find_descendant(&root, key)?.ok_or("mounted")?)
+    };
+    let anchor = framed_anchor(&ui, find("single-choice")?)?;
+    let reference = framed_anchor(&ui, find("single-plain")?)?;
+    let trigger = framed_anchor(&ui, find("multi-choice")?)?;
+    let chip_of = |control: WidgetId| -> TestResult<WidgetId> {
+        let chips = ui.find_descendant(&control, "chips")?.ok_or("chips")?;
+        Ok(ui.children(&chips)?.into_iter().next().ok_or("a chip")?)
+    };
+    let chip = chip_of(find("multi-choice")?)?;
+    let other_chip = chip_of(find("multi-longer")?)?;
+    let parts = [anchor.clone(), reference, trigger.clone(), chip, other_chip];
+    let muted = ui.theme().palette(ThemeMode::Dark)?.color(ColorRole::Muted);
+    check_muted_parts(&mut ui, &parts, muted)?;
+    // Overridden outline and muted roles reach both anchors and the chip,
+    // in what they draw and in what they report.
+    let outline = Color::from_srgb8(91, 51, 23, 255);
+    let override_muted = Color::from_srgb8(51, 91, 23, 255);
+    ui.theme()
+        .set_color(ThemeMode::Dark, ColorRole::Outline, outline)?;
+    ui.theme()
+        .set_color(ThemeMode::Dark, ColorRole::Muted, override_muted)?;
+    ui.flush(ui.now())?;
+    check_muted_parts(&mut ui, &parts, override_muted)?;
+    let scene = ui.paint()?;
+    for framed in [&anchor, &trigger] {
+        let drawn = drawn_in(&scene, bounds_of(&ui, framed)?);
+        assert!(drawn.contains(&outline), "{drawn:?}");
+        assert_eq!(painted(&ui, framed)?.2, Some(outline.channels()));
+    }
+    Ok(())
+}

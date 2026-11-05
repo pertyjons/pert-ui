@@ -80,13 +80,8 @@ impl Setup {
             .expect("component semantics")
     }
     fn rows(&self) -> Vec<String> {
-        let snapshot = self.ui.inspect();
-        snapshot
-            .components
-            .iter()
-            .find(|c| c.key == "content" && c.details.properties.contains_key("results"))
-            .and_then(|c| c.details.semantics.clone())
-            .expect("picker content")
+        support::picker_results(&self.ui, &support::widget(&self.ui, &self.root, "picker"))
+            .unwrap_or_else(|| Semantics::new(SemanticRole::ListBox))
             .items
             .iter()
             .map(|item| item.name.clone().unwrap_or_default())
@@ -545,7 +540,12 @@ fn picker_description_configuration_waits_for_the_next_session() {
     settle(&mut s.ui);
     assert_eq!(s.semantics("picker").name.as_deref(), Some("Old picker"));
     assert_eq!(s.semantics("picker").role, SemanticRole::Dialog);
-    assert_eq!(s.semantics("content").name.as_deref(), Some("Old results"));
+    assert_eq!(
+        support::picker_results(&s.ui, &support::widget(&s.ui, &s.root, "picker"))
+            .and_then(|list| list.name)
+            .as_deref(),
+        Some("Old results")
+    );
     assert_eq!(panel_width(&s), before);
     assert!(
         s.ui.inspect()
@@ -567,7 +567,12 @@ fn picker_description_configuration_waits_for_the_next_session() {
     s.open();
     assert_eq!(s.semantics("picker").name.as_deref(), Some("New picker"));
     assert_eq!(s.semantics("picker").role, SemanticRole::Popover);
-    assert_eq!(s.semantics("content").name.as_deref(), Some("New results"));
+    assert_eq!(
+        support::picker_results(&s.ui, &support::widget(&s.ui, &s.root, "picker"))
+            .and_then(|list| list.name)
+            .as_deref(),
+        Some("New results")
+    );
     assert!(panel_width(&s) > before);
     assert_eq!(s.rows().first().map(String::as_str), Some("Knobs"));
     assert!(

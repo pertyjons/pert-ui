@@ -178,6 +178,15 @@ pub enum ValidationCode {
     /// and the children of a parent whose
     /// [`Component::stacks_children`](crate::Component::stacks_children) is true
     /// may overlap each other.
+    ///
+    /// Peers are compared only within one window and one parent. Up to eight
+    /// overlapping pairs under a parent are reported as one issue per pair,
+    /// naming the two components. More are reported as one issue for that
+    /// parent, whose components are every participant and whose message gives
+    /// the number of pairs and components and the first four pairs. The check
+    /// sweeps each parent's peers along one axis, so a disjoint row or column
+    /// of peers costs O(n log n) comparisons; a disjoint grid or many genuine
+    /// overlaps can still cost comparisons quadratic in the number of peers.
     UnexpectedOverlap,
     /// A virtualized collection (a [`VirtualList`](crate::VirtualList), also the
     /// body of a [`Table`](crate::Table) or [`Tree`](crate::Tree)) of at least 100
@@ -204,9 +213,22 @@ pub enum ValidationCode {
     /// A visible component measured or is laid out taller than a parent whose
     /// [`ValidationHints::fixed_height`] is set, or starts above it, such as a
     /// control in a [`Table`](crate::Table) row lower than ControlHeight, so
-    /// the parent compresses or cuts it off. The issue names the component and
+    /// the parent compresses or cuts it off. It is also reported for a child
+    /// whose parent placed it with
+    /// [`ArrangeContext::place_fixed_slot`](crate::ArrangeContext::place_fixed_slot)
+    /// along [`Orientation::Vertical`](crate::Orientation::Vertical), such as a
+    /// row of a fixed-extent [`VirtualList`](crate::VirtualList), when the
+    /// child measured taller than the slot. The issue names the component and
     /// the parent. Schema 16 added this code.
     ExceedsFixedHeight,
+    /// A visible component measured wider than the fixed-width slot its parent
+    /// placed it into with
+    /// [`ArrangeContext::place_fixed_slot`](crate::ArrangeContext::place_fixed_slot)
+    /// along [`Orientation::Horizontal`](crate::Orientation::Horizontal), such
+    /// as an item of a fixed-extent horizontal
+    /// [`VirtualList`](crate::VirtualList), so the slot cuts it off. The issue
+    /// names the component and the parent. Schema 18 added this code.
+    ExceedsFixedWidth,
 }
 
 /// One actionable development error, referring to every affected component.

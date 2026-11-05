@@ -15,7 +15,7 @@ delivery and authority records, and the parameter-only controls [`Slider`],
 # Parameters
 
 ```rust
-use pert_ui::{parameter::*, prelude::*};
+use pert_ui::parameter::*;
 
 let amount = ParameterSpec::new("Amount", -100.0, 100.0, 0.0)?;
 let id = ParameterId::new(1, 42, "amount")?;

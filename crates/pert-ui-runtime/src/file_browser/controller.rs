@@ -5,8 +5,8 @@ use super::{
     ListingError,
 };
 use crate::{
-    Element, EventContext, ListItems, ListSelection, ListSource, ReadSignal, RequestTracker,
-    RuntimeError, SelectionMode, Signal, TicketStatus, TreeController, TreeItems, TreeSource,
+    EventContext, ListItems, ListSelection, ListSource, ReadSignal, RequestTracker, RuntimeError,
+    SelectionMode, Signal, TicketStatus, TreeController, TreeItems, TreeSource,
 };
 use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
@@ -184,31 +184,34 @@ impl TreeItems for Folders {
             Listing::Failed(_) => Some(Vec::new()),
         }
     }
-    fn build(&self, key: &str) -> Option<Element> {
+    fn build(&self, key: &str) -> Option<crate::RowItem> {
         if let Some(folder) = key.strip_prefix(LOADING) {
             self.paths.borrow().path(folder)?;
-            return Some(placeholder(
-                key,
-                PlaceholderText::Bound(self.texts.loading.clone()),
-                None,
-            ));
+            return Some(
+                placeholder(
+                    key,
+                    PlaceholderText::Bound(self.texts.loading.clone()),
+                    None,
+                )
+                .into(),
+            );
         }
         if let Some(folder) = key.strip_prefix(FAILED) {
             let path = self.paths.borrow().path(folder)?.clone();
             let Some(Listing::Failed(error)) = self.listings.0.get(&path) else {
                 return None;
             };
-            return Some(placeholder(
-                key,
-                PlaceholderText::Fixed(error.message().to_owned()),
-                Some(error),
-            ));
+            return Some(
+                placeholder(
+                    key,
+                    PlaceholderText::Fixed(error.message().to_owned()),
+                    Some(error),
+                )
+                .into(),
+            );
         }
         let path = self.paths.borrow().path(key)?.clone();
-        Some(Element::new(
-            key,
-            FolderRow::new(super::display_name(&path), path, self.activate.clone()),
-        ))
+        Some(FolderRow::new(super::display_name(&path), path, self.activate.clone()).into())
     }
 }
 
@@ -240,14 +243,13 @@ impl ListItems for Entries {
             EntryLine::Placeholder { key, .. } => (*key).to_owned(),
         })
     }
-    fn build(&self, index: usize) -> Option<Element> {
+    fn build(&self, index: usize) -> Option<crate::RowItem> {
         Some(match self.lines.get(index)? {
-            EntryLine::Entry { key, entry } => Element::new(
-                key.clone(),
-                EntryRow::new(key.clone(), entry, self.activate.clone()),
-            ),
+            EntryLine::Entry { key, entry } => {
+                EntryRow::new(key.clone(), entry, self.activate.clone()).into()
+            }
             EntryLine::Placeholder { key, text, error } => {
-                placeholder(key, text.clone(), error.as_ref())
+                placeholder(key, text.clone(), error.as_ref()).into()
             }
         })
     }
@@ -1020,7 +1022,7 @@ mod tests {
         )
         .unwrap();
         let root = ui
-            .mount_tree(Element::new(
+            .mount_tree(crate::Element::new(
                 "browser",
                 FileBrowser::new(&controller, 24.0).unwrap(),
             ))

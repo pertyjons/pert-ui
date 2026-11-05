@@ -1603,12 +1603,12 @@ mod address_children {
         fn key(&self, index: usize) -> Option<String> {
             self.keys.get(index).cloned()
         }
-        fn build(&self, index: usize) -> Option<Element> {
+        fn build(&self, index: usize) -> Option<RowItem> {
             let key = self.keys.get(index)?;
             Some(if self.buttons {
-                Element::new(key.clone(), Button::new(key.as_str(), |_| Ok(())))
+                Element::new(key.clone(), Button::new(key.as_str(), |_| Ok(()))).into()
             } else {
-                Element::new(key.clone(), Label::new(key.as_str()))
+                Element::new(key.clone(), Label::new(key.as_str())).into()
             })
         }
     }

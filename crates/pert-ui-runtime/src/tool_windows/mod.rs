@@ -400,7 +400,8 @@ impl ToolWindow {
     /// Restricts whether the user may open this tool window in its own native
     /// window and return it from there. It combines with
     /// [`ToolWindowLayout::detachable`] and the stricter wins. The default
-    /// allows.
+    /// allows. It does not restrict the application: a description in window
+    /// mode, or the controller, still opens the window.
     pub fn detachable(mut self, permission: impl Into<Permission>) -> Self {
         self.window.detachable = self.window.detachable.and(permission);
         self
@@ -614,6 +615,15 @@ fn floating_frame(frame: Option<Rect>, size: Size) -> Result<Rect, RuntimeError>
 /// next expansion. A detach the host refuses returns the tool window to
 /// docking, also reported with [`ChangeOrigin::Presentation`]. Native window
 /// placement and decorations are the platform's.
+///
+/// A tool window described with [`ToolWindowMode::Window`] and
+/// [`ToolWindow::expanded`] opens its own window from the start: once its
+/// panel has mounted and updated, the layout requests the detach in the
+/// event phase after that flush, as a later expansion would. The request is
+/// made once while it is pending or presented; a refusal returns the tool
+/// window to docking as above. An application's own description is honored
+/// whatever [`ToolWindow::detachable`] says, since that restricts the user,
+/// as [`ToolWindowController::set_mode`] is.
 ///
 /// **Keyboard.** Each stripe is one Tab stop: unmodified arrow keys along the
 /// stripe move between its buttons, unmodified Home and End jump to the first

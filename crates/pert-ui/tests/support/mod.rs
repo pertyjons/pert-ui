@@ -10,7 +10,9 @@
 //! reports the calling line.
 #![allow(dead_code)]
 
-use pert_ui::{KeyAction, KeyCode, Runtime, ShownTaskReceipt, TaskReceipt, TaskStatus, WidgetId};
+use pert_ui::{
+    KeyAction, KeyCode, Runtime, Semantics, ShownTaskReceipt, TaskReceipt, TaskStatus, WidgetId,
+};
 
 /// Either deferral receipt, so a test that queues with every call reads their
 /// statuses through one type: [`TaskReceipt`] from `defer`, `spawn` and
@@ -119,6 +121,43 @@ pub fn widget(ui: &Runtime, root: &WidgetId, key: &str) -> WidgetId {
         Some(id) => id,
         None => panic!("no widget keyed {key:?} under {root:?}"),
     }
+}
+
+/// What inspection reports for `id` now: its semantics, or `None` when it
+/// reports none.
+///
+/// # Panics
+/// When `id` is not mounted in `ui`.
+#[track_caller]
+pub fn semantics_of(ui: &Runtime, id: &WidgetId) -> Option<Semantics> {
+    let wanted = match ui.inspection_id(id) {
+        Ok(wanted) => wanted,
+        Err(error) => panic!("inspecting {id:?}: {error}"),
+    };
+    ui.inspect()
+        .components
+        .into_iter()
+        .find(|component| component.id == wanted)
+        .and_then(|component| component.details.semantics)
+}
+
+/// The result list the `QuickPick` (or a control wrapping one) `picker`
+/// exposes as the `options` part of its `surface`, as inspection describes it
+/// now, or `None` while the picker shows no results and so has no list.
+///
+/// # Panics
+/// When `picker` has no `surface` address.
+#[track_caller]
+pub fn picker_results(ui: &Runtime, picker: &WidgetId) -> Option<Semantics> {
+    let surface = match ui.find(picker, &["surface"]) {
+        Ok(Some(surface)) => surface,
+        other => panic!("looking up the picker's surface: {other:?}"),
+    };
+    let options = match ui.find_exposed_part(&surface, "options") {
+        Ok(options) => options?,
+        Err(error) => panic!("looking up the picker's options: {error}"),
+    };
+    semantics_of(ui, &options)
 }
 
 /// Presses and releases `code`, without flushing.

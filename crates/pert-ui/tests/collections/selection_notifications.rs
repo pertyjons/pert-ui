@@ -17,8 +17,8 @@ impl ListItems for Words {
     fn key(&self, index: usize) -> Option<String> {
         self.0.get(index).map(|word| (*word).to_owned())
     }
-    fn build(&self, index: usize) -> Option<Element> {
-        Some(Label::new(*self.0.get(index)?).key("row"))
+    fn build(&self, index: usize) -> Option<RowItem> {
+        Some(Label::new(*self.0.get(index)?).into())
     }
     fn text(&self, index: usize) -> Option<String> {
         self.key(index)
@@ -261,8 +261,8 @@ impl TreeItems for Outline {
             Vec::new()
         }
     }
-    fn build(&self, key: &str) -> Option<Element> {
-        Some(Label::new(key).key("row"))
+    fn build(&self, key: &str) -> Option<RowItem> {
+        Some(Label::new(key).into())
     }
 }
 

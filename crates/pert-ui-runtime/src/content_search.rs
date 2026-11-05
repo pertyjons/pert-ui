@@ -169,6 +169,17 @@ pub enum ContentField {
     Value,
     /// A collection row's searchable text.
     Row,
+    /// The name of one of the component's
+    /// [`Semantics::items`](crate::Semantics::items), such as a menu
+    /// command, a toast's message or a tab title. `index` is the item's
+    /// position in the items the component reported when the search visited
+    /// it: a presentation-time position, not an identity, which a later
+    /// change to the items can give to another item. A jump reveals and
+    /// focuses the component, not the item.
+    Item {
+        /// The item's position among the component's semantic items.
+        index: usize,
+    },
 }
 
 /// One item content search found.
@@ -184,7 +195,7 @@ pub struct ContentHit {
     /// Which text matched.
     pub field: ContentField,
     /// The component's other text: its value when the name matched, its name
-    /// when the value matched, so a picker listing
+    /// when the value or an item matched, so a picker listing
     /// [everything](ContentQuery::everything) can match either. `None` when
     /// the component has no other text, for a row, and never the value of a
     /// [protected](crate::Semantics::protected) component.
@@ -219,8 +230,18 @@ pub struct ContentStep {
 /// most its result limit, so a search with no matches over a large tree is
 /// bounded per call; call it again to continue where it stopped. The search
 /// walks components in tree order (window roots in mount order, children in
-/// their order) and, within a collection that offers [`ContentRows`], the rows
-/// that are not mounted, after the collection itself.
+/// their order). For each component it matches the name and value, then the
+/// names of its [semantic items](crate::Semantics::items) in their order
+/// ([`ContentField::Item`]), then, within a collection that offers
+/// [`ContentRows`], the rows that are not mounted, and then its children.
+/// The items of a [protected](crate::Semantics::protected) component, of a
+/// component that names its children and of one a modal surface blocks are
+/// not searched.
+///
+/// A component's items are copied once, when the search visits the
+/// component: a step that stops inside them continues from that copy, so an
+/// item added or removed later is seen only by a new search, and no item is
+/// reported twice or skipped within one search.
 ///
 /// The search is a cursor, not a snapshot. If a component mounts or unmounts,
 /// an element's [searchability](crate::Element::with_searchable) changes, or
@@ -231,10 +252,13 @@ pub struct ContentStep {
 ///
 /// The budget counts every unit of work that grows with the tree or a
 /// collection: discovering the window roots (one unit per mounted component
-/// examined), visiting a component, indexing a collection's mounted children
-/// (one unit each) and examining a collection row. Besides that, each step
-/// reads the revision of every collection the search has already started on,
-/// once, without charging it.
+/// examined), visiting a component, examining one of its items, indexing a
+/// collection's mounted children (one unit each) and examining a collection
+/// row. Visiting a component inspects it once and copies its item names: one
+/// unit, although its cost grows with the component's items and their text,
+/// which the budget does not divide. Besides that, each step reads the
+/// revision of every collection the search has already started on, once,
+/// without charging it.
 #[derive(Debug)]
 pub struct ContentSearch {
     pub(crate) query: ContentQuery,
@@ -245,6 +269,9 @@ pub struct ContentSearch {
     pub(crate) roots: Vec<u64>,
     /// Components still to visit, in reverse so the next is last.
     pub(crate) pending: Vec<u64>,
+    /// A component whose semantic items are being searched, before its rows
+    /// and children.
+    pub(crate) items: Option<ItemScan>,
     /// A collection whose unmounted rows are being searched.
     pub(crate) rows: Option<RowScan>,
     /// Every collection whose rows the search has started, with the rows it
@@ -274,6 +301,20 @@ impl std::fmt::Debug for VisitedRows {
     }
 }
 
+/// The item names of a component the search visited, copied then.
+#[derive(Debug)]
+pub(crate) struct ItemScan {
+    pub(crate) component: crate::WidgetId,
+    pub(crate) role: SemanticRole,
+    /// The component's name, reported as each item hit's other text.
+    pub(crate) name: Option<String>,
+    pub(crate) path: Option<Vec<String>>,
+    pub(crate) visible: bool,
+    /// Each named item's position among the semantic items, with its name.
+    pub(crate) texts: Vec<(usize, String)>,
+    pub(crate) next: usize,
+}
+
 #[derive(Debug)]
 pub(crate) struct RowScan {
     pub(crate) collection: u64,
@@ -293,6 +334,7 @@ impl ContentSearch {
             discover: None,
             roots: Vec::new(),
             pending: Vec::new(),
+            items: None,
             rows: None,
             visited: Vec::new(),
             generation: 0,

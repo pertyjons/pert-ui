@@ -1,0 +1,57 @@
+# Round 1, 2026-11-04 about 18:17 +01:00, commit 9aaacca export, release.
+# Transcribed from the session log. At the time, the output was filtered with
+# `grep -E "total|input"`, so the heap and limit lines are missing here; they
+# were identical to round 2's. Load average 5.4-6.1 (another session compiling).
+
+== taskset -c 2, run 1
+ 3958 B start,  4023 B end, caret  2036 | insert total median   5.855  p95   6.212  max   6.448 ms
+      input median   5.837  flush median   0.008  paint median   0.008 ms
+ 3958 B start,  4023 B end, caret  2036 | Enter  total median   6.486  p95   9.581  max  10.659 ms
+      input median   6.476  flush median   0.001  paint median   0.011 ms
+ 8054 B start,  8119 B end, caret  4050 | insert total median  13.602  p95  21.392  max  24.222 ms
+      input median  13.556  flush median   0.025  paint median   0.021 ms
+ 8054 B start,  8119 B end, caret  4050 | Enter  total median  14.089  p95  14.867  max  15.349 ms
+      input median  14.069  flush median   0.001  paint median   0.019 ms
+16246 B start, 16311 B end, caret  8165 | insert total median  25.412  p95  27.002  max  39.575 ms
+      input median  25.360  flush median   0.030  paint median   0.019 ms
+16246 B start, 16311 B end, caret  8165 | Enter  total median  26.333  p95  32.484  max  43.222 ms
+      input median  26.315  flush median   0.001  paint median   0.017 ms
+== taskset -c 2, run 2
+ 3958 B start,  4023 B end, caret  2036 | insert total median   5.902  p95   6.565  max   7.747 ms
+      input median   5.887  flush median   0.008  paint median   0.008 ms
+ 3958 B start,  4023 B end, caret  2036 | Enter  total median   6.264  p95   6.430  max   6.566 ms
+      input median   6.257  flush median   0.000  paint median   0.008 ms
+ 8054 B start,  8119 B end, caret  4050 | insert total median  11.878  p95  12.240  max  12.319 ms
+      input median  11.853  flush median   0.014  paint median   0.011 ms
+ 8054 B start,  8119 B end, caret  4050 | Enter  total median  12.590  p95  12.855  max  13.105 ms
+      input median  12.576  flush median   0.001  paint median   0.013 ms
+16246 B start, 16311 B end, caret  8165 | insert total median  24.174  p95  26.889  max  41.368 ms
+      input median  24.136  flush median   0.023  paint median   0.015 ms
+16246 B start, 16311 B end, caret  8165 | Enter  total median  25.884  p95  26.603  max  27.463 ms
+      input median  25.870  flush median   0.001  paint median   0.014 ms
+== taskset -c 2, run 3
+ 3958 B start,  4023 B end, caret  2036 | insert total median   5.853  p95   6.072  max   6.280 ms
+      input median   5.836  flush median   0.008  paint median   0.008 ms
+ 3958 B start,  4023 B end, caret  2036 | Enter  total median   6.263  p95   6.514  max   7.047 ms
+      input median   6.255  flush median   0.000  paint median   0.009 ms
+ 8054 B start,  8119 B end, caret  4050 | insert total median  11.909  p95  12.223  max  12.561 ms
+      input median  11.882  flush median   0.016  paint median   0.012 ms
+ 8054 B start,  8119 B end, caret  4050 | Enter  total median  13.213  p95  13.994  max  14.103 ms
+      input median  13.198  flush median   0.001  paint median   0.013 ms
+16246 B start, 16311 B end, caret  8165 | insert total median  25.276  p95  26.448  max  26.753 ms
+      input median  25.237  flush median   0.023  paint median   0.015 ms
+16246 B start, 16311 B end, caret  8165 | Enter  total median  27.276  p95  28.961  max  30.682 ms
+      input median  27.259  flush median   0.001  paint median   0.016 ms
+== taskset -c 20, run 1
+ 3958 B start,  4023 B end, caret  2036 | insert total median   9.259  p95   9.719  max   9.919 ms
+      input median   9.210  flush median   0.024  paint median   0.021 ms
+ 3958 B start,  4023 B end, caret  2036 | Enter  total median  10.008  p95  10.534  max  11.212 ms
+      input median   9.986  flush median   0.001  paint median   0.021 ms
+ 8054 B start,  8119 B end, caret  4050 | insert total median  18.494  p95  19.410  max  21.825 ms
+      input median  18.441  flush median   0.029  paint median   0.022 ms
+ 8054 B start,  8119 B end, caret  4050 | Enter  total median  25.165  p95  26.238  max  28.688 ms
+      input median  25.130  flush median   0.001  paint median   0.031 ms
+16246 B start, 16311 B end, caret  8165 | insert total median  46.636  p95  71.106  max  98.847 ms
+      input median  46.549  flush median   0.053  paint median   0.036 ms
+16246 B start, 16311 B end, caret  8165 | Enter  total median  63.983  p95  87.128  max 138.722 ms
+      input median  63.943  flush median   0.002  paint median   0.037 ms

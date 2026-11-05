@@ -23,11 +23,12 @@ impl ListItems for Catalog {
     fn key(&self, index: usize) -> Option<String> {
         (index < self.count).then(|| format!("entry-{index}"))
     }
-    fn build(&self, index: usize) -> Option<Element> {
-        let key = self.key(index)?;
+    fn build(&self, index: usize) -> Option<RowItem> {
+        if index >= self.count {
+            return None;
+        }
         let status = self.status.clone();
-        Some(Element::new(
-            key,
+        Some(
             Row::new([
                 label("name", format!("Entry {}", index + 1)),
                 Element::new(
@@ -36,8 +37,9 @@ impl ListItems for Catalog {
                         status.set(format!("Picked entry {}", index + 1))
                     }),
                 ),
-            ]),
-        ))
+            ])
+            .into(),
+        )
     }
     fn index_of(&self, key: &str) -> Option<usize> {
         key.strip_prefix("entry-")?
@@ -114,7 +116,9 @@ pub(crate) fn virtual_list(ui: &Runtime, status: &Signal<String>) -> Result<Elem
                 240,
                 Element::new(
                     "catalog",
-                    VirtualList::new(catalog.read_only(), 36.0)?.controller(controller.clone()),
+                    // A row holds a button, 40 px with the row's spacing;
+                    // a shorter fixed row height would cut it off.
+                    VirtualList::new(catalog.read_only(), 40.0)?.controller(controller.clone()),
                 )
                 .with_label("Catalog"),
             ),
@@ -132,15 +136,18 @@ impl ListItems for Swatches {
     fn key(&self, index: usize) -> Option<String> {
         (index < self.0).then(|| format!("swatch-{index}"))
     }
-    fn build(&self, index: usize) -> Option<Element> {
-        Some(Element::new(
-            self.key(index)?,
+    fn build(&self, index: usize) -> Option<RowItem> {
+        if index >= self.0 {
+            return None;
+        }
+        Some(
             Container::new(Element::new(
                 "name",
-                Label::new(format!("Item {}", index + 1)),
+                Label::new(format!("Item {}", index + 1)).overflow(TextOverflow::Ellipsis),
             ))
-            .padding(Length::from(8)),
-        ))
+            .padding(Length::from(8))
+            .into(),
+        )
     }
     // What the item shows, so a filter matches what the user reads.
     fn text(&self, index: usize) -> Option<String> {
@@ -183,8 +190,8 @@ impl TreeItems for Folders {
     fn can_expand(&self, key: &str) -> bool {
         Self::is_folder(key)
     }
-    fn build(&self, key: &str) -> Option<Element> {
-        Some(Element::new(key, Label::new(key.rsplit('/').next()?)))
+    fn build(&self, key: &str) -> Option<RowItem> {
+        Some(Label::new(key.rsplit('/').next()?).into())
     }
     fn text(&self, key: &str) -> Option<String> {
         key.rsplit('/').next().map(str::to_owned)
@@ -210,17 +217,21 @@ impl ListItems for Notes {
     fn key(&self, index: usize) -> Option<String> {
         (index < self.0).then(|| format!("note-{index}"))
     }
-    fn build(&self, index: usize) -> Option<Element> {
+    fn build(&self, index: usize) -> Option<RowItem> {
+        if index >= self.0 {
+            return None;
+        }
         let sentences = 1 + index % 5;
         let text = format!(
             "Note {}. {}",
             index + 1,
             "A sentence long enough to wrap in a narrow list. ".repeat(sentences)
         );
-        Some(Element::new(
-            self.key(index)?,
-            Container::new(Element::new("text", Label::new(text))).padding(Length::from(6)),
-        ))
+        Some(
+            Container::new(Element::new("text", Label::new(text)))
+                .padding(Length::from(6))
+                .into(),
+        )
     }
     fn index_of(&self, key: &str) -> Option<usize> {
         key.strip_prefix("note-")?

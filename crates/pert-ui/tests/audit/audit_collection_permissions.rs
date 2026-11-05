@@ -21,8 +21,10 @@ impl ListItems for Rows {
     fn key(&self, index: usize) -> Option<String> {
         (index < 3).then(|| format!("row{index}"))
     }
-    fn build(&self, index: usize) -> Option<Element> {
-        ListItems::key(self, index).map(|key| Element::new(key, Label::new("Row")))
+    fn build(&self, index: usize) -> Option<RowItem> {
+        ListItems::key(self, index)
+            .map(|key| Element::new(key, Label::new("Row")))
+            .map(Into::into)
     }
 }
 impl TreeItems for Rows {
@@ -32,8 +34,8 @@ impl TreeItems for Rows {
     fn children(&self, _: &str) -> Vec<String> {
         vec![]
     }
-    fn build(&self, key: &str) -> Option<Element> {
-        Some(Element::new(key, Label::new(key)))
+    fn build(&self, key: &str) -> Option<RowItem> {
+        Some(Element::new(key, Label::new(key)).into())
     }
 }
 fn runtime() -> Runtime {

@@ -57,7 +57,7 @@ impl ListItems for Rows {
     fn key(&self, index: usize) -> Option<String> {
         Some(self.tasks.get(index)?.id.to_string())
     }
-    fn build(&self, index: usize) -> Option<Element> {
+    fn build(&self, index: usize) -> Option<RowItem> {
         let task = self.tasks.get(index)?;
         let id = task.id;
         let (store, log) = (self.store.clone(), self.log.clone());
@@ -71,7 +71,7 @@ impl ListItems for Rows {
             edit(&store, id, |task| task.title = title.to_owned())
         })
         .in_row(true);
-        Some(Row::new([check.key("done"), title.key("title").with_grow(1)]).key("row"))
+        Some(Row::new([check.key("done"), title.key("title").with_grow(1)]).into())
     }
     fn text(&self, index: usize) -> Option<String> {
         Some(self.tasks.get(index)?.title.clone())

@@ -439,6 +439,14 @@ type ActivateFn = Box<dyn FnMut(&mut EventContext) -> Result<(), RuntimeError>>;
 /// overriding `Button` changes enabled buttons only. A zero border width omits
 /// the outline; a width reaching half the smaller extent fills the shape, as
 /// for an editable field's frame. Custom themes own their contrast choices.
+/// Disabled [`Select`](crate::Select) and
+/// [`MultiSelect`](crate::MultiSelect) anchors use the same frame.
+///
+/// Inspection reports the colors the button last painted in its box model:
+/// `background` and `border` for a painted frame, `foreground` for its
+/// caption. They are absent before the first paint and stay as painted until
+/// the next paint replaces them; a frameless button reports a background only
+/// while hover or a press paints its frame. Inspecting computes nothing.
 /// Matching primary-button release inside activates once; release outside,
 /// Escape or context loss cancels. Unmodified Enter/Space activate on matched release, ignoring
 /// OS repeats. Whichever of the pointer and a key arms first owns the gesture and
@@ -481,8 +489,60 @@ pub struct Button {
     input: ActivationState,
     prepared: RefCell<Option<TextLayout>>,
     frameless: bool,
+    /// The colors the last paint used, which inspection reports; `None`
+    /// before the first paint.
+    painted: Cell<Option<Painted>>,
 }
 description_debug!(Button);
+
+/// The colors one paint of a control used, each absent when not painted.
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub(crate) struct Painted {
+    pub(crate) background: Option<Color>,
+    pub(crate) foreground: Option<Color>,
+    pub(crate) border: Option<(f32, Color)>,
+}
+impl Painted {
+    /// Reports the colors in a box model, replacing what it held.
+    pub(crate) fn report(painted: Option<Self>, box_model: &mut BoxModelInspection) {
+        let painted = painted.unwrap_or_default();
+        box_model.background = painted.background.map(Color::channels);
+        box_model.foreground = painted.foreground.map(Color::channels);
+        box_model.border = painted.border.map(|(width, color)| BorderInspection {
+            width,
+            color: color.channels(),
+        });
+    }
+}
+
+/// Paints a control's frame and returns what it painted: `fill` when the
+/// control is enabled, or, with `fill` `None`, the neutral inactive-control
+/// frame, a `Surface` fill and an inward `Outline` border. Button and the
+/// Select and MultiSelect anchors share it, so their disabled treatment
+/// cannot drift apart.
+pub(crate) fn control_frame(
+    p: &mut Painter,
+    rect: Rect,
+    fill: Option<ColorRole>,
+) -> Result<Painted, DrawError> {
+    let shape = Shape::Rounded(Length::new(p.metric(MetricRole::CornerRadius))?);
+    let background = p.color(fill.unwrap_or(ColorRole::Surface));
+    p.fill_shape(rect, shape, background)?;
+    // A zero border width paints no outline, so none is reported.
+    let width = p.metric(MetricRole::BorderWidth);
+    let border = if fill.is_none() && width > 0.0 {
+        let color = p.color(ColorRole::Outline);
+        p.stroke_shape(rect, shape, Length::new(width)?, color)?;
+        Some((width, color))
+    } else {
+        None
+    };
+    Ok(Painted {
+        background: Some(background),
+        foreground: None,
+        border,
+    })
+}
 impl Button {
     /// Creates an enabled button showing `text`; the callback expresses
     /// application intent.
@@ -515,6 +575,7 @@ impl Button {
             input: ActivationState::default(),
             prepared: RefCell::new(None),
             frameless: false,
+            painted: Cell::new(None),
         }
     }
     /// Creates an icon-only button with a human-readable action name for inspection.
@@ -818,50 +879,49 @@ impl Component for Button {
         let rect = Rect::from_size(size);
         let framed =
             !self.frameless || (self.enabled && (self.input.hovered || self.input.pressed()));
-        if framed || self.input.focused {
+        // Every paint replaces the whole record, so a frame or border the
+        // new state does not paint is no longer reported.
+        let mut painted = Painted::default();
+        if framed {
+            painted = control_frame(
+                painter,
+                rect,
+                self.enabled.then(|| {
+                    if self.input.pressed() {
+                        ColorRole::ButtonPressed
+                    } else if self.input.hovered {
+                        ColorRole::ButtonHover
+                    } else {
+                        ColorRole::Button
+                    }
+                }),
+            )?;
+        }
+        if self.input.focused {
             let shape = Shape::Rounded(Length::new(painter.metric(MetricRole::CornerRadius))?);
-            if framed {
-                let background = painter.color(if !self.enabled {
-                    ColorRole::Surface
-                } else if self.input.pressed() {
-                    ColorRole::ButtonPressed
-                } else if self.input.hovered {
-                    ColorRole::ButtonHover
-                } else {
-                    ColorRole::Button
-                });
-                painter.fill_shape(rect, shape, background)?;
-            }
-            if !self.enabled && !self.frameless {
-                painter.stroke_shape(
-                    rect,
-                    shape,
-                    Length::new(painter.metric(MetricRole::BorderWidth))?,
-                    painter.color(ColorRole::Outline),
-                )?;
-            }
-            if self.input.focused {
-                painter.focus_ring(rect, shape)?;
-            }
+            painter.focus_ring(rect, shape)?;
         }
         if let Some(text) = self.prepared.borrow().as_ref() {
+            let foreground = if self.enabled {
+                if self.input.pressed() {
+                    painter.color(ColorRole::OnButtonPressed)
+                } else {
+                    painter.color(ColorRole::OnButton)
+                }
+            } else {
+                painter.color(ColorRole::Muted)
+            };
             text.paint(
                 painter,
                 crate::Point::new(
                     centered(size.width(), text.size().width()),
                     centered(size.height(), text.size().height()),
                 )?,
-                if self.enabled {
-                    if self.input.pressed() {
-                        painter.color(ColorRole::OnButtonPressed)
-                    } else {
-                        painter.color(ColorRole::OnButton)
-                    }
-                } else {
-                    painter.color(ColorRole::Muted)
-                },
+                foreground,
             )?;
+            painted.foreground = Some(foreground);
         }
+        self.painted.set(Some(painted));
         Ok(())
     }
     fn inspect(&self) -> ComponentDetails {
@@ -874,6 +934,9 @@ impl Component for Button {
             .properties
             .insert("enabled".into(), InspectValue::Bool(self.enabled));
         details.validation.interactive = self.enabled;
+        // The colors of the last paint: absent before the first, and as
+        // painted until the next paint replaces them.
+        Painted::report(self.painted.get(), &mut details.box_model);
         details.semantics = Some(
             Semantics::new(SemanticRole::Button)
                 .name(self.caption.text())

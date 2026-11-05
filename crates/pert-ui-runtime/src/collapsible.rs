@@ -349,7 +349,10 @@ impl Headers {
             _ => (InputOutcome::Ignored, None),
         }
     }
+    /// One item per header, with the rectangle its painting and hit testing
+    /// use since the last arrangement; none before the first.
     fn items(&self) -> Vec<SemanticItem> {
+        let placed = self.placed.borrow();
         self.rows
             .iter()
             .map(|row| {
@@ -358,6 +361,10 @@ impl Headers {
                     .selected(self.active.as_ref() == Some(&row.key))
                     .disabled(!self.enabled)
                     .expanded(open);
+                let item = match placed.iter().find(|placed| placed.key == row.key) {
+                    Some(placed) => item.local_bounds(placed.rect),
+                    None => item,
+                };
                 if self.enabled {
                     item.action(if open {
                         SemanticAction::Collapse

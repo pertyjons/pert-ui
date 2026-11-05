@@ -11,6 +11,9 @@
 #![cfg_attr(not(feature = "svg"), doc = include_str!("guide/links/no-svg.md"))]
 #![cfg_attr(feature = "cpu", doc = include_str!("guide/links/cpu.md"))]
 #![cfg_attr(not(feature = "cpu"), doc = include_str!("guide/links/no-cpu.md"))]
+// Doctests allow unused code by default; an example imports exactly what it
+// uses, so an unused import fails it.
+#![doc(test(attr(deny(unused_imports))))]
 
 pub mod guide;
 

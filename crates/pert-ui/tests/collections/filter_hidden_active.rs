@@ -81,8 +81,8 @@ impl ListItems for Fruit {
     fn key(&self, index: usize) -> Option<String> {
         FRUIT.get(index).map(|name| name.to_lowercase())
     }
-    fn build(&self, index: usize) -> Option<Element> {
-        Some(Element::new(self.key(index)?, Label::new(FRUIT[index])))
+    fn build(&self, index: usize) -> Option<RowItem> {
+        Some(Element::new(self.key(index)?, Label::new(FRUIT[index])).into())
     }
     fn text(&self, index: usize) -> Option<String> {
         FRUIT.get(index).map(|name| (*name).to_owned())
@@ -143,8 +143,8 @@ impl TreeItems for Library {
     fn known_children(&self, key: &str) -> Option<Vec<String>> {
         Some(self.children(key))
     }
-    fn build(&self, key: &str) -> Option<Element> {
-        Some(Element::new(key, Label::new(key)))
+    fn build(&self, key: &str) -> Option<RowItem> {
+        Some(Element::new(key, Label::new(key)).into())
     }
     fn text(&self, key: &str) -> Option<String> {
         Some(key.to_owned())

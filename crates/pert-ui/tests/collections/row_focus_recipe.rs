@@ -22,7 +22,7 @@ impl ListItems for NoRows {
     fn key(&self, _index: usize) -> Option<String> {
         None
     }
-    fn build(&self, _index: usize) -> Option<Element> {
+    fn build(&self, _index: usize) -> Option<RowItem> {
         None
     }
 }
@@ -42,7 +42,7 @@ impl ListItems for Files {
     fn key(&self, index: usize) -> Option<String> {
         self.names.get(index).cloned()
     }
-    fn build(&self, index: usize) -> Option<Element> {
+    fn build(&self, index: usize) -> Option<RowItem> {
         let name = self.names.get(index)?.clone();
         let (list, selection, log) = (self.list.clone(), self.selection.clone(), self.log.clone());
         let open = Button::new(format!("Open {name}"), move |cx| {
@@ -50,7 +50,7 @@ impl ListItems for Files {
             selection.set_active(Some(name.clone()))?;
             cx.request_focus_for(&list)
         });
-        Some(open.key("row"))
+        Some(open.into())
     }
 }
 

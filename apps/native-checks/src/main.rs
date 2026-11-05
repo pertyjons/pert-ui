@@ -80,8 +80,9 @@ const SOFTWARE_INTERACTIONS: &str = "pert-ui-gallery::interaction_check_cpu";
 const MAIN_THREAD_REQUIRED: &str = "macOS native tests need the process main thread";
 /// Prefix of the line on which a check reports the GPU adapter it used, as
 /// `Hardware: ADAPTER` optionally followed by `; details`. The pixel readback
-/// check in `pert-ui-wgpu/src/native_smoke.rs` prints it;
-/// `markers_match_the_texts_the_checks_print` pins it there.
+/// check in `pert-ui-wgpu/src/native_smoke.rs` and the text-mode probe in
+/// `pert-ui-wgpu/src/cpu_parity.rs` print it;
+/// `markers_match_the_texts_the_checks_print` pins it in both.
 const HARDWARE: &str = "Hardware: ";
 /// Gallery probes print one of these lines when native visibility interrupts them.
 const INTERRUPTED: [&str; 2] = ["Interaction interrupted:", "Native restart interrupted:"];
@@ -737,14 +738,7 @@ fn main() -> ExitCode {
                 options.timeout,
             ) {
                 Ok(execution) => {
-                    hardware.extend(
-                        execution
-                            .output
-                            .iter()
-                            .filter_map(|line| line.split_once(HARDWARE))
-                            .filter_map(|(_, rest)| rest.split(';').next())
-                            .map(|adapter| adapter.trim().to_owned()),
-                    );
+                    hardware.extend(adapters(&execution.output));
                     test_outcome(&execution, macos)
                 }
                 Err(error) => Outcome::Failed(format!("could not run: {error}")),
@@ -815,6 +809,16 @@ fn main() -> ExitCode {
     }
 }
 
+/// The adapters that a check's output reports on [`HARDWARE`] lines, each
+/// without the `; details` after it.
+fn adapters(output: &[String]) -> impl Iterator<Item = String> + '_ {
+    output
+        .iter()
+        .filter_map(|line| line.split_once(HARDWARE))
+        .filter_map(|(_, rest)| rest.split(';').next())
+        .map(|adapter| adapter.trim().to_owned())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -832,10 +836,35 @@ mod tests {
                 "{file} no longer prints {MAIN_THREAD_REQUIRED:?}"
             );
         }
-        assert!(
-            renderer.contains(&format!("\"{HARDWARE}{{:?}}; ")),
-            "native_smoke.rs no longer prints the adapter as {HARDWARE:?} followed by `;`"
+        let text_modes = include_str!("../../../crates/pert-ui-wgpu/src/cpu_parity.rs");
+        for (file, source) in [("native_smoke.rs", renderer), ("cpu_parity.rs", text_modes)] {
+            assert!(
+                source.contains(&format!("\"{HARDWARE}{{:?}}; ")),
+                "{file} no longer prints the adapter as {HARDWARE:?} followed by `;`"
+            );
+        }
+    }
+
+    #[test]
+    fn adapters_are_read_from_every_check_that_prints_one() {
+        let output: Vec<String> = [
+            "running 1 test",
+            "Hardware: AdapterInfo { name: \"GPU A\" }; pixel (1, 2) RGBA [0, 0, 0, 255]",
+            "LineMask: 12 differing pixels",
+            "Hardware: AdapterInfo { name: \"GPU B\" }; text modes",
+            "test result: ok",
+        ]
+        .map(String::from)
+        .into();
+        let found: Vec<String> = adapters(&output).collect();
+        assert_eq!(
+            found,
+            [
+                "AdapterInfo { name: \"GPU A\" }",
+                "AdapterInfo { name: \"GPU B\" }"
+            ]
         );
+        assert_eq!(adapters(&["no adapter here".to_owned()]).count(), 0);
     }
 
     fn test_check(name: &str) -> Check {

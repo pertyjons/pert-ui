@@ -969,6 +969,22 @@ impl<T: Clone + Eq + 'static> RadioGroup<T> {
             .map(|c| c.label.clone())
             .unwrap_or_default()
     }
+    /// Choice `index`'s rectangle, as [`Self::hit`] tests it and painting
+    /// draws it since the last arrangement: a segment, or a full-width row.
+    /// `None` before the first arrangement.
+    fn choice_rect(&self, index: usize) -> Option<Rect> {
+        let segments = self.segments.borrow();
+        if self.segmented {
+            let (start, width) = *segments.get(index)?;
+            Rect::new(start, 0.0, width, self.segment_height.get()).ok()
+        } else {
+            let height = self.row_height.get();
+            let width = segments.last().map(|(start, width)| start + width)?;
+            (height > 0.0)
+                .then(|| Rect::new(0.0, index as f32 * height, width, height).ok())
+                .flatten()
+        }
+    }
     fn hit(&self, cx: &EventContext, e: PointerEvent) -> Option<T> {
         if !cx.pointer_inside() || self.row_height.get() <= 0.0 {
             return None;
@@ -1435,10 +1451,14 @@ impl<T: Clone + Eq + 'static> Component for RadioGroup<T> {
                 label: chosen.map(|index| self.choices[index].label.clone()),
             })
             .items(self.choices.iter().enumerate().map(|(index, choice)| {
-                SemanticItem::new(choice.label.as_str())
+                let item = SemanticItem::new(choice.label.as_str())
                     .selected(chosen == Some(index))
                     .disabled(!self.enabled || !self.editable || !choice.enabled)
-                    .action(SemanticAction::Select)
+                    .action(SemanticAction::Select);
+                match self.choice_rect(index) {
+                    Some(rect) => item.local_bounds(rect),
+                    None => item,
+                }
             }))
             .disabled(!self.focusable())
             .enabled_actions([SemanticAction::Select]),

@@ -59,8 +59,8 @@ impl ListItems for Rows {
     fn key(&self, index: usize) -> Option<String> {
         (index < self.0).then(|| format!("r{index}"))
     }
-    fn build(&self, index: usize) -> Option<Element> {
-        Some(Label::new(format!("row {index}")).key("text"))
+    fn build(&self, index: usize) -> Option<RowItem> {
+        Some(Label::new(format!("row {index}")).key("text").into())
     }
 }
 struct Cells(usize);
@@ -633,8 +633,8 @@ mod diagnostic {
         fn key(&self, index: usize) -> Option<String> {
             (index < self.0).then(|| format!("r{index}"))
         }
-        fn build(&self, _: usize) -> Option<Element> {
-            Some(leaf("row", 10.0, 0.0))
+        fn build(&self, _: usize) -> Option<pert_ui::RowItem> {
+            Some(leaf("row", 10.0, 0.0).into())
         }
     }
 

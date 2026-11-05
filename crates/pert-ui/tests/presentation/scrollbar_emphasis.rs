@@ -126,11 +126,8 @@ impl ListItems for Rows {
     fn key(&self, index: usize) -> Option<String> {
         (index < self.0).then(|| format!("row-{index}"))
     }
-    fn build(&self, index: usize) -> Option<Element> {
-        Some(Element::new(
-            self.key(index)?,
-            Label::new(format!("Row {index}")),
-        ))
+    fn build(&self, index: usize) -> Option<RowItem> {
+        Some(Element::new(self.key(index)?, Label::new(format!("Row {index}"))).into())
     }
 }
 

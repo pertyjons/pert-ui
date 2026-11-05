@@ -75,13 +75,9 @@ impl Setup {
     }
     /// The palette's listed rows, highlighted ones marked with `>`.
     fn rows(&self) -> Vec<String> {
-        let snapshot = self.ui.inspect();
-        let list = snapshot
-            .components
-            .iter()
-            .find(|c| c.key == "content" && c.details.properties.contains_key("results"))
-            .and_then(|c| c.details.semantics.clone())
-            .expect("palette content");
+        let list =
+            support::picker_results(&self.ui, &support::widget(&self.ui, &self.root, "palette"))
+                .unwrap_or_else(|| Semantics::new(SemanticRole::ListBox));
         list.items
             .iter()
             .map(|item| {

@@ -419,12 +419,12 @@ impl ListItems for Outline {
     fn key(&self, index: usize) -> Option<String> {
         self.0.nodes.get(index).map(|node| node.id.key())
     }
-    fn build(&self, index: usize) -> Option<Element> {
+    fn build(&self, index: usize) -> Option<RowItem> {
         let node = self.0.nodes.get(index)?;
         Some(
             Label::new(node.label.as_str())
                 .overflow(TextOverflow::Ellipsis)
-                .key("row"),
+                .into(),
         )
     }
     fn text(&self, index: usize) -> Option<String> {

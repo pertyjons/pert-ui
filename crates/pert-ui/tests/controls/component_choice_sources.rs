@@ -19,7 +19,8 @@ fn replaced_option_source_reaches_an_open_multi_select_list()
         )]),
     ))?;
     ui.flush(Duration::ZERO)?;
-    ui.focus(&find(&ui, &root, "anchor").unwrap())?;
+    let choice = find(&ui, &root, "choice").unwrap();
+    ui.focus(&ui.find_exposed_part(&choice, "control")?.unwrap())?;
     press(&mut ui, KeyCode::Enter);
     ui.reconcile_children(
         &root,

@@ -1113,6 +1113,10 @@ pub struct ArrangeContext<'a> {
     pub(crate) measure: MeasureContext<'a>,
     pub(crate) placements: Vec<Option<Rect>>,
     pub(crate) clips: Vec<Option<Rect>>,
+    /// The fixed slot a child was placed into with
+    /// [`ArrangeContext::place_fixed_slot`]: its fixed axis and that axis's
+    /// extent, in this component's local pixels.
+    pub(crate) slots: Vec<Option<(crate::Orientation, f32)>>,
 }
 
 /// Shows the number of visible children and the rectangles placed so far.
@@ -1247,6 +1251,93 @@ impl ArrangeContext<'_> {
         self.place(index, bounds)?;
         self.clips[index] = Some(clip);
         Ok(())
+    }
+    /// Places a child into a slot that is fixed along `axis`, as
+    /// [`Self::place_clipped`] does, and declares that the child must fit
+    /// it, as a row of a fixed-extent list must.
+    ///
+    /// With [`Orientation::Vertical`](crate::Orientation::Vertical) the slot's
+    /// height is fixed, as in a vertical list: the child is first measured at
+    /// the slot's width with an unbounded height. With
+    /// [`Orientation::Horizontal`](crate::Orientation::Horizontal) its width is
+    /// fixed, as in a horizontal list: the child is measured at the slot's
+    /// height with an unbounded width. The measurement goes through
+    /// [`Self::measure`]: one more measurement request per call, answered from
+    /// the child's retained results while equal constraints remain among them
+    /// (a miss can measure its descendants again). The child is still placed
+    /// in `slot`, whatever it measured.
+    ///
+    /// Development validation then reports a child that measured more than
+    /// the slot along `axis`, as
+    /// [`ValidationCode::ExceedsFixedHeight`](crate::ValidationCode::ExceedsFixedHeight)
+    /// or [`ValidationCode::ExceedsFixedWidth`](crate::ValidationCode::ExceedsFixedWidth).
+    /// A later placement of the child with [`Self::place`] or
+    /// [`Self::place_clipped`] clears the declaration; an arrangement the
+    /// runtime reuses, as when the component only moves, keeps it. This
+    /// operation makes its measurement request in every build, release
+    /// included; only the report is development-only.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::component::*;
+    /// use pert_ui::prelude::*;
+    ///
+    /// /// Stacks its children in rows of 24 pixels, whatever they need.
+    /// struct Rows(Vec<Element>);
+    /// impl Component for Rows {
+    ///     fn take_children(&mut self) -> Vec<Element> {
+    ///         std::mem::take(&mut self.0)
+    ///     }
+    ///     fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+    ///         Ok(())
+    ///     }
+    ///     fn arrange(&self, cx: &mut ArrangeContext<'_>, size: Size) -> Result<(), RuntimeError> {
+    ///         for index in 0..cx.len() {
+    ///             let row = Rect::new(0.0, index as f32 * 24.0, size.width(), 24.0)?;
+    ///             cx.place_fixed_slot(index, row, row, Orientation::Vertical)?;
+    ///         }
+    ///         Ok(())
+    ///     }
+    /// }
+    ///
+    /// let mut ui = Runtime::new();
+    /// ui.mount_tree(Element::new("rows", Rows(vec![Label::new("Fits").key("a")])))?;
+    /// ui.flush(ui.now())?;
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    /// As [`Self::measure`] and [`Self::place`]; the child is not placed when
+    /// its measurement fails.
+    pub fn place_fixed_slot(
+        &mut self,
+        index: usize,
+        slot: Rect,
+        clip: Rect,
+        axis: crate::Orientation,
+    ) -> Result<(), RuntimeError> {
+        if index >= self.len() {
+            return Err(LayoutError::InvalidChild.into());
+        }
+        let (constraints, extent) = match axis {
+            crate::Orientation::Vertical => {
+                (Constraints::new(Some(slot.width()), None)?, slot.height())
+            }
+            crate::Orientation::Horizontal => {
+                (Constraints::new(None, Some(slot.height()))?, slot.width())
+            }
+        };
+        self.measure(index, constraints)?;
+        self.place_clipped(index, slot, clip)?;
+        self.slots[index] = Some((axis, extent));
+        Ok(())
+    }
+    /// Whether the runtime applied this component's latest child request, as
+    /// [`UpdateContext::children_adopted`](crate::UpdateContext::children_adopted) reports it, so an arrangement can
+    /// leave out children its latest request did not describe. Reading it
+    /// neither subscribes nor schedules anything.
+    pub fn children_adopted(&self) -> bool {
+        self.measure.node.children_adopted()
     }
     /// Requests one more update of this component after the current layout pass.
     ///

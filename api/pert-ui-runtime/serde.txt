@@ -848,6 +848,7 @@ impl core::marker::UnsafeUnpin for pert_ui_runtime::DetachedClosePolicy
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::DetachedClosePolicy
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::DetachedClosePolicy
 #[non_exhaustive] pub enum pert_ui_runtime::component::DraftAlign
+pub pert_ui_runtime::component::DraftAlign::Center
 pub pert_ui_runtime::component::DraftAlign::End
 pub pert_ui_runtime::component::DraftAlign::Start
 impl core::clone::Clone for pert_ui_runtime::DraftAlign
@@ -2565,12 +2566,14 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ApplicationEr
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ApplicationError
 pub struct pert_ui_runtime::component::ArrangeContext<'a>
 impl pert_ui_runtime::ArrangeContext<'_>
+pub fn pert_ui_runtime::ArrangeContext<'_>::children_adopted(&self) -> bool
 pub fn pert_ui_runtime::ArrangeContext<'_>::is_empty(&self) -> bool
 pub fn pert_ui_runtime::ArrangeContext<'_>::len(&self) -> usize
 pub fn pert_ui_runtime::ArrangeContext<'_>::measure(&self, usize, pert_ui_runtime::Constraints) -> core::result::Result<pert_ui_runtime::Size, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::ArrangeContext<'_>::measurement(&self) -> &pert_ui_runtime::MeasureContext<'_>
 pub fn pert_ui_runtime::ArrangeContext<'_>::place(&mut self, usize, pert_ui_runtime::Rect) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::ArrangeContext<'_>::place_clipped(&mut self, usize, pert_ui_runtime::Rect, pert_ui_runtime::Rect) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::ArrangeContext<'_>::place_fixed_slot(&mut self, usize, pert_ui_runtime::Rect, pert_ui_runtime::Rect, pert_ui_runtime::Orientation) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::ArrangeContext<'_>::refresh_forwarded(&self, usize) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::ArrangeContext<'_>::request_update(&self)
 impl core::fmt::Debug for pert_ui_runtime::ArrangeContext<'_>
@@ -3141,6 +3144,8 @@ pub fn pert_ui_runtime::Element::with_grow(self, u16) -> Self
 pub fn pert_ui_runtime::Element::with_label(self, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::Element::with_rich_label(self, pert_ui_runtime::RichText) -> Self
 pub fn pert_ui_runtime::Element::with_searchable(self, bool) -> Self
+impl core::convert::From<pert_ui_runtime::Element> for pert_ui_runtime::RowItem
+pub fn pert_ui_runtime::RowItem::from(pert_ui_runtime::Element) -> Self
 impl core::convert::From<pert_ui_runtime::FloatingWindow> for pert_ui_runtime::Element
 pub fn pert_ui_runtime::Element::from(pert_ui_runtime::FloatingWindow) -> Self
 impl core::convert::From<pert_ui_runtime::Property> for pert_ui_runtime::Element
@@ -4177,6 +4182,7 @@ pub fn pert_ui_runtime::UpdateContext::animate(&mut self) -> core::result::Resul
 pub fn pert_ui_runtime::UpdateContext::cancel_input(&mut self)
 pub fn pert_ui_runtime::UpdateContext::cancel_timer(&self)
 pub fn pert_ui_runtime::UpdateContext::children(&self) -> &[pert_ui_runtime::ChildInfo]
+pub fn pert_ui_runtime::UpdateContext::children_adopted(&self) -> bool
 pub fn pert_ui_runtime::UpdateContext::focus_within(&self) -> bool
 pub fn pert_ui_runtime::UpdateContext::focused(&self) -> bool
 pub fn pert_ui_runtime::UpdateContext::hovered(&self) -> bool
@@ -11675,6 +11681,7 @@ pub pert_ui_runtime::inspection::ValidationCode::DuplicateKey
 pub pert_ui_runtime::inspection::ValidationCode::EmptyHitArea
 pub pert_ui_runtime::inspection::ValidationCode::EscapesParent
 pub pert_ui_runtime::inspection::ValidationCode::ExceedsFixedHeight
+pub pert_ui_runtime::inspection::ValidationCode::ExceedsFixedWidth
 pub pert_ui_runtime::inspection::ValidationCode::InvalidBorderWidth
 pub pert_ui_runtime::inspection::ValidationCode::InvalidBounds
 pub pert_ui_runtime::inspection::ValidationCode::InvalidClip
@@ -17438,6 +17445,8 @@ pub fn pert_ui_runtime::Element::with_grow(self, u16) -> Self
 pub fn pert_ui_runtime::Element::with_label(self, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::Element::with_rich_label(self, pert_ui_runtime::RichText) -> Self
 pub fn pert_ui_runtime::Element::with_searchable(self, bool) -> Self
+impl core::convert::From<pert_ui_runtime::Element> for pert_ui_runtime::RowItem
+pub fn pert_ui_runtime::RowItem::from(pert_ui_runtime::Element) -> Self
 impl core::convert::From<pert_ui_runtime::FloatingWindow> for pert_ui_runtime::Element
 pub fn pert_ui_runtime::Element::from(pert_ui_runtime::FloatingWindow) -> Self
 impl core::convert::From<pert_ui_runtime::Property> for pert_ui_runtime::Element
@@ -20271,6 +20280,7 @@ pub fn pert_ui_runtime::QuickPick::name(self, impl core::convert::Into<pert_ui_r
 pub fn pert_ui_runtime::QuickPick::new(pert_ui_runtime::QuickPickController, pert_ui_runtime::Element, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &pert_ui_runtime::PickItem) -> core::result::Result<pert_ui_runtime::PickChoice, pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::QuickPick::nonmodal(self) -> Self
 pub fn pert_ui_runtime::QuickPick::placeholder(self, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
+pub fn pert_ui_runtime::QuickPick::searchable(self, bool) -> Self
 pub fn pert_ui_runtime::QuickPick::width(self, pert_ui_runtime::Length) -> core::result::Result<Self, pert_ui_runtime::GeometryError>
 impl core::fmt::Debug for pert_ui_runtime::QuickPick
 pub fn pert_ui_runtime::QuickPick::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
@@ -20628,6 +20638,22 @@ impl core::marker::Unpin for pert_ui_runtime::Row
 impl core::marker::UnsafeUnpin for pert_ui_runtime::Row
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Row
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Row
+pub struct pert_ui_runtime::prelude::RowItem(_)
+impl pert_ui_runtime::RowItem
+pub fn pert_ui_runtime::RowItem::into_element(self, impl core::convert::Into<alloc::string::String>) -> pert_ui_runtime::Element
+impl core::convert::From<pert_ui_runtime::Element> for pert_ui_runtime::RowItem
+pub fn pert_ui_runtime::RowItem::from(pert_ui_runtime::Element) -> Self
+impl core::fmt::Debug for pert_ui_runtime::RowItem
+pub fn pert_ui_runtime::RowItem::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl<C: pert_ui_runtime::Component + 'static> core::convert::From<C> for pert_ui_runtime::RowItem
+pub fn pert_ui_runtime::RowItem::from(C) -> Self
+impl core::marker::Freeze for pert_ui_runtime::RowItem
+impl !core::marker::Send for pert_ui_runtime::RowItem
+impl !core::marker::Sync for pert_ui_runtime::RowItem
+impl core::marker::Unpin for pert_ui_runtime::RowItem
+impl core::marker::UnsafeUnpin for pert_ui_runtime::RowItem
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::RowItem
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::RowItem
 pub struct pert_ui_runtime::prelude::Runtime
 impl pert_ui_runtime::Runtime
 pub const pert_ui_runtime::Runtime::MAX_BACKGROUND_TASKS: usize
@@ -22709,6 +22735,7 @@ pub fn pert_ui_runtime::VirtualList::overscan(self, usize) -> Self
 pub fn pert_ui_runtime::VirtualList::placement(self, impl core::ops::function::Fn(&[alloc::string::String], &pert_ui_runtime::ListDropPoint) -> core::option::Option<pert_ui_runtime::ListDropPlacement> + 'static) -> Self
 pub fn pert_ui_runtime::VirtualList::reorder_permission(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
 pub fn pert_ui_runtime::VirtualList::reorderable(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &pert_ui_runtime::ListDrop<'_>) -> core::result::Result<bool, pert_ui_runtime::RuntimeError> + 'static) -> Self
+pub fn pert_ui_runtime::VirtualList::report_items(self, pert_ui_runtime::SemanticRole) -> Self
 pub fn pert_ui_runtime::VirtualList::selection(self, pert_ui_runtime::ListSelection) -> Self
 impl core::fmt::Debug for pert_ui_runtime::VirtualList
 pub fn pert_ui_runtime::VirtualList::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
@@ -22982,11 +23009,12 @@ pub fn pert_ui_runtime::prelude::IntoElement::key(self, impl core::convert::Into
 impl<C: pert_ui_runtime::Component + 'static> pert_ui_runtime::IntoElement for C
 pub fn C::key(self, impl core::convert::Into<alloc::string::String>) -> pert_ui_runtime::Element
 pub trait pert_ui_runtime::prelude::ListItems
-pub fn pert_ui_runtime::prelude::ListItems::build(&self, usize) -> core::option::Option<pert_ui_runtime::Element>
+pub fn pert_ui_runtime::prelude::ListItems::build(&self, usize) -> core::option::Option<pert_ui_runtime::RowItem>
 pub fn pert_ui_runtime::prelude::ListItems::index_of(&self, &str) -> core::option::Option<usize>
 pub fn pert_ui_runtime::prelude::ListItems::is_empty(&self) -> bool
 pub fn pert_ui_runtime::prelude::ListItems::key(&self, usize) -> core::option::Option<alloc::string::String>
 pub fn pert_ui_runtime::prelude::ListItems::len(&self) -> usize
+pub fn pert_ui_runtime::prelude::ListItems::semantic_item(&self, usize) -> core::option::Option<pert_ui_runtime::SemanticItem>
 pub fn pert_ui_runtime::prelude::ListItems::text(&self, usize) -> core::option::Option<alloc::string::String>
 pub trait pert_ui_runtime::prelude::StateOwner: pert_ui_runtime::signal::sealed::StateOwnerSeal
 pub fn pert_ui_runtime::prelude::StateOwner::signal<T>(&self, T) -> pert_ui_runtime::Signal<T>
@@ -23018,7 +23046,7 @@ pub fn pert_ui_runtime::prelude::TableItems::key(&self, usize) -> core::option::
 pub fn pert_ui_runtime::prelude::TableItems::len(&self) -> usize
 pub fn pert_ui_runtime::prelude::TableItems::text(&self, usize, &str) -> core::option::Option<alloc::string::String>
 pub trait pert_ui_runtime::prelude::TreeItems
-pub fn pert_ui_runtime::prelude::TreeItems::build(&self, &str) -> core::option::Option<pert_ui_runtime::Element>
+pub fn pert_ui_runtime::prelude::TreeItems::build(&self, &str) -> core::option::Option<pert_ui_runtime::RowItem>
 pub fn pert_ui_runtime::prelude::TreeItems::can_drop_into(&self, &str) -> bool
 pub fn pert_ui_runtime::prelude::TreeItems::can_expand(&self, &str) -> bool
 pub fn pert_ui_runtime::prelude::TreeItems::children(&self, &str) -> alloc::vec::Vec<alloc::string::String>
@@ -23631,6 +23659,7 @@ pub pert_ui_runtime::testing::ValidationCode::DuplicateKey
 pub pert_ui_runtime::testing::ValidationCode::EmptyHitArea
 pub pert_ui_runtime::testing::ValidationCode::EscapesParent
 pub pert_ui_runtime::testing::ValidationCode::ExceedsFixedHeight
+pub pert_ui_runtime::testing::ValidationCode::ExceedsFixedWidth
 pub pert_ui_runtime::testing::ValidationCode::InvalidBorderWidth
 pub pert_ui_runtime::testing::ValidationCode::InvalidBounds
 pub pert_ui_runtime::testing::ValidationCode::InvalidClip
@@ -26063,6 +26092,8 @@ impl core::marker::UnsafeUnpin for pert_ui_runtime::CommandStatus
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CommandStatus
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CommandStatus
 #[non_exhaustive] pub enum pert_ui_runtime::ContentField
+pub pert_ui_runtime::ContentField::Item
+pub pert_ui_runtime::ContentField::Item::index: usize
 pub pert_ui_runtime::ContentField::Name
 pub pert_ui_runtime::ContentField::Row
 pub pert_ui_runtime::ContentField::Value
@@ -26520,6 +26551,7 @@ impl core::marker::UnsafeUnpin for pert_ui_runtime::DialogStatus
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::DialogStatus
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::DialogStatus
 #[non_exhaustive] pub enum pert_ui_runtime::DraftAlign
+pub pert_ui_runtime::DraftAlign::Center
 pub pert_ui_runtime::DraftAlign::End
 pub pert_ui_runtime::DraftAlign::Start
 impl core::clone::Clone for pert_ui_runtime::DraftAlign
@@ -30206,6 +30238,7 @@ pub pert_ui_runtime::ValidationCode::DuplicateKey
 pub pert_ui_runtime::ValidationCode::EmptyHitArea
 pub pert_ui_runtime::ValidationCode::EscapesParent
 pub pert_ui_runtime::ValidationCode::ExceedsFixedHeight
+pub pert_ui_runtime::ValidationCode::ExceedsFixedWidth
 pub pert_ui_runtime::ValidationCode::InvalidBorderWidth
 pub pert_ui_runtime::ValidationCode::InvalidBounds
 pub pert_ui_runtime::ValidationCode::InvalidClip
@@ -30704,12 +30737,14 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ApplicationEr
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ApplicationError
 pub struct pert_ui_runtime::ArrangeContext<'a>
 impl pert_ui_runtime::ArrangeContext<'_>
+pub fn pert_ui_runtime::ArrangeContext<'_>::children_adopted(&self) -> bool
 pub fn pert_ui_runtime::ArrangeContext<'_>::is_empty(&self) -> bool
 pub fn pert_ui_runtime::ArrangeContext<'_>::len(&self) -> usize
 pub fn pert_ui_runtime::ArrangeContext<'_>::measure(&self, usize, pert_ui_runtime::Constraints) -> core::result::Result<pert_ui_runtime::Size, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::ArrangeContext<'_>::measurement(&self) -> &pert_ui_runtime::MeasureContext<'_>
 pub fn pert_ui_runtime::ArrangeContext<'_>::place(&mut self, usize, pert_ui_runtime::Rect) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::ArrangeContext<'_>::place_clipped(&mut self, usize, pert_ui_runtime::Rect, pert_ui_runtime::Rect) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::ArrangeContext<'_>::place_fixed_slot(&mut self, usize, pert_ui_runtime::Rect, pert_ui_runtime::Rect, pert_ui_runtime::Orientation) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::ArrangeContext<'_>::refresh_forwarded(&self, usize) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::ArrangeContext<'_>::request_update(&self)
 impl core::fmt::Debug for pert_ui_runtime::ArrangeContext<'_>
@@ -33372,6 +33407,8 @@ pub fn pert_ui_runtime::Element::with_grow(self, u16) -> Self
 pub fn pert_ui_runtime::Element::with_label(self, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
 pub fn pert_ui_runtime::Element::with_rich_label(self, pert_ui_runtime::RichText) -> Self
 pub fn pert_ui_runtime::Element::with_searchable(self, bool) -> Self
+impl core::convert::From<pert_ui_runtime::Element> for pert_ui_runtime::RowItem
+pub fn pert_ui_runtime::RowItem::from(pert_ui_runtime::Element) -> Self
 impl core::convert::From<pert_ui_runtime::FloatingWindow> for pert_ui_runtime::Element
 pub fn pert_ui_runtime::Element::from(pert_ui_runtime::FloatingWindow) -> Self
 impl core::convert::From<pert_ui_runtime::Property> for pert_ui_runtime::Element
@@ -37700,6 +37737,7 @@ pub fn pert_ui_runtime::QuickPick::name(self, impl core::convert::Into<pert_ui_r
 pub fn pert_ui_runtime::QuickPick::new(pert_ui_runtime::QuickPickController, pert_ui_runtime::Element, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &pert_ui_runtime::PickItem) -> core::result::Result<pert_ui_runtime::PickChoice, pert_ui_runtime::RuntimeError> + 'static) -> Self
 pub fn pert_ui_runtime::QuickPick::nonmodal(self) -> Self
 pub fn pert_ui_runtime::QuickPick::placeholder(self, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
+pub fn pert_ui_runtime::QuickPick::searchable(self, bool) -> Self
 pub fn pert_ui_runtime::QuickPick::width(self, pert_ui_runtime::Length) -> core::result::Result<Self, pert_ui_runtime::GeometryError>
 impl core::fmt::Debug for pert_ui_runtime::QuickPick
 pub fn pert_ui_runtime::QuickPick::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
@@ -38292,6 +38330,22 @@ impl core::marker::Unpin for pert_ui_runtime::Row
 impl core::marker::UnsafeUnpin for pert_ui_runtime::Row
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Row
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Row
+pub struct pert_ui_runtime::RowItem(_)
+impl pert_ui_runtime::RowItem
+pub fn pert_ui_runtime::RowItem::into_element(self, impl core::convert::Into<alloc::string::String>) -> pert_ui_runtime::Element
+impl core::convert::From<pert_ui_runtime::Element> for pert_ui_runtime::RowItem
+pub fn pert_ui_runtime::RowItem::from(pert_ui_runtime::Element) -> Self
+impl core::fmt::Debug for pert_ui_runtime::RowItem
+pub fn pert_ui_runtime::RowItem::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl<C: pert_ui_runtime::Component + 'static> core::convert::From<C> for pert_ui_runtime::RowItem
+pub fn pert_ui_runtime::RowItem::from(C) -> Self
+impl core::marker::Freeze for pert_ui_runtime::RowItem
+impl !core::marker::Send for pert_ui_runtime::RowItem
+impl !core::marker::Sync for pert_ui_runtime::RowItem
+impl core::marker::Unpin for pert_ui_runtime::RowItem
+impl core::marker::UnsafeUnpin for pert_ui_runtime::RowItem
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::RowItem
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::RowItem
 pub struct pert_ui_runtime::Runtime
 impl pert_ui_runtime::Runtime
 pub const pert_ui_runtime::Runtime::MAX_BACKGROUND_TASKS: usize
@@ -41293,6 +41347,7 @@ pub fn pert_ui_runtime::UpdateContext::animate(&mut self) -> core::result::Resul
 pub fn pert_ui_runtime::UpdateContext::cancel_input(&mut self)
 pub fn pert_ui_runtime::UpdateContext::cancel_timer(&self)
 pub fn pert_ui_runtime::UpdateContext::children(&self) -> &[pert_ui_runtime::ChildInfo]
+pub fn pert_ui_runtime::UpdateContext::children_adopted(&self) -> bool
 pub fn pert_ui_runtime::UpdateContext::focus_within(&self) -> bool
 pub fn pert_ui_runtime::UpdateContext::focused(&self) -> bool
 pub fn pert_ui_runtime::UpdateContext::hovered(&self) -> bool
@@ -41746,6 +41801,7 @@ pub fn pert_ui_runtime::VirtualList::overscan(self, usize) -> Self
 pub fn pert_ui_runtime::VirtualList::placement(self, impl core::ops::function::Fn(&[alloc::string::String], &pert_ui_runtime::ListDropPoint) -> core::option::Option<pert_ui_runtime::ListDropPlacement> + 'static) -> Self
 pub fn pert_ui_runtime::VirtualList::reorder_permission(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
 pub fn pert_ui_runtime::VirtualList::reorderable(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &pert_ui_runtime::ListDrop<'_>) -> core::result::Result<bool, pert_ui_runtime::RuntimeError> + 'static) -> Self
+pub fn pert_ui_runtime::VirtualList::report_items(self, pert_ui_runtime::SemanticRole) -> Self
 pub fn pert_ui_runtime::VirtualList::selection(self, pert_ui_runtime::ListSelection) -> Self
 impl core::fmt::Debug for pert_ui_runtime::VirtualList
 pub fn pert_ui_runtime::VirtualList::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
@@ -47343,11 +47399,12 @@ pub fn pert_ui_runtime::IntoElement::key(self, impl core::convert::Into<alloc::s
 impl<C: pert_ui_runtime::Component + 'static> pert_ui_runtime::IntoElement for C
 pub fn C::key(self, impl core::convert::Into<alloc::string::String>) -> pert_ui_runtime::Element
 pub trait pert_ui_runtime::ListItems
-pub fn pert_ui_runtime::ListItems::build(&self, usize) -> core::option::Option<pert_ui_runtime::Element>
+pub fn pert_ui_runtime::ListItems::build(&self, usize) -> core::option::Option<pert_ui_runtime::RowItem>
 pub fn pert_ui_runtime::ListItems::index_of(&self, &str) -> core::option::Option<usize>
 pub fn pert_ui_runtime::ListItems::is_empty(&self) -> bool
 pub fn pert_ui_runtime::ListItems::key(&self, usize) -> core::option::Option<alloc::string::String>
 pub fn pert_ui_runtime::ListItems::len(&self) -> usize
+pub fn pert_ui_runtime::ListItems::semantic_item(&self, usize) -> core::option::Option<pert_ui_runtime::SemanticItem>
 pub fn pert_ui_runtime::ListItems::text(&self, usize) -> core::option::Option<alloc::string::String>
 pub trait pert_ui_runtime::StateOwner: pert_ui_runtime::signal::sealed::StateOwnerSeal
 pub fn pert_ui_runtime::StateOwner::signal<T>(&self, T) -> pert_ui_runtime::Signal<T>
@@ -47379,7 +47436,7 @@ pub fn pert_ui_runtime::TableItems::key(&self, usize) -> core::option::Option<al
 pub fn pert_ui_runtime::TableItems::len(&self) -> usize
 pub fn pert_ui_runtime::TableItems::text(&self, usize, &str) -> core::option::Option<alloc::string::String>
 pub trait pert_ui_runtime::TreeItems
-pub fn pert_ui_runtime::TreeItems::build(&self, &str) -> core::option::Option<pert_ui_runtime::Element>
+pub fn pert_ui_runtime::TreeItems::build(&self, &str) -> core::option::Option<pert_ui_runtime::RowItem>
 pub fn pert_ui_runtime::TreeItems::can_drop_into(&self, &str) -> bool
 pub fn pert_ui_runtime::TreeItems::can_expand(&self, &str) -> bool
 pub fn pert_ui_runtime::TreeItems::children(&self, &str) -> alloc::vec::Vec<alloc::string::String>

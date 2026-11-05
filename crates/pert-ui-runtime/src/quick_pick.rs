@@ -661,6 +661,10 @@ struct Shared {
     choose: Rc<RefCell<ChooseFn>>,
     modal: Cell<bool>,
     view: RefCell<View>,
+    /// The highlighted item's position in the session, as the content's last
+    /// successful update resolved it, for the result list's items, which
+    /// inspection reads without reading signals.
+    highlighted: Cell<Option<usize>>,
     /// The configurable texts as last read by the picker or its content;
     /// `None` until the first read.
     texts: RefCell<Option<Texts>>,
@@ -827,12 +831,79 @@ impl Shared {
 /// the active configuration's text roles immediately. Equivalent descriptions
 /// schedule no layout; choose callbacks are replaced immediately.
 ///
+/// # Inspection and tests
+///
 /// Inspection reports a `Dialog` (modal) or `Popover` with the picker's name
-/// and `open`, `status` and `modal` properties, and the results as a
-/// `ListBox` whose items carry each row's label, shortcut, highlight and
-/// disabled state. The existing `surface` address bounds its parts: find that
-/// address, then query its exposed `search` part. The search's `clipboard`
-/// menu belongs to that nested scope, rather than to the picker.
+/// and `open`, `status` and `modal` properties. The existing `surface`
+/// address bounds its parts: find that address, then query its exposed
+/// `search` part and, while there are results, its `options` part, the result
+/// list. The search's `clipboard` menu belongs to that nested scope, rather
+/// than to the picker.
+///
+/// - **Results.** The result list is a `ListBox` named by
+///   [`Self::list_name`], whose value is its row count and which offers
+///   `Scroll` while it overflows, with one item per result in ranked order:
+///   the item's label, `selected` on the highlighted result, `disabled` for a
+///   disabled item, its shortcut, and the `Activate` action for an enabled
+///   one; a disabled item offers no action, although a click on it still
+///   reaches the choose callback (see [`PickItem::disabled`]). The highlight is
+///   as of the picker's last update, as the rows show it. Each result is also
+///   a `Button` component.
+/// - **Clicking.** While the picker is open, a result placed in view gives its
+///   item its rectangle, so
+///   [`Driver::click_item`](crate::testing::Driver::click_item) clicks it; a
+///   result outside the view has none, a partly visible one reports its
+///   visible part, and Up or Down in the search field, which reveal the
+///   highlight, or the wheel bring a result into view. A click is pointer
+///   input, so on a disabled item it runs the choose callback with that
+///   item, as a press and release on its row does, although the item offers
+///   no action.
+/// - **Identity.** The list is recreated whenever the query or the session
+///   changes, even when the results stay the same, so a [`WidgetId`] held
+///   from before reports `Unmounted` once the next flush has reconciled the
+///   new list; look the part up again after each change. A new list has no
+///   rectangles before its first layout. A changed message or a translated
+///   list name keeps the list and updates its name in place.
+/// - **Empty and closed.** Without results the empty-state text replaces the
+///   list, so there is no `ListBox` and no `options` part. While the picker is
+///   closed its surface is hidden: the items have no bounds and `click_item`
+///   refuses them through its reveal.
+///
+/// [Content search](crate::Runtime::content_search) finds the picker's own
+/// content like any other unless [`Self::searchable`] turns that off, as a
+/// picker that presents content search results does so that it never finds
+/// its own previous results. The anchor is searched either way.
+///
+/// A test clicks a result through the `options` part:
+///
+/// ```
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::prelude::*;
+/// use pert_ui::testing::*;
+/// use std::{cell::RefCell, rc::Rc};
+///
+/// let mut ui = Runtime::new();
+/// ui.set_viewport(Viewport::new(800.0, 600.0, 1.0)?)?;
+/// let picker = QuickPickController::new(&ui);
+/// let chosen = Rc::new(RefCell::new(None));
+/// let record = chosen.clone();
+/// let app = ui.mount_tree(
+///     QuickPick::new(picker.clone(), Label::new("Document").key("doc"), move |_, item| {
+///         *record.borrow_mut() = Some(item.key.clone());
+///         Ok(PickChoice::Done)
+///     })
+///     .key("app"),
+/// )?;
+/// picker.open(vec![PickItem::new("colors", "Colors"), PickItem::new("knobs", "Knobs")])?;
+/// let mut driver = Driver::new(&mut ui);
+/// driver.settle()?;
+/// let surface = driver.find(&app, &["surface"])?;
+/// let options = driver.exposed_part(&surface, "options")?;
+/// assert_eq!(driver.semantics(&options)?.items[1].name.as_deref(), Some("Knobs"));
+/// driver.click_item(&options, 1)?;
+/// assert_eq!(chosen.borrow().as_deref(), Some("knobs"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
@@ -881,6 +952,8 @@ pub struct QuickPick {
     session_generation: Option<u64>,
     shown: bool,
     status: PickStatus,
+    /// Whether content search may find the picker's own content.
+    searchable: bool,
 }
 description_debug!(QuickPick);
 impl QuickPick {
@@ -916,6 +989,7 @@ impl QuickPick {
                 choose: Rc::new(RefCell::new(Box::new(choose))),
                 modal: Cell::new(true),
                 view: RefCell::new(View::default()),
+                highlighted: Cell::new(None),
                 texts: RefCell::new(None),
             }),
             token: Rc::new(()),
@@ -925,6 +999,7 @@ impl QuickPick {
             session_generation: None,
             shown: false,
             status: PickStatus::Closed,
+            searchable: true,
         }
     }
     /// Presents the picker as a nonmodal surface at the top of the anchor
@@ -974,6 +1049,20 @@ impl QuickPick {
     /// its plain text is used.
     pub fn list_name(self, name: impl Into<TextSource>) -> Self {
         self.shared.config.borrow_mut().list_name = name.into();
+        self
+    }
+    /// Whether [content search](crate::Runtime::content_search) finds the
+    /// picker's own content: its search field, its results and its
+    /// messages. True by default, so a picker that lists application values
+    /// can be searched like any other content. A picker that presents
+    /// content search results, such as a "search everything" command, turns
+    /// it off, so a later search never lists the picker's previous results
+    /// as content. The anchor is searched either way.
+    ///
+    /// The choice is part of the picker's structure, fixed when it mounts;
+    /// describe it again under a new key to change it.
+    pub fn searchable(mut self, searchable: bool) -> Self {
+        self.searchable = searchable;
         self
     }
     /// Sets the panel's preferred width, [`Self::DEFAULT_WIDTH`] by default;
@@ -1095,7 +1184,10 @@ impl Component for QuickPick {
                         .structural(),
                     ],
                 },
-            ),
+            )
+            // `Self::searchable` decides whether content search reaches the
+            // picker's own content; the anchor above is searched either way.
+            .with_searchable(self.searchable),
         ]
     }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
@@ -1373,9 +1465,12 @@ impl PickContent {
                 Element::new(
                     format!("results-{}", self.list_serial),
                     VirtualList::estimated(items, ROW_ESTIMATE)?
-                        .controller(self.shared.controller.list.clone()),
+                        .controller(self.shared.controller.list.clone())
+                        .report_items(SemanticRole::ListBox),
                 )
-                .structural(),
+                .structural()
+                .with_label(self.shared.text(|texts| &texts.list_name))
+                .expose_part("options"),
             );
         }
         Ok(children)
@@ -1411,6 +1506,9 @@ impl Component for PickContent {
         let session = cx.read(&self.shared.controller.session)?;
         let query = cx.read(&self.shared.controller.query)?;
         let (_, message) = self.shared.controller.read_presented(cx)?;
+        // The rows read the highlight too; the result list's items read it
+        // from here.
+        let highlight = cx.read_paint(&self.shared.controller.highlight)?;
         let generation = session.as_ref().map(|s| s.generation);
         let state = (generation, query.clone(), message.clone());
         self.shared.read_texts(cx)?;
@@ -1418,6 +1516,8 @@ impl Component for PickContent {
         let translated = self.texts.as_ref() != Some(&texts);
         self.texts = Some(texts);
         if self.applied.as_ref() == Some(&state) && !translated {
+            let highlighted = self.shared.view.borrow().effective(highlight.as_ref());
+            self.shared.highlighted.set(highlighted);
             return Ok(());
         }
         let results_changed = self
@@ -1438,6 +1538,8 @@ impl Component for PickContent {
         self.message = message.is_some();
         cx.request_children(self.describe(message.as_deref())?);
         self.applied = Some(state);
+        let highlighted = self.shared.view.borrow().effective(highlight.as_ref());
+        self.shared.highlighted.set(highlighted);
         Ok(())
     }
     fn measure(&self, cx: &MeasureContext<'_>, a: Constraints) -> Result<Size, RuntimeError> {
@@ -1476,10 +1578,9 @@ impl Component for PickContent {
         Ok(())
     }
     fn inspect(&self) -> ComponentDetails {
+        // The results are the result list's items; see `PickItems`.
         let mut d = ComponentDetails::default();
         let view = self.shared.view.borrow();
-        let highlight = self.shared.controller.highlight.get().ok().flatten();
-        let effective = view.effective(highlight.as_ref());
         d.properties
             .insert("query".into(), InspectValue::Text(view.query.clone()));
         d.properties.insert(
@@ -1488,23 +1589,6 @@ impl Component for PickContent {
         );
         d.properties
             .insert("message".into(), InspectValue::Bool(self.message));
-        let items = view.session.iter().flat_map(|session| {
-            view.ranked.iter().map(move |index| {
-                let entry = &session.items[*index];
-                let mut item = SemanticItem::new(entry.label.clone())
-                    .selected(effective == Some(*index))
-                    .disabled(entry.disabled);
-                if let Some(shortcut) = &entry.shortcut {
-                    item = item.shortcut(shortcut.clone());
-                }
-                item.action(SemanticAction::Activate)
-            })
-        });
-        d.semantics = Some(
-            Semantics::new(SemanticRole::ListBox)
-                .name(self.shared.text(|texts| &texts.list_name))
-                .items(items.collect::<Vec<_>>()),
-        );
         d
     }
 }
@@ -1522,7 +1606,7 @@ impl ListItems for PickItems {
         let item = *self.ranked.get(index)?;
         self.session.items.get(item).map(|item| item.key.clone())
     }
-    fn build(&self, index: usize) -> Option<Element> {
+    fn build(&self, index: usize) -> Option<RowItem> {
         let position = *self.ranked.get(index)?;
         let item = self.session.items.get(position)?;
         // The end of the row: the detail, then the kind.
@@ -1537,8 +1621,7 @@ impl ListItems for PickItems {
             .flatten()
             .collect::<Vec<_>>()
             .join(" · ");
-        Some(Element::new(
-            item.key.clone(),
+        Some(
             PickRow {
                 shared: self.shared.clone(),
                 item: position,
@@ -1550,12 +1633,24 @@ impl ListItems for PickItems {
                 pressed: false,
                 labels_dirty: false,
                 detail,
-            },
-        ))
+            }
+            .into(),
+        )
     }
     fn index_of(&self, key: &str) -> Option<usize> {
         let item = *self.session.keys.get(key)?;
         self.ranked.iter().position(|e| *e == item)
+    }
+    fn semantic_item(&self, index: usize) -> Option<SemanticItem> {
+        let position = *self.ranked.get(index)?;
+        let entry = self.session.items.get(position)?;
+        let mut item = SemanticItem::new(entry.label.clone())
+            .selected(self.shared.highlighted.get() == Some(position))
+            .disabled(entry.disabled);
+        if let Some(shortcut) = &entry.shortcut {
+            item = item.shortcut(shortcut.clone());
+        }
+        Some(item.action(SemanticAction::Activate))
     }
 }
 

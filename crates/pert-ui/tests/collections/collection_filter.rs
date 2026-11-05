@@ -16,8 +16,8 @@ impl ListItems for Fruit {
     fn key(&self, index: usize) -> Option<String> {
         FRUIT.get(index).map(|name| name.to_lowercase())
     }
-    fn build(&self, index: usize) -> Option<Element> {
-        Some(Element::new(self.key(index)?, Label::new(FRUIT[index])))
+    fn build(&self, index: usize) -> Option<RowItem> {
+        Some(Element::new(self.key(index)?, Label::new(FRUIT[index])).into())
     }
     fn text(&self, index: usize) -> Option<String> {
         FRUIT.get(index).map(|name| (*name).to_owned())
@@ -225,8 +225,8 @@ fn a_replaced_source_is_filtered_by_the_current_query() -> TestResult {
         fn key(&self, index: usize) -> Option<String> {
             ["banana", "mango"].get(index).map(|key| (*key).to_owned())
         }
-        fn build(&self, index: usize) -> Option<Element> {
-            Some(Element::new(self.key(index)?, Label::new("row")))
+        fn build(&self, index: usize) -> Option<RowItem> {
+            Some(Element::new(self.key(index)?, Label::new("row")).into())
         }
         fn text(&self, index: usize) -> Option<String> {
             ["Banana", "Mango"]
@@ -379,8 +379,8 @@ impl TreeItems for Library {
             _ => Vec::new(),
         })
     }
-    fn build(&self, key: &str) -> Option<Element> {
-        Some(Element::new(key, Label::new(key)))
+    fn build(&self, key: &str) -> Option<RowItem> {
+        Some(Element::new(key, Label::new(key)).into())
     }
     fn text(&self, key: &str) -> Option<String> {
         Some(key.to_owned())
@@ -540,8 +540,8 @@ impl ListItems for Counted {
         self.reads.set(self.reads.get() + 1);
         (index < self.rows).then(|| format!("row-{index}"))
     }
-    fn build(&self, index: usize) -> Option<Element> {
-        Some(Element::new(self.key(index)?, Label::new("row")))
+    fn build(&self, index: usize) -> Option<RowItem> {
+        Some(Element::new(self.key(index)?, Label::new("row")).into())
     }
     fn text(&self, index: usize) -> Option<String> {
         Some(format!("row {index}"))
@@ -630,11 +630,8 @@ impl ListItems for Hundred {
     fn key(&self, index: usize) -> Option<String> {
         (index < 100).then(|| format!("r{index}"))
     }
-    fn build(&self, index: usize) -> Option<Element> {
-        Some(Element::new(
-            self.key(index)?,
-            Label::new(format!("Row {index}")),
-        ))
+    fn build(&self, index: usize) -> Option<RowItem> {
+        Some(Element::new(self.key(index)?, Label::new(format!("Row {index}"))).into())
     }
     fn text(&self, index: usize) -> Option<String> {
         Some(if index < 10 { "drop" } else { "keep" }.to_owned())
@@ -726,8 +723,8 @@ impl TreeItems for Other {
     fn children(&self, _: &str) -> Vec<String> {
         Vec::new()
     }
-    fn build(&self, key: &str) -> Option<Element> {
-        Some(Element::new(key, Label::new(key)))
+    fn build(&self, key: &str) -> Option<RowItem> {
+        Some(Element::new(key, Label::new(key)).into())
     }
 }
 

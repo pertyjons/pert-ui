@@ -162,8 +162,24 @@ impl Fx {
         widget(&self.ui, &self.root, "tags")
     }
 
+    /// The popup list, through the chooser's `options` part.
     fn list(&self) -> WidgetId {
-        widget(&self.ui, &self.root, "list")
+        self.ui
+            .find_exposed_part(&self.tags(), "options")
+            .unwrap()
+            .expect("the options part")
+    }
+
+    /// The trigger, through the chooser's `control` part.
+    fn control(&self) -> WidgetId {
+        self.ui
+            .find_exposed_part(&self.tags(), "control")
+            .unwrap()
+            .expect("the control part")
+    }
+
+    fn focused_on_list(&self) -> bool {
+        self.ui.focused() == Some(self.list())
     }
 
     fn search(&self) -> WidgetId {
@@ -182,7 +198,7 @@ impl Fx {
     }
 
     fn open(&mut self) {
-        let trigger = widget(&self.ui, &self.root, "anchor");
+        let trigger = self.control();
         self.ui.focus(&trigger).unwrap();
         frame(&mut self.ui);
         self.key(KeyCode::Enter);
@@ -570,7 +586,7 @@ fn the_focused_list_scroll_keys_follow_the_wheel_policy() {
         assert_eq!(fx.highlighted().as_deref(), Some(owner));
         // Tab moves to the overflowing list, whose own keys scroll it.
         fx.key(KeyCode::Tab);
-        assert_eq!(fx.focus().as_deref(), Some("list"));
+        assert!(fx.focused_on_list());
         fx.key(KeyCode::ArrowDown);
         assert_eq!(
             fx.row_at(at).as_deref(),
@@ -874,7 +890,7 @@ fn a_click_on_a_disabled_option_of_a_long_list_leaves_the_list_focused() {
     let mut fx = Fx::new(with_disabled(20, 3), EachToggle);
     fx.open();
     fx.click(fx.center("O03"));
-    assert_eq!(fx.focus().as_deref(), Some("list"));
+    assert!(fx.focused_on_list());
     assert!(fx.value().is_empty());
     assert!(fx.reports().is_empty());
 }
@@ -1036,7 +1052,7 @@ fn a_click_returns_focus_to_search_after_tab_moved_it_to_the_list() {
     let mut fx = Fx::rows(20, EachToggle);
     fx.open();
     fx.key(KeyCode::Tab);
-    assert_eq!(fx.focus().as_deref(), Some("list"));
+    assert!(fx.focused_on_list());
     fx.click(fx.center("O02"));
     assert_eq!(fx.focus().as_deref(), Some("search"));
     assert_eq!(fx.value(), values(&["o02"]));
@@ -1095,13 +1111,13 @@ fn a_long_list_press_scrolled_away_by_the_list_keys_cancels_the_click() {
     let at = fx.near_bottom("O03");
     fx.hover(at);
     fx.press(at);
-    assert_eq!(fx.focus().as_deref(), Some("list"));
+    assert!(fx.focused_on_list());
     fx.key(KeyCode::ArrowDown);
     assert_ne!(fx.row_at(at).as_deref(), Some("O03"), "O03 scrolled away");
     fx.release(at);
     assert!(fx.value().is_empty());
     assert!(fx.reports().is_empty());
-    assert_eq!(fx.focus().as_deref(), Some("list"));
+    assert!(fx.focused_on_list());
 }
 
 #[test]
@@ -1112,7 +1128,7 @@ fn a_release_outside_the_pressed_row_or_after_a_denial_returns_no_focus() {
         let at = fx.center("O02");
         fx.hover(at);
         fx.press(at);
-        assert_eq!(fx.focus().as_deref(), Some("list"));
+        assert!(fx.focused_on_list());
         let release = if deny {
             fx.p.allowed.set(false).unwrap();
             frame(&mut fx.ui);
@@ -1125,7 +1141,7 @@ fn a_release_outside_the_pressed_row_or_after_a_denial_returns_no_focus() {
         fx.release(release);
         assert!(fx.value().is_empty(), "deny={deny}");
         assert!(fx.reports().is_empty(), "deny={deny}");
-        assert_eq!(fx.focus().as_deref(), Some("list"), "deny={deny}");
+        assert!(fx.focused_on_list(), "deny={deny}");
     }
 }
 
@@ -1149,7 +1165,7 @@ fn a_failing_on_change_keeps_the_toggle_and_the_return_to_search() {
     let at = fx.center("O02");
     fx.hover(at);
     fx.press(at);
-    assert_eq!(fx.focus().as_deref(), Some("list"));
+    assert!(fx.focused_on_list());
     let released = fx.pointer(at, PointerKind::Release(PointerButton::Primary));
     assert!(
         matches!(released, Err(RuntimeError::BorrowConflict)),

@@ -249,8 +249,8 @@ impl ListItems for Rows {
     fn key(&self, index: usize) -> Option<String> {
         (index < 3).then(|| format!("row-{index}"))
     }
-    fn build(&self, index: usize) -> Option<Element> {
-        Some(Label::new(format!("Row {index}")).key("row"))
+    fn build(&self, index: usize) -> Option<RowItem> {
+        Some(Label::new(format!("Row {index}")).into())
     }
 }
 

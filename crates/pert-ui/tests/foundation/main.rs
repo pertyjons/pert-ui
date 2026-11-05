@@ -8,6 +8,9 @@
 #[path = "../support/mod.rs"]
 mod support;
 
+// `AppError` exists with the `native` feature, as `App` does.
+#[cfg(feature = "native")]
+mod app_error_conversions;
 mod application_services;
 mod arc_geometry;
 mod async_source;
@@ -24,6 +27,7 @@ mod each_addresses;
 mod exposed_parts;
 mod failure_sites;
 mod fixed_height;
+mod fixed_slots;
 mod flex_layout;
 mod foundation;
 mod host_adapter;

@@ -30,6 +30,12 @@ pub enum DraftAlign {
     /// Text ends at the trailing edge, as a right-aligned number display does,
     /// so opening a value for editing does not make it jump.
     End,
+    /// Text is centered in the editing area, less the caret's width, which
+    /// stays reserved after the text, as a centered label (a diagram node's
+    /// name, for example) is when it opens for editing. Text as wide as the
+    /// area or wider scrolls from the start to keep the caret visible, as
+    /// with [`Self::Start`].
+    Center,
 }
 
 type EditCallback<P> =
@@ -444,7 +450,6 @@ impl<P: Copy + PartialEq + 'static> DraftEditorController<P> {
     /// ```
     /// # use pert_ui_runtime as pert_ui;
     /// use pert_ui::{component::*, prelude::*};
-    /// use pert_ui::testing::*;
     ///
     /// struct Owner {
     ///     draft: DraftEditorController,
@@ -670,7 +675,6 @@ impl<P: Copy + PartialEq + 'static> DraftEditorController<P> {
 /// ```
 /// # use pert_ui_runtime as pert_ui;
 /// use pert_ui::{component::*, prelude::*};
-/// use pert_ui::testing::*;
 ///
 /// struct Row {
 ///     value: Signal<String>,
@@ -818,7 +822,7 @@ impl<P: Copy + PartialEq + 'static> DraftEditor<P> {
             _ => {
                 core.owner = Rc::downgrade(&self.token);
                 core.editor.style = self.style;
-                core.editor.align_end = self.align == DraftAlign::End;
+                core.editor.align = self.align;
                 true
             }
         }

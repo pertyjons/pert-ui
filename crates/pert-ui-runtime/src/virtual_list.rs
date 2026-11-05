@@ -18,17 +18,74 @@ use crate::{
     scrollbar,
     signal::{ReadSignal, ReceiptStatus, Signal},
 };
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, HashMap, HashSet};
+
+/// One row a collection builds: a component or a described [`Element`],
+/// without a key of its own.
+///
+/// [`ListItems::build`] and [`TreeItems::build`](crate::TreeItems::build)
+/// return it, and the collection keys the row with the row's own key, so an
+/// implementation never writes a placeholder key. Convert a component with
+/// `.into()` (or [`RowItem::from`]): it is described as an element while its
+/// type is still known, so its reconciliation and initial children work as
+/// for any element. Convert an [`Element`] built with its label, part, hints,
+/// children or other element builders the same way: it keeps all of them, and
+/// only its key is replaced.
+///
+/// [`Self::into_element`] does that keying, for the built-in collections and
+/// for any composite that builds its own keyed rows from a [`ListSource`] or
+/// another row source. The row is a description: converting it mounts
+/// nothing, and the key must follow the ordinary sibling-key rules (nonempty
+/// and unique among the siblings it is requested with).
+///
+/// ```
+/// # use pert_ui_runtime as pert_ui;
+/// use pert_ui::prelude::*;
+/// let plain: RowItem = Label::new("Ready").into();
+/// let labeled: RowItem = Element::new("ignored", Button::new("Open", |_| Ok(())))
+///     .with_label("Open the file")
+///     .into();
+/// assert_eq!(plain.into_element("row-1").key(), "row-1");
+/// assert_eq!(labeled.into_element("row-2").key(), "row-2");
+/// ```
+#[derive(Debug)]
+#[must_use]
+pub struct RowItem(Element);
+impl RowItem {
+    /// The row as an element under `key`, with everything else it was
+    /// described with.
+    pub fn into_element(self, key: impl Into<String>) -> Element {
+        let mut element = self.0;
+        element.key = key.into();
+        element
+    }
+}
+/// Describes the component as an element whose key the collection replaces.
+impl<C: crate::Component + 'static> From<C> for RowItem {
+    fn from(component: C) -> Self {
+        Self(Element::new("row", component))
+    }
+}
+/// Keeps the element whole; only its key is replaced when it is keyed.
+impl From<Element> for RowItem {
+    fn from(element: Element) -> Self {
+        Self(element)
+    }
+}
 
 /// The rows a [`VirtualList`] can show, addressed by position and by stable key.
 ///
 /// The list reads a [`ListSource`] from a binding and asks it for the
 /// count, the key at a position and the row at a position; it never iterates
-/// every row. Keys are the row identity: a row that keeps its key across a
+/// every row, except to inspect a list that
+/// [reports its rows as items](VirtualList::report_items), which asks
+/// [`Self::semantic_item`] and [`Self::key`] once for every row of the source
+/// each time the list is inspected, content search included. Keys are the row
+/// identity: a row that keeps its key across a
 /// change of the binding keeps its retained component, state and focus, a row
 /// whose key disappears is unmounted, and two rows must never share a key.
-/// The list keys the element `build` returns with `key(index)`, replacing the
-/// element's own key, so a row can be built with any key.
+/// The list keys the row `build` returns with `key(index)`, through
+/// [`RowItem::into_element`], so a row is built without a key.
 ///
 /// Implementations are UI-local and read-only during an update; replacing the
 /// bound `Rc` is how content changes, and it invalidates only the rows whose
@@ -102,7 +159,7 @@ pub trait ListItems {
     ///   [`Component::deliver_notifications`], since neither an update nor a
     ///   reconciliation may write. The binding changes only with the record,
     ///   so a draft survives scrolling and changes to other rows.
-    fn build(&self, index: usize) -> Option<Element>;
+    fn build(&self, index: usize) -> Option<RowItem>;
     /// Position of the row with `key`, or `None` when no row has it. The default
     /// scans every position.
     fn index_of(&self, key: &str) -> Option<usize> {
@@ -110,14 +167,84 @@ pub trait ListItems {
     }
     /// Searchable text of the row at `index`, or `None` when the row offers
     /// none. The default offers none, so content search finds such a row only
-    /// while it is mounted, through its widgets' semantics.
+    /// while it is mounted, through its widgets' semantics, unless its list
+    /// [reports its rows as items](VirtualList::report_items): content search
+    /// then also finds the row's [`Self::semantic_item`] name, mounted or not,
+    /// as a [`ContentField::Item`](crate::ContentField::Item) hit on the list.
     ///
     /// [Content search](crate::Runtime::content_search) asks for it for rows
     /// that are not mounted, and filters can share it: it must be
     /// deterministic, free of side effects and I/O, and answered from data the
     /// source already holds. Its cost is the source's, once per row a search
     /// examines.
+    ///
+    /// A source that offers both this text and semantic items gives a row
+    /// that is not mounted two hits when both texts match: the list's
+    /// [`ContentField::Item`](crate::ContentField::Item) hit, which targets
+    /// the list, and the [`ContentField::Row`](crate::ContentField::Row) hit,
+    /// which targets the row by key. Search keeps both, since they are
+    /// distinct reports with different targets.
     fn text(&self, index: usize) -> Option<String> {
+        let _ = index;
+        None
+    }
+    /// The [`SemanticItem`](crate::SemanticItem) describing the row at
+    /// `index`, for a list that
+    /// [reports its rows as items](VirtualList::report_items); `None` by
+    /// default.
+    ///
+    /// The list asks for it for every row of the source it adopted, in index
+    /// order, each time it is inspected, and gives each item the rectangle of
+    /// its row ([`SemanticItem::local_bounds`](crate::SemanticItem::local_bounds))
+    /// where it has one: a rectangle the item carries is replaced. A list
+    /// without the opt-in never calls it. `None` for a row below
+    /// [`Self::len`] reports an unnamed item without state or actions, so an
+    /// item's index always equals its row's position.
+    ///
+    /// It runs during inspection, so it may read only data the source holds
+    /// as plain values, and plain cells its owner writes in its own update,
+    /// which inspection never overlaps. It must not read signals or bindings,
+    /// build rows, filter, rank, measure, reveal, write or publish signals,
+    /// schedule work, poll or perform I/O. Membership, order, keys and what
+    /// the source itself holds are as of the source the list adopted; state
+    /// an owner retains for it, such as a highlight or a permission, is as of
+    /// the owner's last successful update, so between a signal write and the
+    /// next flush the items show the previous state, as the rows do.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::testing::*;
+    ///
+    /// struct Fruit;
+    /// impl ListItems for Fruit {
+    ///     fn len(&self) -> usize { 3 }
+    ///     fn key(&self, index: usize) -> Option<String> {
+    ///         ["apple", "pear", "plum"].get(index).map(|key| (*key).to_owned())
+    ///     }
+    ///     fn build(&self, index: usize) -> Option<RowItem> {
+    ///         Some(Label::new(self.key(index)?).into())
+    ///     }
+    ///     fn semantic_item(&self, index: usize) -> Option<SemanticItem> {
+    ///         Some(SemanticItem::new(self.key(index)?).action(SemanticAction::Activate))
+    ///     }
+    /// }
+    /// let mut ui = Runtime::new();
+    /// ui.set_viewport(Viewport::new(200.0, 200.0, 1.0)?)?;
+    /// let items = ui.signal(ListSource::new(Fruit));
+    /// let list = ui.mount_tree(
+    ///     VirtualList::new(&items, 24.0)?.report_items(SemanticRole::ListBox).key("fruit"),
+    /// )?;
+    /// let mut driver = Driver::new(&mut ui);
+    /// driver.settle()?;
+    /// let semantics = driver.semantics(&list)?;
+    /// assert_eq!(semantics.role, SemanticRole::ListBox);
+    /// assert_eq!(semantics.items[1].name.as_deref(), Some("pear"));
+    /// let [_, y, _, height] = semantics.items[1].bounds.ok_or("laid out")?;
+    /// assert_eq!((y, height), (24.0, 24.0));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    fn semantic_item(&self, index: usize) -> Option<crate::SemanticItem> {
         let _ = index;
         None
     }
@@ -161,9 +288,7 @@ impl std::ops::Deref for ListSource {
 /// it, or `None` when the source has no such row.
 fn keyed_row(items: &ListSource, index: usize) -> Option<Element> {
     let key = items.key(index)?;
-    let mut element = items.build(index)?;
-    element.key = key;
-    Some(element)
+    Some(items.build(index)?.into_element(key))
 }
 
 impl core::fmt::Debug for ListSource {
@@ -203,8 +328,8 @@ impl core::fmt::Debug for ListSource {
 /// impl ListItems for Rows {
 ///     fn len(&self) -> usize { 1000 }
 ///     fn key(&self, index: usize) -> Option<String> { Some(format!("row-{index}")) }
-///     fn build(&self, index: usize) -> Option<Element> {
-///         Some(Element::new(format!("row-{index}"), Label::new(format!("Row {index}"))))
+///     fn build(&self, index: usize) -> Option<RowItem> {
+///         Some(Label::new(format!("Row {index}")).into())
 ///     }
 ///     fn index_of(&self, key: &str) -> Option<usize> {
 ///         key.strip_prefix("row-")?.parse().ok().filter(|index| *index < 1000)
@@ -460,8 +585,16 @@ impl ListController {
 /// where its line starts in the list's [`VirtualAxis`], and the content extent
 /// is the axis's. With a fixed extent every line is that long, an item's own
 /// measurement does not change its slot, and an item whose minimum is longer is
-/// clipped to it; with [`VirtualList::estimated`] each mounted line is as long
-/// as its longest item. Positions along the axis are kept in `f64`, so a
+/// clipped to it. Each mounted item is placed with
+/// [`ArrangeContext::place_fixed_slot`], so it is measured across its slot
+/// (one more measurement request per item and arrangement, answered from the
+/// item's retained results while its slot is unchanged; a measurement error
+/// fails the layout as any measurement's does), and development validation
+/// reports an item longer than its line as
+/// [`ValidationCode::ExceedsFixedHeight`](crate::ValidationCode::ExceedsFixedHeight),
+/// or [`ExceedsFixedWidth`](crate::ValidationCode::ExceedsFixedWidth) along
+/// a horizontal axis. With [`VirtualList::estimated`] each mounted line is as
+/// long as its longest item. Positions along the axis are kept in `f64`, so a
 /// collection far longer than `f32` holds to the pixel still places every item
 /// exactly. Mounting and unmounting happen through
 /// [`UpdateContext::request_children`] after the list has seen its allocation,
@@ -470,7 +603,7 @@ impl ListController {
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
-/// use pert_ui::{Element, Label, ListItems, ListSource, Runtime, VirtualList};
+/// use pert_ui::{Element, Label, ListItems, ListSource, RowItem, Runtime, VirtualList};
 ///
 /// struct Numbers(usize);
 /// impl ListItems for Numbers {
@@ -480,8 +613,8 @@ impl ListController {
 ///     fn key(&self, index: usize) -> Option<String> {
 ///         (index < self.0).then(|| format!("n-{index}"))
 ///     }
-///     fn build(&self, index: usize) -> Option<Element> {
-///         self.key(index).map(|key| Element::new(key, Label::new(format!("Row {index}"))))
+///     fn build(&self, index: usize) -> Option<RowItem> {
+///         (index < self.0).then(|| Label::new(format!("Row {index}")).into())
 ///     }
 ///     fn index_of(&self, key: &str) -> Option<usize> {
 ///         key.strip_prefix("n-")?.parse().ok().filter(|index| *index < self.0)
@@ -507,7 +640,8 @@ impl ListController {
 /// [`item_tab_stops`](Self::item_tab_stops) and
 /// [`keep_mounted`](Self::keep_mounted), which describe the rows it holds.
 /// Change rows through the source binding and the controller, or give the
-/// list a new key to replace them. Its callbacks and its permission follow
+/// list a new key to replace them. Its callbacks, its permission and
+/// [`report_items`](Self::report_items) follow
 /// the new description, including their removal:
 /// [`on_activate`](Self::on_activate), [`on_text_input`](Self::on_text_input),
 /// [`on_selection_change`](Self::on_selection_change),
@@ -554,6 +688,18 @@ pub struct VirtualList {
     snapshot: Option<ListSource>,
     /// Whether row construction completed for the retained source snapshot.
     rows_current: bool,
+    /// The role [`Self::report_items`] reports in place of `List`, with one
+    /// item per row; `None` reports no items.
+    report: Option<SemanticRole>,
+    /// Where each placed row was, by key: the visible part of its slot, in
+    /// the list's own coordinates, as the last arrangement placed it. Kept
+    /// whether or not the list reports items, so the opt-in needs no
+    /// invalidation; see `item_bounds` for when a record is used.
+    placed: RefCell<HashMap<String, Rect>>,
+    /// The source was replaced and the rows requested for it are not yet the
+    /// children the runtime adopted, so the adopted rows may still show the
+    /// previous source and get no records.
+    replacement_pending: Cell<bool>,
     /// The scroll offset along the axis. `f64`, like the axis's positions, so
     /// that a long collection keeps every row distinct and a small scroll moves.
     offset: Cell<f64>,
@@ -812,6 +958,9 @@ impl VirtualList {
             on_text: None,
             snapshot: None,
             rows_current: false,
+            report: None,
+            placed: RefCell::new(HashMap::new()),
+            replacement_pending: Cell::new(false),
             offset: Cell::new(0.0),
             viewport: Cell::new(Size::ZERO),
             bar_extents: Cell::new(scrollbar::Extents::STANDARD),
@@ -913,6 +1062,102 @@ impl VirtualList {
         self
     }
 
+    /// Reports the rows as [`Semantics::items`] of the list, which inspection
+    /// then describes with `role` in place of [`SemanticRole::List`]; by
+    /// default the list reports no items and lets its mounted rows describe
+    /// themselves.
+    ///
+    /// The list reports one item per row of the source it adopted, in index
+    /// order, each described by [`ListItems::semantic_item`]. Its value and
+    /// actions are unchanged. An item whose row is placed in view gets the
+    /// visible part of that row's slot as its
+    /// [`local_bounds`](crate::SemanticItem::local_bounds), so
+    /// [`Driver::click_item`](crate::testing::Driver::click_item) can click it
+    /// and a test can find its row by name; a composite exposes the list as
+    /// a part ([`Element::expose_part`]) and names it with
+    /// [`Element::with_label`], as the built-in pickers do. Rows outside the
+    /// mounted range, rows kept mounted out of view by focus, a gesture or
+    /// [`Self::keep_mounted`], and a row scrolled or clipped entirely out of
+    /// view have no rectangle; a partly visible row reports its visible part.
+    ///
+    /// A rectangle is where the last successful arrangement placed the row
+    /// with that key, never recomputed from the live scroll offset: a scroll
+    /// moves the items at the layout it requests, as it moves the rows'
+    /// border boxes. The list keeps a record per placed row and forgets:
+    ///
+    /// - every record when its source is replaced, so a reordered, inserted
+    ///   or removed row has no rectangle until the next arrangement;
+    /// - the record of a row whose key leaves the requested rows or enters
+    ///   them, so a newly mounted row, or one that left and came back, never
+    ///   inherits an earlier rectangle;
+    /// - every rectangle while building its rows has not completed for the
+    ///   adopted source ([`ListItems::build`] returned `None`).
+    ///
+    /// Only rows the runtime actually adopted as children are placed. When
+    /// the runtime rejects the rows the list requested, such as a row
+    /// description with a duplicate child key, the previous rows stay mounted
+    /// and the surviving rows keep their rectangles; a requested row that
+    /// was not adopted has none, and after a replaced source none has one.
+    /// At its next layout the list hides the rows it no longer wants and
+    /// requests its rows again, also when the wanted rows did not change, so
+    /// once the rows can be admitted it recovers without a new source. After a
+    /// failed layout that arranged the list the runtime reports no item
+    /// bounds until a layout succeeds.
+    ///
+    /// Inspection asks the source for every row's item and key, so its cost
+    /// grows with the source, also for content search, which finds the items'
+    /// names as [`ContentField::Item`](crate::ContentField::Item) hits on the
+    /// list. It reads only what the list and the source retained: it builds
+    /// no rows, lays nothing out and schedules nothing, while it does build
+    /// the item list it reports.
+    ///
+    /// Each description of the list replaces the setting or removes it, also
+    /// for a list whose owner adopts its callbacks; the change publishes
+    /// nothing and needs no update, since the records are kept either way.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::prelude::*;
+    /// use pert_ui::testing::*;
+    /// use std::{cell::Cell, rc::Rc};
+    ///
+    /// struct Colors(Rc<Cell<usize>>);
+    /// impl ListItems for Colors {
+    ///     fn len(&self) -> usize { 2 }
+    ///     fn key(&self, index: usize) -> Option<String> {
+    ///         ["red", "blue"].get(index).map(|key| (*key).to_owned())
+    ///     }
+    ///     fn build(&self, index: usize) -> Option<RowItem> {
+    ///         let chosen = self.0.clone();
+    ///         let name = self.key(index)?;
+    ///         Some(Button::new(name, move |_| { chosen.set(index); Ok(()) }).into())
+    ///     }
+    ///     fn semantic_item(&self, index: usize) -> Option<SemanticItem> {
+    ///         Some(SemanticItem::new(self.key(index)?).action(SemanticAction::Activate))
+    ///     }
+    /// }
+    /// let mut ui = Runtime::new();
+    /// ui.set_viewport(Viewport::new(200.0, 200.0, 1.0)?)?;
+    /// let chosen = Rc::new(Cell::new(0));
+    /// let items = ui.signal(ListSource::new(Colors(chosen.clone())));
+    /// let root = ui.mount_tree(Column::new([
+    ///     Element::new("colors", VirtualList::new(&items, 32.0)?.report_items(SemanticRole::ListBox))
+    ///         .with_label("Colors")
+    ///         .expose_part("options"),
+    /// ]).key("root"))?;
+    /// let mut driver = Driver::new(&mut ui);
+    /// driver.settle()?;
+    /// let options = driver.exposed_part(&root, "options")?;
+    /// assert_eq!(driver.semantics(&options)?.name.as_deref(), Some("Colors"));
+    /// driver.click_item(&options, 1)?;
+    /// assert_eq!(chosen.get(), 1);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn report_items(mut self, role: SemanticRole) -> Self {
+        self.report = Some(role);
+        self
+    }
+
     /// Keeps the item whose key `key` holds mounted while the source holds
     /// it, as the list keeps an item that holds focus or a pointer gesture:
     /// scrolled out of the range it stays mounted, unrevealed and unpainted.
@@ -987,8 +1232,8 @@ impl VirtualList {
     ///     fn key(&self, index: usize) -> Option<String> {
     ///         ["apple", "pear", "plum"].get(index).map(|key| (*key).to_owned())
     ///     }
-    ///     fn build(&self, index: usize) -> Option<Element> {
-    ///         Some(Label::new(self.key(index)?).key("row"))
+    ///     fn build(&self, index: usize) -> Option<RowItem> {
+    ///         Some(Label::new(self.key(index)?).into())
     ///     }
     /// }
     /// let mut ui = Runtime::new();
@@ -1228,9 +1473,8 @@ impl VirtualList {
     ///     fn key(&self, index: usize) -> Option<String> {
     ///         ["reports", "settings"].get(index).map(|key| (*key).to_owned())
     ///     }
-    ///     fn build(&self, index: usize) -> Option<Element> {
-    ///         let key = self.key(index)?;
-    ///         Some(Element::new(key.clone(), Label::new(key)))
+    ///     fn build(&self, index: usize) -> Option<RowItem> {
+    ///         Some(Label::new(self.key(index)?).into())
     ///     }
     /// }
     /// let ui = Runtime::new();
@@ -1592,6 +1836,34 @@ impl VirtualList {
         (window.start, window.end)
     }
 
+    /// The items [`Self::report_items`] reports: one per row of the adopted
+    /// source, each with the rectangle its row's record holds while the rows
+    /// describe that source.
+    fn reported_items(&self) -> Vec<crate::SemanticItem> {
+        let Some(items) = &self.snapshot else {
+            return Vec::new();
+        };
+        let placed = self.placed.borrow();
+        (0..items.len())
+            .map(|index| {
+                let mut item = items
+                    .semantic_item(index)
+                    .unwrap_or_else(|| crate::SemanticItem::new(""));
+                // Only the list knows where its rows are.
+                let _ = item.take_local();
+                let bounds = self
+                    .rows_current
+                    .then(|| items.key(index))
+                    .flatten()
+                    .and_then(|key| placed.get(&key).copied());
+                match bounds {
+                    Some(bounds) => item.local_bounds(bounds),
+                    None => item,
+                }
+            })
+            .collect()
+    }
+
     // An item's slot in the list's own coordinates at the current offset.
     fn slot(&self, index: usize) -> Result<Rect, crate::GeometryError> {
         let viewport = self.viewport.get();
@@ -1897,6 +2169,9 @@ impl Component for VirtualList {
     fn reconcile(&mut self, next: Self) -> Option<Invalidation> {
         // The source binding, axis, lanes, overscan, controller, selection and
         // owner options stay: they describe the retained rows and state.
+        // Reporting items follows every description, also an owner's: it
+        // changes only what inspection reads, from records kept either way.
+        self.report = next.report;
         if self.owned_callbacks {
             // The owner adopted its new callbacks; a removal it recorded
             // discards undelivered changes, and a callback it gained needs an
@@ -1950,6 +2225,12 @@ impl Component for VirtualList {
         let items = cx.read(&self.items)?;
         let replaced = self.snapshot.as_ref() != Some(&items) || !self.rows_current;
         self.rows_current = false;
+        if replaced {
+            // A position, and a key's slot, may now belong to another row:
+            // no row keeps a rectangle placed for an earlier source.
+            self.placed.get_mut().clear();
+            self.replacement_pending.set(true);
+        }
         // A replaced source, such as a filtered one, keeps the row at the top
         // of the viewport where it was, by key, rather than the numeric
         // offset, which would now show another row.
@@ -2052,13 +2333,23 @@ impl Component for VirtualList {
         for index in self.axis().mount_order(start..end, pinned) {
             wanted.push((index, items.key(index).ok_or(LayoutError::InvalidChild)?));
         }
-        if replaced || wanted != self.mounted {
+        // A rejected request leaves the previous children mounted, so the
+        // rows are requested again until the runtime adopts them, even when
+        // the wanted rows are the ones requested last.
+        if replaced || wanted != self.mounted || !cx.children_adopted() {
             let mut elements = Vec::with_capacity(wanted.len());
             for (index, key) in &wanted {
-                let mut element = items.build(*index).ok_or(LayoutError::InvalidChild)?;
-                element.key.clone_from(key);
-                elements.push(element);
+                let row = items.build(*index).ok_or(LayoutError::InvalidChild)?;
+                elements.push(row.into_element(key.clone()));
             }
+            // A row entering or leaving the requested rows keeps no record,
+            // so a newly mounted row never inherits a rectangle. Records only
+            // exist for rows requested before, so this keeps the rows that
+            // stay requested, and with them their retained components.
+            let staying: HashSet<&str> = wanted.iter().map(|(_, key)| key.as_str()).collect();
+            self.placed
+                .get_mut()
+                .retain(|key, _| staying.contains(key.as_str()));
             cx.request_children(elements);
             self.mounted = wanted;
             cx.request_layout();
@@ -2149,17 +2440,58 @@ impl Component for VirtualList {
         }
         self.offset
             .set(self.axis().clamp_offset(self.offset.get(), self.main()));
+        let shown = Rect::from_size(size);
+        let mut placed = HashMap::with_capacity(cx.len());
+        // Whether the children are the rows last requested, which they are
+        // unless the runtime rejected that request.
+        let mut adopted = cx.children_adopted();
         for child in 0..cx.len() {
             let key = cx.measurement().key(child)?;
-            let index = self
+            let Some(index) = self
                 .mounted
                 .iter()
                 .find(|(_, mounted)| mounted == key)
                 .map(|(index, _)| *index)
-                .ok_or(LayoutError::InvalidChild)?;
+            else {
+                // A row left mounted by a request the runtime rejected. It is
+                // no longer wanted, so it is laid out where it shows nothing,
+                // and the next update requests the rows again.
+                adopted = false;
+                cx.place_clipped(child, shown, Rect::from_size(Size::ZERO))?;
+                continue;
+            };
+            let key = key.to_owned();
             let slot = self.slot(index)?;
-            cx.place_clipped(child, slot, slot)?;
+            let visible = slot.intersection(shown);
+            if !visible.is_empty() {
+                placed.insert(key, visible);
+            }
+            // A fixed-extent list gives every line the same extent along its
+            // axis, so an item that needs more is cut off: declaring the slot
+            // lets development validation report it. An estimated list sizes
+            // its lines from its items.
+            if self.axis().is_estimated() {
+                cx.place_clipped(child, slot, slot)?;
+            } else {
+                let axis = if self.horizontal {
+                    Orientation::Horizontal
+                } else {
+                    Orientation::Vertical
+                };
+                cx.place_fixed_slot(child, slot, slot, axis)?;
+            }
         }
+        if adopted {
+            self.replacement_pending.set(false);
+        } else {
+            cx.request_update();
+        }
+        // Rows the runtime adopted for a replaced source may still show the
+        // previous one until a request for it succeeds.
+        if self.replacement_pending.get() {
+            placed.clear();
+        }
+        *self.placed.borrow_mut() = placed;
         let wanted = self.wanted();
         if wanted != self.range {
             self.needed.set(Some(wanted));
@@ -2712,14 +3044,19 @@ impl Component for VirtualList {
         }
         details.validation.interactive = self.focusable();
         // Only part of a long collection is mounted, so the count is reported
-        // here rather than left to be counted from the children, and the rows are
-        // deliberately not enumerated as items.
+        // here rather than left to be counted from the children. The rows are
+        // enumerated as items only for a list that opted in, since that asks
+        // the source about every row on each inspection.
         // A reorderable list names the action, not the gesture: its items move
         // by drag and, with a selection, by Alt with an arrow.
-        let semantics = Semantics::new(SemanticRole::List).enabled_actions(
-            (self.reorder.is_some() && self.reorder_allowed && count > 0)
-                .then_some(SemanticAction::Move),
-        );
+        let mut semantics = Semantics::new(self.report.unwrap_or(SemanticRole::List))
+            .enabled_actions(
+                (self.reorder.is_some() && self.reorder_allowed && count > 0)
+                    .then_some(SemanticAction::Move),
+            );
+        if self.report.is_some() {
+            semantics = semantics.items(self.reported_items());
+        }
         details.semantics = Some(if self.selection.is_some() {
             semantics
                 .value(SemanticValue::Choice {
@@ -2739,5 +3076,47 @@ impl Component for VirtualList {
                 .enabled_actions(self.overflows().then_some(SemanticAction::Scroll))
         });
         details
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    struct Empty;
+    impl ListItems for Empty {
+        fn len(&self) -> usize {
+            0
+        }
+        fn key(&self, _: usize) -> Option<String> {
+            None
+        }
+        fn build(&self, _: usize) -> Option<RowItem> {
+            None
+        }
+    }
+
+    #[test]
+    fn an_owner_that_adopts_the_callbacks_still_follows_the_item_report() {
+        let ui = crate::Runtime::new();
+        let items = ui.signal(ListSource::new(Empty));
+        let list = |role: Option<SemanticRole>| {
+            let list = VirtualList::new(items.read_only(), 10.0)
+                .unwrap()
+                .owned_callbacks();
+            match role {
+                Some(role) => list.report_items(role),
+                None => list,
+            }
+        };
+        let mut mounted = list(Some(SemanticRole::ListBox));
+        assert_eq!(mounted.reconcile(list(None)), None, "no update needed");
+        assert_eq!(mounted.report, None, "removed");
+        assert_eq!(mounted.reconcile(list(Some(SemanticRole::Menu))), None);
+        assert_eq!(mounted.report, Some(SemanticRole::Menu), "set again");
+        assert_eq!(
+            mounted.inspect().semantics.map(|semantics| semantics.role),
+            Some(SemanticRole::Menu)
+        );
     }
 }

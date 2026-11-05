@@ -409,8 +409,8 @@ impl TreeItems for Folders {
     fn can_expand(&self, key: &str) -> bool {
         !key.contains('/')
     }
-    fn build(&self, key: &str) -> Option<Element> {
-        Some(Element::new(key, Label::new(format!("Node {key}"))))
+    fn build(&self, key: &str) -> Option<RowItem> {
+        Some(Element::new(key, Label::new(format!("Node {key}"))).into())
     }
     fn text(&self, key: &str) -> Option<String> {
         Some(format!("Node {key}"))
@@ -564,12 +564,9 @@ impl ListItems for Words {
     fn key(&self, index: usize) -> Option<String> {
         self.0.get(index).map(|word| format!("{word}-{index}"))
     }
-    fn build(&self, index: usize) -> Option<Element> {
+    fn build(&self, index: usize) -> Option<RowItem> {
         let word = *self.0.get(index)?;
-        Some(Element::new(
-            format!("{word}-{index}"),
-            Button::new(word, |_| Ok(())),
-        ))
+        Some(Element::new(format!("{word}-{index}"), Button::new(word, |_| Ok(()))).into())
     }
     fn text(&self, index: usize) -> Option<String> {
         self.0.get(index).map(|word| (*word).to_owned())
@@ -730,7 +727,7 @@ impl ListItems for InvalidRow {
     fn key(&self, index: usize) -> Option<String> {
         (index == 0).then(|| "filler-0".to_owned())
     }
-    fn build(&self, _: usize) -> Option<Element> {
+    fn build(&self, _: usize) -> Option<pert_ui::RowItem> {
         None
     }
     fn text(&self, index: usize) -> Option<String> {
@@ -778,8 +775,8 @@ impl ListItems for RejectedSource {
     fn key(&self, index: usize) -> Option<String> {
         (index == 0).then(|| "filler-0".to_owned())
     }
-    fn build(&self, _: usize) -> Option<Element> {
-        Some(Element::new("filler-0", RejectedRow))
+    fn build(&self, _: usize) -> Option<pert_ui::RowItem> {
+        Some(Element::new("filler-0", RejectedRow).into())
     }
     fn text(&self, index: usize) -> Option<String> {
         (index == 0).then(|| "replacement".to_owned())
@@ -1091,4 +1088,761 @@ fn a_field_names_an_ordinary_item_of_a_structural_each_in_content_search() {
         .components
         .is_empty()
     );
+}
+
+/// A component named `name` that reports `items` as semantic items, which
+/// a test can change between search steps; `protected` conceals them.
+struct Itemized {
+    name: &'static str,
+    items: std::rc::Rc<std::cell::RefCell<Vec<&'static str>>>,
+    protected: bool,
+    inspected: std::rc::Rc<std::cell::Cell<usize>>,
+}
+impl Component for Itemized {
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+    fn focusable(&self) -> bool {
+        true
+    }
+    fn inspect(&self) -> ComponentDetails {
+        self.inspected.set(self.inspected.get() + 1);
+        let items = self
+            .items
+            .borrow()
+            .iter()
+            .map(|name| SemanticItem::new(*name))
+            .collect::<Vec<_>>();
+        let mut semantics = Semantics::new(SemanticRole::List)
+            .name(self.name)
+            .items(items);
+        if self.protected {
+            semantics = semantics.protected(true);
+        }
+        ComponentDetails {
+            semantics: Some(semantics),
+            ..ComponentDetails::default()
+        }
+    }
+}
+
+type Shared = std::rc::Rc<std::cell::RefCell<Vec<&'static str>>>;
+
+fn itemized(name: &'static str, items: &[&'static str], protected: bool) -> (Itemized, Shared) {
+    let shared: Shared = std::rc::Rc::new(std::cell::RefCell::new(items.to_vec()));
+    (
+        Itemized {
+            name,
+            items: shared.clone(),
+            protected,
+            inspected: std::rc::Rc::default(),
+        },
+        shared,
+    )
+}
+
+#[test]
+fn a_visible_toast_is_found_by_its_message() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(640.0, 480.0, 1.0).unwrap())
+        .unwrap();
+    let queue = ToastController::new(&ui);
+    ui.mount_tree(Element::new(
+        "host",
+        ToastHost::new(queue.clone(), Element::new("body", Label::new("Content"))),
+    ))
+    .unwrap();
+    queue.push(Toast::new("Upload failed")).unwrap();
+    settle(&mut ui);
+    let hits = search(&ui, "upload");
+    assert_eq!(hits.len(), 1, "{hits:?}");
+    assert_eq!(hits[0].text, "Upload failed");
+    assert_eq!(hits[0].field, ContentField::Item { index: 0 });
+}
+
+#[test]
+fn an_unselected_tab_title_is_found_as_an_item_of_the_tabs() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(400.0, 300.0, 1.0).unwrap())
+        .unwrap();
+    ui.mount_tree(Element::new(
+        "tabs",
+        Tabs::new([
+            Tab::new(
+                "one",
+                "Overview",
+                Element::new("intro", Label::new("Welcome")),
+            ),
+            Tab::new(
+                "two",
+                "Statistics",
+                Element::new("data", Label::new("Data")),
+            ),
+        ]),
+    ))
+    .unwrap();
+    settle(&mut ui);
+    let hits = search(&ui, "statistics");
+    assert!(
+        hits.iter()
+            .any(|hit| hit.field == ContentField::Item { index: 1 }),
+        "{hits:?}"
+    );
+}
+
+#[test]
+fn a_components_name_comes_before_its_items_and_protected_items_are_never_found() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(400.0, 300.0, 1.0).unwrap())
+        .unwrap();
+    let (open, _) = itemized(
+        "Recent files",
+        &["Recent report", "Old notes", "Recent draft"],
+        false,
+    );
+    let (secret, _) = itemized("Recent passwords", &["Recent bank"], true);
+    ui.mount_tree(Element::new(
+        "root",
+        Column::new([Element::new("open", open), Element::new("secret", secret)]),
+    ))
+    .unwrap();
+    settle(&mut ui);
+    let found: Vec<(String, ContentField, Option<String>)> = search(&ui, "recent")
+        .into_iter()
+        .map(|hit| (hit.text, hit.field, hit.other))
+        .collect();
+    let owner = Some("Recent files".to_owned());
+    assert_eq!(
+        found,
+        [
+            ("Recent files".to_owned(), ContentField::Name, None),
+            (
+                "Recent report".to_owned(),
+                ContentField::Item { index: 0 },
+                owner.clone()
+            ),
+            (
+                "Recent draft".to_owned(),
+                ContentField::Item { index: 2 },
+                owner
+            ),
+            // A protected component's name is found; its items are not.
+            ("Recent passwords".to_owned(), ContentField::Name, None),
+        ]
+    );
+}
+
+fn search_texts(ui: &Runtime, text: &str) -> Vec<String> {
+    search(ui, text).into_iter().map(|hit| hit.text).collect()
+}
+
+#[test]
+fn item_scanning_continues_across_tiny_steps_without_duplicates_or_skips() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(400.0, 300.0, 1.0).unwrap())
+        .unwrap();
+    let (list, items) = itemized("Item list", &["item a", "skip", "item b", "item c"], false);
+    let (after, _) = itemized("Item after", &[], false);
+    ui.mount_tree(Element::new(
+        "root",
+        Column::new([Element::new("list", list), Element::new("after", after)]),
+    ))
+    .unwrap();
+    settle(&mut ui);
+    for (limit, budget) in [(1, 1), (1, 64), (64, 1), (2, 3)] {
+        let query = ContentQuery::new("item")
+            .unwrap()
+            .limit(limit)
+            .unwrap()
+            .budget(budget)
+            .unwrap();
+        let mut search = ui.content_search(query);
+        let mut found = Vec::new();
+        let mut inserted = false;
+        loop {
+            let step = search.step(&ui).unwrap();
+            assert!(step.hits.len() <= limit && step.work <= budget.max(1));
+            found.extend(step.hits.into_iter().map(|hit| hit.text));
+            if !inserted && found.iter().any(|text| text == "Item list") {
+                // Items added after the component was visited are seen only
+                // by a new search, so the continuation neither repeats nor
+                // skips one.
+                items.borrow_mut().insert(0, "item inserted");
+                inserted = true;
+            }
+            if step.done {
+                break;
+            }
+        }
+        assert_eq!(
+            found,
+            ["Item list", "item a", "item b", "item c", "Item after"],
+            "limit {limit}, budget {budget}"
+        );
+        items.borrow_mut().remove(0);
+        // A new search sees the current items.
+        assert!(
+            !search_texts(&ui, "item").contains(&"item inserted".to_owned()),
+            "the inserted item was removed again"
+        );
+    }
+}
+
+#[test]
+fn jumping_to_an_item_hit_focuses_its_component() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(400.0, 300.0, 1.0).unwrap())
+        .unwrap();
+    let (list, _) = itemized("Commands", &["Save all"], false);
+    ui.mount_tree(Element::new("list", list)).unwrap();
+    settle(&mut ui);
+    let hits = search(&ui, "save all");
+    assert_eq!(hits.len(), 1);
+    ui.jump_to_content(&hits[0].target).unwrap();
+    assert_eq!(ui.focused(), Some(widget(&hits[0])));
+}
+
+#[test]
+fn resuming_an_item_scan_does_not_inspect_its_component_again() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(400.0, 300.0, 1.0).unwrap())
+        .unwrap();
+    let (list, _) = itemized("Item list", &["item a", "item b", "item c"], false);
+    let inspected = list.inspected.clone();
+    ui.mount_tree(Element::new("list", list)).unwrap();
+    settle(&mut ui);
+    let query = ContentQuery::new("item").unwrap().limit(1).unwrap();
+    let mut search = ui.content_search(query);
+    let before = inspected.get();
+    let mut steps = 0;
+    while !search.step(&ui).unwrap().done {
+        steps += 1;
+    }
+    assert!(steps >= 3, "the items took several steps");
+    assert_eq!(
+        inspected.get() - before,
+        1,
+        "one inspection for the whole scan"
+    );
+}
+
+#[test]
+fn a_modal_opened_between_steps_blocks_the_rest_of_an_item_scan() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(400.0, 300.0, 1.0).unwrap())
+        .unwrap();
+    let (list, _) = itemized("Item list", &["item a", "item b"], false);
+    let dialog = DialogController::new(&ui);
+    ui.mount_tree(Element::new(
+        "root",
+        Column::new([
+            Element::new("list", list),
+            Element::new(
+                "dialog",
+                Dialog::new(
+                    dialog.clone(),
+                    Element::new("open", Button::new("Open", |_| Ok(()))),
+                    Element::new("body", Label::new("Modal body")),
+                ),
+            ),
+        ]),
+    ))
+    .unwrap();
+    settle(&mut ui);
+    let mut search = ui.content_search(ContentQuery::new("item").unwrap().limit(1).unwrap());
+    let first = search.step(&ui).unwrap();
+    assert_eq!(first.hits.len(), 1);
+    assert_eq!(first.hits[0].text, "Item list");
+    dialog.open().unwrap();
+    settle(&mut ui);
+    let mut rest = Vec::new();
+    loop {
+        let step = search.step(&ui).unwrap();
+        rest.extend(step.hits.into_iter().map(|hit| hit.text));
+        if step.done {
+            break;
+        }
+    }
+    assert!(
+        rest.is_empty(),
+        "the modal blocks the saved items: {rest:?}"
+    );
+}
+
+#[test]
+fn a_picker_is_searchable_unless_it_presents_search_results() {
+    for searchable in [true, false] {
+        let mut ui = Runtime::new();
+        ui.set_viewport(Viewport::new(800.0, 600.0, 1.0).unwrap())
+            .unwrap();
+        let picker = QuickPickController::new(&ui);
+        ui.mount_tree(Element::new(
+            "app",
+            QuickPick::new(
+                picker.clone(),
+                Element::new("doc", Label::new("Searchable document")),
+                |_, _| Ok(PickChoice::Done),
+            )
+            .name("Search")
+            .searchable(searchable),
+        ))
+        .unwrap();
+        for _ in 0..2 {
+            picker
+                .open(vec![PickItem::new("result", "Searchable result")])
+                .unwrap();
+            settle(&mut ui);
+            picker.close().unwrap();
+            settle(&mut ui);
+            let found: Vec<String> = search(&ui, "searchable")
+                .into_iter()
+                .map(|hit| hit.text)
+                .collect();
+            // The anchor's content is found either way; the picker's own
+            // retained results only when the picker is searchable.
+            assert_eq!(found[0], "Searchable document");
+            assert_eq!(
+                found.iter().any(|text| text == "Searchable result"),
+                searchable,
+                "searchable {searchable}: {found:?}"
+            );
+        }
+    }
+}
+
+/// A list of rows that also offers its unmounted rows' text, between a
+/// component with matching items and a matching sibling.
+struct MatchRows(usize);
+impl ListItems for MatchRows {
+    fn len(&self) -> usize {
+        self.0
+    }
+    fn key(&self, index: usize) -> Option<String> {
+        (index < self.0).then(|| format!("w{index}"))
+    }
+    fn build(&self, index: usize) -> Option<RowItem> {
+        (index < self.0).then(|| Label::new(format!("match row {index}")).into())
+    }
+    fn text(&self, index: usize) -> Option<String> {
+        (index < self.0).then(|| format!("match row {index}"))
+    }
+}
+
+#[test]
+fn items_rows_and_children_keep_their_order_across_one_unit_steps() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(400.0, 120.0, 1.0).unwrap())
+        .unwrap();
+    let (owner, _) = itemized("match owner", &["match item"], false);
+    let rows = ui.signal(ListSource::new(MatchRows(40)));
+    ui.mount_tree(Element::new(
+        "root",
+        Column::new([
+            Element::new("owner", owner),
+            Element::new("list", VirtualList::new(rows.read_only(), 24.0).unwrap())
+                .with_label("match list")
+                .with_grow(1),
+            Element::new("after", Label::new("match after")),
+        ]),
+    ))
+    .unwrap();
+    settle(&mut ui);
+    let collect = |limit: usize, budget: usize| {
+        let query = ContentQuery::new("match")
+            .unwrap()
+            .limit(limit)
+            .unwrap()
+            .budget(budget)
+            .unwrap();
+        let mut search = ui.content_search(query);
+        let mut found = Vec::new();
+        loop {
+            let step = search.step(&ui).unwrap();
+            found.extend(step.hits.into_iter().map(|hit| (hit.field, hit.text)));
+            if step.done {
+                return found;
+            }
+        }
+    };
+    let unbounded = collect(1000, 100_000);
+    assert_eq!(collect(1, 1), unbounded, "one-unit steps keep the order");
+    // The owner's name, then its item, before the list and the sibling.
+    assert_eq!(unbounded[0], (ContentField::Name, "match owner".to_owned()));
+    assert_eq!(
+        unbounded[1],
+        (ContentField::Item { index: 0 }, "match item".to_owned())
+    );
+    assert_eq!(
+        unbounded.last(),
+        Some(&(ContentField::Name, "match after".to_owned()))
+    );
+    // Every row is found exactly once, mounted or not.
+    let rows: Vec<&String> = unbounded
+        .iter()
+        .filter(|(_, text)| text.starts_with("match row"))
+        .map(|(_, text)| text)
+        .collect();
+    assert_eq!(rows.len(), 40, "{rows:?}");
+}
+
+#[test]
+fn a_new_search_sees_an_item_added_after_an_earlier_one() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(400.0, 300.0, 1.0).unwrap())
+        .unwrap();
+    let (list, items) = itemized("Item list", &["item a"], false);
+    ui.mount_tree(Element::new("list", list)).unwrap();
+    settle(&mut ui);
+    assert_eq!(search_texts(&ui, "item"), ["Item list", "item a"]);
+    items.borrow_mut().push("item added");
+    assert_eq!(
+        search_texts(&ui, "item"),
+        ["Item list", "item a", "item added"]
+    );
+}
+
+/// A component with matching items and unmounted rows, borrowed from an
+/// inner list's source. The inner list is never mounted, so it reports its
+/// mounted rows as not current and the search visits no children here; the
+/// order of rows and mounted children is tested with a mounted list above.
+struct Combined {
+    rows: VirtualList,
+    child: Option<Element>,
+}
+impl Component for Combined {
+    fn take_children(&mut self) -> Vec<Element> {
+        self.child.take().into_iter().collect()
+    }
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+    fn inspect(&self) -> ComponentDetails {
+        ComponentDetails {
+            semantics: Some(
+                Semantics::new(SemanticRole::List)
+                    .name("match combined")
+                    .items([
+                        SemanticItem::new("match item one"),
+                        SemanticItem::new("match item two"),
+                    ]),
+            ),
+            ..ComponentDetails::default()
+        }
+    }
+    fn try_content_rows(&self) -> Result<Option<std::rc::Rc<dyn ContentRows>>, RuntimeError> {
+        self.rows.try_content_rows()
+    }
+}
+
+#[test]
+fn one_unit_steps_report_name_items_rows_and_siblings_in_order() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(400.0, 300.0, 1.0).unwrap())
+        .unwrap();
+    let source = ui.signal(ListSource::new(MatchRows(3)));
+    let combined = Combined {
+        rows: VirtualList::new(source.read_only(), 24.0).unwrap(),
+        child: None,
+    };
+    ui.mount_tree(Element::new(
+        "root",
+        Column::new([
+            Element::new("combined", combined),
+            Label::new("match after").key("after"),
+        ]),
+    ))
+    .unwrap();
+    settle(&mut ui);
+    let expected: Vec<(ContentField, String, Option<String>)> = vec![
+        (ContentField::Name, "match combined".into(), None),
+        (
+            ContentField::Item { index: 0 },
+            "match item one".into(),
+            None,
+        ),
+        (
+            ContentField::Item { index: 1 },
+            "match item two".into(),
+            None,
+        ),
+        (ContentField::Row, "match row 0".into(), Some("w0".into())),
+        (ContentField::Row, "match row 1".into(), Some("w1".into())),
+        (ContentField::Row, "match row 2".into(), Some("w2".into())),
+        (ContentField::Name, "match after".into(), None),
+    ];
+    for (limit, budget) in [(1, 1), (1000, 100_000), (2, 3)] {
+        let query = ContentQuery::new("match")
+            .unwrap()
+            .limit(limit)
+            .unwrap()
+            .budget(budget)
+            .unwrap();
+        let mut search = ui.content_search(query);
+        let mut found = Vec::new();
+        loop {
+            let step = search.step(&ui).unwrap();
+            assert!(step.hits.len() <= limit);
+            found.extend(step.hits.into_iter().map(|hit| {
+                let row = match &hit.target {
+                    ContentTarget::Row { key, .. } => Some(key.clone()),
+                    _ => None,
+                };
+                (hit.field, hit.text, row)
+            }));
+            if step.done {
+                break;
+            }
+        }
+        assert_eq!(found, expected, "limit {limit}, budget {budget}");
+    }
+}
+
+#[test]
+fn a_mounted_list_reports_its_unmounted_rows_before_its_mounted_children_with_targets() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(400.0, 120.0, 1.0).unwrap())
+        .unwrap();
+    let (owner, _) = itemized("match owner", &["match item"], false);
+    let rows = ui.signal(ListSource::new(MatchRows(12)));
+    let root = ui
+        .mount_tree(Element::new(
+            "root",
+            Column::new([
+                Element::new("owner", owner),
+                Element::new("list", VirtualList::new(rows.read_only(), 24.0).unwrap())
+                    .with_label("match list")
+                    .with_grow(1),
+                Element::new("after", Label::new("match after")),
+            ]),
+        ))
+        .unwrap();
+    settle(&mut ui);
+    let owner = ui.find_descendant(&root, "owner").unwrap().unwrap();
+    let list = ui.find_descendant(&root, "list").unwrap().unwrap();
+    let after = ui.find_descendant(&root, "after").unwrap().unwrap();
+    let mounted: Vec<(String, WidgetId)> = ui
+        .children(&list)
+        .unwrap()
+        .into_iter()
+        .map(|id| (ui.key(&id).unwrap().to_owned(), id))
+        .collect();
+    assert!(
+        !mounted.is_empty() && mounted.len() < 12,
+        "{} mounted",
+        mounted.len()
+    );
+    // The expected sequence: the owner's name and item, the list's name, its
+    // unmounted rows in source order, its mounted rows in child order, then
+    // the sibling.
+    #[derive(Debug, PartialEq)]
+    enum Target {
+        Widget(WidgetId),
+        Row(WidgetId, String),
+    }
+    let mut expected: Vec<(ContentField, String, Target)> = vec![
+        (
+            ContentField::Name,
+            "match owner".into(),
+            Target::Widget(owner.clone()),
+        ),
+        (
+            ContentField::Item { index: 0 },
+            "match item".into(),
+            Target::Widget(owner),
+        ),
+        (
+            ContentField::Name,
+            "match list".into(),
+            Target::Widget(list.clone()),
+        ),
+    ];
+    for index in 0..12 {
+        let key = format!("w{index}");
+        if !mounted.iter().any(|(mounted, _)| mounted == &key) {
+            expected.push((
+                ContentField::Row,
+                format!("match row {index}"),
+                Target::Row(list.clone(), key),
+            ));
+        }
+    }
+    for (key, id) in &mounted {
+        let index: usize = key[1..].parse().unwrap();
+        expected.push((
+            ContentField::Name,
+            format!("match row {index}"),
+            Target::Widget(id.clone()),
+        ));
+    }
+    expected.push((
+        ContentField::Name,
+        "match after".into(),
+        Target::Widget(after),
+    ));
+    for (limit, budget) in [(1, 1), (1000, 100_000)] {
+        let query = ContentQuery::new("match")
+            .unwrap()
+            .limit(limit)
+            .unwrap()
+            .budget(budget)
+            .unwrap();
+        let mut search = ui.content_search(query);
+        let mut found = Vec::new();
+        loop {
+            let step = search.step(&ui).unwrap();
+            found.extend(step.hits.into_iter().map(|hit| {
+                let target = match hit.target {
+                    ContentTarget::Widget(id) => Target::Widget(id),
+                    ContentTarget::Row { collection, key } => Target::Row(collection, key),
+                    other => panic!("unexpected target {other:?}"),
+                };
+                (hit.field, hit.text, target)
+            }));
+            if step.done {
+                break;
+            }
+        }
+        assert_eq!(found, expected, "limit {limit}, budget {budget}");
+    }
+}
+
+/// A component with matching items whose child is a mounted list: a
+/// collection nested inside an item-reporting component.
+struct ItemOwner {
+    child: Option<Element>,
+}
+impl Component for ItemOwner {
+    fn take_children(&mut self) -> Vec<Element> {
+        self.child.take().into_iter().collect()
+    }
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+    fn inspect(&self) -> ComponentDetails {
+        ComponentDetails {
+            semantics: Some(
+                Semantics::new(SemanticRole::List)
+                    .name("match owner")
+                    .items([
+                        SemanticItem::new("match item one"),
+                        SemanticItem::new("match item two"),
+                    ]),
+            ),
+            ..ComponentDetails::default()
+        }
+    }
+}
+
+#[test]
+fn a_list_nested_in_an_item_reporter_continues_its_order_across_steps() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(400.0, 120.0, 1.0).unwrap())
+        .unwrap();
+    let rows = ui.signal(ListSource::new(MatchRows(12)));
+    let list = Element::new("list", VirtualList::new(rows.read_only(), 24.0).unwrap())
+        .with_label("match list")
+        .with_grow(1);
+    let root = ui
+        .mount_tree(Element::new(
+            "root",
+            Column::new([
+                Element::new("owner", ItemOwner { child: Some(list) }).with_grow(1),
+                Element::new("after", Label::new("match after")),
+            ]),
+        ))
+        .unwrap();
+    settle(&mut ui);
+    let owner = ui.find_descendant(&root, "owner").unwrap().unwrap();
+    let list = ui.find_descendant(&owner, "list").unwrap().unwrap();
+    let after = ui.find_descendant(&root, "after").unwrap().unwrap();
+    let mounted: Vec<(String, WidgetId)> = ui
+        .children(&list)
+        .unwrap()
+        .into_iter()
+        .map(|id| (ui.key(&id).unwrap().to_owned(), id))
+        .collect();
+    assert!(
+        !mounted.is_empty() && mounted.len() < 12,
+        "{} mounted",
+        mounted.len()
+    );
+    #[derive(Debug, PartialEq)]
+    enum Target {
+        Widget(WidgetId),
+        Row(WidgetId, String),
+    }
+    // The owner's name and items, then its child list: the list's name, its
+    // unmounted rows in source order and its mounted rows in child order;
+    // then the owner's sibling.
+    let mut expected: Vec<(ContentField, String, Target)> = vec![
+        (
+            ContentField::Name,
+            "match owner".into(),
+            Target::Widget(owner.clone()),
+        ),
+        (
+            ContentField::Item { index: 0 },
+            "match item one".into(),
+            Target::Widget(owner.clone()),
+        ),
+        (
+            ContentField::Item { index: 1 },
+            "match item two".into(),
+            Target::Widget(owner),
+        ),
+        (
+            ContentField::Name,
+            "match list".into(),
+            Target::Widget(list.clone()),
+        ),
+    ];
+    for index in 0..12 {
+        let key = format!("w{index}");
+        if !mounted.iter().any(|(mounted, _)| mounted == &key) {
+            expected.push((
+                ContentField::Row,
+                format!("match row {index}"),
+                Target::Row(list.clone(), key),
+            ));
+        }
+    }
+    for (key, id) in &mounted {
+        let index: usize = key[1..].parse().unwrap();
+        expected.push((
+            ContentField::Name,
+            format!("match row {index}"),
+            Target::Widget(id.clone()),
+        ));
+    }
+    expected.push((
+        ContentField::Name,
+        "match after".into(),
+        Target::Widget(after),
+    ));
+    for (limit, budget) in [(1, 1), (2, 3), (1000, 100_000)] {
+        let query = ContentQuery::new("match")
+            .unwrap()
+            .limit(limit)
+            .unwrap()
+            .budget(budget)
+            .unwrap();
+        let mut search = ui.content_search(query);
+        let mut found = Vec::new();
+        loop {
+            let step = search.step(&ui).unwrap();
+            assert!(step.hits.len() <= limit);
+            found.extend(step.hits.into_iter().map(|hit| {
+                let target = match hit.target {
+                    ContentTarget::Widget(id) => Target::Widget(id),
+                    ContentTarget::Row { collection, key } => Target::Row(collection, key),
+                    other => panic!("unexpected target {other:?}"),
+                };
+                (hit.field, hit.text, target)
+            }));
+            if step.done {
+                break;
+            }
+        }
+        assert_eq!(found, expected, "limit {limit}, budget {budget}");
+    }
 }

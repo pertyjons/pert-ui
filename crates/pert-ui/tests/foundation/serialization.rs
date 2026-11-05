@@ -745,13 +745,13 @@ fn with_version(text: &str, version: u32) -> String {
 }
 
 fn rejects_other_revisions<T: serde::de::DeserializeOwned + std::fmt::Debug>(text: &str) {
-    for version in [16, 18] {
+    for version in [17, 19] {
         let error = serde_json::from_str::<T>(&with_version(text, version))
             .expect_err("another revision is rejected")
             .to_string();
         assert!(
             error.starts_with(&format!(
-                "inspection schema version {version} is not supported (this build writes 17)"
+                "inspection schema version {version} is not supported (this build writes 18)"
             )),
             "{error}"
         );
@@ -759,13 +759,13 @@ fn rejects_other_revisions<T: serde::de::DeserializeOwned + std::fmt::Debug>(tex
 }
 
 #[test]
-fn snapshots_and_query_results_carry_item_bounds_and_decode_only_schema_17() -> TestResult {
-    assert_eq!(InspectionSnapshot::SCHEMA_VERSION, 17);
+fn snapshots_and_query_results_carry_item_bounds_and_decode_only_schema_18() -> TestResult {
+    assert_eq!(InspectionSnapshot::SCHEMA_VERSION, 18);
     let mut ui = ui()?;
     let rows = ui.mount_tree(Element::new("rows", TwoRows))?;
     ui.flush(Duration::ZERO)?;
     let snapshot = ui.inspect();
-    assert_eq!(snapshot.schema_version, 17);
+    assert_eq!(snapshot.schema_version, 18);
     let items = |components: &[ComponentInspection]| -> Vec<Option<[f32; 4]>> {
         components
             .iter()
@@ -782,11 +782,11 @@ fn snapshots_and_query_results_carry_item_bounds_and_decode_only_schema_17() -> 
     );
     assert_eq!(items(&round_trip(&query)?.components), expected);
 
-    // Empty envelopes decode at 17, and no other revision does.
+    // Empty envelopes decode at 18, and no other revision does.
     let empty = serde_json::to_string(&Runtime::new().inspect())?;
     assert_eq!(
         serde_json::from_str::<InspectionSnapshot>(&empty)?.schema_version,
-        17
+        18
     );
     rejects_other_revisions::<InspectionSnapshot>(&empty);
     let empty_query = serde_json::to_string(&ui.query(&InspectionQuery::new()))?;
@@ -826,20 +826,20 @@ fn the_schema_version_is_written_first_and_read_wherever_it_is() -> TestResult {
         &ui.query(&InspectionQuery::components(Selector::key("rows")).detail(Detail::Semantics)),
     )?;
     for text in [&snapshot, &query] {
-        assert!(text.starts_with(r#"{"schema_version":17,"#), "{text}");
+        assert!(text.starts_with(r#"{"schema_version":18,"#), "{text}");
     }
     // Moved to the end, the version is still checked.
     let moved = |text: &str, version: u32| {
-        let body = text.replacen(r#""schema_version":17,"#, "", 1);
+        let body = text.replacen(r#""schema_version":18,"#, "", 1);
         format!(
             r#"{},"schema_version":{version}}}"#,
             body.strip_suffix('}').unwrap_or(&body)
         )
     };
-    assert!(serde_json::from_str::<InspectionSnapshot>(&moved(&snapshot, 17)).is_ok());
-    assert!(serde_json::from_str::<QueryResult>(&moved(&query, 17)).is_ok());
-    assert!(serde_json::from_str::<InspectionSnapshot>(&moved(&snapshot, 15)).is_err());
-    assert!(serde_json::from_str::<QueryResult>(&moved(&query, 15)).is_err());
+    assert!(serde_json::from_str::<InspectionSnapshot>(&moved(&snapshot, 18)).is_ok());
+    assert!(serde_json::from_str::<QueryResult>(&moved(&query, 18)).is_ok());
+    assert!(serde_json::from_str::<InspectionSnapshot>(&moved(&snapshot, 17)).is_err());
+    assert!(serde_json::from_str::<QueryResult>(&moved(&query, 17)).is_err());
     Ok(())
 }
 
@@ -896,6 +896,52 @@ fn a_fixed_height_hint_and_its_issue_round_trip_and_the_hint_is_required() -> Te
     let without = text.replacen(r#","fixed_height":false"#, "", 1);
     assert_ne!(without, text);
     assert!(serde_json::from_str::<InspectionSnapshot>(&without).is_err());
+    Ok(())
+}
+
+/// One wide button per row.
+struct WideItems;
+impl ListItems for WideItems {
+    fn len(&self) -> usize {
+        1
+    }
+    fn key(&self, index: usize) -> Option<String> {
+        (index < 1).then(|| format!("item-{index}"))
+    }
+    fn build(&self, index: usize) -> Option<RowItem> {
+        self.key(index)?;
+        Some(Button::new("A wide button", |_| Ok(())).into())
+    }
+}
+
+#[cfg(debug_assertions)]
+#[test]
+fn a_fixed_width_issue_and_its_marker_round_trip() -> TestResult {
+    let mut ui = ui()?;
+    let items = ui.signal(ListSource::new(WideItems));
+    ui.mount_tree(Element::new(
+        "list",
+        VirtualList::new(items.read_only(), 20.0)?.orientation(Orientation::Horizontal),
+    ))?;
+    ui.flush(Duration::ZERO)?;
+    let snapshot = ui.inspect();
+    let issue = snapshot
+        .validation
+        .issues
+        .iter()
+        .find(|issue| issue.code == ValidationCode::ExceedsFixedWidth)
+        .ok_or("the item is wider than the list's extent")?;
+    assert!(
+        snapshot
+            .validation
+            .markers
+            .iter()
+            .any(|marker| marker.component == issue.components[0]
+                && marker.codes.contains(&ValidationCode::ExceedsFixedWidth))
+    );
+    let back = round_trip(&snapshot)?;
+    assert_eq!(back.validation, snapshot.validation);
+    assert!(serde_json::to_string(&snapshot)?.contains(r#""ExceedsFixedWidth""#));
     Ok(())
 }
 

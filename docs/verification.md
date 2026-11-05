@@ -354,15 +354,14 @@ value and themes, not a contrast guarantee for custom palettes.
 
 ## Workspace gate
 
-Run the smallest gate covering the change. The workspace gate is:
-
-```sh
-cargo fmt --all --check
-cargo clippy --locked --workspace --all-targets -- -D warnings
-cargo test --locked --workspace
-cargo test --locked --workspace --doc
-RUSTDOCFLAGS="-D warnings" cargo doc --locked --workspace --no-deps
-```
+Run the smallest gate covering the change. The verification table and the
+workspace gate commands are in [AGENTS.md](../AGENTS.md) under
+"Verification and review", and `.github/workflows/ci.yml` is authoritative:
+it runs formatting, Clippy, the workspace tests, the packaged examples'
+headless sessions, the doctests, strict rustdoc, the diagnostics snapshots and
+the API listing gate. This page explains those checks rather than repeating
+the command list, so the list is kept in step in one place beside the
+workflow.
 
 The `pert-ui-diagnostics` package (`tests/diagnostics`, never published)
 holds `trybuild` snapshots of the compiler messages pert-ui shapes with
@@ -379,7 +378,14 @@ cargo test --locked -p pert-ui-diagnostics -- --ignored
 
 A changed message or a toolchain update regenerates the snapshots with
 `TRYBUILD=overwrite` and the same command, and the `.stderr` diff is reviewed
-like the `api/` listing. A `compile_fail` doctest is different evidence: on
+like the `api/` listing. The contract in a snapshot is what pert-ui writes:
+the `message`, `label` and `note` texts of its diagnostic attributes. The rest
+of rustc's output around them is reviewed as evidence but is not a promise.
+In particular, several snapshots (the `Component` cases `c01` and `c06` among
+them) include rustc's list of the first implementors of a trait. A new
+built-in type that sorts early changes that list without any change to a
+pert-ui message. That churn is expected: regenerate the snapshots and check
+that the diff touches only the implementor list. A `compile_fail` doctest is different evidence: on
 stable Rust, rustdoc does not check the error code a `compile_fail,E0XXX`
 block names, so the doctest passes for any compile error, a typo included. It
 proves a type-level restriction that must hold on every toolchain, such as
@@ -598,10 +604,11 @@ progress), that value. The name may be the component's own, its element's
 label (`Element::with_label`), or one a wrapping `Field` gives it; both reach
 the part of a composite that represents it through the composite's internal
 structure. A concealed component, one whose semantics are `protected`
-(`Semantics::protected`), must report no value. A disabled component offers no actions.
-An item a QuickPick or CommandPalette reports disabled is the one deliberate
-exception: it keeps `Activate`, because choosing it is where the application
-explains why it is unavailable (see `PickItem`).
+(`Semantics::protected`), must report no value. A disabled component offers no actions, and neither does a disabled item.
+A QuickPick or CommandPalette result reported disabled still delivers a
+click or Enter to the choose callback, because choosing it is where the
+application explains why it is unavailable (see `PickItem`); its item offers
+no semantic action.
 
 The check's evidence is limited to what it walks: the gallery's own
 compositions, on the pages as they open. Controls a page hides (an inner

@@ -153,7 +153,7 @@ so a translucent color is measured after compositing it over what lies behind
 it. The measurements report; they never adjust or refuse a palette.
 
 ```rust
-use pert_ui::{Color, ColorRole, OpaqueColor, Palette};
+use pert_ui::{ColorRole, OpaqueColor, Palette};
 let palette = Palette::light();
 let surface = OpaqueColor::try_from(palette.color(ColorRole::Surface))?;
 // A hover veil drawn at 40% of the role's own opacity, as it appears on screen.

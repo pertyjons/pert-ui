@@ -597,8 +597,8 @@ impl ListItems for Rows {
     fn key(&self, index: usize) -> Option<String> {
         (index < self.0).then(|| format!("row-{index}"))
     }
-    fn build(&self, index: usize) -> Option<Element> {
-        (index < self.0).then(|| button("check"))
+    fn build(&self, index: usize) -> Option<RowItem> {
+        (index < self.0).then(|| button("check")).map(Into::into)
     }
 }
 

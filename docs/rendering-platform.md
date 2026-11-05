@@ -23,7 +23,8 @@ rules.
 
 Disabled framed Buttons use Surface fill, Muted content and an inward Outline
 at BorderWidth, sharing the inactive field frame. Framed Menu triggers with no
-available items inherit it. Frameless disabled buttons omit fill and outline.
+available items inherit it, and so do disabled Select and MultiSelect anchors,
+through one shared frame routine. Frameless disabled buttons omit fill and outline.
 The roles are shared with panels, fields and supporting text; Button overrides
 affect enabled action surfaces. Zero BorderWidth omits the stroke, while a
 stroke reaching half the smaller extent fills the silhouette. These paint

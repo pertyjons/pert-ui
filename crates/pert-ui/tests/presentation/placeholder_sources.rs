@@ -223,7 +223,22 @@ fn multi_select_placeholders_take_text_sources_and_follow_the_table() -> TestRes
         Column::new([chooser(&ui, &value, None, None)?]),
     ))?;
     frame(&mut ui);
-    let trigger = |ui: &Runtime| property(ui, "anchor", "placeholder");
+    // The trigger, through the chooser's `control` part.
+    let control = |ui: &Runtime| {
+        let tags = support::widget(ui, &root, "tags");
+        ui.find_exposed_part(&tags, "control").unwrap().unwrap()
+    };
+    let trigger = |ui: &Runtime| {
+        let id = ui.inspection_id(&control(ui)).unwrap();
+        ui.inspect()
+            .components
+            .into_iter()
+            .find(|c| c.id == id)
+            .and_then(|c| match c.details.properties.get("placeholder") {
+                Some(InspectValue::Text(text)) => Some(text.clone()),
+                _ => None,
+            })
+    };
     let search = |ui: &Runtime| property(ui, "search", "placeholder");
     assert_eq!(trigger(&ui).as_deref(), Some("Select…"));
     install(&ui, StringRole::SelectPlaceholder, "Välj…")?;
@@ -231,8 +246,7 @@ fn multi_select_placeholders_take_text_sources_and_follow_the_table() -> TestRes
     assert_eq!(trigger(&ui).as_deref(), Some("Välj…"));
 
     // The popup's search field takes the table's default.
-    let anchor = support::widget(&ui, &root, "anchor");
-    ui.focus(&anchor)?;
+    ui.focus(&control(&ui))?;
     key(&mut ui, KeyCode::Enter);
     frame(&mut ui);
     assert_eq!(search(&ui).as_deref(), Some("Search"));

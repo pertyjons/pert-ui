@@ -1,0 +1,17 @@
+# Throwaway measurement of TextArea edit latency and heap use on the current
+# path; see plans/document-editor.md, "Appendix: repeating the measurement".
+# Not a workspace member and not shipped. Copy this directory next to an
+# exported `head/` tree outside the repository and build it there, with its
+# own target directory, as the appendix describes.
+[package]
+name = "document-editor-bench"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+# The exported checkout under measurement, a sibling of this directory.
+pert-ui-runtime = { path = "../head/crates/pert-ui-runtime" }
+
+# Its own workspace root, so Cargo never attaches it to another workspace.
+[workspace]

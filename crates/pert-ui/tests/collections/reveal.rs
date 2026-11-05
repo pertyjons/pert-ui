@@ -660,8 +660,10 @@ impl ListItems for Rows {
     fn key(&self, index: usize) -> Option<String> {
         (index < self.0).then(|| format!("row-{index}"))
     }
-    fn build(&self, index: usize) -> Option<Element> {
-        (index < self.0).then(|| button(&format!("row-{index}")))
+    fn build(&self, index: usize) -> Option<RowItem> {
+        (index < self.0)
+            .then(|| button(&format!("row-{index}")))
+            .map(Into::into)
     }
     fn index_of(&self, key: &str) -> Option<usize> {
         key.strip_prefix("row-")?
@@ -787,8 +789,8 @@ fn a_tree_reveal_reports_rows_and_collapsed_nodes() -> TestResult {
         fn can_expand(&self, key: &str) -> bool {
             key == "top"
         }
-        fn build(&self, key: &str) -> Option<Element> {
-            Some(label(key))
+        fn build(&self, key: &str) -> Option<RowItem> {
+            Some(label(key).into())
         }
     }
     let mut ui = ui();
