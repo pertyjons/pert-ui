@@ -1045,6 +1045,28 @@ remaining requirements.
       rerun.
   - Pending: native checks.
 
+- **Slice 8 (Linux native evidence), 2026-11-05, at 9655e56 (0.3.101).**
+  Fedora 44, kernel 7.2.15, GNOME Shell and Mutter 50.6 on Wayland, Intel UHD
+  Graphics 770 with Mesa 26.2.6 on Vulkan; records in
+  `docs/verification.md` native evidence.
+  - The whole native suite passed 19/19, the clipboard check included.
+  - R06: the text-mode probe run alone names its adapter on the summary's
+    `GPU:` line.
+  - NATIVE-04 Linux part: failed. A minimize is not reported on
+    GNOME/Wayland (winit 0.30.13 has no `Occluded` there), so the GPU
+    interaction probe failed on an unrelated step, the CPU one timed out and
+    the workspace check passed unaware. There is no CPU workspace check, so
+    that planned run does not exist. NATIVE-04 now holds the fix.
+  - NATIVE-05 Linux remainder: passed by hand, IME composition excepted. The
+    table checks ran in `inventory`, and `log_explorer`'s search is its
+    filter field. The maintainer deferred IME together with script coverage
+    after pasted Chinese text showed missing-glyph marks
+    (`plans/follow-ups.md`).
+  - R10/R11, R19 and R20: passed by hand, R19 and R20 through a temporary
+    program outside the repository.
+  - NATIVE-01, NATIVE-04 and NATIVE-05 are rewritten to their remaining
+    requirements.
+
 ## Decisions
 
 The maintainer accepted every recommendation on 2026-11-04 (D6 earlier the

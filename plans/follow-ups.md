@@ -105,6 +105,17 @@ until then if one is being written.
   `Runtime::spawn` to return. A sendable key would change `FontId` and
   `FontManager` identity. No run has shown the need; the restriction is
   documented on both types.
+- **Script coverage beyond the bundled fonts.** From the
+  [TODO repair plan](todo-repairs.md) slice 8 hand checks (2026-11-05):
+  Chinese text pasted into an inventory cell editor rendered as the bundled
+  Noto Sans missing-glyph marks. That is the documented baseline
+  (`crates/pert-ui-runtime/assets/README.md`: no system font discovery, no
+  fallback between fonts, no complete script coverage), and a registered
+  font replaces a preset's font rather than filling its gaps. Support for
+  scripts such as CJK would need per-glyph fallback across registered fonts,
+  or opt-in system font discovery, with the bundled-only default kept
+  deterministic. The maintainer deferred it on 2026-11-05, and with it the
+  Linux IME composition hand check (NATIVE-05).
 
 ## Collections
 
