@@ -2273,7 +2273,7 @@ mod tests {
         assert_eq!(fixed.shapings.get(), shapings);
         assert_eq!(fixed.parley_builds.get(), builds);
         assert_eq!(
-            fixed.cache.back().unwrap().key.resolved.spans[0].brush,
+            fixed.cache.newest().unwrap().key.resolved.spans[0].brush,
             0,
             "resolved spans keep ordinary color indices"
         );

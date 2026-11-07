@@ -849,6 +849,13 @@ pub(crate) struct Node {
     motion_reader: Cell<bool>,
     /// Whether this node is already in the motion-preference subscriber list.
     motion_listed: Cell<bool>,
+    /// Whether a retained measurement or arrangement read the window extent,
+    /// through `MeasureContext::viewport`; cleared with those results.
+    pub(crate) viewport_layout: Cell<bool>,
+    /// Whether the component's last update read the window extent.
+    viewport_update: Cell<bool>,
+    /// Whether the component's retained drawing read the window extent.
+    viewport_paint: Cell<bool>,
     focus_update_reader: Cell<bool>,
     /// Whether the component has requested its own children through
     /// `UpdateContext::request_children`, after which it owns them and a new
@@ -1061,6 +1068,9 @@ impl Node {
         // from.
         self.metric_layout[1].set(0);
         self.font_layout[1].set(0);
+        // Limits, measurements and arrangement all run again before they are
+        // retained, and record a new read of the window extent if they make one.
+        self.viewport_layout.set(false);
         self.limits.set(None);
         if self.visible.get() {
             self.window().layout_pending.set(true);
@@ -3095,8 +3105,16 @@ impl UpdateContext {
         self.node.window().focused.get() == Some(self.node.serial)
     }
     /// Current logical window extent and native scale (zero-sized until supplied).
+    ///
+    /// Reading it subscribes this component to window geometry: a resize or a
+    /// scale change invalidates it for layout, so its next update sees the new
+    /// extent. The subscription lasts until an update that does not read it.
+    /// A component that only needs its own size reads the allocation in
+    /// `measure`/`arrange` instead, which a resize does not invalidate unless
+    /// the size changes.
     #[must_use]
     pub fn viewport(&self) -> crate::Viewport {
+        self.node.viewport_update.set(true);
         self.node.window().viewport.get()
     }
 
@@ -6254,6 +6272,7 @@ impl Runtime {
         entry.node.hover_reader.set(false);
         entry.node.focus_update_reader.set(false);
         entry.node.motion_reader.set(false);
+        entry.node.viewport_update.set(false);
         let guard = EvaluationGuard::new(entry.node.clone(), kind);
         let result = {
             let _timing = self.shared.profiler.span(

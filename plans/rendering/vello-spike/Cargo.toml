@@ -1,0 +1,23 @@
+[package]
+name = "vello-spike"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+pert-ui = { path = "../../../crates/pert-ui", features = ["cpu"] }
+pert-ui-wgpu = { path = "../../../crates/pert-ui-wgpu" }
+winit = { version = "0.30.13", default-features = false, features = ["rwh_06", "wayland", "wayland-dlopen", "x11"] }
+# Default features off: vello_gpu's `wgpu_default` would turn on wgpu's
+# default backends (GL, DX12, Metal, ...) for pert-ui-wgpu too; text is unused.
+vello_cpu = { version = "0.3.0", default-features = false, features = ["std", "u8_pipeline", "multithreading"] }
+vello_gpu = { version = "0.3.0", default-features = false, features = ["wgpu"] }
+# The same wgpu as pert-ui-wgpu (30.0.1), Vulkan only, for vello_gpu's device.
+wgpu = { version = "30.0.1", default-features = false, features = ["std", "wgsl", "vulkan"] }
+pollster = "1.0.1"
+png = "0.18.1"
+
+[profile.release]
+debug = false
+
+[workspace]

@@ -3534,11 +3534,12 @@ pub fn pert_ui_runtime::Painter::focus_within(&self) -> bool
 pub fn pert_ui_runtime::Painter::icon(&mut self, impl core::convert::Into<pert_ui_runtime::IconSource>, pert_ui_runtime::Rect, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::icon_turned(&mut self, impl core::convert::Into<pert_ui_runtime::IconSource>, pert_ui_runtime::Rect, pert_ui_runtime::Color, pert_ui_runtime::QuarterTurn) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::metric(&self, pert_ui_runtime::MetricRole) -> f32
+pub const fn pert_ui_runtime::Painter::pixel_scale(&self) -> f64
 pub fn pert_ui_runtime::Painter::rich_text(&self, &pert_ui_runtime::RichText, core::option::Option<f32>, pert_ui_runtime::TextStyle) -> core::result::Result<pert_ui_runtime::TextLayout, pert_ui_runtime::DrawError>
 pub const fn pert_ui_runtime::Painter::size(&self) -> pert_ui_runtime::Size
 pub fn pert_ui_runtime::Painter::text(&self, &str, core::option::Option<f32>, pert_ui_runtime::TextStyle) -> core::result::Result<pert_ui_runtime::TextLayout, pert_ui_runtime::DrawError>
 pub const fn pert_ui_runtime::Painter::view_scale(&self) -> f32
-pub const fn pert_ui_runtime::Painter::viewport(&self) -> pert_ui_runtime::Viewport
+pub fn pert_ui_runtime::Painter::viewport(&self) -> pert_ui_runtime::Viewport
 pub fn pert_ui_runtime::Painter::with_clip<T>(&mut self, pert_ui_runtime::Rect, impl core::ops::function::FnOnce(&mut Self) -> T) -> T
 impl pert_ui_runtime::Painter
 pub fn pert_ui_runtime::Painter::fill_ellipse(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
@@ -36892,11 +36893,12 @@ pub fn pert_ui_runtime::Painter::focus_within(&self) -> bool
 pub fn pert_ui_runtime::Painter::icon(&mut self, impl core::convert::Into<pert_ui_runtime::IconSource>, pert_ui_runtime::Rect, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::icon_turned(&mut self, impl core::convert::Into<pert_ui_runtime::IconSource>, pert_ui_runtime::Rect, pert_ui_runtime::Color, pert_ui_runtime::QuarterTurn) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::metric(&self, pert_ui_runtime::MetricRole) -> f32
+pub const fn pert_ui_runtime::Painter::pixel_scale(&self) -> f64
 pub fn pert_ui_runtime::Painter::rich_text(&self, &pert_ui_runtime::RichText, core::option::Option<f32>, pert_ui_runtime::TextStyle) -> core::result::Result<pert_ui_runtime::TextLayout, pert_ui_runtime::DrawError>
 pub const fn pert_ui_runtime::Painter::size(&self) -> pert_ui_runtime::Size
 pub fn pert_ui_runtime::Painter::text(&self, &str, core::option::Option<f32>, pert_ui_runtime::TextStyle) -> core::result::Result<pert_ui_runtime::TextLayout, pert_ui_runtime::DrawError>
 pub const fn pert_ui_runtime::Painter::view_scale(&self) -> f32
-pub const fn pert_ui_runtime::Painter::viewport(&self) -> pert_ui_runtime::Viewport
+pub fn pert_ui_runtime::Painter::viewport(&self) -> pert_ui_runtime::Viewport
 pub fn pert_ui_runtime::Painter::with_clip<T>(&mut self, pert_ui_runtime::Rect, impl core::ops::function::FnOnce(&mut Self) -> T) -> T
 impl pert_ui_runtime::Painter
 pub fn pert_ui_runtime::Painter::fill_ellipse(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>

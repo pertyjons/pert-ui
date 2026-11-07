@@ -1,0 +1,5 @@
+640×480: 120 commands, median 6.3 ms, frame 1.2 MiB
+1280×800: 384 commands, median 20.1 ms, frame 3.9 MiB
+1920×1080: 792 commands, median 38.7 ms, frame 7.9 MiB
+2560×1440: 1392 commands, median 67.4 ms, frame 14.1 MiB
+3840×2160: 3120 commands, median 151.4 ms, frame 31.6 MiB

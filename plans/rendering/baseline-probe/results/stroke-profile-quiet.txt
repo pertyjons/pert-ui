@@ -1,0 +1,30 @@
+<!-- start 2026-11-05T18:37:00+01:00, waited 0 min, load 0.11 0.30 0.94
+%CPU COMMAND
+ 5.2 /usr/libexec/gnome-terminal-server
+ 4.1 /usr/bin/gnome-shell --mode=user
+ 3.9 codex
+ 1.5 claude
+ 1.4 ~/.local/share/JetBrains/Toolbox/bin/jetbrains-toolbox --minimize
+-->
+
+running 1 test
+test geometry::raster::tests::stroke_phase_profile ... trace, 800 points, Round joins: 7845 outline edges, mean active edges per sub-scanline 172; flatten 5.096µs, outline 152.309µs, scan 5.087148ms; direct coverage 3.021255ms per frame
+trace, 4096 points, Round joins: 37264 outline edges, mean active edges per sub-scanline 191; flatten 20.476µs, outline 650.548µs, scan 8.098926ms; direct coverage 4.055353ms per frame
+long diagonal, Round joins: 6 outline edges, mean active edges per sub-scanline 4; flatten 184ns, outline 128ns, scan 705.043µs; direct coverage 172.004µs per frame
+steep alternation, 400 points, Round joins: 4185 outline edges, mean active edges per sub-scanline 1591; flatten 3.873µs, outline 75.505µs, scan 37.515664ms; direct coverage 28.836841ms per frame
+trace, 800 points, Miter joins: 7610 outline edges, mean active edges per sub-scanline 172; flatten 5.098µs, outline 89.461µs, scan 4.977437ms; direct coverage 2.93679ms per frame
+trace, 4096 points, Miter joins: 40755 outline edges, mean active edges per sub-scanline 192; flatten 21.755µs, outline 452.721µs, scan 8.364064ms; direct coverage 3.99222ms per frame
+long diagonal, Miter joins: 6 outline edges, mean active edges per sub-scanline 4; flatten 192ns, outline 152ns, scan 724.296µs; direct coverage 177.209µs per frame
+steep alternation, 400 points, Miter joins: 3190 outline edges, mean active edges per sub-scanline 1592; flatten 3.617µs, outline 40.147µs, scan 37.538092ms; direct coverage 28.470008ms per frame
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 189 filtered out; finished in 10.69s
+
+<!-- end 2026-11-05T18:37:11+01:00, load 0.25 0.32 0.94
+%CPU COMMAND
+ 5.2 /usr/libexec/gnome-terminal-server
+ 4.1 /usr/bin/gnome-shell --mode=user
+ 3.9 codex
+ 1.5 claude
+ 1.4 ~/.local/share/JetBrains/Toolbox/bin/jetbrains-toolbox --minimize
+-->

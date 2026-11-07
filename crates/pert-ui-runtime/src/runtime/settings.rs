@@ -636,17 +636,48 @@ impl Runtime {
                     )
                     .ok()
                 }));
-            for entry in self
-                .entries
-                .values()
-                .filter(|entry| Rc::ptr_eq(&entry.node.window(), &self.window.shared))
-            {
-                entry.node.invalidate(Invalidation::Layout);
+            if previous_scale == scale {
+                self.invalidate_extent_readers();
+            } else {
+                for entry in self
+                    .entries
+                    .values()
+                    .filter(|entry| Rc::ptr_eq(&entry.node.window(), &self.window.shared))
+                {
+                    entry.node.invalidate(Invalidation::Layout);
+                }
             }
             leave?;
         }
 
         Ok(())
+    }
+    /// Invalidates what a change of the window extent at an unchanged scale
+    /// can change. Layout itself follows from the roots' new constraints:
+    /// retained measurements are keyed by constraints and arrangement by
+    /// size and clip. Beyond that, only explicit readers of the extent and
+    /// the surfaces placed against the window depend on it.
+    fn invalidate_extent_readers(&mut self) {
+        // Every reader is judged before any is invalidated: a layout
+        // invalidation clears the extent reads of the node and its ancestors.
+        let mut invalidated = Vec::new();
+        for (&serial, entry) in &self.entries {
+            let node = &entry.node;
+            if !Rc::ptr_eq(&node.window(), &self.window.shared) {
+                continue;
+            }
+            if node.viewport_layout.get()
+                || node.viewport_update.get()
+                || self.surface_kind(serial).is_some()
+            {
+                invalidated.push((node.clone(), Invalidation::Layout));
+            } else if node.viewport_paint.get() {
+                invalidated.push((node.clone(), Invalidation::Paint));
+            }
+        }
+        for (node, kind) in invalidated {
+            node.invalidate(kind);
+        }
     }
 }
 impl UpdateContext {

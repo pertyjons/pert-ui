@@ -1,0 +1,6 @@
+Headless zoom workload: 64 cards, 577 components, 960×640 at scale 1, one step per 60 Hz frame.
+Pan: 60 steps to 100.0%. Per step: mean 0.66 ms, median 0.65, p95 0.78, max 0.90; on average 1 updates and 0 text-service calls. Rest: 0.08 ms, 0 updates, 0 text-service calls.
+Pan back: 60 steps to 100.0%. Per step: mean 0.60 ms, median 0.61, p95 0.65, max 0.68; on average 1 updates and 0 text-service calls. Rest: 0.07 ms, 0 updates, 0 text-service calls.
+Zoom in: 60 steps to 800.0%. Per step: mean 0.88 ms, median 0.67, p95 0.77, max 12.52; on average 7 updates and 13 text-service calls. Rest: 60.62 ms, 384 updates, 769 text-service calls.
+Zoom out: 60 steps to 100.0%. Per step: mean 1.67 ms, median 0.69, p95 1.38, max 56.21; on average 7 updates and 13 text-service calls. Rest: 12.42 ms, 384 updates, 780 text-service calls.
+Zoom out further: 60 steps to 12.5%. Per step: mean 1.04 ms, median 0.87, p95 1.03, max 12.19; on average 7 updates and 14 text-service calls. Rest: 10.85 ms, 384 updates, 832 text-service calls.

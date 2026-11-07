@@ -3,6 +3,7 @@
 mod fit;
 mod fonts;
 mod icons;
+mod prepared;
 mod registry;
 mod rich;
 mod tabs;
@@ -180,8 +181,10 @@ impl TextStyle {
 }
 
 /// Owned measured text and immutable coverage, independent of its renderer.
-/// Produced by public text/rich-text preparation. Clones share masks and shaped
-/// geometry, and can outlive cache eviction. Reprepare after content, width, scale,
+/// Produced by public text/rich-text preparation. Preparation shapes the text
+/// and places its glyphs; their coverage is rasterized when the layout is first
+/// painted, so text that is only measured costs no rasterizing. Clones share
+/// masks and shaped geometry, and can outlive cache eviction. Reprepare after content, width, scale,
 /// font defaults or style changes; component measurement tracks these dependencies.
 /// Rich span colors are resolved at paint time. Text fallback uses bundled fonts;
 /// missing characters use the missing-glyph mark. Icons have an exact font mapping.
@@ -211,13 +214,41 @@ impl TextStyle {
 #[derive(Clone, Debug)]
 pub struct TextLayout {
     size: Size,
-    parts: Arc<[MaskPart]>,
+    /// Coverage, rasterized on first use and shared by clones and by layouts
+    /// of equal raster signature.
+    parts: Arc<Coverage>,
+    /// The physical raster bounds `[left, top, right, bottom]` the coverage
+    /// is composited into.
+    canvas: [i64; 4],
+    /// The bytes the composited coverage takes, known before it is rendered.
+    coverage_bytes: usize,
     colors: Arc<[TextColor]>,
     ink: Option<[f32; 4]>,
     pub(crate) shaped: Arc<parley::Layout<TextBrush>>,
     pub(crate) scale: f32,
     pub(crate) origin: [f32; 2],
     signature: Arc<RasterSignature>,
+}
+/// A layout's composited coverage, rendered when first painted.
+#[derive(Debug, Default)]
+struct Coverage(std::sync::OnceLock<Arc<[MaskPart]>>);
+/// Tests read prepared coverage directly; preparation renders it eagerly there.
+#[cfg(test)]
+impl std::ops::Deref for Coverage {
+    type Target = [MaskPart];
+    fn deref(&self) -> &[MaskPart] {
+        self.0.get().map_or(&[], |parts| parts)
+    }
+}
+/// How [`TextService::rasterize_glyphs`] treats each glyph.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum RasterPass {
+    /// Placements only, from outline bounds; nothing is rendered.
+    Bounds,
+    /// Rendered coverage at the layout's own subpixel positions.
+    Coverage,
+    /// Rendered coverage at a quarter-pixel phase, through the glyph cache.
+    Phase([u8; 2]),
 }
 #[derive(Clone, Debug)]
 struct MaskPart {
@@ -273,8 +304,12 @@ impl TextLayout {
         let factor = (w / (right - left))
             .min(h / (bottom - top))
             .min(nominal_scale);
+        let parts = painter
+            .text
+            .clone()
+            .with_service(|service| Ok(service.coverage(self)?))?;
         painter.with_clip(rect, |painter| {
-            for p in self.parts.iter() {
+            for p in parts.iter() {
                 let part = turn.place(
                     upright,
                     Rect::new(
@@ -315,8 +350,10 @@ impl TextLayout {
     /// The turned text occupies [`QuarterTurn::turned`](crate::QuarterTurn::turned)
     /// of [`Self::size`], so a line turned [`Left`](crate::QuarterTurn::Left) is as
     /// wide as the line was tall and reads upwards, as a vertical axis label does.
-    /// The same glyph coverage is drawn; nothing is shaped or rasterized again.
-    /// Colors resolve as for [`Self::paint`].
+    /// The same glyph coverage is drawn as for [`Self::paint`]: nothing is
+    /// shaped again, and turning needs no raster of its own. The layout's
+    /// first paint, turned or not, renders the coverage that its clones then
+    /// share. Colors resolve as for [`Self::paint`].
     ///
     /// # Errors
     /// Returns [`DrawError::Runtime`] holding [`RuntimeError::Geometry`] with
@@ -363,12 +400,17 @@ impl TextLayout {
         } else {
             None
         };
-        let (parts, shift) = phase_parts
-            .as_ref()
-            .map_or((self.parts.as_ref(), [0.0, 0.0]), |(parts, shift)| {
-                (parts.as_ref(), *shift)
-            });
-        for part in parts {
+        let (parts, shift) = match phase_parts {
+            Some(phased) => phased,
+            None => (
+                painter
+                    .text
+                    .clone()
+                    .with_service(|service| Ok(service.coverage(self)?))?,
+                [0.0, 0.0],
+            ),
+        };
+        for part in parts.iter() {
             let tint = match self.colors[part.brush] {
                 TextColor::Inherit => color,
                 TextColor::Literal(c) => c,
@@ -583,8 +625,14 @@ pub(crate) struct TextService {
     pub(crate) registry: registry::Registry,
     layout: parley::LayoutContext<TextBrush>,
     scale: swash::scale::ScaleContext,
-    cache: VecDeque<CachedText>,
-    bytes: usize,
+    cache: prepared::PreparedCache,
+    /// Reused outline and bounds buffers of measurement's placements.
+    outline: swash::scale::outline::Outline,
+    bounds_scratch: swash::zeno::Scratch,
+    /// Renders coverage at preparation, as before it became lazy, so unit
+    /// tests can read it; a test of laziness turns it off.
+    #[cfg(test)]
+    eager_coverage: bool,
     font_keys: BTreeMap<(u64, u32), swash::CacheKey>,
     phase_glyphs: HashMap<PhaseGlyphKey, CachedGlyph>,
     phase_order: VecDeque<PhaseGlyphKey>,
@@ -652,8 +700,11 @@ impl TextService {
             registry,
             layout: parley::LayoutContext::new(),
             scale: swash::scale::ScaleContext::new(),
-            cache: VecDeque::new(),
-            bytes: 0,
+            cache: prepared::PreparedCache::default(),
+            outline: swash::scale::outline::Outline::new(),
+            bounds_scratch: swash::zeno::Scratch::new(),
+            #[cfg(test)]
+            eager_coverage: true,
             font_keys: BTreeMap::new(),
             phase_glyphs: HashMap::new(),
             phase_order: VecDeque::new(),
@@ -716,40 +767,16 @@ impl TextService {
         self.prepare_resolved(resolved, request.width(width).scale(scale), None)
     }
     /// The cached layout of plain `text` in the role's default font, exactly
-    /// as `prepare_plain` would prepare it: one span covering the text (none
-    /// for empty text) with no gap, icon or color of its own.
+    /// as `prepare_plain` would prepare it.
     fn cached_plain(
-        &self,
+        &mut self,
         text: &str,
         width: Option<f32>,
         scale: f64,
         font: usize,
         font_size: f32,
     ) -> Option<&CachedText> {
-        self.cache.iter().find(|entry| {
-            let key = &entry.key;
-            let r = &key.resolved;
-            key.width == width
-                && key.scale == scale
-                && r.text == text
-                && r.default_font == font
-                && r.default_size == font_size
-                && r.gaps.is_empty()
-                && r.colors == [TextColor::Inherit]
-                && r.icon_brushes == [false]
-                && if text.is_empty() {
-                    r.spans.is_empty()
-                } else {
-                    r.spans.as_slice()
-                        == [ResolvedSpan {
-                            range: 0..text.len(),
-                            font,
-                            size: font_size,
-                            brush: 0,
-                            icon: false,
-                        }]
-                }
-        })
+        self.cache.find_plain(text, width, scale, font, font_size)
     }
     fn resolve(
         &self,
@@ -1093,35 +1120,27 @@ impl TextService {
             width,
             scale,
         };
-        if let Some(entry) = self.cache.iter().find(|e| e.key == key) {
+        if let Some(entry) = self.cache.find_key(&key) {
             return Ok(entry.layout.clone());
         }
         let (signature, result) = self.shape(&key, shaped)?;
-        let bytes = result
-            .parts
-            .iter()
-            .map(|p| p.image.pixels().len() + size_of::<MaskPart>())
-            .sum::<usize>()
+        #[cfg(test)]
+        if self.eager_coverage {
+            self.coverage(&result)?;
+        }
+        // Coverage is accounted when the entry is cached, before it is
+        // rendered, so the budget bounds what painting will retain.
+        let bytes = result.coverage_bytes
             + key.resolved.text.len() * 128
             + key.resolved.bytes()
             + signature.bytes()
             + size_of::<CachedText>();
-        if bytes <= CACHE_BYTES {
-            while self.cache.len() >= 128 || self.bytes + bytes > CACHE_BYTES {
-                if let Some(old) = self.cache.pop_front() {
-                    self.bytes -= old.bytes;
-                } else {
-                    break;
-                }
-            }
-            self.bytes += bytes;
-            self.cache.push_back(CachedText {
-                key,
-                signature: result.signature.clone(),
-                layout: result.clone(),
-                bytes,
-            });
-        }
+        self.cache.insert(CachedText {
+            key,
+            signature: result.signature.clone(),
+            layout: result.clone(),
+            bytes,
+        });
         Ok(result)
     }
     /// Shapes `key`, then reuses the coverage of a cached entry whose positioned
@@ -1148,30 +1167,33 @@ impl TextService {
             return Err(TextError::TooLarge(TextLimit::Coverage));
         }
         let signature = raster_signature(resolved, &layout, canvas);
-        if let Some(entry) = self.cache.iter().find(|entry| {
-            entry.key.resolved == *resolved
-                && entry.key.scale as f32 == scale
-                && entry.signature.as_ref() == &signature
-        }) {
+        if let Some(entry) = self.cache.find_signature(resolved, scale, &signature) {
             let mut result = entry.layout.clone();
             result.shaped = Arc::new(layout);
             return Ok((signature, result));
         }
-        let (glyphs, bounds) = self.rasterize_glyphs(&layout, &signature, [0, 0], false)?;
+        // Measurement needs only where the glyphs land; their coverage is
+        // rendered when the layout is first painted.
+        let (glyphs, bounds) = self.rasterize_glyphs(&layout, &signature, RasterPass::Bounds)?;
         let [left, top, right, bottom] = bounds;
         let width = u32::try_from(right - left).map_err(|_| TextError::Geometry)?;
         let height = u32::try_from(bottom - top).map_err(|_| TextError::Geometry)?;
         let size = Size::new(width as f32 / scale, height as f32 / scale)
             .map_err(|_| TextError::Geometry)?;
         let ink = ink_bounds(&glyphs, bounds, scale);
-        let parts = composite(&glyphs, bounds, scale)?;
+        let coverage_bytes = composite_runs(&glyphs, bounds)?
+            .iter()
+            .map(|run| run.pixels() + size_of::<MaskPart>())
+            .sum();
         let retained_signature = Arc::new(signature.clone());
         Ok((
             signature,
             TextLayout {
                 size,
                 ink,
-                parts: parts.into(),
+                parts: Arc::default(),
+                canvas: bounds,
+                coverage_bytes,
                 colors: resolved.colors.clone().into(),
                 shaped: Arc::new(layout),
                 scale,
@@ -1313,13 +1335,23 @@ impl TextService {
     /// Renders every glyph's coverage at its pixel position, aligning icons to
     /// their neighboring text. Returns the glyphs and the canvas grown to
     /// contain them, as `[left, top, right, bottom]` physical pixels.
+    /// Places every drawn glyph of `layout` on the physical pixel grid.
+    ///
+    /// With `pass` [`RasterPass::Bounds`], glyph placements are computed from
+    /// the outlines' bounds exactly as rasterizing would place them, and no
+    /// coverage is rendered: this is all measurement needs. The other passes
+    /// render each glyph's coverage, at the layout's own subpixel positions or
+    /// at a quarter-pixel phase through the phase glyph cache.
     fn rasterize_glyphs(
         &mut self,
         layout: &parley::Layout<TextBrush>,
         signature: &RasterSignature,
-        phase: [u8; 2],
-        cache: bool,
+        pass: RasterPass,
     ) -> Result<(Vec<PlacedGlyph>, [i64; 4]), TextError> {
+        let (phase, cache) = match pass {
+            RasterPass::Phase(phase) => (phase, true),
+            RasterPass::Bounds | RasterPass::Coverage => ([0, 0], false),
+        };
         let [mut right, mut bottom] = signature.canvas;
         let (mut left, mut top) = (0i64, 0i64);
         let mut raster_bytes = 0usize;
@@ -1392,6 +1424,14 @@ impl TextService {
                         .and_then(|key| self.phase_glyphs.get(key).cloned());
                     let cached = if let Some(cached) = cached {
                         Some(cached)
+                    } else if pass == RasterPass::Bounds {
+                        glyph_placement(
+                            &mut scaler,
+                            &mut self.outline,
+                            &mut self.bounds_scratch,
+                            id,
+                            swash::zeno::Vector::new(x - x.floor(), y - y.floor()),
+                        )
                     } else {
                         let image = swash::scale::Render::new(&[swash::scale::Source::Outline])
                             .format(swash::zeno::Format::Alpha)
@@ -1434,8 +1474,11 @@ impl TextService {
                             self.phase_glyphs.insert(key, cached.clone());
                         }
                     }
+                    // An alpha raster has one byte per pixel, rendered or not.
                     raster_bytes = raster_bytes
-                        .checked_add(image.data.len())
+                        .checked_add(
+                            image.placement.width as usize * image.placement.height as usize,
+                        )
                         .ok_or(TextError::TooLarge(TextLimit::Coverage))?;
                     if raster_bytes > RASTER_BYTES {
                         return Err(TextError::TooLarge(TextLimit::Coverage));
@@ -1510,6 +1553,25 @@ impl TextService {
         Ok((glyphs, [left, top, right, bottom]))
     }
 
+    /// The composited coverage of `layout`, rendered on first use and then
+    /// shared by every clone of it and every layout of the same signature.
+    ///
+    /// # Errors
+    /// `Font` or `TooLarge` as preparation would have returned them, which
+    /// cannot happen for a layout this service prepared.
+    fn coverage(&mut self, layout: &TextLayout) -> Result<Arc<[MaskPart]>, TextError> {
+        if let Some(parts) = layout.parts.0.get() {
+            return Ok(parts.clone());
+        }
+        let (glyphs, bounds) =
+            self.rasterize_glyphs(&layout.shaped, &layout.signature, RasterPass::Coverage)?;
+        debug_assert_eq!(
+            bounds, layout.canvas,
+            "rendered placements match measured ones"
+        );
+        let parts: Arc<[MaskPart]> = composite(&glyphs, layout.canvas, layout.scale)?.into();
+        Ok(layout.parts.0.get_or_init(|| parts).clone())
+    }
     fn phase_parts(
         &mut self,
         layout: &TextLayout,
@@ -1524,7 +1586,7 @@ impl TextService {
             return Ok(parts.clone());
         }
         let (glyphs, bounds) =
-            self.rasterize_glyphs(&layout.shaped, &layout.signature, phase, true)?;
+            self.rasterize_glyphs(&layout.shaped, &layout.signature, RasterPass::Phase(phase))?;
         let original_left = (-layout.origin[0] * layout.scale).round() as i64;
         let original_top = (-layout.origin[1] * layout.scale).round() as i64;
         let mut parts = composite(&glyphs, bounds, layout.scale)?;
@@ -1684,19 +1746,39 @@ fn ink_bounds(glyphs: &[PlacedGlyph], canvas: [i64; 4], scale: f32) -> Option<[f
     ])
 }
 
-/// Blends each run of consecutive glyphs with one brush into one coverage mask.
-/// A single run keeps the whole canvas, so plain text preserves its layout
-/// geometry.
-fn composite(
+/// One composited coverage mask: a run of consecutive glyphs with one brush,
+/// as a range of the placed glyphs, and the physical rectangle it covers.
+struct CompositeRun {
+    glyphs: std::ops::Range<usize>,
+    rect: [i64; 4],
+}
+impl CompositeRun {
+    fn width(&self) -> usize {
+        (self.rect[2] - self.rect[0]) as usize
+    }
+    fn pixels(&self) -> usize {
+        self.width() * (self.rect[3] - self.rect[1]) as usize
+    }
+}
+
+/// The masks [`composite`] makes of `glyphs` in `canvas`, without their
+/// pixels: one per run of consecutive glyphs with one brush, bounding the
+/// run. A single run keeps the whole canvas, so plain text preserves its
+/// layout geometry. Runs without area make no mask.
+///
+/// # Errors
+/// `TooLarge(Coverage)` when the masks together exceed the raster limit.
+fn composite_runs(
     glyphs: &[PlacedGlyph],
     canvas: [i64; 4],
-    scale: f32,
-) -> Result<Vec<MaskPart>, TextError> {
+) -> Result<Vec<CompositeRun>, TextError> {
     let [left, top, right, bottom] = canvas;
-    let mut parts = Vec::new();
+    let mut runs = Vec::new();
     let mut total = 0usize;
+    let mut start = 0;
     for run in glyphs.chunk_by(|a, b| a.brush == b.brush) {
-        let brush = run[0].brush;
+        let range = start..start + run.len();
+        start = range.end;
         let (mut l, mut t, mut r, mut b) = (right, bottom, left, top);
         for glyph in run {
             l = l.min(glyph.x);
@@ -1708,38 +1790,88 @@ fn composite(
             (l, t, r, b) = (left, top, right, bottom);
         }
         if r > l && b > t {
-            let w = (r - l) as usize;
-            let h = (b - t) as usize;
+            let run = CompositeRun {
+                glyphs: range,
+                rect: [l, t, r, b],
+            };
             total = total
-                .checked_add(w * h)
+                .checked_add(run.pixels())
                 .ok_or(TextError::TooLarge(TextLimit::Coverage))?;
             if total > RASTER_BYTES {
                 return Err(TextError::TooLarge(TextLimit::Coverage));
             }
-            let mut pixels = vec![0u8; w * h];
-            for glyph in run {
-                let gw = glyph.image.placement.width as usize;
-                if gw == 0 {
-                    continue;
-                }
-                for (index, coverage) in glyph.image.data.iter().copied().enumerate() {
-                    let px = (glyph.x - l) as usize + index % gw;
-                    let py = (glyph.y - t) as usize + index / gw;
-                    let dest = pixels.get_mut(py * w + px).ok_or(TextError::Geometry)?;
-                    *dest = (u16::from(coverage)
-                        + u16::from(*dest) * (255 - u16::from(coverage)) / 255)
-                        as u8;
-                }
-            }
-            parts.push(MaskPart {
-                image: MaskImage::new(w as u32, h as u32, pixels)
-                    .map_err(|_| TextError::TooLarge(TextLimit::Coverage))?,
-                offset: [(l - left) as f32 / scale, (t - top) as f32 / scale],
-                brush,
-            });
+            runs.push(run);
         }
     }
+    Ok(runs)
+}
+
+/// Blends each run of consecutive glyphs with one brush into one coverage
+/// mask, as [`composite_runs`] lays the masks out.
+fn composite(
+    glyphs: &[PlacedGlyph],
+    canvas: [i64; 4],
+    scale: f32,
+) -> Result<Vec<MaskPart>, TextError> {
+    let [left, top, ..] = canvas;
+    let mut parts = Vec::new();
+    for run in composite_runs(glyphs, canvas)? {
+        let [l, t, ..] = run.rect;
+        let w = run.width();
+        let mut pixels = vec![0u8; run.pixels()];
+        let brush = glyphs[run.glyphs.start].brush;
+        for glyph in &glyphs[run.glyphs.clone()] {
+            let gw = glyph.image.placement.width as usize;
+            if gw == 0 {
+                continue;
+            }
+            for (index, coverage) in glyph.image.data.iter().copied().enumerate() {
+                let px = (glyph.x - l) as usize + index % gw;
+                let py = (glyph.y - t) as usize + index / gw;
+                let dest = pixels.get_mut(py * w + px).ok_or(TextError::Geometry)?;
+                *dest = (u16::from(coverage) + u16::from(*dest) * (255 - u16::from(coverage)) / 255)
+                    as u8;
+            }
+        }
+        parts.push(MaskPart {
+            image: MaskImage::new(w as u32, (run.rect[3] - t) as u32, pixels)
+                .map_err(|_| TextError::TooLarge(TextLimit::Coverage))?,
+            offset: [(l - left) as f32 / scale, (t - top) as f32 / scale],
+            brush,
+        });
+    }
     Ok(parts)
+}
+
+/// Where rendering glyph `id` at the subpixel `offset` would place its
+/// raster, computed from the outline's bounds without rendering it, as
+/// swash's outline renderer and zeno's mask placement compute it. `None` when
+/// the glyph has no outline, as rendering returns no image.
+fn glyph_placement(
+    scaler: &mut swash::scale::Scaler<'_>,
+    outline: &mut swash::scale::outline::Outline,
+    scratch: &mut swash::zeno::Scratch,
+    id: u16,
+    offset: swash::zeno::Vector,
+) -> Option<CachedGlyph> {
+    if !scaler.has_outlines() || !scaler.scale_outline_into(id, outline) {
+        return None;
+    }
+    let bounds = scratch.bounds(outline.path(), swash::zeno::Style::default(), None);
+    let min = (bounds.min + offset).floor();
+    let max = (bounds.max + offset).ceil();
+    let mut image = swash::scale::image::Image::new();
+    image.placement = swash::zeno::Placement {
+        left: min.x as i32,
+        // A bottom-left origin, as the renderer uses: the top row is the
+        // upper edge of the bounds.
+        top: (min.y.floor() + (max.y - min.y)) as i32,
+        width: (max.x - min.x) as u32,
+        height: (max.y - min.y) as u32,
+    };
+    Some(CachedGlyph {
+        image: Arc::new(image),
+    })
 }
 
 #[cfg(test)]
@@ -1887,7 +2019,6 @@ mod tests {
                         let actual = service.prepare(text, Some(width), scale, style).unwrap();
                         // Empty the comparison cache so equivalence cannot mask stale reuse.
                         fresh.cache.clear();
-                        fresh.bytes = 0;
                         let expected = fresh.prepare(text, Some(width), scale, style).unwrap();
                         assert_eq!(actual.size(), expected.size());
                         assert_eq!(
@@ -1965,14 +2096,14 @@ mod tests {
             .prepare("Keep alive", Some(180.0), 1.0, TextStyle::Body)
             .unwrap();
         let pixels = image(&live).pixels().to_vec();
-        for index in 0..140 {
+        for index in 0..prepared::TEXT_ENTRIES + 12 {
             service
                 .prepare(&format!("Label {index}"), Some(180.0), 1.0, TextStyle::Body)
                 .unwrap();
-            assert!(service.cache.len() <= 128);
-            assert!(service.bytes <= CACHE_BYTES);
+            assert!(service.cache.len() <= prepared::TEXT_ENTRIES);
+            assert!(service.cache.bytes() <= CACHE_BYTES);
             assert_eq!(
-                service.bytes,
+                service.cache.bytes(),
                 service.cache.iter().map(|entry| entry.bytes).sum()
             );
         }
@@ -1983,6 +2114,137 @@ mod tests {
                 .any(|entry| entry.key.resolved.text == "Keep alive")
         );
         assert_eq!(image(&live).pixels(), pixels);
+    }
+    #[test]
+    fn a_working_set_above_the_old_entry_limit_keeps_hitting() {
+        let mut service = TextService::new().unwrap();
+        let labels: Vec<_> = (0..1000)
+            .map(|index| format!("Control {index:04}"))
+            .collect();
+        // Three measure passes interleaved over every label, as a wrap of a
+        // thousand checkboxes measures them.
+        for _ in 0..3 {
+            for label in &labels {
+                service
+                    .prepare(label, Some(180.0), 1.0, TextStyle::Body)
+                    .unwrap();
+            }
+        }
+        assert_eq!(service.shapings.get(), labels.len());
+    }
+    #[test]
+    fn measured_text_renders_its_coverage_only_when_painted() {
+        let mut lazy = TextService::new().unwrap();
+        lazy.eager_coverage = false;
+        let mut eager = TextService::new().unwrap();
+        for scale in [1.0, 1.5] {
+            let layout = lazy
+                .prepare("Lazy coverage", Some(180.0), scale, TextStyle::Body)
+                .unwrap();
+            assert!(layout.parts.0.get().is_none(), "measuring renders nothing");
+            let expected = eager
+                .prepare("Lazy coverage", Some(180.0), scale, TextStyle::Body)
+                .unwrap();
+            assert_eq!(layout.size(), expected.size());
+            assert_eq!(layout.ink, expected.ink);
+            assert_eq!(layout.coverage_bytes, expected.coverage_bytes);
+            let parts = lazy.coverage(&layout).unwrap();
+            assert_eq!(parts.len(), expected.parts.len());
+            for (part, expected) in parts.iter().zip(expected.parts.iter()) {
+                assert_eq!(part.image, expected.image);
+                assert_eq!(part.offset, expected.offset);
+            }
+            let again = lazy
+                .prepare("Lazy coverage", Some(180.0), scale, TextStyle::Body)
+                .unwrap();
+            assert!(
+                Arc::ptr_eq(&lazy.coverage(&again).unwrap(), &parts),
+                "the cached layout shares the rendered coverage"
+            );
+        }
+    }
+    #[test]
+    fn measured_placements_equal_rendered_placements() {
+        let mut service = TextService::new().unwrap();
+        let reads = Cell::new(0);
+        let texts = [
+            "Hamburgefonts 0123456789 — Il1 O0 ,.;:!?'\"()[]{}",
+            "abc אבג 123 ﻼ",
+            "WAVE fi fl ffi Tj Ty Yo",
+            "jgpqy ÅÄÖ åäö ß Ñ ç",
+        ];
+        for style in [TextStyle::Body, TextStyle::Heading, TextStyle::Monospace] {
+            for scale in [0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 3.0] {
+                for text in texts {
+                    let content = RichText::new()
+                        .icon(Icon::Close)
+                        .gap()
+                        .text(text)
+                        .icon(Icon::Settings);
+                    for content in [RichText::from(text), content] {
+                        let request = TextRequest::new(style, style.pixels(), &reads)
+                            .width(Some(160.0))
+                            .scale(scale)
+                            .inline(16.0, 6.0);
+                        let resolved = service.resolve(&content, request).unwrap();
+                        let key = Key {
+                            resolved,
+                            width: Some(160.0),
+                            scale,
+                        };
+                        let layout = service.build_layout(&key).unwrap();
+                        let canvas = [layout.width().ceil() as i64, layout.height().ceil() as i64];
+                        let signature = raster_signature(&key.resolved, &layout, canvas);
+                        let (measured, measured_bounds) = service
+                            .rasterize_glyphs(&layout, &signature, RasterPass::Bounds)
+                            .unwrap();
+                        let (rendered, rendered_bounds) = service
+                            .rasterize_glyphs(&layout, &signature, RasterPass::Coverage)
+                            .unwrap();
+                        let context = format!("{text:?} {style:?} at {scale}");
+                        assert_eq!(measured_bounds, rendered_bounds, "{context}");
+                        assert_eq!(measured.len(), rendered.len(), "{context}");
+                        for (m, r) in measured.iter().zip(&rendered) {
+                            assert_eq!((m.x, m.y, m.brush), (r.x, r.y, r.brush), "{context}");
+                            let place = |g: &PlacedGlyph| {
+                                let p = g.image.placement;
+                                (p.left, p.top, p.width, p.height)
+                            };
+                            assert_eq!(place(m), place(r), "{context}");
+                        }
+                    }
+                }
+            }
+        }
+    }
+    #[test]
+    fn a_hit_refreshes_the_entry_before_eviction() {
+        let mut service = TextService::new().unwrap();
+        service
+            .prepare("Keep alive", None, 1.0, TextStyle::Body)
+            .unwrap();
+        for index in 0..prepared::TEXT_ENTRIES + 12 {
+            service
+                .prepare("Keep alive", None, 1.0, TextStyle::Body)
+                .unwrap();
+            service
+                .prepare(&format!("Label {index}"), None, 1.0, TextStyle::Body)
+                .unwrap();
+        }
+        assert!(
+            service
+                .cache
+                .iter()
+                .any(|entry| entry.key.resolved.text == "Keep alive"),
+            "the most recently used entry survives eviction"
+        );
+        assert!(
+            !service
+                .cache
+                .iter()
+                .any(|entry| entry.key.resolved.text == "Label 0"),
+            "the least recently used entry is evicted"
+        );
     }
 }
 
@@ -2149,7 +2411,7 @@ mod rich_tests {
             let mut service = TextService::new().unwrap();
             let layout = rich(&mut service, &content, Some(90.0), scale);
             assert!(layout.shaped.lines().count() > 1);
-            let signature = &service.cache.back().unwrap().signature;
+            let signature = &service.cache.newest().unwrap().signature;
             for run in &signature.runs {
                 if let Some([center, _, _]) = run.alignment {
                     let part = layout
@@ -2781,7 +3043,7 @@ mod rich_tests {
         // Preparing other texts evicts the prepared candidate from the
         // bounded layout cache; the cut is still remembered.
         let reads = Cell::new(0);
-        for index in 0..130 {
+        for index in 0..prepared::TEXT_ENTRIES + 2 {
             service
                 .prepare_plain(
                     &format!("filler {index}"),

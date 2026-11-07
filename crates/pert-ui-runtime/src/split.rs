@@ -919,7 +919,7 @@ impl Component for SplitPane {
                 // An even-width grip over an odd-width line can rasterize with
                 // its only extra pixel on one side. Add the same integral pixel
                 // margin to both line edges, preserving their common pixel phase.
-                let scale = painter.viewport().scale();
+                let scale = painter.pixel_scale();
                 let margin_pixels = if thickness > 0.0 {
                     (f64::from(thickness) * scale).round().max(1.0).min(
                         (f64::from(across - thickness) * scale / 2.0)

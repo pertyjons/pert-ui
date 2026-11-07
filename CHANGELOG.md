@@ -5,6 +5,35 @@ needs: additions, behavior changes, breaking changes with their replacement,
 and notable fixes. The detailed per-version entries up to 0.3.101 are in Git
 history (this file at commit f5fde76).
 
+## 0.3.103 (2026-11-06): Resize and scale-change cost
+
+Resizing a window or changing its scale does far less UI work: components
+that do not depend on the window extent keep their layout, hidden subtrees
+are not walked, and text that is only measured is neither reshaped nor
+rasterized.
+
+- **Added:** `Painter::pixel_scale`, physical pixels per local logical pixel
+  without a dependency on the window extent.
+- **Changed:** a resize at an unchanged scale no longer invalidates every
+  component. It reaches the components that read the window extent through
+  `MeasureContext::viewport` (layout), `UpdateContext::viewport` (update and
+  layout) or `Painter::viewport` (paint), and the surfaces placed against the
+  window; other layout follows from changed constraints. A scale or zoom
+  change still invalidates every component.
+- **Breaking:** `Painter::viewport` is no longer `const`, since it records
+  the read. A drawing that needs only the scale reads `Painter::pixel_scale`.
+- **Changed:** updating a component no longer walks the visibility of its
+  whole subtree, hidden pages included; the walk stops where visibility is
+  unchanged.
+- **Changed:** prepared text is cached for up to 4096 entries within the
+  unchanged 16 MiB budget, evicts the least recently used entry and is looked
+  up by hash, so a page with a thousand labels no longer reshapes them on
+  every layout pass.
+- **Changed:** preparing text places its glyphs without rasterizing them;
+  a `TextLayout`'s coverage is rendered when it is first painted, so text
+  that is only measured costs no rasterizing. Sizes and painted pixels are
+  unchanged.
+
 ## 0.3.102 (2026-11-05): Documentation consolidation
 
 Documentation only; no public item changed. The rustdoc guide becomes the

@@ -89,3 +89,43 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   Add tests at narrow width and scale 2. `plans/document-editor.md` slice 6
   removes the cause for values within capacity; this entry covers the
   current contract until then.
+- [ ] **RENDER-01** 2026-11-05 `crates/pert-ui-runtime/src/shapes.rs`
+  `ShapeCache` — Improvement: a hit returns the entry without moving it
+  (`image`, :49-52), and `insert` evicts from the front (:139-148), so the
+  cache is FIFO, not LRU, and is searched linearly. Widgets that create a new
+  key per value, such as the knob's value arc, push shared corner masks out
+  after 128 new keys, and those masks are rasterized again. Move a hit to the
+  back (or key a map) and add a test that a reused key survives a stream of
+  new ones. Phase 0 of `plans/rendering-capabilities.md` ranks analytic shapes
+  first, which would remove the cache for ordinary shapes.
+- [ ] **RENDER-02** 2026-11-05 `crates/pert-ui-runtime/src/dialog.rs:470`,
+  `crates/pert-ui-runtime/src/quick_pick.rs:1371` — Improvement: the modal
+  scrim is the literal `Color::from_linear(0.0, 0.0, 0.0, 0.35)` in two
+  places, so no theme or palette can change it and the two can drift apart.
+  Give it a `ColorRole` with a default in the role table and use it in both,
+  documenting the role in the appearance guide.
+- [ ] **RENDER-03** 2026-11-05 `crates/pert-ui-runtime/src/geometry.rs:689-690`
+  `Painter::stroke_path` — Public API and documentation: the rustdoc says
+  `stroke_shape` strokes a "rectangle, rounded rectangle or ellipse inward",
+  but `Shape` has no ellipse variant (`shapes.rs:17-28`); ellipses are
+  stroked with `stroke_ellipse`. Correct the sentence and link
+  `stroke_ellipse`.
+- [ ] **RENDER-04** 2026-11-05 `crates/pert-ui-runtime/src/geometry/raster.rs`
+  `RasterGrid::new` — Improvement: vector coverage is rasterized on a grid
+  anchored at the geometry's own bounds, so a prepared `DrawMask` rectangle
+  has an arbitrary fractional physical position. A vector at a fractional
+  phase, nearly every one, is then resampled bilinearly, and its first column and row straddle a pixel: the
+  pixel-center rule drops or keeps that half-covered pixel whole. When the
+  edge falls within the GPU's subpixel precision of a pixel center, the
+  documented exception in `docs/rendering-platform.md` (rendering tiers)
+  occurs on ordinary content. In the phase 0 polyline (800 points, scale 2,
+  frame 219) the mask's left edge lies at physical 478.50122. The CPU
+  renderer leaves pixel (478, 610) as background, and wgpu draws edge texel
+  coverage 249 there: a 220/255 difference. Rasterize so that the final
+  `DrawMask` rectangle lies on physical pixels: the grid phase must include
+  the command's origin and scale, which `VectorRasterizer::prepare` applies
+  after rasterizing (`vector_scene.rs`), so the phase joins the cache key.
+  A raster scale capped below the view's (`raster_scale`) still stretches.
+  Then add CPU/GPU parity fixtures with vector edges at arbitrary phase.
+  Reproduction:
+  `plans/rendering/vello-spike/src/bin/capdiag.rs`.

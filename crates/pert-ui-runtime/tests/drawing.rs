@@ -175,3 +175,79 @@ fn raster_dimensions_are_rejected_before_byte_count_overflow() {
         );
     }
 }
+
+/// Paints text it prepared only in `measure`, upright and turned, and an icon.
+struct MeasuredText {
+    layout: std::cell::RefCell<Option<TextLayout>>,
+}
+impl Component for MeasuredText {
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+    fn measure(&self, cx: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+        let layout = cx.text("Measured only", None, TextStyle::Body)?;
+        let size = layout.size();
+        *self.layout.borrow_mut() = Some(layout);
+        Ok(Size::new(
+            size.width() + 40.0,
+            size.width() + size.height(),
+        )?)
+    }
+    fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
+        let layout = self
+            .layout
+            .borrow()
+            .clone()
+            .ok_or(DrawError::PendingUpdates)?;
+        let height = layout.size().height();
+        layout.paint(painter, Point::new(0.0, 0.0)?, Color::TEXT)?;
+        layout.paint_turned(
+            painter,
+            Point::new(0.0, height)?,
+            QuarterTurn::Left,
+            Color::TEXT,
+        )?;
+        painter.icon(
+            Icon::Close,
+            Rect::new(height + 4.0, height, 16.0, 16.0)?,
+            Color::TEXT,
+        )?;
+        Ok(())
+    }
+}
+
+#[test]
+fn text_prepared_in_measure_paints_its_coverage_in_every_mode() -> TestResult {
+    for mode in [TextRenderingMode::LineMask, TextRenderingMode::PhaseLine] {
+        let mut ui = Runtime::new();
+        ui.ui_settings().set_text_rendering(mode)?;
+        ui.set_viewport(Viewport::new(300.0, 300.0, 1.5)?)?;
+        ui.mount_tree(Element::new(
+            "text",
+            MeasuredText {
+                layout: std::cell::RefCell::new(None),
+            },
+        ))?;
+        ui.flush(Duration::ZERO)?;
+        let scene = ui.paint()?;
+        let masks: Vec<_> = scene
+            .commands()
+            .iter()
+            .filter_map(|command| match command {
+                DrawCommand::DrawMask { mask, turn, .. } => Some((*turn, scene.mask(*mask))),
+                _ => None,
+            })
+            .collect();
+        // Upright text, turned text and the icon each draw inked coverage.
+        assert!(masks.len() >= 3, "{mode:?}: {} masks", masks.len());
+        assert!(masks.iter().any(|(turn, _)| *turn == QuarterTurn::Left));
+        for (_, mask) in &masks {
+            let mask = mask.ok_or("a mask command without its mask")?;
+            assert!(
+                mask.pixels().iter().any(|&p| p > 0),
+                "{mode:?}: an empty mask"
+            );
+        }
+    }
+    Ok(())
+}

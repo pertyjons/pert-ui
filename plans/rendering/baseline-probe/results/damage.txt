@@ -1,0 +1,8 @@
+Damage-area probe direct full surface: median 817.044µs, p95 1.064411ms
+Damage-area probe damage + surface copy: median 742.946µs, p95 1.005417ms
+Damage-area probe full acquisition: median 8.553011ms, p95 9.38353ms
+Damage-area probe damage acquisition: median 8.515633ms, p95 9.318964ms
+Damage-area probe full render work: median 956.164µs, p95 1.196274ms
+Damage-area probe damage render work: median 886.212µs, p95 1.152274ms
+Damage-area probe on AdapterInfo { name: "Intel(R) UHD Graphics 770 (ADL-S GT1)", vendor: 32902, device: 18048, device_type: IntegratedGpu, device_pci_bus_id: "0000:00:02.0", driver: "Intel open-source Mesa driver", driver_info: "Mesa 26.2.6", backend: Vulkan, subgroup_min_size: 8, subgroup_max_size: 32, transient_saves_memory: Some(false), limit_bucket: None }: 300 frames, 960x640, surface mode Fifo, alpha mode Opaque, max frame latency 2, usage TextureUsages(COPY_DST | RENDER_ATTACHMENT), scale 1; 1000 static rectangles, [400, 280, 32, 32] changed area; scene composition 8.817917ms, renderer preparation 34.90727ms, full pass 213.540732ms, scissored pass 146.347039ms, retained-grid copy + trace 177.630055ms. Pass times include CPU encode + submit + GPU completion; all times exclude readback and presentation calls.
+test tests::native_damage_area_probe ... ok

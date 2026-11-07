@@ -132,6 +132,7 @@ impl Runtime {
                     focus_read: Cell::new(false),
                     metrics: self.shared.theme.borrow().active_metrics(),
                     metric_roles: Cell::new(0),
+                    viewport_read: Cell::new(false),
                     palette,
                     roles: Cell::new(0),
                     size,
@@ -163,6 +164,7 @@ impl Runtime {
                     .subscribe(&entry.node, painter.roles.get());
                 entry.node.focus_reader.set(painter.focus_read.get());
                 entry.node.metric_paint.set(painter.metric_roles.get());
+                entry.node.viewport_paint.set(painter.viewport_read.get());
                 entry.node.font_paint.set(painter.font_reads.get());
                 entry.text_drawn = painter.text_drawn.get();
                 entry.text_origin = Some(origin_key);

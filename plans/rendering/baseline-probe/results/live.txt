@@ -1,0 +1,16 @@
+Headless synthetic workload: 1000 mounted checkboxes, 42 intersect the viewport; 300 scheduled frames.
+Composed scene: 908 commands and 55 coverage masks.
+Sources: 0 items dropped, 0 rejected across 2 bridges.
+Operation            Calls    Total ms     Self ms
+Update                 600       0.320       0.320
+Reconcile                0       0.000       0.000
+Layout                   0       0.000       0.000
+Measure                  0       0.000       0.000
+Arrange                  0       0.000       0.000
+Text                     0       0.000       0.000
+Paint                  600       3.427       3.427
+Compose                300      29.139      25.713
+Flush                  300       2.037       1.717
+Omitted scopes: 0; evicted recent samples: 1544
+Inclusive durations overlap; Paint measures CPU drawing/geometry recording, not GPU execution.
+Headless idle: 30.000 real seconds; no runtime calls, deadlines or damage. Native event-loop/GPU evidence is separate.

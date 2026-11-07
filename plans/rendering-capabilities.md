@@ -1,9 +1,11 @@
 # Rendering capabilities and performance
 
 Status: **draft, open exploratory plan**, created 2026-10-26 at the
-maintainer's request. Not scheduled; the developer-usability work it was
-to follow is complete. Nothing here is a commitment until the
-investigation (phase 0) has reported and the maintainer has chosen what to
+maintainer's request. Phase 0 started 2026-11-05: its report,
+[rendering/phase0-report.md](rendering/phase0-report.md), is Codex-reviewed
+and corrected, and the maintainer decided on 2026-11-06: path 1, phase 1 =
+B + C, then A, D and G1; J1 investigated beside it. See the report's
+Decisions section. Nothing here is a commitment until the maintainer has chosen what to
 build.
 
 ## Why
@@ -190,5 +192,5 @@ None is chosen. Phase 0 ranks them and may add or drop any.
 
 ## Review record
 
-None yet. Phase 0's report is reviewed by Codex before the maintainer
-chooses.
+Phase 0's report was reviewed by Codex on 2026-11-05: fifteen findings, all
+confirmed and corrected. The report's review record lists them.

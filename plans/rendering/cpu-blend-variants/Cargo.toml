@@ -1,0 +1,12 @@
+[package]
+name = "pert-ui-cpu-variants"
+version = "0.0.0"
+edition = "2024"
+publish = false
+description = "Throwaway copy of pert-ui-cpu with blend-storage variants (plans/rendering/cpu-blend-variants)"
+
+[dependencies]
+pert-ui-runtime = { path = "../../../crates/pert-ui-runtime" }
+thiserror = "2.0.21"
+
+[workspace]

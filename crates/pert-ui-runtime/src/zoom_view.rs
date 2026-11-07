@@ -736,7 +736,7 @@ impl Component for ZoomView {
             return Ok(());
         }
         let line = painter.color(ColorRole::Outline);
-        let width = 1.0 / painter.viewport().scale() as f32;
+        let width = 1.0 / painter.pixel_scale() as f32;
         let first = |offset: f32| offset.rem_euclid(step);
         let mut x = first(self.view.offset().x());
         while x < size.width() {

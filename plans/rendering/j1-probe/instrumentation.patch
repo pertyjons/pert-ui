@@ -1,0 +1,489 @@
+diff --git a/crates/pert-ui-runtime/src/j1.rs b/crates/pert-ui-runtime/src/j1.rs
+new file mode 100644
+index 0000000..2484064
+--- /dev/null
++++ b/crates/pert-ui-runtime/src/j1.rs
+@@ -0,0 +1,81 @@
++//! Throwaway J1 instrumentation (not shipped).
++#![allow(missing_docs, missing_debug_implementations, clippy::missing_panics_doc)]
++use std::cell::RefCell;
++use std::collections::BTreeMap;
++use std::time::{Duration, Instant};
++
++thread_local! {
++    static TIMES: RefCell<BTreeMap<&'static str, (Duration, u64)>> = RefCell::new(BTreeMap::new());
++    static ON: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
++}
++
++pub fn flag(name: &str) -> bool {
++    static FLAGS: std::sync::OnceLock<String> = std::sync::OnceLock::new();
++    FLAGS
++        .get_or_init(|| std::env::var("J1_FLAGS").unwrap_or_default())
++        .split(',')
++        .any(|f| f == name)
++}
++
++pub fn enable(on: bool) {
++    ON.with(|o| o.set(on));
++}
++
++pub fn on() -> bool {
++    ON.with(|o| o.get())
++}
++
++pub struct Guard(&'static str, Option<Instant>);
++impl Drop for Guard {
++    fn drop(&mut self) {
++        if let Some(start) = self.1 {
++            let d = start.elapsed();
++            TIMES.with(|t| {
++                let mut t = t.borrow_mut();
++                let e = t.entry(self.0).or_default();
++                e.0 += d;
++                e.1 += 1;
++            });
++        }
++    }
++}
++#[must_use]
++pub fn time(name: &'static str) -> Guard {
++    Guard(name, ON.with(|o| o.get()).then(Instant::now))
++}
++pub fn count(name: &'static str, n: u64) {
++    if !ON.with(|o| o.get()) {
++        return;
++    }
++    TIMES.with(|t| {
++        let mut t = t.borrow_mut();
++        t.entry(name).or_default().1 += n;
++    });
++}
++thread_local! {
++    static SETS: RefCell<BTreeMap<&'static str, std::collections::HashSet<u64>>> = RefCell::new(BTreeMap::new());
++}
++pub fn distinct(name: &'static str, key: u64) {
++    if !on() {
++        return;
++    }
++    SETS.with(|s| {
++        s.borrow_mut().entry(name).or_default().insert(key);
++    });
++}
++pub fn take_distinct() -> Vec<(&'static str, usize)> {
++    SETS.with(|s| {
++        std::mem::take(&mut *s.borrow_mut())
++            .into_iter()
++            .map(|(k, v)| (k, v.len()))
++            .collect()
++    })
++}
++pub fn take() -> Vec<(&'static str, Duration, u64)> {
++    TIMES.with(|t| {
++        std::mem::take(&mut *t.borrow_mut())
++            .into_iter()
++            .map(|(k, (d, n))| (k, d, n))
++            .collect()
++    })
++}
+diff --git a/crates/pert-ui-runtime/src/lib.rs b/crates/pert-ui-runtime/src/lib.rs
+index 859c8ee..8643b5f 100644
+--- a/crates/pert-ui-runtime/src/lib.rs
++++ b/crates/pert-ui-runtime/src/lib.rs
+@@ -35,6 +35,8 @@ macro_rules! description_debug {
+ }
+ 
+ mod error;
++#[doc(hidden)]
++pub mod j1;
+ pub use error::ApplicationError;
+ mod resize_grip;
+ mod windows;
+diff --git a/crates/pert-ui-runtime/src/runtime.rs b/crates/pert-ui-runtime/src/runtime.rs
+index 8607834..6123b0d 100644
+--- a/crates/pert-ui-runtime/src/runtime.rs
++++ b/crates/pert-ui-runtime/src/runtime.rs
+@@ -1054,6 +1054,7 @@ impl Node {
+         }
+     }
+     fn invalidate_layout(&self) {
++        crate::j1::count("n.invalidate_layout",1);
+         self.layout_dirty.set(true);
+         self.measured.set(measurements::Measurements::default());
+         // Every measurement's dependencies stay until here, also those of an
+@@ -5967,10 +5968,11 @@ impl Runtime {
+         if let Some(error) = self.window.focus_errors.pop_front() {
+             return Err(error);
+         }
+-        self.dispatch_queued_commands()?;
++        { let _j=crate::j1::time("f.queued_commands"); self.dispatch_queued_commands()?; }
+         let flush_guard = FlushGuard::new(self.flush_state.clone());
+-        self.apply_geometry_change()?;
++        { let _j=crate::j1::time("f.apply_geometry_change"); self.apply_geometry_change()?; }
+         self.shared.now.set(now);
++        let _jt=crate::j1::time("f.tasks..scale");
+         self.dispatch_tasks()?;
+         self.dispatch_intervals(now)?;
+         self.dispatch_timers(now)?;
+@@ -5979,9 +5981,11 @@ impl Runtime {
+         self.shared.deliver_mailboxes()?;
+         self.promote_due_deadlines(now);
+         self.settle_view_scale(now);
+-        let mut count = self.settle_notification_presentation()?;
++        drop(_jt);
++        let mut count = { let _j=crate::j1::time("f.settle_presentation"); self.settle_notification_presentation()? };
+         drop(external_origin);
+         let mut notification_error = None;
++        let _jn=crate::j1::time("f.notifications");
+         loop {
+             match self.dispatch_notifications() {
+                 Ok((updated, followup)) => {
+@@ -6009,7 +6013,8 @@ impl Runtime {
+         };
+         // After the waves settle, so a surface closed in the same event (a
+         // palette that jumps elsewhere) no longer blocks the target.
+-        let reveal_result = self.dispatch_reveal_requests();
++        drop(_jn);
++        let reveal_result = { let _j=crate::j1::time("f.reveal"); self.dispatch_reveal_requests() };
+         #[cfg(debug_assertions)]
+         {
+             // Keep exhaustion diagnostics until the boundary succeeds.
+@@ -6046,23 +6051,24 @@ impl Runtime {
+         self.apply_geometry_change()?;
+         let mut count = 0;
+         loop {
+-            self.consume_flush_wave()?;
+-            self.shared.settle_computations()?;
+-            count += self.update_pending()?;
++            crate::j1::count("s.waves",1);
++            { let _j=crate::j1::time("s.consume_flush_wave"); self.consume_flush_wave()?; }
++            { let _j=crate::j1::time("s.settle_computations"); self.shared.settle_computations()?; }
++            count += { let _j=crate::j1::time("s.update_pending"); self.update_pending()? };
+             if !self.window.shared.pending.borrow().is_empty() {
+                 continue;
+             }
+-            self.apply_requested_moves()?;
+-            self.apply_requested_children()?;
++            { let _j=crate::j1::time("s.moves_children"); self.apply_requested_moves()?;
++            self.apply_requested_children()?; }
+             if !self.window.shared.pending.borrow().is_empty() {
+                 continue;
+             }
+-            self.apply_requested_text_commands()?;
+-            self.apply_requested_removals()?;
+-            let had_layout = self.settle_layout()?;
+-            self.apply_requested_focus()?;
+-            self.refresh_stack_hover(had_layout)?;
+-            self.service_drag()?;
++            { let _j=crate::j1::time("s.text_cmds_removals"); self.apply_requested_text_commands()?;
++            self.apply_requested_removals()?; }
++            let had_layout = { let _j=crate::j1::time("s.settle_layout"); self.settle_layout()? };
++            { let _j=crate::j1::time("s.focus"); self.apply_requested_focus()?; }
++            { let _j=crate::j1::time("s.stack_hover"); self.refresh_stack_hover(had_layout)?; }
++            { let _j=crate::j1::time("s.drag"); self.service_drag()?; }
+             // Ending a drag can request another hover/layout wave.
+             if self.window.shared.pending.borrow().is_empty()
+                 && !self.window.shared.layout_pending.get()
+@@ -6124,6 +6130,7 @@ impl Runtime {
+             .keys()
+             .copied()
+             .collect();
++        crate::j1::count("u.pending", pending.len() as u64);
+         let mut count = 0;
+         for serial in pending {
+             if self.update_component(serial)? {
+@@ -6218,8 +6225,9 @@ impl Runtime {
+     fn update_component(&mut self, serial: u64) -> Result<bool, RuntimeError> {
+         #[cfg(debug_assertions)]
+         let promoted = self.surface_kind(serial).is_some() || self.stacked_child(serial);
++        let _ju=crate::j1::time("u.total");
+         self.window.shared.pending.borrow_mut().remove(&serial);
+-        let children = self.child_snapshot(serial);
++        let children = { let _j=crate::j1::time("u.child_snapshot"); self.child_snapshot(serial) };
+         let Some(entry) = self.entries.get_mut(&serial) else {
+             return Ok(false);
+         };
+@@ -6247,7 +6255,8 @@ impl Runtime {
+         }
+         // Bound child labels are read for this parent, so a change updates
+         // it again and its children's metadata is current in its update.
+-        let resolved = self.resolve_child_labels(&child_serials, &mut context);
++        let resolved = { let _j=crate::j1::time("u.resolve_labels"); self.resolve_child_labels(&child_serials, &mut context) };
++        crate::j1::count("u.ran",1);
+         let Some(entry) = self.entries.get_mut(&serial) else {
+             return Ok(false);
+         };
+@@ -6261,6 +6270,7 @@ impl Runtime {
+                 Some(serial),
+                 &entry.key,
+             );
++            let _j=crate::j1::time("u.component_update");
+             match &resolved {
+                 Ok(_) => entry.component.update(&mut context),
+                 Err(error) => Err(error.clone()),
+@@ -6376,8 +6386,8 @@ impl Runtime {
+                 self.window.focus_fallback = Self::focus_fallback_of(&entry.node);
+             }
+         }
+-        self.refresh_child_visibility(serial);
+-        self.sync_view_scale(serial);
++        { let _j=crate::j1::time("u.child_visibility"); self.refresh_child_visibility(serial); }
++        { let _j=crate::j1::time("u.sync_view_scale"); self.sync_view_scale(serial); }
+         Ok(true)
+     }
+ 
+@@ -6472,7 +6482,8 @@ impl Runtime {
+     /// pending.
+     fn settle_layout(&mut self) -> Result<bool, RuntimeError> {
+         let had_layout = self.window.shared.layout_pending.get();
+-        self.layout()?;
++        { let _j=crate::j1::time("l.layout"); self.layout()?; }
++        let _js=crate::j1::time("l.sync_surfaces_branch");
+         if had_layout
+             || self.window.surface_error.is_some()
+             || (!self.window.surfaces.is_empty()
+diff --git a/crates/pert-ui-runtime/src/runtime/settings.rs b/crates/pert-ui-runtime/src/runtime/settings.rs
+index 65badf9..a58734b 100644
+--- a/crates/pert-ui-runtime/src/runtime/settings.rs
++++ b/crates/pert-ui-runtime/src/runtime/settings.rs
+@@ -636,11 +636,14 @@ impl Runtime {
+                     )
+                     .ok()
+                 }));
++            let _j=crate::j1::time("g.invalidate_all");
++            let skip = crate::j1::flag("E2") && previous_scale == scale;
+             for entry in self
+                 .entries
+                 .values()
+-                .filter(|entry| Rc::ptr_eq(&entry.node.window(), &self.window.shared))
++                .filter(|entry| !skip && Rc::ptr_eq(&entry.node.window(), &self.window.shared))
+             {
++                crate::j1::count("g.invalidated",1);
+                 entry.node.invalidate(Invalidation::Layout);
+             }
+             leave?;
+diff --git a/crates/pert-ui-runtime/src/runtime/tree.rs b/crates/pert-ui-runtime/src/runtime/tree.rs
+index 954c843..f748a4b 100644
+--- a/crates/pert-ui-runtime/src/runtime/tree.rs
++++ b/crates/pert-ui-runtime/src/runtime/tree.rs
+@@ -1578,19 +1578,20 @@ impl Runtime {
+         order
+     }
+     pub(super) fn refresh_child_visibility(&mut self, serial: u64) {
+-        let children = self.entries[&serial].children.clone();
++        let children = { let _j=crate::j1::time("v.children_clone"); self.entries[&serial].children.clone() };
+         let parent_visible = self.entries[&serial].node.visible.get();
+         for child in children {
+             if self.entries[&child].node.detached.get() {
+                 continue;
+             }
+-            let allowed = self.entries[&serial]
++            let allowed = { let _j=crate::j1::time("v.child_visible"); self.entries[&serial]
+                 .component
+-                .child_visible(&self.entries[&child].key);
++                .child_visible(&self.entries[&child].key) };
+             self.refresh_visibility(child, parent_visible && allowed);
+         }
+     }
+     pub(super) fn refresh_visibility(&mut self, serial: u64, parent_visible: bool) {
++        crate::j1::count("v.refresh_visibility_calls",1);
+         if self.entries.get(&serial).is_some_and(|e| {
+             e.node.visible.get() && (!parent_visible || !e.node.local_visible.get())
+         }) {
+@@ -1666,6 +1667,8 @@ impl Runtime {
+                 .record(crate::EventKind::Visibility, Some(serial), None, || {
+                     crate::EventStatus::Succeeded
+                 });
++        } else if crate::j1::flag("E1") {
++            return;
+         }
+         self.refresh_child_visibility(serial);
+     }
+diff --git a/crates/pert-ui-runtime/src/text.rs b/crates/pert-ui-runtime/src/text.rs
+index ebfce33..9a0188a 100644
+--- a/crates/pert-ui-runtime/src/text.rs
++++ b/crates/pert-ui-runtime/src/text.rs
+@@ -584,6 +584,8 @@ pub(crate) struct TextService {
+     layout: parley::LayoutContext<TextBrush>,
+     scale: swash::scale::ScaleContext,
+     cache: VecDeque<CachedText>,
++    j1_index: HashMap<u64, u64>,
++    j1_base: u64,
+     bytes: usize,
+     font_keys: BTreeMap<(u64, u32), swash::CacheKey>,
+     phase_glyphs: HashMap<PhaseGlyphKey, CachedGlyph>,
+@@ -631,7 +633,27 @@ struct FitKey {
+ }
+ /// The most truncation results the service remembers.
+ const FIT_MEMORY: usize = 64;
++fn j1_hash(text: &str, width: Option<f32>, scale: f64, font: usize, size: f32) -> u64 {
++    use std::hash::{Hash, Hasher};
++    let mut h = std::collections::hash_map::DefaultHasher::new();
++    text.hash(&mut h);
++    width.map(f32::to_bits).hash(&mut h);
++    scale.to_bits().hash(&mut h);
++    font.hash(&mut h);
++    size.to_bits().hash(&mut h);
++    h.finish()
++}
++fn j1_key_hash(k: &Key) -> u64 {
++    j1_hash(&k.resolved.text, k.width, k.scale, k.resolved.default_font, k.resolved.default_size)
++}
+ impl TextService {
++    fn j1_candidate(&self, hash: u64) -> Option<&CachedText> {
++        let seq = *self.j1_index.get(&hash)?;
++        if seq < self.j1_base {
++            return None;
++        }
++        self.cache.get((seq - self.j1_base) as usize)
++    }
+     #[cfg(test)]
+     pub(crate) fn new() -> Result<Self, TextError> {
+         Self::with_owner(Rc::new(()))
+@@ -653,6 +675,8 @@ impl TextService {
+             layout: parley::LayoutContext::new(),
+             scale: swash::scale::ScaleContext::new(),
+             cache: VecDeque::new(),
++            j1_index: HashMap::new(),
++            j1_base: 0,
+             bytes: 0,
+             font_keys: BTreeMap::new(),
+             phase_glyphs: HashMap::new(),
+@@ -708,9 +732,21 @@ impl TextService {
+         reads.set(reads.get() | role.mask());
+         let font = self.registry.default_index(role);
+         // Borrow the request until a miss. Ordinary rich controls use this path too.
+-        if let Some(entry) = self.cached_plain(text, width, scale, font, font_size) {
++        crate::j1::count("t.plain_calls",1);
++        if crate::j1::on() {
++            use std::hash::{Hash, Hasher};
++            let mut h = std::collections::hash_map::DefaultHasher::new();
++            text.hash(&mut h); font_size.to_bits().hash(&mut h); font.hash(&mut h);
++            crate::j1::distinct("t.distinct_text", h.finish());
++            scale.to_bits().hash(&mut h); width.map(f32::to_bits).hash(&mut h);
++            crate::j1::distinct("t.distinct_text_width_scale", h.finish());
++        }
++        if let Some(entry) = { let _j=crate::j1::time("t.cached_plain_scan"); self.cached_plain(text, width, scale, font, font_size) } {
++            crate::j1::count("t.plain_fast_hit",1);
+             return Ok(entry.layout.clone());
+         }
++        if crate::j1::on() && self.cache.iter().any(|e| e.key.resolved.text == text && e.key.scale == scale && e.key.width != width) { crate::j1::count("t.plain_miss_same_text_other_width",1); }
++        if crate::j1::on() && self.cache.iter().any(|e| e.key.resolved.text == text && e.key.scale != scale) { crate::j1::count("t.plain_miss_same_text_other_scale",1); }
+         let request = TextRequest::new(style, font_size, reads);
+         let resolved = self.resolve(&RichText::from(text), request)?;
+         self.prepare_resolved(resolved, request.width(width).scale(scale), None)
+@@ -726,6 +762,35 @@ impl TextService {
+         font: usize,
+         font_size: f32,
+     ) -> Option<&CachedText> {
++        let matches = |entry: &&CachedText| {
++            let key = &entry.key;
++            let r = &key.resolved;
++            key.width == width
++                && key.scale == scale
++                && r.text == text
++                && r.default_font == font
++                && r.default_size == font_size
++                && r.gaps.is_empty()
++                && r.colors == [TextColor::Inherit]
++                && r.icon_brushes == [false]
++                && if text.is_empty() {
++                    r.spans.is_empty()
++                } else {
++                    r.spans.as_slice()
++                        == [ResolvedSpan {
++                            range: 0..text.len(),
++                            font,
++                            size: font_size,
++                            brush: 0,
++                            icon: false,
++                        }]
++                }
++        };
++        if crate::j1::flag("E3") {
++            return self
++                .j1_candidate(j1_hash(text, width, scale, font, font_size))
++                .filter(matches);
++        }
+         self.cache.iter().find(|entry| {
+             let key = &entry.key;
+             let r = &key.resolved;
+@@ -908,7 +973,8 @@ impl TextService {
+             width: None,
+             scale,
+         };
+-        let layout = self.build_layout(&key)?;
++        crate::j1::count("t.plain_shape_calls",1);
++        let layout = { let _j=crate::j1::time("t.plain_shape_build(fit)"); self.build_layout(&key)? };
+         Ok((layout.width() / scale as f32, key, layout))
+     }
+     /// Prepares plain text to fit `width` as `overflow` asks. A truncated
+@@ -922,6 +988,7 @@ impl TextService {
+         width: f32,
+         overflow: TextOverflow,
+     ) -> Result<FittedText, RuntimeError> {
++        crate::j1::count("t.fit_calls",1);
+         if !width.is_finite() || width < 0.0 {
+             return Err(TextError::Geometry.into());
+         }
+@@ -1093,10 +1160,14 @@ impl TextService {
+             width,
+             scale,
+         };
+-        if let Some(entry) = self.cache.iter().find(|e| e.key == key) {
++        crate::j1::count("t.resolved_calls",1);
++        let found = { let _j=crate::j1::time("t.key_scan"); if crate::j1::flag("E3") { self.j1_candidate(j1_key_hash(&key)).filter(|e| e.key == key) } else { self.cache.iter().find(|e| e.key == key) } };
++        if let Some(entry) = found {
++            crate::j1::count("t.resolved_hit",1);
+             return Ok(entry.layout.clone());
+         }
+-        let (signature, result) = self.shape(&key, shaped)?;
++        crate::j1::count("t.cache_len_at_miss", self.cache.len() as u64);
++        let (signature, result) = { let _j=crate::j1::time("t.shape_total"); self.shape(&key, shaped)? };
+         let bytes = result
+             .parts
+             .iter()
+@@ -1107,14 +1178,21 @@ impl TextService {
+             + signature.bytes()
+             + size_of::<CachedText>();
+         if bytes <= CACHE_BYTES {
+-            while self.cache.len() >= 128 || self.bytes + bytes > CACHE_BYTES {
++            let limit = if crate::j1::flag("E3") { 4096 } else { 128 };
++            while self.cache.len() >= limit || self.bytes + bytes > CACHE_BYTES {
+                 if let Some(old) = self.cache.pop_front() {
++                    let h = j1_key_hash(&old.key);
++                    if self.j1_index.get(&h) == Some(&self.j1_base) {
++                        self.j1_index.remove(&h);
++                    }
++                    self.j1_base += 1;
+                     self.bytes -= old.bytes;
+                 } else {
+                     break;
+                 }
+             }
+             self.bytes += bytes;
++            self.j1_index.insert(j1_key_hash(&key), self.j1_base + self.cache.len() as u64);
+             self.cache.push_back(CachedText {
+                 key,
+                 signature: result.signature.clone(),
+@@ -1135,7 +1213,7 @@ impl TextService {
+         let scale = key.scale as f32;
+         let layout = match shaped {
+             Some(layout) => layout,
+-            None => self.build_layout(key)?,
++            None => { let _j=crate::j1::time("t.build_layout(parley)"); self.build_layout(key)? },
+         };
+         if !layout.width().is_finite() || !layout.height().is_finite() {
+             return Err(TextError::Geometry);
+@@ -1153,10 +1231,12 @@ impl TextService {
+                 && entry.key.scale as f32 == scale
+                 && entry.signature.as_ref() == &signature
+         }) {
++            crate::j1::count("t.signature_reuse",1);
+             let mut result = entry.layout.clone();
+             result.shaped = Arc::new(layout);
+             return Ok((signature, result));
+         }
++        let _jr=crate::j1::time("t.rasterize+composite");
+         let (glyphs, bounds) = self.rasterize_glyphs(&layout, &signature, [0, 0], false)?;
+         let [left, top, right, bottom] = bounds;
+         let width = u32::try_from(right - left).map_err(|_| TextError::Geometry)?;

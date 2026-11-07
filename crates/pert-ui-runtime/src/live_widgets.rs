@@ -577,7 +577,7 @@ impl Component for Trace {
         if count == 0 || size.width() <= 0.0 || size.height() <= 0.0 {
             return Ok(());
         }
-        let scale = painter.viewport().scale();
+        let scale = painter.pixel_scale();
         let pixel = (1.0 / scale) as f32;
         let columns = ((f64::from(size.width()) * scale).ceil() as usize).clamp(1, count);
         let width = size.width() / columns as f32;

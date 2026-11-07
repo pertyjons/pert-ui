@@ -265,7 +265,7 @@ impl Painter {
         let image = self.shapes.borrow_mut().image(Key {
             width: extent * 2.0,
             height: extent * 2.0,
-            scale: self.viewport().scale(),
+            scale: self.pixel_scale(),
             shape: Coverage::Arc {
                 start: start_degrees.rem_euclid(360.0),
                 sweep: sweep_degrees,
@@ -306,7 +306,7 @@ impl Painter {
         let image = self.shapes.borrow_mut().image(Key {
             width,
             height,
-            scale: self.viewport().scale(),
+            scale: self.pixel_scale(),
             shape: Coverage::Triangle(local),
             stroke: None,
         })?;
@@ -377,7 +377,7 @@ impl Painter {
         if faults::fails(color) {
             return Err(DrawError::CoverageTooLarge);
         }
-        let min_width = (1.0 / self.viewport().scale()).min(f64::from(f32::MAX)) as f32;
+        let min_width = (1.0 / self.pixel_scale()).min(f64::from(f32::MAX)) as f32;
         self.shape(rect, shape, color, Some(width.get().max(min_width)))
     }
     fn shape(
@@ -493,7 +493,7 @@ impl Painter {
         let key = Key {
             width,
             height,
-            scale: self.viewport().scale(),
+            scale: self.pixel_scale(),
             shape: Coverage::Shape(shape),
             stroke,
         };

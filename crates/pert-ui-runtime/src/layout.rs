@@ -851,10 +851,16 @@ impl std::fmt::Debug for MeasureContext<'_> {
     }
 }
 impl MeasureContext<'_> {
-    /// Current logical window bounds for anchored surface sizing. Native resize
-    /// and UI zoom invalidate layout before this value is consumed again.
+    /// Current logical window bounds for anchored surface sizing.
+    ///
+    /// Reading it makes this component's retained measurement and arrangement
+    /// depend on the window extent: a resize or a scale change invalidates its
+    /// layout before this value is consumed again. A component that does not
+    /// read it keeps its retained layout through a resize that leaves its
+    /// constraints unchanged.
     #[must_use]
     pub fn viewport(&self) -> crate::Viewport {
+        self.node.viewport_layout.set(true);
         self.runtime.viewport()
     }
 

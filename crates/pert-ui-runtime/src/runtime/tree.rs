@@ -1297,6 +1297,9 @@ impl Runtime {
             focus_reader: Cell::new(false),
             motion_reader: Cell::new(false),
             motion_listed: Cell::new(false),
+            viewport_layout: Cell::new(false),
+            viewport_update: Cell::new(false),
+            viewport_paint: Cell::new(false),
             focus_update_reader: Cell::new(false),
             self_managed: Cell::new(false),
             initial_children_owned: element.component.retain_initial_children(),
@@ -1666,8 +1669,12 @@ impl Runtime {
                 .record(crate::EventKind::Visibility, Some(serial), None, || {
                     crate::EventStatus::Succeeded
                 });
+            // A descendant's visibility depends only on its ancestors' and on
+            // each parent's `child_visible` answer, which the parent's update
+            // refreshes for its direct children. An unchanged node therefore
+            // leaves its subtree unchanged, and the walk stops there.
+            self.refresh_child_visibility(serial);
         }
-        self.refresh_child_visibility(serial);
     }
 
     pub(super) fn remove_subtree(&mut self, serial: u64) {

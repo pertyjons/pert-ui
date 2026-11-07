@@ -772,3 +772,220 @@ fn timer_requests_reject_zero_delays_and_report_callback_failures() -> TestResul
     runtime.flush(Duration::from_millis(20))?;
     Ok(())
 }
+
+#[test]
+fn a_parent_update_does_not_walk_descendants_whose_visibility_is_unchanged() -> TestResult {
+    // Counts how often its children's visibility is asked for.
+    struct Counting(Rc<Cell<usize>>);
+    impl Component for Counting {
+        fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+            Ok(())
+        }
+        fn child_visible(&self, _: &str) -> bool {
+            self.0.set(self.0.get() + 1);
+            true
+        }
+    }
+    // Shows its "gated" child only while the signal is true.
+    struct Gate {
+        show: ReadSignal<bool>,
+        tick: ReadSignal<u32>,
+        shown: bool,
+    }
+    impl Component for Gate {
+        fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+            self.shown = cx.read(&self.show)?;
+            cx.read(&self.tick)?;
+            Ok(())
+        }
+        fn child_visible(&self, key: &str) -> bool {
+            key != "gated" || self.shown
+        }
+        fn stacks_children(&self) -> bool {
+            true
+        }
+    }
+    let leaf = || Element::new("leaf", Counting(Rc::new(Cell::new(0))));
+    let mut runtime = Runtime::new();
+    runtime.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
+    let show = runtime.signal(false);
+    let tick = runtime.signal(0_u32);
+    let gated = Rc::new(Cell::new(0));
+    let open = Rc::new(Cell::new(0));
+    runtime.mount_tree(
+        Element::new(
+            "gate",
+            Gate {
+                show: show.read_only(),
+                tick: tick.read_only(),
+                shown: false,
+            },
+        )
+        .children([
+            Element::new("gated", Counting(gated.clone())).children([leaf()]),
+            Element::new("open", Counting(open.clone())).children([leaf()]),
+        ]),
+    )?;
+    runtime.flush(Duration::ZERO)?;
+    let visible = |runtime: &Runtime, key: &str| {
+        runtime
+            .inspect()
+            .components
+            .iter()
+            .filter(|c| c.key == key)
+            .map(|c| c.visible)
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(visible(&runtime, "leaf"), [false, true]);
+    gated.set(0);
+    open.set(0);
+
+    // The gate updates without changing either child's visibility: neither
+    // child is asked about its own children.
+    tick.set(1)?;
+    assert_eq!(
+        runtime.flush(Duration::from_millis(1))?.components_updated,
+        1
+    );
+    assert_eq!((gated.get(), open.get()), (0, 0));
+
+    // Showing the gated child walks into it, and only into it. The shown
+    // child then updates and asks again for its own children.
+    show.set(true)?;
+    runtime.flush(Duration::from_millis(2))?;
+    assert!(gated.get() > 0);
+    assert_eq!(open.get(), 0);
+    assert_eq!(visible(&runtime, "leaf"), [true, true]);
+    Ok(())
+}
+
+/// What a [`ExtentProbe`] reads of the window.
+#[derive(Clone, Copy, PartialEq)]
+enum ExtentRead {
+    Nothing,
+    Measure,
+    Update,
+    PaintExtent,
+    PaintScale,
+}
+#[derive(Default)]
+struct ExtentCounts {
+    updates: Cell<usize>,
+    measures: Cell<usize>,
+    paints: Cell<usize>,
+}
+/// A fixed-size leaf that counts its updates, measurements and paints.
+struct ExtentProbe(ExtentRead, Rc<ExtentCounts>);
+impl Component for ExtentProbe {
+    fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+        self.1.updates.set(self.1.updates.get() + 1);
+        if self.0 == ExtentRead::Update {
+            let _ = cx.viewport();
+        }
+        Ok(())
+    }
+    fn measure(&self, cx: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+        self.1.measures.set(self.1.measures.get() + 1);
+        if self.0 == ExtentRead::Measure {
+            let _ = cx.viewport();
+        }
+        Ok(Size::new(10.0, 10.0)?)
+    }
+    fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
+        self.1.paints.set(self.1.paints.get() + 1);
+        match self.0 {
+            ExtentRead::PaintExtent => {
+                let _ = painter.viewport();
+            }
+            ExtentRead::PaintScale => {
+                let _ = painter.pixel_scale();
+            }
+            _ => {}
+        }
+        Ok(())
+    }
+}
+/// Measures and places each child at a fixed size, whatever its own size.
+struct FixedRows;
+impl Component for FixedRows {
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+    fn measure(&self, cx: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+        for index in 0..cx.len() {
+            cx.measure(index, Constraints::new(Some(10.0), Some(10.0))?)?;
+        }
+        Ok(Size::new(10.0, 10.0 * cx.len() as f32)?)
+    }
+    fn arrange(&self, cx: &mut ArrangeContext<'_>, _: Size) -> Result<(), RuntimeError> {
+        for index in 0..cx.len() {
+            cx.measure(index, Constraints::new(Some(10.0), Some(10.0))?)?;
+            cx.place(index, Rect::new(0.0, 10.0 * index as f32, 10.0, 10.0)?)?;
+        }
+        Ok(())
+    }
+}
+
+#[test]
+fn a_same_scale_resize_reaches_only_the_readers_of_the_window_extent() -> TestResult {
+    let reads = [
+        ExtentRead::Nothing,
+        ExtentRead::Measure,
+        ExtentRead::Update,
+        ExtentRead::PaintExtent,
+        ExtentRead::PaintScale,
+    ];
+    let counts: Vec<_> = reads
+        .iter()
+        .map(|_| Rc::new(ExtentCounts::default()))
+        .collect();
+    let mut runtime = Runtime::new();
+    runtime.set_viewport(Viewport::new(100.0, 100.0, 1.0)?)?;
+    runtime.mount_tree(
+        Element::new("rows", FixedRows).children(reads.iter().zip(&counts).enumerate().map(
+            |(index, (read, counts))| {
+                Element::new(format!("probe-{index}"), ExtentProbe(*read, counts.clone()))
+            },
+        )),
+    )?;
+    runtime.flush(Duration::ZERO)?;
+    runtime.paint()?;
+    let snapshot = |counts: &[Rc<ExtentCounts>]| {
+        counts
+            .iter()
+            .map(|c| (c.updates.get(), c.measures.get(), c.paints.get()))
+            .collect::<Vec<_>>()
+    };
+    let before = snapshot(&counts);
+
+    runtime.set_viewport(Viewport::new(140.0, 90.0, 1.0)?)?;
+    runtime.flush(Duration::from_millis(1))?;
+    runtime.paint()?;
+    let after = snapshot(&counts);
+    let changed: Vec<_> = before
+        .iter()
+        .zip(&after)
+        .map(|(b, a)| (a.0 - b.0, a.1 - b.1, a.2 - b.2))
+        .collect();
+    assert_eq!(
+        changed,
+        [
+            (0, 0, 0), // reads nothing
+            (1, 1, 1), // measure reader: invalidated for layout
+            (1, 1, 1), // update reader: invalidated for layout
+            (1, 0, 1), // extent painter: painted again
+            (0, 0, 0), // scale painter
+        ]
+    );
+
+    // A scale change reaches every component.
+    let before = after;
+    runtime.set_viewport(Viewport::new(140.0, 90.0, 2.0)?)?;
+    runtime.flush(Duration::from_millis(2))?;
+    runtime.paint()?;
+    let after = snapshot(&counts);
+    for (b, a) in before.iter().zip(&after) {
+        assert_eq!((a.0 - b.0, a.1 - b.1, a.2 - b.2), (1, 1, 1));
+    }
+    Ok(())
+}

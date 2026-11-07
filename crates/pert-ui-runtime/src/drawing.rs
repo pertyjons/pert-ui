@@ -1408,6 +1408,8 @@ pub struct Painter {
     pub(crate) focus_read: std::cell::Cell<bool>,
     pub(crate) metrics: crate::ThemeMetrics,
     pub(crate) metric_roles: std::cell::Cell<u64>,
+    /// Whether this drawing read the window extent through [`Self::viewport`].
+    pub(crate) viewport_read: std::cell::Cell<bool>,
     pub(crate) palette: crate::Palette,
     pub(crate) roles: std::cell::Cell<u64>,
     pub(crate) size: crate::Size,
@@ -1538,7 +1540,7 @@ impl Painter {
         }
         let size = w.min(h);
         let physical =
-            (f64::from(size) * self.viewport().scale()).clamp(1.0, crate::text::MAX_FONT_PIXELS);
+            (f64::from(size) * self.pixel_scale()).clamp(1.0, crate::text::MAX_FONT_PIXELS);
         let raster_size = (physical.ceil() as u32).next_power_of_two() as f32;
         let text = self.text.prepare_rich(
             &crate::RichText::new().icon(icon),
@@ -1723,14 +1725,31 @@ impl Painter {
     /// Current logical window size, and the scale at which this component's
     /// coverage is prepared. This is not component layout bounds.
     ///
-    /// The scale is physical pixels per local logical pixel: the window's
-    /// effective scale outside a [view transform](crate::ViewTransform), and that
-    /// scale times [`Self::view_scale`] inside one, held at eight physical pixels
-    /// per local pixel when a view magnifies further (coverage is stretched
-    /// beyond that). The extent stays the window's and is not converted.
+    /// The scale is [`Self::pixel_scale`]. The extent stays the window's and
+    /// is not converted.
+    ///
+    /// Reading it makes this drawing depend on the window extent: a resize
+    /// paints the component again even when its own size is unchanged. A
+    /// drawing that needs only the scale reads [`Self::pixel_scale`], which a
+    /// same-scale resize does not repaint.
     #[must_use]
-    pub const fn viewport(&self) -> Viewport {
+    pub fn viewport(&self) -> Viewport {
+        self.viewport_read.set(true);
         self.list.viewport
+    }
+    /// Physical pixels per local logical pixel that raster coverage is
+    /// prepared at: the window's effective scale outside a
+    /// [view transform](crate::ViewTransform), and that scale times
+    /// [`Self::view_scale`] inside one. A magnifying view is held at the
+    /// greater of the window scale and eight physical pixels per local pixel
+    /// (coverage is stretched beyond that); a shrinking view is not held.
+    ///
+    /// Use it to align drawing to physical pixels, as for a one-pixel line.
+    /// A scale change paints the component again; reading it adds no
+    /// dependency on the window extent, unlike [`Self::viewport`].
+    #[must_use]
+    pub const fn pixel_scale(&self) -> f64 {
+        self.list.viewport.scale()
     }
     /// Accumulated [view scale](crate::ViewTransform) of this component's local
     /// space that this drawing is prepared for, 1 outside any view transform.
