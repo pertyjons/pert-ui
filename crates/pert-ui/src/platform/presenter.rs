@@ -30,6 +30,8 @@ mod software_only {
         Drawing(#[from] pert_ui_runtime::DrawError),
         #[error(transparent)]
         Limit(#[from] pert_ui_runtime::LimitError),
+        #[error(transparent)]
+        Shape(#[from] pert_ui_runtime::ShapePrepareError),
         #[error("the surface has no nonzero extent to render into")]
         Unconfigured,
         #[error("unsupported graphics configuration: {0}")]
@@ -209,6 +211,7 @@ mod software {
         match error {
             CpuRenderError::Drawing(error) => RenderError::Drawing(error),
             CpuRenderError::Limit(limit) => RenderError::Limit(limit),
+            CpuRenderError::Shape(error) => RenderError::Shape(error),
             CpuRenderError::Unsupported => RenderError::UnsupportedGraphics(error.to_string()),
             error => RenderError::Graphics(error.to_string()),
         }

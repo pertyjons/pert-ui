@@ -2947,7 +2947,7 @@ impl Component for VirtualList {
         {
             let slot = self.slot(index)?.intersection(Rect::from_size(size));
             if !slot.is_empty() {
-                painter.focus_ring(slot, Shape::Rectangle)?;
+                painter.focus_ring(slot, Shape::RECTANGLE)?;
             }
         }
         if let Some(ListDropMark::Into(index)) = self.mark {
@@ -2956,7 +2956,7 @@ impl Component for VirtualList {
                 let width = Length::new(painter.metric(MetricRole::FocusWidth))?;
                 painter.stroke_shape(
                     slot,
-                    Shape::Rectangle,
+                    Shape::RECTANGLE,
                     width,
                     painter.color(ColorRole::Primary),
                 )?;

@@ -400,11 +400,7 @@ fn inline_text_refuses_an_unacceptable_binding_without_failing_the_runtime() {
             .unwrap()
             .commands()
             .iter()
-            .any(|command| matches!(
-                command,
-                DrawCommand::FillRect { color, .. } | DrawCommand::DrawMask { color, .. }
-                    if *color == error
-            ))
+            .any(|command| support::paints_with(command, error))
     );
     // The next acceptable value ends the refusal and editing resumes.
     name.set("Bass".into()).unwrap();

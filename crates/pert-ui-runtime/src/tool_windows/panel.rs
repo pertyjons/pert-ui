@@ -650,7 +650,7 @@ impl Component for Panel {
         if self.mode() == ToolWindowMode::Floating {
             p.stroke_shape(
                 Rect::new(0.0, 0.0, w, h)?,
-                Shape::Rectangle,
+                Shape::RECTANGLE,
                 Length::new(p.metric(MetricRole::BorderWidth))?,
                 p.color(if self.focus_within {
                     ColorRole::Primary

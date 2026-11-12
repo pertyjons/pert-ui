@@ -774,6 +774,11 @@ pub(super) fn benchmark() -> Result<(), Box<dyn std::error::Error>> {
     // the scene had grown with the mounted count again.
     if scene.commands().iter().any(|command| match command {
         DrawCommand::FillRect { rect, .. } | DrawCommand::DrawMask { rect, .. } => rect.is_empty(),
+        DrawCommand::DrawShape {
+            geometry: pert_ui::ShapeGeometry::Rect { rect, .. },
+            clip,
+            ..
+        } => rect.is_empty() || clip.is_some_and(|clip| rect.intersection(clip).is_empty()),
         _ => false,
     }) {
         return Err("composition recorded a command that draws nothing".into());

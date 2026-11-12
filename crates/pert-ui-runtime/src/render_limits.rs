@@ -93,6 +93,18 @@ pub enum LimitError {
         /// The device's maximum buffer size in bytes.
         max: u64,
     },
+    /// A scene's shape records exceed what the device binds as one storage
+    /// buffer. The renderer checks this while it collects the records, before
+    /// it creates or writes the buffer.
+    #[error(
+        "{bytes} bytes of shape records exceed the device's storage buffer binding limit {max}"
+    )]
+    ShapeRecords {
+        /// Record bytes the scene's shapes need.
+        bytes: u64,
+        /// The device's maximum storage buffer binding size in bytes.
+        max: u64,
+    },
     /// A scene has more vertices than a `u32` draw range can address.
     #[error("the scene has more vertices than a draw range can address")]
     VertexCount,

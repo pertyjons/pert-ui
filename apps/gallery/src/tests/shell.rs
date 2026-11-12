@@ -440,11 +440,16 @@ fn the_brand_mark_leads_the_menu_bar_follows_the_theme_and_opens_about() {
             .unwrap()
             .commands()
             .iter()
-            .any(|command| matches!(
-                command,
-                DrawCommand::FillRect { color, .. } | DrawCommand::DrawMask { color, .. }
-                    if *color == contrast
-            ))
+            .any(|command| match command {
+                DrawCommand::FillRect { color, .. } | DrawCommand::DrawMask { color, .. } => {
+                    *color == contrast
+                }
+                DrawCommand::DrawShape { fill, border, .. } => {
+                    let paint = pert_ui::Paint::Solid(contrast);
+                    *fill == Some(paint) || border.is_some_and(|border| border.paint() == paint)
+                }
+                _ => false,
+            })
     );
     press(&mut ui, KeyCode::Enter);
     assert!(dialog_shown(&ui, "about"));

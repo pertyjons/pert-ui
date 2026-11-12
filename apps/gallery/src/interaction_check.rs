@@ -327,6 +327,51 @@ fn click(ui: &mut Runtime, id: &WidgetId) -> Outcome {
     pointer(ui, at, PointerKind::Release(PointerButton::Primary))
 }
 
+/// Scrolls the target into view when it can be, as a tester's click does.
+fn revealed(ui: &mut Runtime, id: &WidgetId) -> Outcome {
+    match ui.reveal(id).map_err(failed)? {
+        RevealOutcome::Refused(refusal) => Err(format!("the target was not revealed: {refusal:?}")),
+        RevealOutcome::Unmounted => Err("the target is not mounted".into()),
+        _ => Ok(()),
+    }
+}
+
+/// Presses and releases the primary button at `at`, then flushes at the
+/// runtime's current time.
+///
+/// `Driver::click` and `Driver::click_item` are not used for this: each ends
+/// by advancing the runtime's clock one test frame, and in the native run the
+/// window loop owns the clock, so a later real-time flush would be refused as
+/// a reversed clock.
+fn press(ui: &mut Runtime, at: Point) -> Outcome {
+    pointer(ui, at, PointerKind::Press(PointerButton::Primary))?;
+    pointer(ui, at, PointerKind::Release(PointerButton::Primary))?;
+    ui.flush(ui.now()).map(|_| ()).map_err(failed)
+}
+
+/// Reveals the target, clicks its center and flushes, leaving the clock alone.
+fn click_settled(ui: &mut Runtime, id: &WidgetId) -> Outcome {
+    revealed(ui, id)?;
+    let at = center(ui, id)?;
+    press(ui, at)
+}
+
+/// Reveals the target, clicks the center of its semantic item `index` and
+/// flushes, leaving the clock alone.
+fn click_item(ui: &mut Runtime, id: &WidgetId, index: usize) -> Outcome {
+    revealed(ui, id)?;
+    let [x, y, width, height] = Driver::new(ui)
+        .semantics(id)
+        .map_err(failed)?
+        .items
+        .get(index)
+        .ok_or_else(|| format!("the target has no item {index}"))?
+        .bounds
+        .ok_or_else(|| format!("item {index} has no bounds"))?;
+    let at = Point::new(x + width / 2.0, y + height / 2.0).map_err(failed)?;
+    press(ui, at)
+}
+
 /// A part of the menu bar's history control.
 fn history_part(ui: &Runtime, scene: &Scene, key: &str) -> Result<WidgetId, String> {
     let control = find(ui, &scene.root, "gallery-history")?;
@@ -861,12 +906,11 @@ pub(crate) fn steps() -> Vec<Step> {
             act: |ui, scene| {
                 show(ui, scene, "tool-windows")?;
                 let tabs = find(ui, &scene.root, "gallery-tabs")?;
-                let mut driver = Driver::new(ui);
                 ensure(
-                    !driver.semantics(&tabs).map_err(failed)?.items[1].selected,
+                    !Driver::new(ui).semantics(&tabs).map_err(failed)?.items[1].selected,
                     || "the target category was already selected before the click".into(),
                 )?;
-                driver.click_item(&tabs, 1).map_err(failed)
+                click_item(ui, &tabs, 1)
             },
             check: |ui, scene| {
                 let tabs = find(ui, &scene.root, "gallery-tabs")?;
@@ -882,11 +926,11 @@ pub(crate) fn steps() -> Vec<Step> {
                 show(ui, scene, "controls")?;
                 let page = page(ui, &scene.root, "controls")?;
                 let select = find(ui, &page, "dropdown")?;
-                let mut driver = Driver::new(ui);
+                let driver = Driver::new(ui);
                 let control = driver.exposed_part(&select, "control").map_err(failed)?;
                 let options = driver.exposed_part(&select, "options").map_err(failed)?;
-                driver.click(&control).map_err(failed)?;
-                driver.click_item(&options, 2).map_err(failed)
+                click_settled(ui, &control)?;
+                click_item(ui, &options, 2)
             },
             check: |ui, scene| {
                 let page = page(ui, &scene.root, "controls")?;
@@ -909,20 +953,20 @@ pub(crate) fn steps() -> Vec<Step> {
         Step {
             name: "menu: named Help title and item bounds open About",
             act: |ui, scene| {
-                let mut driver = Driver::new(ui);
+                let driver = Driver::new(ui);
                 let title = driver
                     .exposed_part(&scene.root, "title/help")
                     .map_err(failed)?;
                 let items = driver.exposed_part(&title, "items").map_err(failed)?;
-                driver.click(&title).map_err(failed)?;
-                let about = driver
+                click_settled(ui, &title)?;
+                let about = Driver::new(ui)
                     .semantics(&items)
                     .map_err(failed)?
                     .items
                     .iter()
                     .position(|item| item.name.as_deref() == Some("About"))
                     .ok_or("the Help menu has no About item")?;
-                driver.click_item(&items, about).map_err(failed)
+                click_item(ui, &items, about)
             },
             check: |ui, _| {
                 ensure(visible(ui, "about"), || {
@@ -1060,7 +1104,7 @@ pub(crate) fn steps() -> Vec<Step> {
                 key(ui, KeyCode::ArrowDown)?;
                 ui.flush(ui.now()).map_err(failed)?;
                 let row = multi_select_row(ui, &chooser, "Bass")?;
-                Driver::new(ui).click(&row).map_err(failed)?;
+                click_settled(ui, &row)?;
                 let search = Driver::new(ui)
                     .exposed_part(&chooser, "search")
                     .map_err(failed)?;
@@ -1088,7 +1132,7 @@ pub(crate) fn steps() -> Vec<Step> {
                 type_text(ui, "flu")?;
                 ui.flush(ui.now()).map_err(failed)?;
                 let row = multi_select_row(ui, &chooser, "Flute")?;
-                Driver::new(ui).click(&row).map_err(failed)?;
+                click_settled(ui, &row)?;
                 let search = Driver::new(ui)
                     .exposed_part(&chooser, "search")
                     .map_err(failed)?;

@@ -237,7 +237,7 @@ const SEGMENT: f32 = 0.3;
 /// request is not repeated once the status changes, and the runtime withdraws the
 /// deadline while the bar is hidden or after it is unmounted, so an ended or
 /// invisible task leaves no periodic wake. The sweep moves plain rectangles, so
-/// a frame rasterizes no coverage and adds nothing to the shape cache.
+/// a frame rasterizes no coverage.
 ///
 /// Under [`MotionPreference::Reduced`](crate::MotionPreference::Reduced) the
 /// indeterminate segment rests in the middle of the track instead of sweeping,
@@ -697,7 +697,7 @@ pub(crate) fn paint_dots(
     let radius = (extent - dot) / 2.0;
     let (cx, cy) = (x + width / 2.0, y + height / 2.0);
     let primary = painter.color(ColorRole::Primary);
-    let shape = Shape::Rounded(Length::new(dot / 2.0)?);
+    let shape = Shape::rounded(Length::new(dot / 2.0)?);
     for index in 0..DOTS {
         // Positions run clockwise from the top. `behind` counts how far a dot
         // trails the bright one, and the trail fades to a faint resting dot.

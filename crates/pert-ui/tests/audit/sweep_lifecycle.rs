@@ -1,4 +1,5 @@
 //! Lifecycle and redescription regressions from the post-repair review sweep.
+use crate::support;
 use pert_ui::*;
 use std::time::Duration;
 
@@ -182,12 +183,7 @@ fn role_count(ui: &mut Runtime, role: ColorRole) -> usize {
         .unwrap()
         .commands()
         .iter()
-        .filter(|command| {
-            matches!(command,
-                DrawCommand::FillRect { color: fill, .. }
-                | DrawCommand::DrawMask { color: fill, .. }
-                if *fill == color)
-        })
+        .filter(|command| support::paints_with(command, color))
         .count()
 }
 

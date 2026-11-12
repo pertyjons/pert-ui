@@ -344,7 +344,7 @@ impl Component for Chip {
             let width = Length::new(painter.metric(MetricRole::FocusWidth))?;
             painter.stroke_shape(
                 Rect::from_size(size),
-                Shape::Rectangle,
+                Shape::RECTANGLE,
                 width,
                 painter.color(ColorRole::Primary),
             )?;
@@ -430,7 +430,7 @@ impl Component for Bin {
         let width = Length::new(painter.metric(MetricRole::FocusWidth))?;
         painter.stroke_shape(
             Rect::from_size(size),
-            Shape::Rectangle,
+            Shape::RECTANGLE,
             width,
             painter.color(role),
         )

@@ -1186,12 +1186,12 @@ impl Component for WindowFrame {
         if self.decorated {
             p.fill_shape(
                 Rect::from_size(g.size),
-                Shape::Rounded(Length::new(p.metric(MetricRole::CornerRadius))?),
+                Shape::rounded(Length::new(p.metric(MetricRole::CornerRadius))?),
                 p.color(ColorRole::Surface),
             )?;
             p.fill_shape(
                 Rect::new(0.0, 0.0, g.size.width(), g.title.y() + g.title.height())?,
-                Shape::RoundedTop(Length::new(p.metric(MetricRole::CornerRadius))?),
+                Shape::rounded_top(Length::new(p.metric(MetricRole::CornerRadius))?),
                 p.color(ColorRole::SurfaceContainer),
             )?;
             if self.hover == Some(false) {
@@ -1201,7 +1201,7 @@ impl Component for WindowFrame {
         if self.hover == Some(true) {
             p.fill_shape(
                 g.grip,
-                Shape::Rounded(Length::new(p.metric(MetricRole::CornerRadius))?),
+                Shape::rounded(Length::new(p.metric(MetricRole::CornerRadius))?),
                 p.color(ColorRole::ResizeHandleHover),
             )?;
         }
@@ -1214,7 +1214,7 @@ impl Component for WindowFrame {
         if self.decorated {
             p.stroke_shape(
                 Rect::from_size(g.size),
-                Shape::Rounded(Length::new(p.metric(MetricRole::CornerRadius))?),
+                Shape::rounded(Length::new(p.metric(MetricRole::CornerRadius))?),
                 Length::new(p.metric(MetricRole::BorderWidth))?,
                 p.color(if p.focus_within() {
                     ColorRole::Primary

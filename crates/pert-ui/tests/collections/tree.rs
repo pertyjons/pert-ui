@@ -81,12 +81,9 @@ fn expander_has_local_hover_feedback() -> TestResult {
             .palette(ThemeMode::Dark)?
             .color(ColorRole::SurfaceHover);
     let has_small_hover = |ui: &mut Runtime| {
-        ui.paint().unwrap().commands().iter().any(|command| {
-            matches!(command,
-                DrawCommand::FillRect { rect, color: fill }
-                | DrawCommand::DrawMask { rect, color: fill, .. }
-                if *fill == color && rect.width() <= 24.0)
-        })
+        support::colored(&ui.paint().unwrap(), color)
+            .iter()
+            .any(|rect| rect.width() <= 24.0)
     };
     assert!(!has_small_hover(&mut f.ui));
     f.ui.pointer_input(PointerEvent::new(

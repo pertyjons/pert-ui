@@ -447,7 +447,7 @@ fn command_order_is_preserved_so_later_drawing_covers_earlier_drawing() {
 }
 
 #[test]
-fn coverage_is_rasterized_at_the_effective_scale_and_follows_a_scale_change() {
+fn a_shape_is_recorded_in_logical_units_and_prepared_at_the_effective_scale() {
     struct Rounded;
     impl Component for Rounded {
         fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
@@ -456,32 +456,50 @@ fn coverage_is_rasterized_at_the_effective_scale_and_follows_a_scale_change() {
         fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
             p.fill_shape(
                 rect(0.0, 0.0, 20.0, 20.0),
-                Shape::Rounded(Length::new(4.0)?),
+                Shape::rounded(Length::new(4.0)?),
                 Color::ACCENT,
             )
         }
     }
-    let pixels = |scale: f64| {
+    let prepared = |scale: f64| {
         let mut ui = Runtime::new();
         ui.set_viewport(Viewport::new(50.0, 50.0, scale).unwrap())
             .unwrap();
         ui.mount_tree(Element::new("rounded", Rounded)).unwrap();
         ui.flush(Duration::ZERO).unwrap();
         let scene = ui.paint().unwrap();
-        let image = &scene.masks()[0];
-        let destination = masks(&scene)[0].0;
-        ((image.width(), image.height()), destination)
+        assert!(scene.masks().is_empty());
+        let [
+            DrawCommand::DrawShape {
+                geometry: geometry @ ShapeGeometry::Rect { rect, .. },
+                border,
+                clip,
+                ..
+            },
+        ] = scene.commands()
+        else {
+            panic!("not one shape: {:?}", scene.commands());
+        };
+        let side = (50.0 * scale) as u32;
+        let mapping = FrameMapping::new(side, side, scene.viewport()).unwrap();
+        let shape = PreparedShape::new(geometry, border.as_ref(), *clip, &mapping)
+            .unwrap()
+            .unwrap();
+        let ShapeParameters::Rect { outer, .. } = shape.parameters() else {
+            panic!("not a rectangle");
+        };
+        (rect.values(), outer.edges(), outer.corners()[0].size())
     };
-    // A rounded fill spends coverage only on its corners, so the destination here
-    // is a corner and not the whole rectangle. What matters for the contract is
-    // that the destination is logical and scale-independent, while the coverage
-    // behind it is rasterized at physical resolution, so a scale change
-    // re-rasterizes instead of stretching the previous pixels.
-    let (small, small_rect) = pixels(1.0);
-    let (large, large_rect) = pixels(2.0);
+    // The command is logical and scale-independent, while its coverage is
+    // evaluated at physical resolution: a scale change prepares the same
+    // command for twice the pixels and twice the corner radius, instead of
+    // stretching earlier pixels.
+    let (small_rect, small_edges, small_radius) = prepared(1.0);
+    let (large_rect, large_edges, large_radius) = prepared(2.0);
     assert_eq!(small_rect, large_rect);
-    assert_eq!(large.0, small.0 * 2);
-    assert_eq!(large.1, small.1 * 2);
+    assert_eq!(small_edges, [0.0, 0.0, 20.0, 20.0]);
+    assert_eq!(large_edges, [0.0, 0.0, 40.0, 40.0]);
+    assert_eq!((small_radius, large_radius), (4.0, 8.0));
 }
 
 #[test]

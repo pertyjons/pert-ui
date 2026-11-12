@@ -1220,7 +1220,7 @@ impl Component for ColorPart {
                 let x = (fraction * width - thumb_width / 2.0)
                     .clamp(0.0, (width - thumb_width).max(0.0));
                 let thumb = Rect::new(x, 0.0, thumb_width.min(width), height)?;
-                painter.stroke_shape(thumb, Shape::Rectangle, Length::new(edge)?, dark)?;
+                painter.stroke_shape(thumb, Shape::RECTANGLE, Length::new(edge)?, dark)?;
                 let [left, top, across, tall] = thumb.values();
                 if across > edge * 2.0 && tall > edge * 2.0 {
                     let inner = Rect::new(
@@ -1229,12 +1229,12 @@ impl Component for ColorPart {
                         across - edge * 2.0,
                         tall - edge * 2.0,
                     )?;
-                    painter.stroke_shape(inner, Shape::Rectangle, Length::new(ring)?, light)?;
+                    painter.stroke_shape(inner, Shape::RECTANGLE, Length::new(ring)?, light)?;
                 }
             }
         }
         if self.focused && self.enabled() {
-            return painter.focus_ring(bounds, Shape::Rectangle);
+            return painter.focus_ring(bounds, Shape::RECTANGLE);
         }
         let role = if self.enabled() {
             ColorRole::Outline
@@ -1243,7 +1243,7 @@ impl Component for ColorPart {
         };
         painter.stroke_shape(
             bounds,
-            Shape::Rectangle,
+            Shape::RECTANGLE,
             Length::new(painter.metric(MetricRole::BorderWidth))?,
             painter.color(role),
         )

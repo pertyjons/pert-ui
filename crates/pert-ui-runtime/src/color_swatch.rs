@@ -323,7 +323,7 @@ impl Component for ColorSwatch {
         }
         if self.input.focused && self.interactive() {
             // Focus replaces the resting outline over any application color.
-            return painter.focus_ring(rect, Shape::Rectangle);
+            return painter.focus_ring(rect, Shape::RECTANGLE);
         }
         let role = if self.input.pressed() {
             ColorRole::ButtonPressed
@@ -336,7 +336,7 @@ impl Component for ColorSwatch {
         };
         painter.stroke_shape(
             rect,
-            Shape::Rectangle,
+            Shape::RECTANGLE,
             Length::new(painter.metric(MetricRole::BorderWidth))?,
             painter.color(role),
         )?;

@@ -21,6 +21,55 @@ zoom.
 Filled rectangles, vector strokes, text and images retain their own sampling
 rules.
 
+`Painter::draw_shape` records a rounded or cut rectangle as one
+`DrawCommand::DrawShape`, whose coverage a renderer computes per pixel from
+the geometry, so no coverage is rasterized, cached or uploaded for it. Such a
+shape has rules of its own:
+
+- **Edges follow the solid rectangle's pixel-center rule.** A rectangle's
+  edges snap to physical pixels exactly as `FillRect`'s do, so a shape and a
+  filled rectangle with the same bounds cover the same pixels on their
+  straight sides. This is a deliberate exception to the sentence above about
+  not rounding coordinates; arcs and triangles keep sub-pixel placement.
+- **A border is whole physical pixels,** the width rounded to nearest and at
+  least one for a positive width. At scale 1 a width of 1.49 is one pixel
+  and 1.5 is two.
+- **Corners use a one-pixel distance ramp,** and sizes that do not fit their
+  rectangle are scaled down together as CSS does, so one corner may take a
+  whole side.
+- **Fill and border are one silhouette:** the border lies over the fill and
+  the edge coverage is applied once, so no background shows between them.
+
+`fill_shape`, `stroke_shape`, the focus ring, `stroke_arc` and
+`fill_triangle` record the same command, one per call. A fill and a stroke
+recorded by two calls are two silhouettes, each antialiased on its own; only
+`draw_shape` composites them as one. A built-in widget that fills a
+rounded or cut rectangle and outlines the same one directly afterwards uses
+`draw_shape`. Where something is drawn between the two, they stay two
+commands: a caption under a focus ring, or the children of a bordered
+container, a view, a toolbar or a floating window, which fill in `paint`
+and stroke in `paint_foreground`. Such a pair has the same geometry and so
+the same outer coverage, composited twice. Arcs and triangles keep sub-pixel
+placement and are antialiased by the same one-pixel distance ramp; an arc's
+width is not snapped, and an arc narrower than one physical pixel fades with
+its width. `PreparedShape`'s rustdoc holds the preparation steps and the
+distance and coverage formulas, which are the definition. A fill
+whose corners all have size zero stays a `FillRect`. Composition drops a
+shape its clip removes whole, as it drops a rectangle. No shape is rasterized or cached on the UI thread: a new size,
+corner, angle or width costs what a repeated one does. Both renderers draw `DrawShape` from the same prepared parameters
+(`PreparedShape`): the CPU renderer evaluates the reference per pixel, and
+the wgpu renderer evaluates the same formulas in its fragment stage from
+records in a storage buffer, which needs core wgpu features only. Neither
+evaluates the part of a rectangle's uniform interior that the preparation
+names: the CPU renderer fills each row's `PreparedShape::solid_run` as a
+run, and the wgpu renderer draws `PreparedShape::solid_box`, where there is
+one, as one area with its own record and evaluates the strips around it.
+Both are conservative, so some uniform pixels are still evaluated, and a
+rectangle whose corners reach every row is evaluated whole by wgpu. A run or
+box where nothing is drawn, as inside a frame without a fill, is skipped.
+A frame whose records exceed the device's storage buffer binding size fails
+with `LimitError::ShapeRecords`.
+
 Disabled framed Buttons use Surface fill, Muted content and an inward Outline
 at BorderWidth, sharing the inactive field frame. Framed Menu triggers with no
 available items inherit it, and so do disabled Select and MultiSelect anchors,
@@ -103,13 +152,40 @@ subpixel precision of a pixel center (typically 1/256 pixel) can be snapped
 across it by the hardware. That pixel is then covered by one renderer and not
 the other, a full color difference. The CPU renderer tests the unsnapped edge.
 No shared snapped grid exists yet, so the corpus keeps its fractional edges
-away from pixel centers. [Verification](verification.md#cpu-rendering-cost) records where the
+away from pixel centers.
+
+Analytic shapes (`DrawShape`) are compared pixel by pixel against the CPU
+reference, `PreparedShape::coverage`, which classifies each pixel of a
+shape's span:
+
+- **Decided pixels.** A pixel is decided when exact arithmetic settles its
+  saturated coverage (`ShapeCoverage::exact_arithmetic`), or when every
+  reference distance that applies, the outer one and the inner one of a
+  border, is at least half a pixel plus `PreparedShape::PARITY_MARGIN`
+  (1/16 pixel) from its boundary. Its coverage is 0 or 1 in both renderers,
+  so it belongs to the exact tier with opaque exact-sRGB paints over an
+  exact destination, and to the tolerance tier otherwise.
+- **Edge pixels** are all the others. They form the edge tier, which allows
+  **one step per channel**: the largest difference measured over the shape
+  corpus (rounded and cut corners, borders, arcs, triangles and clips at
+  sub-pixel phases and scales 1, 1.25 and 2, and geometry up to 65 000
+  pixels from its span). A destination that already differed adds its own
+  tolerance.
+- **No snapped-edge exception.** A shape's span has whole-pixel edges and
+  its coverage comes from the formulas, so the hardware's edge snapping
+  does not decide any of its pixels, clip edges included.
+
+The edge tier and the margin are measurements, not proofs: they were set on
+Intel UHD Graphics 770 with Mesa on Vulkan, the only adapter available.
+Other GPUs, Windows and macOS are missing evidence; a larger difference
+there is corrected in the shader or the preparation, up to a bound of four
+steps, not by widening the tier silently. [Verification](verification.md#cpu-rendering-cost) records where the
 comparison ran and what rendering costs.
 
 ## Three transform tools
 
 There is no arbitrary transform stack on `Painter`. Rectangular clipping,
-half-open hit regions and coverage caches depend on axis-aligned rectangles.
+half-open hit regions and prepared coverage depend on axis-aligned rectangles.
 The implemented tools cover distinct needs without changing that invariant:
 
 | Need | Public tool |
@@ -129,7 +205,16 @@ was under 1.1 ms at the 95th percentile after the optimization. The first
 change and the final preparation still cost substantially more; this is not a
 GPU or cross-platform performance guarantee. View magnification caps coverage
 preparation to eight physical pixels per local pixel, and very large text is
-prepared within its font-pixel limit then stretched. Surfaces opened by a
+prepared within its font-pixel limit then stretched. Shapes are not prepared
+coverage, so neither the stretch nor the cap applies to them: a retained
+shape command is mapped by the view and evaluated at the resulting scale,
+during a gesture too, with snapping and the minimum border width applied
+after that mapping, and it stays sharp at any magnification its geometry
+stays within the evaluation range at. This is established for the recorded
+commands and, on the CPU renderer, by captures of one framed tile under a
+16× view and during a live zoom, compared with the full frame and with the
+tile drawn directly at its displayed size; the wgpu renderer's zoomed
+captures are not compared. Surfaces opened by a
 transformed child are placed at the window's scale. Vector coverage is bounded
 per primitive: besides the flattening budget and the mask size limit, a vector
 whose edges or stroke pieces would cross more than

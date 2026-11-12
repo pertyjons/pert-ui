@@ -219,21 +219,23 @@ fn spinner(busy: bool) -> (Runtime, Signal<bool>, WidgetId) {
     ui.flush(Duration::ZERO).unwrap();
     (ui, signal, root)
 }
-/// Every mask drawn inside the spinner's bounds, as `(rect, alpha, mask)`.
-fn dots(ui: &mut Runtime, root: &WidgetId) -> Vec<([f32; 4], f32, MaskImage)> {
+/// Every filled shape drawn inside the spinner's bounds, as
+/// `(rect, alpha, shape)`.
+fn dots(ui: &mut Runtime, root: &WidgetId) -> Vec<([f32; 4], f32, Shape)> {
     let bounds = ui.bounds(&ui.children(root).unwrap()[0]).unwrap().unwrap();
     let scene = ui.paint().unwrap();
     scene
         .commands()
         .iter()
         .filter_map(|command| match command {
-            DrawCommand::DrawMask {
-                rect, mask, color, ..
-            } if rect.x() >= bounds.x() && rect.x() < bounds.x() + bounds.width() => Some((
-                rect.values(),
-                color.alpha(),
-                scene.mask(*mask).unwrap().clone(),
-            )),
+            DrawCommand::DrawShape {
+                geometry: ShapeGeometry::Rect { rect, shape },
+                fill: Some(Paint::Solid(color)),
+                border: None,
+                ..
+            } if rect.x() >= bounds.x() && rect.x() < bounds.x() + bounds.width() => {
+                Some((rect.values(), color.alpha(), *shape))
+            }
             _ => None,
         })
         .collect()
@@ -252,21 +254,24 @@ fn the_spinner_moves_color_not_geometry_and_ticks_once_per_step() {
     assert_eq!(ui.next_deadline(), Some(Duration::from_millis(400)));
     let later = dots(&mut ui, &root);
 
-    // The dots are where they were, with the same coverage; only alpha moved.
-    let geometry = |dots: &[([f32; 4], f32, MaskImage)]| {
+    // The dots are where they were, with the same shape; only alpha moved.
+    let geometry = |dots: &[([f32; 4], f32, Shape)]| {
         dots.iter()
-            .map(|(rect, _, mask)| (*rect, mask.clone()))
+            .map(|(rect, _, shape)| (*rect, *shape))
             .collect::<Vec<_>>()
     };
     assert_eq!(geometry(&first), geometry(&later));
-    let alphas = |dots: &[([f32; 4], f32, MaskImage)]| {
+    let alphas = |dots: &[([f32; 4], f32, Shape)]| {
         dots.iter().map(|(_, alpha, _)| *alpha).collect::<Vec<_>>()
     };
     assert_ne!(alphas(&first), alphas(&later));
-    // Every dot is the same size, so one step's dots share their coverage images.
-    let mut images: Vec<_> = first.iter().map(|(_, _, mask)| mask.clone()).collect();
-    images.dedup();
-    assert!(images.len() < first.len(), "dots reuse coverage");
+    // Every dot has the same size and shape; each is one shape command,
+    // which stores no coverage.
+    assert!(
+        first
+            .iter()
+            .all(|(rect, _, shape)| { rect[2..] == first[0].0[2..] && *shape == first[0].2 })
+    );
 
     // A full turn returns to the same picture.
     ui.flush(Duration::from_millis(800)).unwrap();
@@ -401,11 +406,11 @@ fn spinner_animation_multiplies_the_configured_primary_alpha() {
                 continue;
             }
             assert_eq!(changed.len(), original.len());
-            for ((rect, before, mask), (after_rect, after, after_mask)) in
+            for ((rect, before, shape), (after_rect, after, after_shape)) in
                 original.iter().zip(&changed)
             {
                 assert_eq!(rect, after_rect);
-                assert_eq!(mask, after_mask);
+                assert_eq!(shape, after_shape);
                 assert!((after - before * alpha).abs() < 0.00001);
             }
         }

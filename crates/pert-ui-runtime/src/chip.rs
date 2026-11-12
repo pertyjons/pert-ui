@@ -394,11 +394,16 @@ impl Component for Chip {
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
         let size = painter.size();
         let rect = Rect::from_size(size);
-        let shape = Shape::Rounded(Length::new(size.height() / 2.0)?);
-        painter.fill_shape(rect, shape, painter.color(ColorRole::SecondaryContainer))?;
+        let shape = Shape::rounded(Length::new(size.height() / 2.0)?);
+        let mut style = ShapeStyle::fill(painter.color(ColorRole::SecondaryContainer));
         if self.focused && self.can_remove() {
-            painter.focus_ring(rect, shape)?;
+            // The focus ring, as one silhouette with the fill.
+            style = style.with_border(
+                Length::new(painter.metric(MetricRole::FocusWidth))?,
+                painter.color(ColorRole::FocusRing),
+            );
         }
+        painter.draw_shape(rect, shape, style)?;
         let foreground = if self.remove.is_some() && !self.enabled {
             painter.color(ColorRole::Muted)
         } else {
@@ -429,7 +434,7 @@ impl Component for Chip {
                 };
                 painter.fill_shape(
                     button,
-                    Shape::Rounded(Length::new(button.width() / 2.0)?),
+                    Shape::rounded(Length::new(button.width() / 2.0)?),
                     painter.color(role),
                 )?;
             }

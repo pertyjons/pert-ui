@@ -11,8 +11,64 @@
 #![allow(dead_code)]
 
 use pert_ui::{
-    KeyAction, KeyCode, Runtime, Semantics, ShownTaskReceipt, TaskReceipt, TaskStatus, WidgetId,
+    Color, DisplayList, DrawCommand, KeyAction, KeyCode, Paint, Rect, Runtime, Semantics,
+    ShapeGeometry, ShownTaskReceipt, TaskReceipt, TaskStatus, WidgetId,
 };
+
+/// The solid colors a rectangle, mask or shape command paints with: a
+/// shape's fill and then its border. Other commands give none.
+pub fn paints(command: &DrawCommand) -> Vec<Color> {
+    let solid = |paint: Paint| match paint {
+        Paint::Solid(color) => Some(color),
+        _ => None,
+    };
+    match command {
+        DrawCommand::FillRect { color, .. } | DrawCommand::DrawMask { color, .. } => vec![*color],
+        DrawCommand::DrawShape { fill, border, .. } => fill
+            .and_then(solid)
+            .into_iter()
+            .chain(border.and_then(|border| solid(border.paint())))
+            .collect(),
+        _ => Vec::new(),
+    }
+}
+
+/// Whether a rectangle, mask or shape command paints with `color`.
+pub fn paints_with(command: &DrawCommand, color: Color) -> bool {
+    paints(command).contains(&color)
+}
+
+/// Whether any rectangle, mask or shape command in `scene` paints with `color`.
+pub fn uses(scene: &DisplayList, color: Color) -> bool {
+    scene
+        .commands()
+        .iter()
+        .any(|command| paints_with(command, color))
+}
+
+/// The logical rectangle a rectangle, mask or rectangular shape command
+/// covers; `None` for arcs, triangles and other commands.
+pub fn extent(command: &DrawCommand) -> Option<Rect> {
+    match command {
+        DrawCommand::FillRect { rect, .. } | DrawCommand::DrawMask { rect, .. } => Some(*rect),
+        DrawCommand::DrawShape {
+            geometry: ShapeGeometry::Rect { rect, .. },
+            ..
+        } => Some(*rect),
+        _ => None,
+    }
+}
+
+/// The rectangles of the rectangle, mask and rectangular shape commands in
+/// `scene` that paint with `color`.
+pub fn colored(scene: &DisplayList, color: Color) -> Vec<Rect> {
+    scene
+        .commands()
+        .iter()
+        .filter(|command| paints_with(command, color))
+        .filter_map(extent)
+        .collect()
+}
 
 /// Either deferral receipt, so a test that queues with every call reads their
 /// statuses through one type: [`TaskReceipt`] from `defer`, `spawn` and

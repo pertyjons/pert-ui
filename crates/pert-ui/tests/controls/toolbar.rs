@@ -793,9 +793,20 @@ fn toolbar_overflow_has_the_shared_panel_border_after_its_content() {
     let bounds = ui.bounds(&overflow).unwrap().unwrap();
     let border = Palette::dark().color(ColorRole::PanelBorder);
     let scene = ui.paint().unwrap();
-    let border_index = scene.commands().iter().position(|command| {
-        matches!(command, DrawCommand::FillRect { rect, color } if *color == border && rect.height() == 1.0 && rect.y() == bounds.y() && rect.width() > bounds.width() / 2.0)
-    }).expect("overflow top border");
+    // The border is one stroked shape over the panel's whole rectangle.
+    let border_index = scene
+        .commands()
+        .iter()
+        .position(|command| {
+            matches!(command, DrawCommand::DrawShape { fill: None, border: Some(stroke), .. }
+                if stroke.paint() == Paint::Solid(border) && stroke.width().get() == 1.0)
+                && support::extent(command).is_some_and(|rect| {
+                    rect.y() == bounds.y()
+                        && rect.height() == bounds.height()
+                        && rect.width() > bounds.width() / 2.0
+                })
+        })
+        .expect("overflow border");
     let content = scene
         .commands()
         .iter()

@@ -976,7 +976,7 @@ impl Component for Field {
         {
             let radius = Length::new(painter.metric(MetricRole::CornerRadius))?;
             let width = Length::new(painter.metric(MetricRole::BorderWidth))?;
-            painter.stroke_shape(control, Shape::Rounded(radius), width, painter.color(role))?;
+            painter.stroke_shape(control, Shape::rounded(radius), width, painter.color(role))?;
         }
         Ok(())
     }

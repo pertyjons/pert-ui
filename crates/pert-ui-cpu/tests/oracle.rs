@@ -5,7 +5,8 @@ use pert_ui_runtime::testing::HostIntegration;
 use pert_ui_runtime::{
     CaptureRequest, CaptureTarget, Color, Component, DisplayList, DrawError, Element, FillRule,
     FrameImage, ImageSampling, Length, LimitError, MaskImage, Painter, Path, Point, QuarterTurn,
-    RasterImage, Rect, Runtime, RuntimeError, Shape, UpdateContext, Viewport,
+    RasterImage, Rect, Runtime, RuntimeError, Shape, ShapePrepareError, ShapeStyle, UpdateContext,
+    Viewport,
 };
 use std::time::Duration;
 
@@ -66,7 +67,7 @@ fn thin_rounded_outline_keeps_all_sides_at_75_percent_zoom() -> TestResult {
         );
         p.stroke_shape(
             Rect::new(10.25, 10.25, 40.0, 20.0)?,
-            Shape::Rounded(Length::new(4.0)?),
+            Shape::rounded(Length::new(4.0)?),
             Length::new(1.0)?,
             Color::WHITE,
         )
@@ -572,5 +573,406 @@ fn an_opaque_frame_clears_with_the_background_at_full_alpha() -> TestResult {
     );
     let kept = renderer.render(&scene)?;
     assert_eq!(pixel(&kept, 3, 0), stored([0.5, 0.5, 0.5, 0.5]));
+    Ok(())
+}
+
+/// A scene on a transparent background, so that a pixel's alpha is the
+/// coverage drawn on it.
+fn shapes(
+    width: f32,
+    height: f32,
+    scale: f64,
+    paint: impl Fn(&mut Painter) -> Result<(), DrawError> + 'static,
+) -> Result<DisplayList, Box<dyn std::error::Error>> {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(width, height, scale)?)?;
+    ui.theme().set_color(
+        pert_ui_runtime::ThemeMode::Dark,
+        pert_ui_runtime::ColorRole::Background,
+        Color::from_linear(0.0, 0.0, 0.0, 0.0)?,
+    )?;
+    ui.theme().set_mode(pert_ui_runtime::ThemeMode::Dark)?;
+    ui.mount_tree(Element::new("scene", Scene(Box::new(paint))))?;
+    ui.flush(Duration::ZERO)?;
+    Ok(ui.paint()?)
+}
+
+const CLEAR: [u8; 4] = [0; 4];
+
+fn alpha(coverage: f32) -> u8 {
+    (coverage.clamp(0.0, 1.0) * 255.0).round() as u8
+}
+
+#[test]
+fn a_rounded_shape_covers_by_distance_to_its_corner() -> TestResult {
+    let white = Color::WHITE;
+    for (scale, radius) in [(1.0f64, 4.0f32), (1.25, 5.0), (2.0, 8.0)] {
+        let scene = shapes(30.0, 30.0, scale, move |p| {
+            p.draw_shape(
+                Rect::new(0.0, 0.0, 20.0, 20.0)?,
+                Shape::rounded(Length::new(4.0)?),
+                ShapeStyle::fill(white),
+            )
+        })?;
+        assert!(scene.masks().is_empty());
+        let frame = render(&scene)?;
+        // The corner's center is (radius, radius) in physical pixels.
+        let hand = |x: u32, y: u32| {
+            let (dx, dy) = (x as f32 + 0.5 - radius, y as f32 + 0.5 - radius);
+            0.5 - ((dx * dx + dy * dy).sqrt() - radius)
+        };
+        for (x, y) in [(0u32, 0u32), (1, 1), (0, 2), (2, 1), (1, 3)] {
+            assert_eq!(
+                pixel(&frame, x, y)[3],
+                alpha(hand(x, y)),
+                "scale {scale} at {x} {y}"
+            );
+        }
+        // Straight edges are exact: the last pixel inside and the first outside.
+        let edge = (20.0 * scale) as u32;
+        assert_eq!(pixel(&frame, edge - 1, edge / 2), [255; 4]);
+        assert_eq!(pixel(&frame, edge, edge / 2), CLEAR);
+        assert_eq!(pixel(&frame, edge / 2, edge / 2), [255; 4]);
+    }
+    Ok(())
+}
+
+#[test]
+fn a_border_is_whole_pixels_inside_the_shape() -> TestResult {
+    let fill = Color::from_srgb8(0, 0, 255, 255);
+    let line = Color::from_srgb8(255, 0, 0, 255);
+    // (scale, logical border width) and the physical width it must have.
+    for (scale, width, physical) in [
+        (1.0f64, 1.0f32, 1u32),
+        (1.0, 1.49, 1),
+        (1.0, 1.5, 2),
+        (1.0, 0.2, 1),
+        (1.25, 1.0, 1),
+        (2.0, 1.0, 2),
+    ] {
+        let scene = shapes(50.0, 50.0, scale, move |p| {
+            p.draw_shape(
+                Rect::new(4.0, 4.0, 40.0, 40.0)?,
+                Shape::RECTANGLE,
+                ShapeStyle::fill(fill).with_border(Length::new(width)?, line),
+            )
+        })?;
+        let frame = render(&scene)?;
+        let left = (4.0 * scale) as u32;
+        let row = (20.0 * scale) as u32;
+        assert_eq!(pixel(&frame, left - 1, row), CLEAR, "{scale} {width}");
+        for inset in 0..physical {
+            assert_eq!(
+                pixel(&frame, left + inset, row),
+                [255, 0, 0, 255],
+                "{scale} {width} {inset}"
+            );
+        }
+        assert_eq!(
+            pixel(&frame, left + physical, row),
+            [0, 0, 255, 255],
+            "{scale} {width}"
+        );
+    }
+    // A border of half the extent or more takes the whole silhouette.
+    for width in [5.0f32, 9.0] {
+        let scene = shapes(30.0, 30.0, 1.0, move |p| {
+            p.draw_shape(
+                Rect::new(4.0, 4.0, 20.0, 10.0)?,
+                Shape::RECTANGLE,
+                ShapeStyle::fill(fill).with_border(Length::new(width)?, line),
+            )
+        })?;
+        assert_eq!(pixel(&render(&scene)?, 14, 9), [255, 0, 0, 255]);
+    }
+    Ok(())
+}
+
+#[test]
+fn fill_and_border_are_one_silhouette() -> TestResult {
+    // Opaque fill and opaque border: the alpha at the outer edge is the
+    // silhouette's coverage, counted once.
+    let fill = Color::from_srgb8(0, 0, 255, 255);
+    let line = Color::from_srgb8(255, 0, 0, 255);
+    let scene = shapes(30.0, 30.0, 1.0, move |p| {
+        p.draw_shape(
+            Rect::new(0.0, 0.0, 20.0, 20.0)?,
+            Shape::rounded(Length::new(4.0)?),
+            ShapeStyle::fill(fill).with_border(Length::new(1.0)?, line),
+        )
+    })?;
+    let frame = render(&scene)?;
+    let outer = 0.5 - ((2.0f32 * 2.5 * 2.5).sqrt() - 4.0);
+    assert_eq!(pixel(&frame, 1, 1)[3], alpha(outer));
+    // Two commands apply the fractional edge coverage twice.
+    let pair = shapes(30.0, 30.0, 1.0, move |p| {
+        let rect = Rect::new(0.0, 0.0, 20.0, 20.0)?;
+        let shape = Shape::rounded(Length::new(4.0)?);
+        p.fill_shape(rect, shape, fill)?;
+        p.stroke_shape(rect, shape, Length::new(1.0)?, line)
+    })?;
+    assert_eq!(pair.commands().len(), 2);
+    assert!(pixel(&render(&pair)?, 1, 1)[3] > alpha(outer));
+    // A translucent border over a translucent fill: in the band the source
+    // is B + F·(1 − B.a), in the interior F.
+    let fill = Color::from_linear(0.0, 0.0, 1.0, 0.5)?;
+    let line = Color::from_linear(1.0, 0.0, 0.0, 0.25)?;
+    let scene = shapes(30.0, 30.0, 1.0, move |p| {
+        p.draw_shape(
+            Rect::new(0.0, 0.0, 20.0, 20.0)?,
+            Shape::RECTANGLE,
+            ShapeStyle::fill(fill).with_border(Length::new(2.0)?, line),
+        )
+    })?;
+    let frame = render(&scene)?;
+    assert_eq!(pixel(&frame, 10, 10), stored([0.0, 0.0, 0.5, 0.5]));
+    assert_eq!(
+        pixel(&frame, 1, 10),
+        stored([0.25, 0.0, 0.5 * 0.75, 0.25 + 0.5 * 0.75])
+    );
+    Ok(())
+}
+
+#[test]
+fn arcs_and_triangles_are_drawn_from_their_distance() -> TestResult {
+    let white = Color::WHITE;
+    let arc = |sweep: f32, width: f32| {
+        shapes(24.0, 24.0, 1.0, move |p| {
+            p.stroke_arc(
+                Point::new(10.5, 10.5)?,
+                Length::new(5.0)?,
+                0.0,
+                sweep,
+                Length::new(width)?,
+                white,
+            )
+        })
+    };
+    // A full ring of radius 5 and width 2 around the center of pixel (10, 10).
+    let ring = arc(360.0, 2.0)?;
+    assert!(ring.masks().is_empty());
+    let frame = render(&ring)?;
+    let hand = |x: u32, y: u32| {
+        let r = ((x as f32 - 10.0).powi(2) + (y as f32 - 10.0).powi(2)).sqrt();
+        0.5 - ((r - 5.0).abs() - 1.0)
+    };
+    for (x, y) in [
+        (15u32, 10u32),
+        (17, 10),
+        (13, 14),
+        (10, 10),
+        (14, 14),
+        (11, 4),
+    ] {
+        assert_eq!(pixel(&frame, x, y)[3], alpha(hand(x, y)), "{x} {y}");
+    }
+    // A quarter: its far side is empty and its caps are round.
+    let frame = render(&arc(90.0, 2.0)?)?;
+    assert_eq!(pixel(&frame, 15, 10), [255; 4]);
+    assert_eq!(pixel(&frame, 5, 10), CLEAR);
+    assert_eq!(pixel(&frame, 15, 9)[3], alpha(0.5));
+    // A stroke thinner than a pixel fades with its width.
+    for width in [0.5f32, 0.25] {
+        assert_eq!(
+            pixel(&render(&arc(360.0, width)?)?, 15, 10)[3],
+            alpha(width)
+        );
+    }
+    // A sweep or a width of zero draws nothing.
+    assert!(arc(0.0, 2.0)?.commands().is_empty());
+    assert!(arc(90.0, 0.0)?.commands().is_empty());
+    // A right triangle with legs of 10: inside, on the hypotenuse, outside.
+    let triangle = shapes(24.0, 24.0, 1.0, move |p| {
+        p.fill_triangle(
+            [
+                Point::new(2.0, 2.0)?,
+                Point::new(12.0, 2.0)?,
+                Point::new(2.0, 12.0)?,
+            ],
+            white,
+        )?;
+        // Collinear points draw nothing.
+        p.fill_triangle(
+            [
+                Point::new(15.0, 15.0)?,
+                Point::new(17.0, 17.0)?,
+                Point::new(19.0, 19.0)?,
+            ],
+            white,
+        )
+    })?;
+    assert_eq!(triangle.commands().len(), 1);
+    let frame = render(&triangle)?;
+    assert_eq!(pixel(&frame, 4, 4), [255; 4]);
+    assert_eq!(pixel(&frame, 7, 6)[3], alpha(0.5));
+    assert_eq!(pixel(&frame, 8, 7), CLEAR);
+    assert_eq!(pixel(&frame, 16, 16), CLEAR);
+    Ok(())
+}
+
+#[test]
+fn a_clip_crops_a_shape_at_whole_pixels() -> TestResult {
+    let white = Color::WHITE;
+    let scene = shapes(30.0, 30.0, 1.0, move |p| {
+        p.with_clip(Rect::new(5.49, 0.0, 6.0, 30.0)?, |p| {
+            p.draw_shape(
+                Rect::new(0.0, 4.0, 20.0, 12.0)?,
+                Shape::rounded(Length::new(3.0)?),
+                ShapeStyle::fill(white),
+            )
+        })
+    })?;
+    let frame = render(&scene)?;
+    // The clip spans pixels 5..11: an edge just before a center keeps it.
+    assert_eq!(pixel(&frame, 4, 10), CLEAR);
+    assert_eq!(pixel(&frame, 5, 10), [255; 4]);
+    assert_eq!(pixel(&frame, 10, 10), [255; 4]);
+    assert_eq!(pixel(&frame, 11, 10), CLEAR);
+    assert_eq!(pixel(&frame, 7, 3), CLEAR);
+    Ok(())
+}
+
+#[test]
+fn a_shape_beyond_the_evaluation_range_is_a_typed_error() -> TestResult {
+    let scene = shapes(30.0, 30.0, 1.0, |p| {
+        p.draw_shape(
+            Rect::new(-1.0e6, -1.0e6, 2.0e6, 2.0e6)?,
+            Shape::rounded(Length::new(5.0e5)?),
+            ShapeStyle::fill(Color::WHITE),
+        )
+    })?;
+    let error = render(&scene).expect_err("the corner is far larger than the range");
+    assert!(matches!(
+        error,
+        CpuRenderError::Shape(ShapePrepareError::OutOfRange)
+    ));
+    // A capture keeps the cause.
+    assert!(matches!(
+        pert_ui_runtime::CaptureError::from(error),
+        pert_ui_runtime::CaptureError::Shape(ShapePrepareError::OutOfRange)
+    ));
+    // Every renderer conversion of the other cause keeps it too.
+    assert!(matches!(
+        pert_ui_runtime::CaptureError::from(CpuRenderError::from(
+            ShapePrepareError::BorderNotAllowed
+        )),
+        pert_ui_runtime::CaptureError::Shape(ShapePrepareError::BorderNotAllowed)
+    ));
+    Ok(())
+}
+
+#[test]
+fn cut_small_and_oversized_corners_cover_by_their_distance() -> TestResult {
+    let white = Color::WHITE;
+    let draw = |shape: Shape, w: f32, h: f32, scale: f64| {
+        shapes(40.0, 30.0, scale, move |p| {
+            p.draw_shape(Rect::new(0.0, 0.0, w, h)?, shape, ShapeStyle::fill(white))
+        })
+    };
+    // A cut of 4 at the top right of a 16-wide rectangle runs along
+    // x − y = 12; a pixel center's distance is (x − y − 12) / √2.
+    for scale in [1.0f64, 2.0] {
+        let frame = render(&draw(
+            Shape::cut_top_right(Length::new(4.0)?),
+            16.0,
+            20.0,
+            scale,
+        )?)?;
+        let line = 12.0 * scale as f32;
+        for (x, y) in [
+            (12u32, 0u32),
+            (13, 0),
+            (13, 1),
+            (15, 3),
+            (15, 2),
+            (14, 1),
+            (11, 0),
+        ] {
+            let (x, y) = (x * scale as u32, y * scale as u32);
+            let d = (x as f32 - y as f32 - line) / std::f32::consts::SQRT_2;
+            assert_eq!(
+                pixel(&frame, x, y)[3],
+                alpha(0.5 - d),
+                "scale {scale} at {x} {y}"
+            );
+        }
+    }
+    // A radius below one pixel: only the corner pixel loses coverage.
+    let frame = render(&draw(Shape::rounded(Length::new(0.75)?), 16.0, 20.0, 1.0)?)?;
+    let corner = 0.5 - ((2.0f32 * 0.25 * 0.25).sqrt() - 0.75);
+    assert_eq!(pixel(&frame, 0, 0)[3], alpha(corner));
+    assert_eq!(pixel(&frame, 1, 0), [255; 4]);
+    // A zero-size corner is square.
+    let frame = render(&draw(Shape::rounded(Length::new(0.0)?), 16.0, 20.0, 1.0)?)?;
+    assert_eq!(pixel(&frame, 0, 0), [255; 4]);
+    // One round corner of the full height of a 30×10 rectangle: center
+    // (10, 10), radius 10.
+    let single = Shape::RECTANGLE.with_corner(
+        pert_ui_runtime::CornerPosition::TopLeft,
+        pert_ui_runtime::Corner::round(Length::new(10.0)?),
+    );
+    let frame = render(&draw(single, 30.0, 10.0, 1.0)?)?;
+    for (x, y) in [(0u32, 5u32), (2, 3), (4, 1), (0, 9), (6, 0)] {
+        let r = ((x as f32 - 9.5).powi(2) + (y as f32 - 9.5).powi(2)).sqrt();
+        assert_eq!(pixel(&frame, x, y)[3], alpha(0.5 - (r - 10.0)), "{x} {y}");
+    }
+    assert_eq!(pixel(&frame, 29, 0), [255; 4]);
+    // Corners that do not fit are scaled together: a radius of 15 on every
+    // corner of a 30×20 rectangle becomes 10.
+    let frame = render(&draw(Shape::rounded(Length::new(15.0)?), 30.0, 20.0, 1.0)?)?;
+    let r = (2.0f32 * 7.5 * 7.5).sqrt();
+    assert_eq!(pixel(&frame, 2, 2)[3], alpha(0.5 - (r - 10.0)));
+    Ok(())
+}
+
+#[test]
+fn arcs_and_triangles_scale_with_the_viewport() -> TestResult {
+    let white = Color::WHITE;
+    // At scale 2 the ring of radius 5 and width 2 around (10.5, 10.5) has
+    // radius 10 and width 4 around physical (21, 21).
+    let ring = shapes(24.0, 24.0, 2.0, move |p| {
+        p.stroke_arc(
+            Point::new(10.5, 10.5)?,
+            Length::new(5.0)?,
+            0.0,
+            360.0,
+            Length::new(2.0)?,
+            white,
+        )
+    })?;
+    let frame = render(&ring)?;
+    let hand = |x: u32, y: u32| {
+        let r = ((x as f32 - 20.5).powi(2) + (y as f32 - 20.5).powi(2)).sqrt();
+        0.5 - ((r - 10.0).abs() - 2.0)
+    };
+    for (x, y) in [
+        (30u32, 20u32),
+        (33, 20),
+        (32, 21),
+        (28, 28),
+        (20, 20),
+        (9, 15),
+    ] {
+        assert_eq!(pixel(&frame, x, y)[3], alpha(hand(x, y)), "{x} {y}");
+    }
+    // The triangle's hypotenuse x + y = 14 becomes x + y = 28.
+    let triangle = shapes(24.0, 24.0, 2.0, move |p| {
+        p.fill_triangle(
+            [
+                Point::new(2.0, 2.0)?,
+                Point::new(12.0, 2.0)?,
+                Point::new(2.0, 12.0)?,
+            ],
+            white,
+        )
+    })?;
+    let frame = render(&triangle)?;
+    for (x, y) in [(13u32, 14u32), (14, 14), (15, 13), (8, 8), (4, 10), (3, 10)] {
+        let hypotenuse = (x as f32 + y as f32 + 1.0 - 28.0) / std::f32::consts::SQRT_2;
+        let d = hypotenuse
+            .max(4.0 - (x as f32 + 0.5))
+            .max(4.0 - (y as f32 + 0.5));
+        assert_eq!(pixel(&frame, x, y)[3], alpha(0.5 - d), "{x} {y}");
+    }
     Ok(())
 }

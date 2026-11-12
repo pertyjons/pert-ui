@@ -87,7 +87,7 @@ impl Renderer {
                 .map_err(|e| RenderError::Graphics(e.to_string()))?;
             ui.flush(std::time::Duration::ZERO)
                 .map_err(|e| RenderError::Graphics(e.to_string()))?;
-            self.prepare_scene(
+            self.prepare_readback(
                 ui.paint()
                     .map_err(|e| RenderError::Graphics(e.to_string()))?,
             )?;
@@ -270,7 +270,7 @@ impl Renderer {
             ))?;
             ui.flush(Duration::ZERO)?;
             no_overlap(&ui)?;
-            self.prepare_scene(ui.paint()?)?;
+            self.prepare_readback(ui.paint()?)?;
             let buffer = self.vertices.clone();
             let mut update_time = Duration::ZERO;
             let mut compose_time = Duration::ZERO;
@@ -284,7 +284,7 @@ impl Renderer {
                 let scene = ui.paint()?;
                 compose_time += start.elapsed();
                 let start = Instant::now();
-                self.prepare_scene(scene)?;
+                self.prepare_readback(scene)?;
                 // Submit queued writes; timing does not wait for GPU completion.
                 self.queue.submit([]);
                 upload_time += start.elapsed();
@@ -712,8 +712,19 @@ impl Renderer {
                 pass.set_scissor_rect(x, y, width, height);
                 if let Some(vertices) = &self.vertices {
                     pass.set_vertex_buffer(0, vertices.slice(..));
+                }
+                {
                     for batch in &self.batches {
                         match batch.source {
+                            Source::Shape => {
+                                let (_, records) = self.records.as_ref().ok_or_else(|| {
+                                    RenderError::Graphics("shape records are missing".into())
+                                })?;
+                                pass.set_pipeline(&self.pipelines.shapes.pipeline);
+                                pass.set_bind_group(0, records, &[]);
+                                pass.draw(0..6, batch.range.clone());
+                                continue;
+                            }
                             Source::Fill => pass.set_pipeline(&self.pipelines.fill),
                             Source::Mask(index) => {
                                 pass.set_pipeline(&self.pipelines.masks.pipeline);
@@ -956,7 +967,7 @@ impl Renderer {
                     ),
                 ))?;
                 ui.flush(std::time::Duration::ZERO)?;
-                self.prepare_scene(ui.paint()?)?;
+                self.prepare_readback(ui.paint()?)?;
                 let color = Palette::dark().color(pert_ui_runtime::ColorRole::ResizeHandle);
                 // Identify the rasterized line first: the top-left fill rule
                 // can select either neighboring pixel at a half-pixel boundary.
@@ -970,9 +981,14 @@ impl Renderer {
                         if vertical { across } else { 0 },
                         if vertical { 0 } else { across },
                     )?;
+                    // The frame is eight pixels along the divider too, so the
+                    // 24-pixel grip spans frame pixels 2..5 there while its
+                    // corners keep their radius: sample its middle row, since
+                    // the rows of its round ends cover the side pixels only
+                    // in part.
                     let middle = self.read_pixel(
-                        if vertical { across } else { 4 },
-                        if vertical { 4 } else { across },
+                        if vertical { across } else { 3 },
+                        if vertical { 3 } else { across },
                     )?;
                     if f32::from(outside[0]) > threshold {
                         line.push(across);
@@ -1013,7 +1029,7 @@ impl Renderer {
                 for index in [0, 1] {
                     selected.set(index)?;
                     ui.flush(std::time::Duration::ZERO)?;
-                    self.prepare_scene(ui.paint()?)?;
+                    self.prepare_readback(ui.paint()?)?;
                     let palette = ui.theme().palette(mode)?;
                     self.verify_pixel(0, 0, palette.color(ColorRole::Background))?;
                     self.verify_pixel(
@@ -1095,7 +1111,7 @@ impl Renderer {
                 "equal content shares one scene entry"
             );
             let background = scene.background();
-            self.prepare_scene(scene)?;
+            self.prepare_readback(scene)?;
             assert_eq!(self.pipelines.images.live_uploads(), 1);
             let orange = Color::from_linear(
                 srgb_to_linear(230),
@@ -1157,7 +1173,7 @@ impl Renderer {
             ui.flush(std::time::Duration::ZERO)?;
             let scene = ui.paint()?;
             let background = scene.background();
-            self.prepare_scene(scene)?;
+            self.prepare_readback(scene)?;
             self.verify_pixel(1, 1, fill)?;
             self.verify_pixel(3, 2, fill)?;
             self.verify_pixel(6, 6, stroke)?;
@@ -1207,7 +1223,7 @@ impl Renderer {
             let scene = ui.paint()?;
             assert_eq!(scene.masks().len(), 1, "both turns share one coverage");
             let background = scene.background();
-            self.prepare_scene(scene)?;
+            self.prepare_readback(scene)?;
             self.verify_pixel(1, 1, ink)?;
             self.verify_pixel(1, 6, background)?;
             self.verify_pixel(6, 6, ink)?;
@@ -1270,7 +1286,7 @@ impl Renderer {
             ui.flush(std::time::Duration::ZERO)?;
             let scene = ui.paint()?;
             let background = scene.background();
-            self.prepare_scene(scene)?;
+            self.prepare_readback(scene)?;
             self.verify_pixel(0, 0, background)?;
             self.verify_pixel(1, 1, fill)?;
             self.verify_pixel(4, 4, fill)?;
@@ -1315,6 +1331,16 @@ impl Renderer {
         );
         Ok(())
     }
+    /// Prepares `scene` for the 8×8 attachment [`Self::read_pixel`] draws
+    /// to. Shape records are in frame pixels, so a scene prepared for the
+    /// window's surface would place its shapes for that extent instead.
+    fn prepare_readback(&mut self, scene: DisplayList) -> Result<(), RenderError> {
+        let surface = self.extent.replace(PhysicalExtent::new(8, 8));
+        let prepared = self.prepare_scene(scene);
+        self.extent = surface;
+        prepared
+    }
+
     fn read_pixel(&self, x: u32, y: u32) -> Result<[u8; 4], RenderError> {
         use std::time::Duration;
         let image = self.device.create_texture(&wgpu::TextureDescriptor {
@@ -1500,8 +1526,8 @@ impl ApplicationHandler<Notice> for Harness {
                             }
                             fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
                                 painter.fill_shape(
-                                    Rect::new(0.0, 0.0, 64.0, 64.0)?,
-                                    pert_ui_runtime::Shape::CutTopRight(32.into()),
+                                    Rect::new(0.0, 0.0, 8.0, 8.0)?,
+                                    pert_ui_runtime::Shape::cut_top_right(4.into()),
                                     Color::ACCENT,
                                 )
                             }
@@ -1509,7 +1535,10 @@ impl ApplicationHandler<Notice> for Harness {
                         let mut shapes = Runtime::new();
                         shapes
                             .set_viewport(
-                                Viewport::new(64.0, 64.0, 1.25)
+                                // The readback attachment's own extent: a
+                                // shape's lengths follow the scale, so it
+                                // is checked unstretched.
+                                Viewport::new(8.0, 8.0, 1.0)
                                     .map_err(|e| RenderError::Graphics(e.to_string()))?,
                             )
                             .map_err(|e| RenderError::Graphics(e.to_string()))?;
@@ -1519,14 +1548,11 @@ impl ApplicationHandler<Notice> for Harness {
                         shapes
                             .flush(std::time::Duration::ZERO)
                             .map_err(|e| RenderError::Graphics(e.to_string()))?;
-                        presented(
-                            renderer.render(
-                                shapes
-                                    .paint()
-                                    .map_err(|e| RenderError::Graphics(e.to_string()))?,
-                                || window.pre_present_notify(),
-                            )?,
-                        )?;
+                        let cut = shapes
+                            .paint()
+                            .map_err(|e| RenderError::Graphics(e.to_string()))?;
+                        presented(renderer.render(cut.clone(), || window.pre_present_notify())?)?;
+                        renderer.prepare_readback(cut)?;
                         renderer.verify_pixel(7, 0, Color::BACKGROUND)?;
                         renderer.verify_pixel(0, 0, Color::ACCENT)?;
                         renderer.verify_pixel(7, 7, Color::ACCENT)?;

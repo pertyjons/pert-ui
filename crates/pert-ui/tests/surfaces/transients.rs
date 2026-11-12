@@ -380,15 +380,11 @@ fn toast_controls_follow_their_labels_and_sit_at_the_trailing_edge() {
         .palette(theme.mode().unwrap())
         .unwrap()
         .color(ColorRole::Button);
-    // A themed button is drawn as its two rounded edges and the span between
-    // them, so the control is the union of the touching fills in its color.
-    let mut parts: Vec<[f32; 4]> = scene
-        .commands()
-        .iter()
-        .filter_map(|command| match command {
-            DrawCommand::FillRect { rect, color } if *color == button => Some(rect.values()),
-            _ => None,
-        })
+    // A themed button is one rounded shape in its color; the union of
+    // touching fills also holds for a control drawn in several parts.
+    let mut parts: Vec<[f32; 4]> = support::colored(&scene, button)
+        .into_iter()
+        .map(Rect::values)
         .collect();
     parts.sort_by(|a, b| a[0].total_cmp(&b[0]));
     let mut buttons: Vec<[f32; 4]> = Vec::new();

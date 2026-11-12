@@ -89,27 +89,12 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   Add tests at narrow width and scale 2. `plans/document-editor.md` slice 6
   removes the cause for values within capacity; this entry covers the
   current contract until then.
-- [ ] **RENDER-01** 2026-11-05 `crates/pert-ui-runtime/src/shapes.rs`
-  `ShapeCache` — Improvement: a hit returns the entry without moving it
-  (`image`, :49-52), and `insert` evicts from the front (:139-148), so the
-  cache is FIFO, not LRU, and is searched linearly. Widgets that create a new
-  key per value, such as the knob's value arc, push shared corner masks out
-  after 128 new keys, and those masks are rasterized again. Move a hit to the
-  back (or key a map) and add a test that a reused key survives a stream of
-  new ones. Phase 0 of `plans/rendering-capabilities.md` ranks analytic shapes
-  first, which would remove the cache for ordinary shapes.
 - [ ] **RENDER-02** 2026-11-05 `crates/pert-ui-runtime/src/dialog.rs:470`,
   `crates/pert-ui-runtime/src/quick_pick.rs:1371` — Improvement: the modal
   scrim is the literal `Color::from_linear(0.0, 0.0, 0.0, 0.35)` in two
   places, so no theme or palette can change it and the two can drift apart.
   Give it a `ColorRole` with a default in the role table and use it in both,
   documenting the role in the appearance guide.
-- [ ] **RENDER-03** 2026-11-05 `crates/pert-ui-runtime/src/geometry.rs:689-690`
-  `Painter::stroke_path` — Public API and documentation: the rustdoc says
-  `stroke_shape` strokes a "rectangle, rounded rectangle or ellipse inward",
-  but `Shape` has no ellipse variant (`shapes.rs:17-28`); ellipses are
-  stroked with `stroke_ellipse`. Correct the sentence and link
-  `stroke_ellipse`.
 - [ ] **RENDER-04** 2026-11-05 `crates/pert-ui-runtime/src/geometry/raster.rs`
   `RasterGrid::new` — Improvement: vector coverage is rasterized on a grid
   anchored at the geometry's own bounds, so a prepared `DrawMask` rectangle
@@ -129,3 +114,32 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   Then add CPU/GPU parity fixtures with vector edges at arbitrary phase.
   Reproduction:
   `plans/rendering/vello-spike/src/bin/capdiag.rs`.
+- [ ] 2026-11-11 `crates/pert-ui/src/app.rs` `AppError::from_renderer` —
+  typed errors (Rust and data invariants): a presentation failure with
+  `RenderError::Shape` becomes `AppError::Graphics` text, although captures
+  keep the typed `ShapePrepareError`. The phase 1 spec named only the capture
+  and renderer conversions. Decide whether `AppError` gets a typed cause for
+  it (it is the component's failure, like `Drawing`), and add it with a test.
+- [ ] **RENDER-05** 2026-11-12 `crates/pert-ui-wgpu/src/shapes.wgsl`,
+  `crates/pert-ui-wgpu/src/shapes.rs` — Improvement (performance): after
+  phase 1 the offscreen wgpu render with read-back, the capture path, is
+  slower than at 0.3.103 on Intel UHD Graphics 770: a median of 7 % on a
+  repeated page render and at most 22 %
+  (`plans/rendering/phase1-probe/results/summary.md`, `gpu_*` rows).
+  Presenting to a window is not slower by its medians; one tail is, the
+  diagram pan's 95th percentile (0.88 → 0.94 ms). The cause is not found; the
+  fragment stage reading its 144-byte record from the storage buffer for
+  every pixel is a candidate. Measure with the phase 1 probe whether passing
+  the parameters as instance vertex attributes, or evaluating the edge
+  strips with a smaller record, removes it. The CPU renderer's mixer frame
+  is likewise 0.11 ms slower (0.94 → 1.06 ms): many small shapes are
+  prepared one by one.
+- [ ] 2026-11-12 `crates/pert-ui-runtime/src/shapes/prepare.rs`
+  `ShapeGeometry::misses` — Rust and data invariants (a total rule): a
+  triangle's allowance is one pixel by the viewport's scale, while its
+  vertices and the clip map by the frame's pixels per logical unit. They
+  agree for any practical frame, but not when `Viewport::frame_extent`
+  saturates at `u32::MAX` (found by the phase 1 final review with a viewport
+  of `(64, 1e-10)` at scale `1e10`): a triangle covering a pixel inside its
+  clip is then dropped. Take the allowance per axis in the frame's terms, as
+  the arc's reach is, and add the case to the tests.

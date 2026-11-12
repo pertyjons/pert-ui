@@ -1249,6 +1249,8 @@ impl<T: Clone + Eq + Hash + 'static> Component for Trigger<T> {
             } else {
                 ColorRole::Button
             }),
+            // The caption is drawn before this control's focus ring.
+            false,
         )?;
         let text = p.color(if self.focusable {
             ColorRole::OnButton

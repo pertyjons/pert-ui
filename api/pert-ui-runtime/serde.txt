@@ -795,6 +795,47 @@ impl core::marker::Unpin for pert_ui_runtime::CommandStatus
 impl core::marker::UnsafeUnpin for pert_ui_runtime::CommandStatus
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CommandStatus
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CommandStatus
+#[non_exhaustive] pub enum pert_ui_runtime::component::CornerKind
+pub pert_ui_runtime::component::CornerKind::Cut
+pub pert_ui_runtime::component::CornerKind::Round
+pub pert_ui_runtime::component::CornerKind::Square
+impl core::clone::Clone for pert_ui_runtime::CornerKind
+pub fn pert_ui_runtime::CornerKind::clone(&self) -> pert_ui_runtime::CornerKind
+impl core::cmp::Eq for pert_ui_runtime::CornerKind
+impl core::cmp::PartialEq for pert_ui_runtime::CornerKind
+pub fn pert_ui_runtime::CornerKind::eq(&self, &pert_ui_runtime::CornerKind) -> bool
+impl core::fmt::Debug for pert_ui_runtime::CornerKind
+pub fn pert_ui_runtime::CornerKind::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::CornerKind
+impl core::marker::StructuralPartialEq for pert_ui_runtime::CornerKind
+impl core::marker::Freeze for pert_ui_runtime::CornerKind
+impl core::marker::Send for pert_ui_runtime::CornerKind
+impl core::marker::Sync for pert_ui_runtime::CornerKind
+impl core::marker::Unpin for pert_ui_runtime::CornerKind
+impl core::marker::UnsafeUnpin for pert_ui_runtime::CornerKind
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CornerKind
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CornerKind
+#[non_exhaustive] pub enum pert_ui_runtime::component::CornerPosition
+pub pert_ui_runtime::component::CornerPosition::BottomLeft
+pub pert_ui_runtime::component::CornerPosition::BottomRight
+pub pert_ui_runtime::component::CornerPosition::TopLeft
+pub pert_ui_runtime::component::CornerPosition::TopRight
+impl core::clone::Clone for pert_ui_runtime::CornerPosition
+pub fn pert_ui_runtime::CornerPosition::clone(&self) -> pert_ui_runtime::CornerPosition
+impl core::cmp::Eq for pert_ui_runtime::CornerPosition
+impl core::cmp::PartialEq for pert_ui_runtime::CornerPosition
+pub fn pert_ui_runtime::CornerPosition::eq(&self, &pert_ui_runtime::CornerPosition) -> bool
+impl core::fmt::Debug for pert_ui_runtime::CornerPosition
+pub fn pert_ui_runtime::CornerPosition::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::CornerPosition
+impl core::marker::StructuralPartialEq for pert_ui_runtime::CornerPosition
+impl core::marker::Freeze for pert_ui_runtime::CornerPosition
+impl core::marker::Send for pert_ui_runtime::CornerPosition
+impl core::marker::Sync for pert_ui_runtime::CornerPosition
+impl core::marker::Unpin for pert_ui_runtime::CornerPosition
+impl core::marker::UnsafeUnpin for pert_ui_runtime::CornerPosition
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CornerPosition
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CornerPosition
 #[non_exhaustive] pub enum pert_ui_runtime::component::CursorIcon
 pub pert_ui_runtime::component::CursorIcon::Alias
 pub pert_ui_runtime::component::CursorIcon::Copy
@@ -971,6 +1012,11 @@ pub pert_ui_runtime::component::DrawCommand::DrawMask::color: pert_ui_runtime::C
 pub pert_ui_runtime::component::DrawCommand::DrawMask::mask: pert_ui_runtime::MaskId
 pub pert_ui_runtime::component::DrawCommand::DrawMask::rect: pert_ui_runtime::Rect
 pub pert_ui_runtime::component::DrawCommand::DrawMask::turn: pert_ui_runtime::QuarterTurn
+#[non_exhaustive] pub pert_ui_runtime::component::DrawCommand::DrawShape
+pub pert_ui_runtime::component::DrawCommand::DrawShape::border: core::option::Option<pert_ui_runtime::Border>
+pub pert_ui_runtime::component::DrawCommand::DrawShape::clip: core::option::Option<pert_ui_runtime::Rect>
+pub pert_ui_runtime::component::DrawCommand::DrawShape::fill: core::option::Option<pert_ui_runtime::Paint>
+pub pert_ui_runtime::component::DrawCommand::DrawShape::geometry: pert_ui_runtime::ShapeGeometry
 pub pert_ui_runtime::component::DrawCommand::DrawVector
 pub pert_ui_runtime::component::DrawCommand::DrawVector::clip: core::option::Option<pert_ui_runtime::Rect>
 pub pert_ui_runtime::component::DrawCommand::DrawVector::color: pert_ui_runtime::Color
@@ -2217,28 +2263,6 @@ impl core::marker::Unpin for pert_ui_runtime::SemanticValue
 impl core::marker::UnsafeUnpin for pert_ui_runtime::SemanticValue
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::SemanticValue
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::SemanticValue
-pub enum pert_ui_runtime::component::Shape
-pub pert_ui_runtime::component::Shape::CutTopRight(pert_ui_runtime::Length)
-pub pert_ui_runtime::component::Shape::Rectangle
-pub pert_ui_runtime::component::Shape::Rounded(pert_ui_runtime::Length)
-pub pert_ui_runtime::component::Shape::RoundedTop(pert_ui_runtime::Length)
-impl core::clone::Clone for pert_ui_runtime::Shape
-pub fn pert_ui_runtime::Shape::clone(&self) -> pert_ui_runtime::Shape
-impl core::cmp::PartialEq for pert_ui_runtime::Shape
-pub fn pert_ui_runtime::Shape::eq(&self, &pert_ui_runtime::Shape) -> bool
-impl core::default::Default for pert_ui_runtime::Shape
-pub fn pert_ui_runtime::Shape::default() -> pert_ui_runtime::Shape
-impl core::fmt::Debug for pert_ui_runtime::Shape
-pub fn pert_ui_runtime::Shape::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
-impl core::marker::Copy for pert_ui_runtime::Shape
-impl core::marker::StructuralPartialEq for pert_ui_runtime::Shape
-impl core::marker::Freeze for pert_ui_runtime::Shape
-impl core::marker::Send for pert_ui_runtime::Shape
-impl core::marker::Sync for pert_ui_runtime::Shape
-impl core::marker::Unpin for pert_ui_runtime::Shape
-impl core::marker::UnsafeUnpin for pert_ui_runtime::Shape
-impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Shape
-impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Shape
 pub enum pert_ui_runtime::component::ShortcutScope
 pub pert_ui_runtime::component::ShortcutScope::FocusedComponent
 pub pert_ui_runtime::component::ShortcutScope::Window
@@ -2865,6 +2889,28 @@ impl core::marker::Unpin for pert_ui_runtime::Constraints
 impl core::marker::UnsafeUnpin for pert_ui_runtime::Constraints
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Constraints
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Constraints
+pub struct pert_ui_runtime::component::Corner
+impl pert_ui_runtime::Corner
+pub const pert_ui_runtime::Corner::SQUARE: Self
+pub const fn pert_ui_runtime::Corner::cut(pert_ui_runtime::Length) -> Self
+pub const fn pert_ui_runtime::Corner::kind(self) -> pert_ui_runtime::CornerKind
+pub const fn pert_ui_runtime::Corner::round(pert_ui_runtime::Length) -> Self
+pub const fn pert_ui_runtime::Corner::size(self) -> pert_ui_runtime::Length
+impl core::clone::Clone for pert_ui_runtime::Corner
+pub fn pert_ui_runtime::Corner::clone(&self) -> pert_ui_runtime::Corner
+impl core::cmp::PartialEq for pert_ui_runtime::Corner
+pub fn pert_ui_runtime::Corner::eq(&self, &pert_ui_runtime::Corner) -> bool
+impl core::fmt::Debug for pert_ui_runtime::Corner
+pub fn pert_ui_runtime::Corner::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::Corner
+impl core::marker::StructuralPartialEq for pert_ui_runtime::Corner
+impl core::marker::Freeze for pert_ui_runtime::Corner
+impl core::marker::Send for pert_ui_runtime::Corner
+impl core::marker::Sync for pert_ui_runtime::Corner
+impl core::marker::Unpin for pert_ui_runtime::Corner
+impl core::marker::UnsafeUnpin for pert_ui_runtime::Corner
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Corner
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Corner
 pub struct pert_ui_runtime::component::DisplayList
 impl pert_ui_runtime::DisplayList
 pub const fn pert_ui_runtime::DisplayList::background(&self) -> pert_ui_runtime::Color
@@ -3542,16 +3588,17 @@ pub const fn pert_ui_runtime::Painter::view_scale(&self) -> f32
 pub fn pert_ui_runtime::Painter::viewport(&self) -> pert_ui_runtime::Viewport
 pub fn pert_ui_runtime::Painter::with_clip<T>(&mut self, pert_ui_runtime::Rect, impl core::ops::function::FnOnce(&mut Self) -> T) -> T
 impl pert_ui_runtime::Painter
+pub fn pert_ui_runtime::Painter::draw_shape(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Shape, pert_ui_runtime::ShapeStyle) -> core::result::Result<(), pert_ui_runtime::DrawError>
+pub fn pert_ui_runtime::Painter::fill_shape(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Shape, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
+pub fn pert_ui_runtime::Painter::fill_triangle(&mut self, [pert_ui_runtime::Point; 3], pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
+pub fn pert_ui_runtime::Painter::stroke_arc(&mut self, pert_ui_runtime::Point, pert_ui_runtime::Length, f32, f32, pert_ui_runtime::Length, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
+pub fn pert_ui_runtime::Painter::stroke_shape(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Shape, pert_ui_runtime::Length, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
+impl pert_ui_runtime::Painter
 pub fn pert_ui_runtime::Painter::fill_ellipse(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::fill_path(&mut self, &pert_ui_runtime::Path, pert_ui_runtime::FillRule, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::stroke_ellipse(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::StrokeStyle, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::stroke_path(&mut self, &pert_ui_runtime::Path, pert_ui_runtime::StrokeStyle, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::stroke_polyline(&mut self, &[pert_ui_runtime::Point], pert_ui_runtime::StrokeStyle, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
-impl pert_ui_runtime::Painter
-pub fn pert_ui_runtime::Painter::fill_shape(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Shape, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
-pub fn pert_ui_runtime::Painter::fill_triangle(&mut self, [pert_ui_runtime::Point; 3], pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
-pub fn pert_ui_runtime::Painter::stroke_arc(&mut self, pert_ui_runtime::Point, pert_ui_runtime::Length, f32, f32, pert_ui_runtime::Length, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
-pub fn pert_ui_runtime::Painter::stroke_shape(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Shape, pert_ui_runtime::Length, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
 impl core::fmt::Debug for pert_ui_runtime::Painter
 pub fn pert_ui_runtime::Painter::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl !core::marker::Freeze for pert_ui_runtime::Painter
@@ -3908,6 +3955,52 @@ impl core::marker::Unpin for pert_ui_runtime::Semantics
 impl core::marker::UnsafeUnpin for pert_ui_runtime::Semantics
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Semantics
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Semantics
+pub struct pert_ui_runtime::component::Shape(_)
+impl pert_ui_runtime::Shape
+pub const pert_ui_runtime::Shape::RECTANGLE: Self
+pub const fn pert_ui_runtime::Shape::corner(self, pert_ui_runtime::CornerPosition) -> pert_ui_runtime::Corner
+pub const fn pert_ui_runtime::Shape::cut_top_right(pert_ui_runtime::Length) -> Self
+pub const fn pert_ui_runtime::Shape::rounded(pert_ui_runtime::Length) -> Self
+pub const fn pert_ui_runtime::Shape::rounded_top(pert_ui_runtime::Length) -> Self
+pub const fn pert_ui_runtime::Shape::with_corner(self, pert_ui_runtime::CornerPosition, pert_ui_runtime::Corner) -> Self
+impl core::clone::Clone for pert_ui_runtime::Shape
+pub fn pert_ui_runtime::Shape::clone(&self) -> pert_ui_runtime::Shape
+impl core::cmp::PartialEq for pert_ui_runtime::Shape
+pub fn pert_ui_runtime::Shape::eq(&self, &pert_ui_runtime::Shape) -> bool
+impl core::default::Default for pert_ui_runtime::Shape
+pub fn pert_ui_runtime::Shape::default() -> Self
+impl core::fmt::Debug for pert_ui_runtime::Shape
+pub fn pert_ui_runtime::Shape::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::Shape
+impl core::marker::StructuralPartialEq for pert_ui_runtime::Shape
+impl core::marker::Freeze for pert_ui_runtime::Shape
+impl core::marker::Send for pert_ui_runtime::Shape
+impl core::marker::Sync for pert_ui_runtime::Shape
+impl core::marker::Unpin for pert_ui_runtime::Shape
+impl core::marker::UnsafeUnpin for pert_ui_runtime::Shape
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Shape
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Shape
+pub struct pert_ui_runtime::component::ShapeStyle
+impl pert_ui_runtime::ShapeStyle
+pub const fn pert_ui_runtime::ShapeStyle::border(pert_ui_runtime::Length, pert_ui_runtime::Color) -> Self
+pub const fn pert_ui_runtime::ShapeStyle::fill(pert_ui_runtime::Color) -> Self
+pub const fn pert_ui_runtime::ShapeStyle::with_border(self, pert_ui_runtime::Length, pert_ui_runtime::Color) -> Self
+pub const fn pert_ui_runtime::ShapeStyle::with_fill(self, pert_ui_runtime::Color) -> Self
+impl core::clone::Clone for pert_ui_runtime::ShapeStyle
+pub fn pert_ui_runtime::ShapeStyle::clone(&self) -> pert_ui_runtime::ShapeStyle
+impl core::cmp::PartialEq for pert_ui_runtime::ShapeStyle
+pub fn pert_ui_runtime::ShapeStyle::eq(&self, &pert_ui_runtime::ShapeStyle) -> bool
+impl core::fmt::Debug for pert_ui_runtime::ShapeStyle
+pub fn pert_ui_runtime::ShapeStyle::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::ShapeStyle
+impl core::marker::StructuralPartialEq for pert_ui_runtime::ShapeStyle
+impl core::marker::Freeze for pert_ui_runtime::ShapeStyle
+impl core::marker::Send for pert_ui_runtime::ShapeStyle
+impl core::marker::Sync for pert_ui_runtime::ShapeStyle
+impl core::marker::Unpin for pert_ui_runtime::ShapeStyle
+impl core::marker::UnsafeUnpin for pert_ui_runtime::ShapeStyle
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ShapeStyle
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ShapeStyle
 pub struct pert_ui_runtime::component::ShortcutBinding
 pub pert_ui_runtime::component::ShortcutBinding::action: alloc::string::String
 pub pert_ui_runtime::component::ShortcutBinding::enabled: bool
@@ -9469,6 +9562,7 @@ pub pert_ui_runtime::host::CaptureError::Hidden
 pub pert_ui_runtime::host::CaptureError::InvalidRegion
 pub pert_ui_runtime::host::CaptureError::Limit(pert_ui_runtime::LimitError)
 pub pert_ui_runtime::host::CaptureError::Runtime(pert_ui_runtime::RuntimeError)
+pub pert_ui_runtime::host::CaptureError::Shape(pert_ui_runtime::ShapePrepareError)
 pub pert_ui_runtime::host::CaptureError::SurfaceUnavailable
 pub pert_ui_runtime::host::CaptureError::UnknownTarget
 pub pert_ui_runtime::host::CaptureError::Unmeasured
@@ -9834,6 +9928,9 @@ pub pert_ui_runtime::host::LimitError::ResourceExtent::max: u32
 pub pert_ui_runtime::host::LimitError::ResourceExtent::width: u32
 pub pert_ui_runtime::host::LimitError::SceneBudget
 pub pert_ui_runtime::host::LimitError::SceneBudget::kind: pert_ui_runtime::ResourceKind
+pub pert_ui_runtime::host::LimitError::ShapeRecords
+pub pert_ui_runtime::host::LimitError::ShapeRecords::bytes: u64
+pub pert_ui_runtime::host::LimitError::ShapeRecords::max: u64
 pub pert_ui_runtime::host::LimitError::SurfaceExtent
 pub pert_ui_runtime::host::LimitError::SurfaceExtent::height: u32
 pub pert_ui_runtime::host::LimitError::SurfaceExtent::max: u32
@@ -10921,6 +11018,7 @@ pub pert_ui_runtime::inspection::CaptureError::Hidden
 pub pert_ui_runtime::inspection::CaptureError::InvalidRegion
 pub pert_ui_runtime::inspection::CaptureError::Limit(pert_ui_runtime::LimitError)
 pub pert_ui_runtime::inspection::CaptureError::Runtime(pert_ui_runtime::RuntimeError)
+pub pert_ui_runtime::inspection::CaptureError::Shape(pert_ui_runtime::ShapePrepareError)
 pub pert_ui_runtime::inspection::CaptureError::SurfaceUnavailable
 pub pert_ui_runtime::inspection::CaptureError::UnknownTarget
 pub pert_ui_runtime::inspection::CaptureError::Unmeasured
@@ -11317,6 +11415,9 @@ pub pert_ui_runtime::inspection::LimitError::ResourceExtent::max: u32
 pub pert_ui_runtime::inspection::LimitError::ResourceExtent::width: u32
 pub pert_ui_runtime::inspection::LimitError::SceneBudget
 pub pert_ui_runtime::inspection::LimitError::SceneBudget::kind: pert_ui_runtime::ResourceKind
+pub pert_ui_runtime::inspection::LimitError::ShapeRecords
+pub pert_ui_runtime::inspection::LimitError::ShapeRecords::bytes: u64
+pub pert_ui_runtime::inspection::LimitError::ShapeRecords::max: u64
 pub pert_ui_runtime::inspection::LimitError::SurfaceExtent
 pub pert_ui_runtime::inspection::LimitError::SurfaceExtent::height: u32
 pub pert_ui_runtime::inspection::LimitError::SurfaceExtent::max: u32
@@ -23064,6 +23165,7 @@ pub pert_ui_runtime::testing::CaptureError::Hidden
 pub pert_ui_runtime::testing::CaptureError::InvalidRegion
 pub pert_ui_runtime::testing::CaptureError::Limit(pert_ui_runtime::LimitError)
 pub pert_ui_runtime::testing::CaptureError::Runtime(pert_ui_runtime::RuntimeError)
+pub pert_ui_runtime::testing::CaptureError::Shape(pert_ui_runtime::ShapePrepareError)
 pub pert_ui_runtime::testing::CaptureError::SurfaceUnavailable
 pub pert_ui_runtime::testing::CaptureError::UnknownTarget
 pub pert_ui_runtime::testing::CaptureError::Unmeasured
@@ -25697,6 +25799,7 @@ pub pert_ui_runtime::CaptureError::Hidden
 pub pert_ui_runtime::CaptureError::InvalidRegion
 pub pert_ui_runtime::CaptureError::Limit(pert_ui_runtime::LimitError)
 pub pert_ui_runtime::CaptureError::Runtime(pert_ui_runtime::RuntimeError)
+pub pert_ui_runtime::CaptureError::Shape(pert_ui_runtime::ShapePrepareError)
 pub pert_ui_runtime::CaptureError::SurfaceUnavailable
 pub pert_ui_runtime::CaptureError::UnknownTarget
 pub pert_ui_runtime::CaptureError::Unmeasured
@@ -26180,6 +26283,47 @@ impl core::marker::Unpin for pert_ui_runtime::ContentTarget
 impl core::marker::UnsafeUnpin for pert_ui_runtime::ContentTarget
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ContentTarget
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ContentTarget
+#[non_exhaustive] pub enum pert_ui_runtime::CornerKind
+pub pert_ui_runtime::CornerKind::Cut
+pub pert_ui_runtime::CornerKind::Round
+pub pert_ui_runtime::CornerKind::Square
+impl core::clone::Clone for pert_ui_runtime::CornerKind
+pub fn pert_ui_runtime::CornerKind::clone(&self) -> pert_ui_runtime::CornerKind
+impl core::cmp::Eq for pert_ui_runtime::CornerKind
+impl core::cmp::PartialEq for pert_ui_runtime::CornerKind
+pub fn pert_ui_runtime::CornerKind::eq(&self, &pert_ui_runtime::CornerKind) -> bool
+impl core::fmt::Debug for pert_ui_runtime::CornerKind
+pub fn pert_ui_runtime::CornerKind::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::CornerKind
+impl core::marker::StructuralPartialEq for pert_ui_runtime::CornerKind
+impl core::marker::Freeze for pert_ui_runtime::CornerKind
+impl core::marker::Send for pert_ui_runtime::CornerKind
+impl core::marker::Sync for pert_ui_runtime::CornerKind
+impl core::marker::Unpin for pert_ui_runtime::CornerKind
+impl core::marker::UnsafeUnpin for pert_ui_runtime::CornerKind
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CornerKind
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CornerKind
+#[non_exhaustive] pub enum pert_ui_runtime::CornerPosition
+pub pert_ui_runtime::CornerPosition::BottomLeft
+pub pert_ui_runtime::CornerPosition::BottomRight
+pub pert_ui_runtime::CornerPosition::TopLeft
+pub pert_ui_runtime::CornerPosition::TopRight
+impl core::clone::Clone for pert_ui_runtime::CornerPosition
+pub fn pert_ui_runtime::CornerPosition::clone(&self) -> pert_ui_runtime::CornerPosition
+impl core::cmp::Eq for pert_ui_runtime::CornerPosition
+impl core::cmp::PartialEq for pert_ui_runtime::CornerPosition
+pub fn pert_ui_runtime::CornerPosition::eq(&self, &pert_ui_runtime::CornerPosition) -> bool
+impl core::fmt::Debug for pert_ui_runtime::CornerPosition
+pub fn pert_ui_runtime::CornerPosition::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::CornerPosition
+impl core::marker::StructuralPartialEq for pert_ui_runtime::CornerPosition
+impl core::marker::Freeze for pert_ui_runtime::CornerPosition
+impl core::marker::Send for pert_ui_runtime::CornerPosition
+impl core::marker::Sync for pert_ui_runtime::CornerPosition
+impl core::marker::Unpin for pert_ui_runtime::CornerPosition
+impl core::marker::UnsafeUnpin for pert_ui_runtime::CornerPosition
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CornerPosition
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CornerPosition
 #[non_exhaustive] pub enum pert_ui_runtime::CursorIcon
 pub pert_ui_runtime::CursorIcon::Alias
 pub pert_ui_runtime::CursorIcon::Copy
@@ -26675,6 +26819,11 @@ pub pert_ui_runtime::DrawCommand::DrawMask::color: pert_ui_runtime::Color
 pub pert_ui_runtime::DrawCommand::DrawMask::mask: pert_ui_runtime::MaskId
 pub pert_ui_runtime::DrawCommand::DrawMask::rect: pert_ui_runtime::Rect
 pub pert_ui_runtime::DrawCommand::DrawMask::turn: pert_ui_runtime::QuarterTurn
+#[non_exhaustive] pub pert_ui_runtime::DrawCommand::DrawShape
+pub pert_ui_runtime::DrawCommand::DrawShape::border: core::option::Option<pert_ui_runtime::Border>
+pub pert_ui_runtime::DrawCommand::DrawShape::clip: core::option::Option<pert_ui_runtime::Rect>
+pub pert_ui_runtime::DrawCommand::DrawShape::fill: core::option::Option<pert_ui_runtime::Paint>
+pub pert_ui_runtime::DrawCommand::DrawShape::geometry: pert_ui_runtime::ShapeGeometry
 pub pert_ui_runtime::DrawCommand::DrawVector
 pub pert_ui_runtime::DrawCommand::DrawVector::clip: core::option::Option<pert_ui_runtime::Rect>
 pub pert_ui_runtime::DrawCommand::DrawVector::color: pert_ui_runtime::Color
@@ -27614,6 +27763,25 @@ impl core::marker::Unpin for pert_ui_runtime::ImageSampling
 impl core::marker::UnsafeUnpin for pert_ui_runtime::ImageSampling
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ImageSampling
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ImageSampling
+pub enum pert_ui_runtime::Inner
+pub pert_ui_runtime::Inner::Area(pert_ui_runtime::Boundary)
+pub pert_ui_runtime::Inner::Filled
+pub pert_ui_runtime::Inner::NoBorder
+impl core::clone::Clone for pert_ui_runtime::Inner
+pub fn pert_ui_runtime::Inner::clone(&self) -> pert_ui_runtime::Inner
+impl core::cmp::PartialEq for pert_ui_runtime::Inner
+pub fn pert_ui_runtime::Inner::eq(&self, &pert_ui_runtime::Inner) -> bool
+impl core::fmt::Debug for pert_ui_runtime::Inner
+pub fn pert_ui_runtime::Inner::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::Inner
+impl core::marker::StructuralPartialEq for pert_ui_runtime::Inner
+impl core::marker::Freeze for pert_ui_runtime::Inner
+impl core::marker::Send for pert_ui_runtime::Inner
+impl core::marker::Sync for pert_ui_runtime::Inner
+impl core::marker::Unpin for pert_ui_runtime::Inner
+impl core::marker::UnsafeUnpin for pert_ui_runtime::Inner
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Inner
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Inner
 pub enum pert_ui_runtime::InputOutcome
 pub pert_ui_runtime::InputOutcome::Handled
 pub pert_ui_runtime::InputOutcome::Ignored
@@ -27919,6 +28087,9 @@ pub pert_ui_runtime::LimitError::ResourceExtent::max: u32
 pub pert_ui_runtime::LimitError::ResourceExtent::width: u32
 pub pert_ui_runtime::LimitError::SceneBudget
 pub pert_ui_runtime::LimitError::SceneBudget::kind: pert_ui_runtime::ResourceKind
+pub pert_ui_runtime::LimitError::ShapeRecords
+pub pert_ui_runtime::LimitError::ShapeRecords::bytes: u64
+pub pert_ui_runtime::LimitError::ShapeRecords::max: u64
 pub pert_ui_runtime::LimitError::SurfaceExtent
 pub pert_ui_runtime::LimitError::SurfaceExtent::height: u32
 pub pert_ui_runtime::LimitError::SurfaceExtent::max: u32
@@ -28372,6 +28543,23 @@ impl core::marker::Unpin for pert_ui_runtime::OverlapPolicy
 impl core::marker::UnsafeUnpin for pert_ui_runtime::OverlapPolicy
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::OverlapPolicy
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::OverlapPolicy
+#[non_exhaustive] pub enum pert_ui_runtime::Paint
+pub pert_ui_runtime::Paint::Solid(pert_ui_runtime::Color)
+impl core::clone::Clone for pert_ui_runtime::Paint
+pub fn pert_ui_runtime::Paint::clone(&self) -> pert_ui_runtime::Paint
+impl core::cmp::PartialEq for pert_ui_runtime::Paint
+pub fn pert_ui_runtime::Paint::eq(&self, &pert_ui_runtime::Paint) -> bool
+impl core::fmt::Debug for pert_ui_runtime::Paint
+pub fn pert_ui_runtime::Paint::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::Paint
+impl core::marker::StructuralPartialEq for pert_ui_runtime::Paint
+impl core::marker::Freeze for pert_ui_runtime::Paint
+impl core::marker::Send for pert_ui_runtime::Paint
+impl core::marker::Sync for pert_ui_runtime::Paint
+impl core::marker::Unpin for pert_ui_runtime::Paint
+impl core::marker::UnsafeUnpin for pert_ui_runtime::Paint
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Paint
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Paint
 pub enum pert_ui_runtime::PathElement
 pub pert_ui_runtime::PathElement::Close
 pub pert_ui_runtime::PathElement::Cubic(pert_ui_runtime::Point, pert_ui_runtime::Point, pert_ui_runtime::Point)
@@ -29314,28 +29502,83 @@ impl<T> core::marker::Unpin for pert_ui_runtime::SendError<T> where T: core::mar
 impl<T> core::marker::UnsafeUnpin for pert_ui_runtime::SendError<T> where T: core::marker::UnsafeUnpin
 impl<T> core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::SendError<T> where T: core::panic::unwind_safe::RefUnwindSafe
 impl<T> core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::SendError<T> where T: core::panic::unwind_safe::UnwindSafe
-pub enum pert_ui_runtime::Shape
-pub pert_ui_runtime::Shape::CutTopRight(pert_ui_runtime::Length)
-pub pert_ui_runtime::Shape::Rectangle
-pub pert_ui_runtime::Shape::Rounded(pert_ui_runtime::Length)
-pub pert_ui_runtime::Shape::RoundedTop(pert_ui_runtime::Length)
-impl core::clone::Clone for pert_ui_runtime::Shape
-pub fn pert_ui_runtime::Shape::clone(&self) -> pert_ui_runtime::Shape
-impl core::cmp::PartialEq for pert_ui_runtime::Shape
-pub fn pert_ui_runtime::Shape::eq(&self, &pert_ui_runtime::Shape) -> bool
-impl core::default::Default for pert_ui_runtime::Shape
-pub fn pert_ui_runtime::Shape::default() -> pert_ui_runtime::Shape
-impl core::fmt::Debug for pert_ui_runtime::Shape
-pub fn pert_ui_runtime::Shape::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
-impl core::marker::Copy for pert_ui_runtime::Shape
-impl core::marker::StructuralPartialEq for pert_ui_runtime::Shape
-impl core::marker::Freeze for pert_ui_runtime::Shape
-impl core::marker::Send for pert_ui_runtime::Shape
-impl core::marker::Sync for pert_ui_runtime::Shape
-impl core::marker::Unpin for pert_ui_runtime::Shape
-impl core::marker::UnsafeUnpin for pert_ui_runtime::Shape
-impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Shape
-impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Shape
+#[non_exhaustive] pub enum pert_ui_runtime::ShapeGeometry
+pub pert_ui_runtime::ShapeGeometry::Arc(pert_ui_runtime::ArcGeometry)
+pub pert_ui_runtime::ShapeGeometry::Rect
+pub pert_ui_runtime::ShapeGeometry::Rect::rect: pert_ui_runtime::Rect
+pub pert_ui_runtime::ShapeGeometry::Rect::shape: pert_ui_runtime::Shape
+pub pert_ui_runtime::ShapeGeometry::Triangle(pert_ui_runtime::TriangleGeometry)
+impl core::clone::Clone for pert_ui_runtime::ShapeGeometry
+pub fn pert_ui_runtime::ShapeGeometry::clone(&self) -> pert_ui_runtime::ShapeGeometry
+impl core::cmp::PartialEq for pert_ui_runtime::ShapeGeometry
+pub fn pert_ui_runtime::ShapeGeometry::eq(&self, &pert_ui_runtime::ShapeGeometry) -> bool
+impl core::fmt::Debug for pert_ui_runtime::ShapeGeometry
+pub fn pert_ui_runtime::ShapeGeometry::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::ShapeGeometry
+impl core::marker::StructuralPartialEq for pert_ui_runtime::ShapeGeometry
+impl core::marker::Freeze for pert_ui_runtime::ShapeGeometry
+impl core::marker::Send for pert_ui_runtime::ShapeGeometry
+impl core::marker::Sync for pert_ui_runtime::ShapeGeometry
+impl core::marker::Unpin for pert_ui_runtime::ShapeGeometry
+impl core::marker::UnsafeUnpin for pert_ui_runtime::ShapeGeometry
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ShapeGeometry
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ShapeGeometry
+#[non_exhaustive] pub enum pert_ui_runtime::ShapeParameters
+pub pert_ui_runtime::ShapeParameters::Arc
+pub pert_ui_runtime::ShapeParameters::Arc::center: [f32; 2]
+pub pert_ui_runtime::ShapeParameters::Arc::full: bool
+pub pert_ui_runtime::ShapeParameters::Arc::half_sweep: [f32; 2]
+pub pert_ui_runtime::ShapeParameters::Arc::half_width: f32
+pub pert_ui_runtime::ShapeParameters::Arc::middle: [f32; 2]
+pub pert_ui_runtime::ShapeParameters::Arc::radius: f32
+pub pert_ui_runtime::ShapeParameters::Arc::thin: f32
+pub pert_ui_runtime::ShapeParameters::Rect
+pub pert_ui_runtime::ShapeParameters::Rect::inner: pert_ui_runtime::Inner
+pub pert_ui_runtime::ShapeParameters::Rect::outer: pert_ui_runtime::Boundary
+pub pert_ui_runtime::ShapeParameters::Triangle
+pub pert_ui_runtime::ShapeParameters::Triangle::vertices: [[f32; 2]; 3]
+pub pert_ui_runtime::ShapeParameters::Triangle::winding: f32
+impl core::clone::Clone for pert_ui_runtime::ShapeParameters
+pub fn pert_ui_runtime::ShapeParameters::clone(&self) -> pert_ui_runtime::ShapeParameters
+impl core::cmp::PartialEq for pert_ui_runtime::ShapeParameters
+pub fn pert_ui_runtime::ShapeParameters::eq(&self, &pert_ui_runtime::ShapeParameters) -> bool
+impl core::fmt::Debug for pert_ui_runtime::ShapeParameters
+pub fn pert_ui_runtime::ShapeParameters::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::ShapeParameters
+impl core::marker::StructuralPartialEq for pert_ui_runtime::ShapeParameters
+impl core::marker::Freeze for pert_ui_runtime::ShapeParameters
+impl core::marker::Send for pert_ui_runtime::ShapeParameters
+impl core::marker::Sync for pert_ui_runtime::ShapeParameters
+impl core::marker::Unpin for pert_ui_runtime::ShapeParameters
+impl core::marker::UnsafeUnpin for pert_ui_runtime::ShapeParameters
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ShapeParameters
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ShapeParameters
+#[non_exhaustive] pub enum pert_ui_runtime::ShapePrepareError
+pub pert_ui_runtime::ShapePrepareError::BorderNotAllowed
+pub pert_ui_runtime::ShapePrepareError::OutOfRange
+impl core::clone::Clone for pert_ui_runtime::ShapePrepareError
+pub fn pert_ui_runtime::ShapePrepareError::clone(&self) -> pert_ui_runtime::ShapePrepareError
+impl core::cmp::Eq for pert_ui_runtime::ShapePrepareError
+impl core::cmp::PartialEq for pert_ui_runtime::ShapePrepareError
+pub fn pert_ui_runtime::ShapePrepareError::eq(&self, &pert_ui_runtime::ShapePrepareError) -> bool
+impl core::error::Error for pert_ui_runtime::ShapePrepareError
+impl core::fmt::Debug for pert_ui_runtime::ShapePrepareError
+pub fn pert_ui_runtime::ShapePrepareError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui_runtime::ShapePrepareError
+pub fn pert_ui_runtime::ShapePrepareError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::ShapePrepareError
+impl core::marker::StructuralPartialEq for pert_ui_runtime::ShapePrepareError
+impl serde_core::ser::Serialize for pert_ui_runtime::ShapePrepareError
+pub fn pert_ui_runtime::ShapePrepareError::serialize<__S>(&self, __S) -> core::result::Result<<__S as serde_core::ser::Serializer>::Ok, <__S as serde_core::ser::Serializer>::Error> where __S: serde_core::ser::Serializer
+impl<'de> serde_core::de::Deserialize<'de> for pert_ui_runtime::ShapePrepareError
+pub fn pert_ui_runtime::ShapePrepareError::deserialize<__D>(__D) -> core::result::Result<Self, <__D as serde_core::de::Deserializer>::Error> where __D: serde_core::de::Deserializer<'de>
+impl core::marker::Freeze for pert_ui_runtime::ShapePrepareError
+impl core::marker::Send for pert_ui_runtime::ShapePrepareError
+impl core::marker::Sync for pert_ui_runtime::ShapePrepareError
+impl core::marker::Unpin for pert_ui_runtime::ShapePrepareError
+impl core::marker::UnsafeUnpin for pert_ui_runtime::ShapePrepareError
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ShapePrepareError
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ShapePrepareError
 pub enum pert_ui_runtime::ShortcutScope
 pub pert_ui_runtime::ShortcutScope::FocusedComponent
 pub pert_ui_runtime::ShortcutScope::Window
@@ -30736,6 +30979,29 @@ impl core::marker::Unpin for pert_ui_runtime::ApplicationError
 impl core::marker::UnsafeUnpin for pert_ui_runtime::ApplicationError
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ApplicationError
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ApplicationError
+pub struct pert_ui_runtime::ArcGeometry
+impl pert_ui_runtime::ArcGeometry
+pub const fn pert_ui_runtime::ArcGeometry::center(self) -> pert_ui_runtime::Point
+pub fn pert_ui_runtime::ArcGeometry::new(pert_ui_runtime::Point, pert_ui_runtime::Length, f32, f32, pert_ui_runtime::Length) -> core::result::Result<Self, pert_ui_runtime::PathError>
+pub const fn pert_ui_runtime::ArcGeometry::radius(self) -> pert_ui_runtime::Length
+pub const fn pert_ui_runtime::ArcGeometry::start_degrees(self) -> f32
+pub const fn pert_ui_runtime::ArcGeometry::sweep_degrees(self) -> f32
+pub const fn pert_ui_runtime::ArcGeometry::width(self) -> pert_ui_runtime::Length
+impl core::clone::Clone for pert_ui_runtime::ArcGeometry
+pub fn pert_ui_runtime::ArcGeometry::clone(&self) -> pert_ui_runtime::ArcGeometry
+impl core::cmp::PartialEq for pert_ui_runtime::ArcGeometry
+pub fn pert_ui_runtime::ArcGeometry::eq(&self, &pert_ui_runtime::ArcGeometry) -> bool
+impl core::fmt::Debug for pert_ui_runtime::ArcGeometry
+pub fn pert_ui_runtime::ArcGeometry::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::ArcGeometry
+impl core::marker::StructuralPartialEq for pert_ui_runtime::ArcGeometry
+impl core::marker::Freeze for pert_ui_runtime::ArcGeometry
+impl core::marker::Send for pert_ui_runtime::ArcGeometry
+impl core::marker::Sync for pert_ui_runtime::ArcGeometry
+impl core::marker::Unpin for pert_ui_runtime::ArcGeometry
+impl core::marker::UnsafeUnpin for pert_ui_runtime::ArcGeometry
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ArcGeometry
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ArcGeometry
 pub struct pert_ui_runtime::ArrangeContext<'a>
 impl pert_ui_runtime::ArrangeContext<'_>
 pub fn pert_ui_runtime::ArrangeContext<'_>::children_adopted(&self) -> bool
@@ -30893,6 +31159,26 @@ impl core::marker::Unpin for pert_ui_runtime::Banner
 impl core::marker::UnsafeUnpin for pert_ui_runtime::Banner
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Banner
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Banner
+pub struct pert_ui_runtime::Border
+impl pert_ui_runtime::Border
+pub const fn pert_ui_runtime::Border::new(pert_ui_runtime::Length, pert_ui_runtime::Paint) -> Self
+pub const fn pert_ui_runtime::Border::paint(self) -> pert_ui_runtime::Paint
+pub const fn pert_ui_runtime::Border::width(self) -> pert_ui_runtime::Length
+impl core::clone::Clone for pert_ui_runtime::Border
+pub fn pert_ui_runtime::Border::clone(&self) -> pert_ui_runtime::Border
+impl core::cmp::PartialEq for pert_ui_runtime::Border
+pub fn pert_ui_runtime::Border::eq(&self, &pert_ui_runtime::Border) -> bool
+impl core::fmt::Debug for pert_ui_runtime::Border
+pub fn pert_ui_runtime::Border::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::Border
+impl core::marker::StructuralPartialEq for pert_ui_runtime::Border
+impl core::marker::Freeze for pert_ui_runtime::Border
+impl core::marker::Send for pert_ui_runtime::Border
+impl core::marker::Sync for pert_ui_runtime::Border
+impl core::marker::Unpin for pert_ui_runtime::Border
+impl core::marker::UnsafeUnpin for pert_ui_runtime::Border
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Border
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Border
 pub struct pert_ui_runtime::BorderInspection
 pub pert_ui_runtime::BorderInspection::color: [f32; 4]
 pub pert_ui_runtime::BorderInspection::width: f32
@@ -30915,6 +31201,25 @@ impl core::marker::Unpin for pert_ui_runtime::BorderInspection
 impl core::marker::UnsafeUnpin for pert_ui_runtime::BorderInspection
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::BorderInspection
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::BorderInspection
+pub struct pert_ui_runtime::Boundary
+impl pert_ui_runtime::Boundary
+pub const fn pert_ui_runtime::Boundary::corners(self) -> [pert_ui_runtime::PreparedCorner; 4]
+pub const fn pert_ui_runtime::Boundary::edges(self) -> [f32; 4]
+impl core::clone::Clone for pert_ui_runtime::Boundary
+pub fn pert_ui_runtime::Boundary::clone(&self) -> pert_ui_runtime::Boundary
+impl core::cmp::PartialEq for pert_ui_runtime::Boundary
+pub fn pert_ui_runtime::Boundary::eq(&self, &pert_ui_runtime::Boundary) -> bool
+impl core::fmt::Debug for pert_ui_runtime::Boundary
+pub fn pert_ui_runtime::Boundary::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::Boundary
+impl core::marker::StructuralPartialEq for pert_ui_runtime::Boundary
+impl core::marker::Freeze for pert_ui_runtime::Boundary
+impl core::marker::Send for pert_ui_runtime::Boundary
+impl core::marker::Sync for pert_ui_runtime::Boundary
+impl core::marker::Unpin for pert_ui_runtime::Boundary
+impl core::marker::UnsafeUnpin for pert_ui_runtime::Boundary
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Boundary
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Boundary
 pub struct pert_ui_runtime::BoxModelInspection
 pub pert_ui_runtime::BoxModelInspection::background: core::option::Option<[f32; 4]>
 pub pert_ui_runtime::BoxModelInspection::border: core::option::Option<pert_ui_runtime::BorderInspection>
@@ -32523,6 +32828,28 @@ impl core::marker::Unpin for pert_ui_runtime::ContextMenuController
 impl core::marker::UnsafeUnpin for pert_ui_runtime::ContextMenuController
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ContextMenuController
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ContextMenuController
+pub struct pert_ui_runtime::Corner
+impl pert_ui_runtime::Corner
+pub const pert_ui_runtime::Corner::SQUARE: Self
+pub const fn pert_ui_runtime::Corner::cut(pert_ui_runtime::Length) -> Self
+pub const fn pert_ui_runtime::Corner::kind(self) -> pert_ui_runtime::CornerKind
+pub const fn pert_ui_runtime::Corner::round(pert_ui_runtime::Length) -> Self
+pub const fn pert_ui_runtime::Corner::size(self) -> pert_ui_runtime::Length
+impl core::clone::Clone for pert_ui_runtime::Corner
+pub fn pert_ui_runtime::Corner::clone(&self) -> pert_ui_runtime::Corner
+impl core::cmp::PartialEq for pert_ui_runtime::Corner
+pub fn pert_ui_runtime::Corner::eq(&self, &pert_ui_runtime::Corner) -> bool
+impl core::fmt::Debug for pert_ui_runtime::Corner
+pub fn pert_ui_runtime::Corner::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::Corner
+impl core::marker::StructuralPartialEq for pert_ui_runtime::Corner
+impl core::marker::Freeze for pert_ui_runtime::Corner
+impl core::marker::Send for pert_ui_runtime::Corner
+impl core::marker::Sync for pert_ui_runtime::Corner
+impl core::marker::Unpin for pert_ui_runtime::Corner
+impl core::marker::UnsafeUnpin for pert_ui_runtime::Corner
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Corner
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Corner
 pub struct pert_ui_runtime::DecimalInput(_)
 impl pert_ui_runtime::DecimalInput
 pub fn pert_ui_runtime::DecimalInput::decimal_places(self, u8) -> core::result::Result<Self, pert_ui_runtime::NumberInputError>
@@ -34125,6 +34452,26 @@ impl core::marker::Unpin for pert_ui_runtime::FrameImage
 impl core::marker::UnsafeUnpin for pert_ui_runtime::FrameImage
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FrameImage
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FrameImage
+pub struct pert_ui_runtime::FrameMapping
+impl pert_ui_runtime::FrameMapping
+pub const fn pert_ui_runtime::FrameMapping::frame_height(&self) -> u32
+pub const fn pert_ui_runtime::FrameMapping::frame_width(&self) -> u32
+pub fn pert_ui_runtime::FrameMapping::new(u32, u32, pert_ui_runtime::Viewport) -> core::result::Result<Self, pert_ui_runtime::GeometryError>
+impl core::clone::Clone for pert_ui_runtime::FrameMapping
+pub fn pert_ui_runtime::FrameMapping::clone(&self) -> pert_ui_runtime::FrameMapping
+impl core::cmp::PartialEq for pert_ui_runtime::FrameMapping
+pub fn pert_ui_runtime::FrameMapping::eq(&self, &pert_ui_runtime::FrameMapping) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FrameMapping
+pub fn pert_ui_runtime::FrameMapping::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::FrameMapping
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FrameMapping
+impl core::marker::Freeze for pert_ui_runtime::FrameMapping
+impl core::marker::Send for pert_ui_runtime::FrameMapping
+impl core::marker::Sync for pert_ui_runtime::FrameMapping
+impl core::marker::Unpin for pert_ui_runtime::FrameMapping
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FrameMapping
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FrameMapping
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FrameMapping
 pub struct pert_ui_runtime::Grid
 impl pert_ui_runtime::Grid
 pub fn pert_ui_runtime::Grid::gap(self, impl core::convert::Into<pert_ui_runtime::Spacing>) -> Self
@@ -36901,16 +37248,17 @@ pub const fn pert_ui_runtime::Painter::view_scale(&self) -> f32
 pub fn pert_ui_runtime::Painter::viewport(&self) -> pert_ui_runtime::Viewport
 pub fn pert_ui_runtime::Painter::with_clip<T>(&mut self, pert_ui_runtime::Rect, impl core::ops::function::FnOnce(&mut Self) -> T) -> T
 impl pert_ui_runtime::Painter
+pub fn pert_ui_runtime::Painter::draw_shape(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Shape, pert_ui_runtime::ShapeStyle) -> core::result::Result<(), pert_ui_runtime::DrawError>
+pub fn pert_ui_runtime::Painter::fill_shape(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Shape, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
+pub fn pert_ui_runtime::Painter::fill_triangle(&mut self, [pert_ui_runtime::Point; 3], pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
+pub fn pert_ui_runtime::Painter::stroke_arc(&mut self, pert_ui_runtime::Point, pert_ui_runtime::Length, f32, f32, pert_ui_runtime::Length, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
+pub fn pert_ui_runtime::Painter::stroke_shape(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Shape, pert_ui_runtime::Length, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
+impl pert_ui_runtime::Painter
 pub fn pert_ui_runtime::Painter::fill_ellipse(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::fill_path(&mut self, &pert_ui_runtime::Path, pert_ui_runtime::FillRule, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::stroke_ellipse(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::StrokeStyle, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::stroke_path(&mut self, &pert_ui_runtime::Path, pert_ui_runtime::StrokeStyle, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::stroke_polyline(&mut self, &[pert_ui_runtime::Point], pert_ui_runtime::StrokeStyle, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
-impl pert_ui_runtime::Painter
-pub fn pert_ui_runtime::Painter::fill_shape(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Shape, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
-pub fn pert_ui_runtime::Painter::fill_triangle(&mut self, [pert_ui_runtime::Point; 3], pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
-pub fn pert_ui_runtime::Painter::stroke_arc(&mut self, pert_ui_runtime::Point, pert_ui_runtime::Length, f32, f32, pert_ui_runtime::Length, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
-pub fn pert_ui_runtime::Painter::stroke_shape(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Shape, pert_ui_runtime::Length, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
 impl core::fmt::Debug for pert_ui_runtime::Painter
 pub fn pert_ui_runtime::Painter::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl !core::marker::Freeze for pert_ui_runtime::Painter
@@ -37339,6 +37687,25 @@ impl core::marker::Unpin for pert_ui_runtime::Popover
 impl core::marker::UnsafeUnpin for pert_ui_runtime::Popover
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Popover
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Popover
+pub struct pert_ui_runtime::PreparedCorner
+impl pert_ui_runtime::PreparedCorner
+pub const fn pert_ui_runtime::PreparedCorner::kind(self) -> pert_ui_runtime::CornerKind
+pub const fn pert_ui_runtime::PreparedCorner::size(self) -> f32
+impl core::clone::Clone for pert_ui_runtime::PreparedCorner
+pub fn pert_ui_runtime::PreparedCorner::clone(&self) -> pert_ui_runtime::PreparedCorner
+impl core::cmp::PartialEq for pert_ui_runtime::PreparedCorner
+pub fn pert_ui_runtime::PreparedCorner::eq(&self, &pert_ui_runtime::PreparedCorner) -> bool
+impl core::fmt::Debug for pert_ui_runtime::PreparedCorner
+pub fn pert_ui_runtime::PreparedCorner::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::PreparedCorner
+impl core::marker::StructuralPartialEq for pert_ui_runtime::PreparedCorner
+impl core::marker::Freeze for pert_ui_runtime::PreparedCorner
+impl core::marker::Send for pert_ui_runtime::PreparedCorner
+impl core::marker::Sync for pert_ui_runtime::PreparedCorner
+impl core::marker::Unpin for pert_ui_runtime::PreparedCorner
+impl core::marker::UnsafeUnpin for pert_ui_runtime::PreparedCorner
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::PreparedCorner
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::PreparedCorner
 pub struct pert_ui_runtime::PreparedDetach
 impl pert_ui_runtime::PreparedDetach
 pub fn pert_ui_runtime::PreparedDetach::destination(&self) -> pert_ui_runtime::NativeWindowId
@@ -37352,6 +37719,30 @@ impl core::marker::Unpin for pert_ui_runtime::PreparedDetach
 impl core::marker::UnsafeUnpin for pert_ui_runtime::PreparedDetach
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::PreparedDetach
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::PreparedDetach
+pub struct pert_ui_runtime::PreparedShape
+impl pert_ui_runtime::PreparedShape
+pub const pert_ui_runtime::PreparedShape::PARITY_MARGIN: f32
+pub fn pert_ui_runtime::PreparedShape::coverage(&self, u32, u32) -> pert_ui_runtime::ShapeCoverage
+pub fn pert_ui_runtime::PreparedShape::new(&pert_ui_runtime::ShapeGeometry, core::option::Option<&pert_ui_runtime::Border>, core::option::Option<pert_ui_runtime::Rect>, &pert_ui_runtime::FrameMapping) -> core::result::Result<core::option::Option<Self>, pert_ui_runtime::ShapePrepareError>
+pub const fn pert_ui_runtime::PreparedShape::parameters(&self) -> pert_ui_runtime::ShapeParameters
+pub fn pert_ui_runtime::PreparedShape::solid_box(&self) -> core::option::Option<[u32; 4]>
+pub fn pert_ui_runtime::PreparedShape::solid_run(&self, u32) -> core::option::Option<[u32; 2]>
+pub const fn pert_ui_runtime::PreparedShape::span(&self) -> [u32; 4]
+impl core::clone::Clone for pert_ui_runtime::PreparedShape
+pub fn pert_ui_runtime::PreparedShape::clone(&self) -> pert_ui_runtime::PreparedShape
+impl core::cmp::PartialEq for pert_ui_runtime::PreparedShape
+pub fn pert_ui_runtime::PreparedShape::eq(&self, &pert_ui_runtime::PreparedShape) -> bool
+impl core::fmt::Debug for pert_ui_runtime::PreparedShape
+pub fn pert_ui_runtime::PreparedShape::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::PreparedShape
+impl core::marker::StructuralPartialEq for pert_ui_runtime::PreparedShape
+impl core::marker::Freeze for pert_ui_runtime::PreparedShape
+impl core::marker::Send for pert_ui_runtime::PreparedShape
+impl core::marker::Sync for pert_ui_runtime::PreparedShape
+impl core::marker::Unpin for pert_ui_runtime::PreparedShape
+impl core::marker::UnsafeUnpin for pert_ui_runtime::PreparedShape
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::PreparedShape
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::PreparedShape
 pub struct pert_ui_runtime::PresentationRate(_)
 impl pert_ui_runtime::PresentationRate
 pub const pert_ui_runtime::PresentationRate::MAX: Self
@@ -39109,6 +39500,74 @@ impl<T> core::marker::Unpin for pert_ui_runtime::SeriesSource<T>
 impl<T> core::marker::UnsafeUnpin for pert_ui_runtime::SeriesSource<T>
 impl<T> !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::SeriesSource<T>
 impl<T> !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::SeriesSource<T>
+pub struct pert_ui_runtime::Shape(_)
+impl pert_ui_runtime::Shape
+pub const pert_ui_runtime::Shape::RECTANGLE: Self
+pub const fn pert_ui_runtime::Shape::corner(self, pert_ui_runtime::CornerPosition) -> pert_ui_runtime::Corner
+pub const fn pert_ui_runtime::Shape::cut_top_right(pert_ui_runtime::Length) -> Self
+pub const fn pert_ui_runtime::Shape::rounded(pert_ui_runtime::Length) -> Self
+pub const fn pert_ui_runtime::Shape::rounded_top(pert_ui_runtime::Length) -> Self
+pub const fn pert_ui_runtime::Shape::with_corner(self, pert_ui_runtime::CornerPosition, pert_ui_runtime::Corner) -> Self
+impl core::clone::Clone for pert_ui_runtime::Shape
+pub fn pert_ui_runtime::Shape::clone(&self) -> pert_ui_runtime::Shape
+impl core::cmp::PartialEq for pert_ui_runtime::Shape
+pub fn pert_ui_runtime::Shape::eq(&self, &pert_ui_runtime::Shape) -> bool
+impl core::default::Default for pert_ui_runtime::Shape
+pub fn pert_ui_runtime::Shape::default() -> Self
+impl core::fmt::Debug for pert_ui_runtime::Shape
+pub fn pert_ui_runtime::Shape::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::Shape
+impl core::marker::StructuralPartialEq for pert_ui_runtime::Shape
+impl core::marker::Freeze for pert_ui_runtime::Shape
+impl core::marker::Send for pert_ui_runtime::Shape
+impl core::marker::Sync for pert_ui_runtime::Shape
+impl core::marker::Unpin for pert_ui_runtime::Shape
+impl core::marker::UnsafeUnpin for pert_ui_runtime::Shape
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Shape
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Shape
+pub struct pert_ui_runtime::ShapeCoverage
+impl pert_ui_runtime::ShapeCoverage
+pub const fn pert_ui_runtime::ShapeCoverage::border(self) -> f32
+pub const fn pert_ui_runtime::ShapeCoverage::exact_arithmetic(self) -> bool
+pub const fn pert_ui_runtime::ShapeCoverage::inner_distance(self) -> core::option::Option<f32>
+pub const fn pert_ui_runtime::ShapeCoverage::outer(self) -> f32
+pub const fn pert_ui_runtime::ShapeCoverage::outer_distance(self) -> f32
+impl core::clone::Clone for pert_ui_runtime::ShapeCoverage
+pub fn pert_ui_runtime::ShapeCoverage::clone(&self) -> pert_ui_runtime::ShapeCoverage
+impl core::cmp::PartialEq for pert_ui_runtime::ShapeCoverage
+pub fn pert_ui_runtime::ShapeCoverage::eq(&self, &pert_ui_runtime::ShapeCoverage) -> bool
+impl core::fmt::Debug for pert_ui_runtime::ShapeCoverage
+pub fn pert_ui_runtime::ShapeCoverage::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::ShapeCoverage
+impl core::marker::StructuralPartialEq for pert_ui_runtime::ShapeCoverage
+impl core::marker::Freeze for pert_ui_runtime::ShapeCoverage
+impl core::marker::Send for pert_ui_runtime::ShapeCoverage
+impl core::marker::Sync for pert_ui_runtime::ShapeCoverage
+impl core::marker::Unpin for pert_ui_runtime::ShapeCoverage
+impl core::marker::UnsafeUnpin for pert_ui_runtime::ShapeCoverage
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ShapeCoverage
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ShapeCoverage
+pub struct pert_ui_runtime::ShapeStyle
+impl pert_ui_runtime::ShapeStyle
+pub const fn pert_ui_runtime::ShapeStyle::border(pert_ui_runtime::Length, pert_ui_runtime::Color) -> Self
+pub const fn pert_ui_runtime::ShapeStyle::fill(pert_ui_runtime::Color) -> Self
+pub const fn pert_ui_runtime::ShapeStyle::with_border(self, pert_ui_runtime::Length, pert_ui_runtime::Color) -> Self
+pub const fn pert_ui_runtime::ShapeStyle::with_fill(self, pert_ui_runtime::Color) -> Self
+impl core::clone::Clone for pert_ui_runtime::ShapeStyle
+pub fn pert_ui_runtime::ShapeStyle::clone(&self) -> pert_ui_runtime::ShapeStyle
+impl core::cmp::PartialEq for pert_ui_runtime::ShapeStyle
+pub fn pert_ui_runtime::ShapeStyle::eq(&self, &pert_ui_runtime::ShapeStyle) -> bool
+impl core::fmt::Debug for pert_ui_runtime::ShapeStyle
+pub fn pert_ui_runtime::ShapeStyle::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::ShapeStyle
+impl core::marker::StructuralPartialEq for pert_ui_runtime::ShapeStyle
+impl core::marker::Freeze for pert_ui_runtime::ShapeStyle
+impl core::marker::Send for pert_ui_runtime::ShapeStyle
+impl core::marker::Sync for pert_ui_runtime::ShapeStyle
+impl core::marker::Unpin for pert_ui_runtime::ShapeStyle
+impl core::marker::UnsafeUnpin for pert_ui_runtime::ShapeStyle
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ShapeStyle
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ShapeStyle
 pub struct pert_ui_runtime::ShortcutBinding
 pub pert_ui_runtime::ShortcutBinding::action: alloc::string::String
 pub pert_ui_runtime::ShortcutBinding::enabled: bool
@@ -41236,6 +41695,25 @@ impl core::marker::Unpin for pert_ui_runtime::TreeSource
 impl core::marker::UnsafeUnpin for pert_ui_runtime::TreeSource
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::TreeSource
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::TreeSource
+pub struct pert_ui_runtime::TriangleGeometry(_)
+impl pert_ui_runtime::TriangleGeometry
+pub fn pert_ui_runtime::TriangleGeometry::new([pert_ui_runtime::Point; 3]) -> core::option::Option<Self>
+pub const fn pert_ui_runtime::TriangleGeometry::vertices(self) -> [pert_ui_runtime::Point; 3]
+impl core::clone::Clone for pert_ui_runtime::TriangleGeometry
+pub fn pert_ui_runtime::TriangleGeometry::clone(&self) -> pert_ui_runtime::TriangleGeometry
+impl core::cmp::PartialEq for pert_ui_runtime::TriangleGeometry
+pub fn pert_ui_runtime::TriangleGeometry::eq(&self, &pert_ui_runtime::TriangleGeometry) -> bool
+impl core::fmt::Debug for pert_ui_runtime::TriangleGeometry
+pub fn pert_ui_runtime::TriangleGeometry::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::TriangleGeometry
+impl core::marker::StructuralPartialEq for pert_ui_runtime::TriangleGeometry
+impl core::marker::Freeze for pert_ui_runtime::TriangleGeometry
+impl core::marker::Send for pert_ui_runtime::TriangleGeometry
+impl core::marker::Sync for pert_ui_runtime::TriangleGeometry
+impl core::marker::Unpin for pert_ui_runtime::TriangleGeometry
+impl core::marker::UnsafeUnpin for pert_ui_runtime::TriangleGeometry
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::TriangleGeometry
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::TriangleGeometry
 pub struct pert_ui_runtime::UiSender<T>
 impl<T: core::marker::Send> pert_ui_runtime::UiSender<T>
 pub fn pert_ui_runtime::UiSender<T>::is_closed(&self) -> bool

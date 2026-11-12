@@ -1,40 +1,90 @@
 //! CPU encoding retention; unchanged command slots retain their encoded quad.
 use super::*;
 
+// One command's encoding: its vertices or its shape record, and its batch.
+type Chunk = (std::sync::Arc<[u8]>, std::sync::Arc<[u8]>, Option<Batch>);
+
 #[derive(Default)]
 pub(super) struct RetainedGeometry {
     viewport: Option<pert_ui_runtime::Viewport>,
+    // Shape records are in frame pixels, so a slot is reused only for the
+    // same mapping onto the same physical extent.
+    mapping: Option<pert_ui_runtime::FrameMapping>,
     commands: Vec<DrawCommand>,
-    chunks: Vec<(std::sync::Arc<[u8]>, Option<Batch>)>,
+    chunks: Vec<Chunk>,
     pub(super) bytes: Vec<u8>,
+    // The frame's shape records, `shapes::RECORD_BYTES` each.
+    pub(super) records: Vec<u8>,
     pub(super) batches: Vec<Batch>,
     #[cfg(test)]
     encoded_commands: usize,
 }
 impl RetainedGeometry {
+    /// How many commands the last preparation encoded instead of reusing.
+    #[cfg(test)]
+    pub(super) fn encoded_commands(&self) -> usize {
+        self.encoded_commands
+    }
+    /// Encodes `scene` for a frame of its viewport's own physical extent.
+    #[cfg(test)]
     pub(super) fn prepare(&self, scene: &DisplayList) -> Result<Self, RenderError> {
+        self.prepare_for(
+            scene,
+            frame_mapping(scene, scene.viewport().frame_extent()),
+            u64::MAX,
+        )
+    }
+    /// Encodes `scene` for the frame `mapping` describes; `None` when the
+    /// frame or the viewport has no extent, where nothing is drawn. Shape
+    /// records beyond `record_budget` bytes are refused before they are
+    /// stored.
+    pub(super) fn prepare_for(
+        &self,
+        scene: &DisplayList,
+        mapping: Option<pert_ui_runtime::FrameMapping>,
+        record_budget: u64,
+    ) -> Result<Self, RenderError> {
         let mut next = Self {
             viewport: Some(scene.viewport()),
+            mapping,
             bytes: Vec::with_capacity(self.bytes.len()),
+            records: Vec::new(),
             chunks: Vec::with_capacity(scene.commands().len()),
             commands: Vec::with_capacity(scene.commands().len()),
             ..Default::default()
         };
         for (index, command) in scene.commands().iter().enumerate() {
-            let chunk =
-                if self.viewport == next.viewport && self.commands.get(index) == Some(command) {
-                    self.chunks[index].clone()
-                } else {
-                    #[cfg(test)]
-                    {
-                        next.encoded_commands += 1;
-                    }
-                    let (bytes, batches) = geometry_commands(scene, std::slice::from_ref(command))?;
-                    (bytes.into(), batches.into_iter().next())
-                };
-            let offset =
-                u32::try_from(next.bytes.len() / 32).map_err(|_| LimitError::VertexCount)?;
-            if let Some(batch) = &chunk.1 {
+            let chunk = if self.viewport == next.viewport
+                && self.mapping == next.mapping
+                && self.commands.get(index) == Some(command)
+            {
+                self.chunks[index].clone()
+            } else {
+                #[cfg(test)]
+                {
+                    next.encoded_commands += 1;
+                }
+                let mut records = Vec::new();
+                let (bytes, batches) = geometry_commands(
+                    scene,
+                    std::slice::from_ref(command),
+                    mapping.as_ref(),
+                    &mut records,
+                )?;
+                (bytes.into(), records.into(), batches.into_iter().next())
+            };
+            // A shape's batch counts records, any other one vertices.
+            let shape = chunk
+                .2
+                .as_ref()
+                .is_some_and(|batch| batch.source == Source::Shape);
+            let offset = if shape {
+                next.records.len() / shapes::RECORD_BYTES
+            } else {
+                next.bytes.len() / 32
+            };
+            let offset = u32::try_from(offset).map_err(|_| LimitError::VertexCount)?;
+            if let Some(batch) = &chunk.2 {
                 let start = offset
                     .checked_add(batch.range.start)
                     .ok_or(LimitError::VertexCount)?;
@@ -53,6 +103,8 @@ impl RetainedGeometry {
                 }
             }
             next.bytes.extend_from_slice(&chunk.0);
+            shapes::check_records(next.records.len() + chunk.1.len(), record_budget)?;
+            next.records.extend_from_slice(&chunk.1);
             next.commands.push(*command);
             next.chunks.push(chunk);
         }

@@ -826,8 +826,15 @@ fn failed_hidden_or_removed_surface_does_not_leave_stale_dismissal_routing() {
 /// Whether the current scene contains a PanelBorder edge at the theme border width.
 fn framed(ui: &mut Runtime) -> bool {
     let border = Palette::dark().color(ColorRole::PanelBorder);
+    let width = ui
+        .theme()
+        .metrics(Density::Standard)
+        .unwrap()
+        .metric(MetricRole::BorderWidth);
     ui.paint().unwrap().commands().iter().any(|c| {
-        matches!(c, DrawCommand::FillRect { rect, color } if *color == border && rect.height() == 1.0)
+        matches!(c, DrawCommand::DrawShape { fill: None, border: Some(stroke), .. }
+            if stroke.paint() == Paint::Solid(border)
+                && stroke.width().get() == width)
     })
 }
 #[test]

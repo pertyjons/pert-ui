@@ -433,7 +433,7 @@ impl Component for LevelMeter {
 /// value that falls in it, joined to the previous column's last value, so a
 /// window far denser than the screen keeps its peaks and costs one rectangle per
 /// column, at most one per retained item. Drawing is plain rectangles: a new
-/// window rasterizes no coverage and adds nothing to the shape cache. The trace
+/// window rasterizes no coverage. The trace
 /// copies the window's values into a buffer it reuses, so a steady stream
 /// allocates nothing after the first full window.
 ///

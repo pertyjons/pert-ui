@@ -336,12 +336,24 @@ pub(crate) fn paint_link(
     state: LinkPaint,
 ) -> Result<(), DrawError> {
     let rect = Rect::from_size(size);
-    let shape = Shape::Rounded(Length::new(painter.metric(MetricRole::CornerRadius))?);
-    if let LinkPaint::Enabled { pressed: true, .. } = state {
-        painter.fill_shape(rect, shape, painter.color(ColorRole::SurfaceHover))?;
-    }
-    if let LinkPaint::Enabled { focused: true, .. } = state {
-        painter.focus_ring(rect, shape)?;
+    let shape = Shape::rounded(Length::new(painter.metric(MetricRole::CornerRadius))?);
+    if let LinkPaint::Enabled {
+        pressed, focused, ..
+    } = state
+    {
+        // The pressed fill and the focus ring are one silhouette.
+        let ring = Length::new(painter.metric(MetricRole::FocusWidth))?;
+        let ring_color = painter.color(ColorRole::FocusRing);
+        let fill = painter.color(ColorRole::SurfaceHover);
+        let style = match (pressed, focused) {
+            (true, true) => Some(ShapeStyle::fill(fill).with_border(ring, ring_color)),
+            (true, false) => Some(ShapeStyle::fill(fill)),
+            (false, true) => Some(ShapeStyle::border(ring, ring_color)),
+            (false, false) => None,
+        };
+        if let Some(style) = style {
+            painter.draw_shape(rect, shape, style)?;
+        }
     }
     let color = painter.color(match state {
         LinkPaint::Enabled { .. } => ColorRole::Link,

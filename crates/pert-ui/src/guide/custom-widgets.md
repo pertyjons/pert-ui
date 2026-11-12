@@ -398,7 +398,7 @@ impl Component for Level {
         painter.fill_rect(filled, painter.color(ColorRole::Primary));
         if painter.focus_within() {
             let width = Length::new(painter.metric(MetricRole::FocusWidth))?;
-            painter.stroke_shape(bounds, Shape::Rectangle, width, painter.color(ColorRole::FocusRing))?;
+            painter.stroke_shape(bounds, Shape::RECTANGLE, width, painter.color(ColorRole::FocusRing))?;
         }
         Ok(())
     }
@@ -444,15 +444,16 @@ assert_eq!(value.get()?, 0.8);
 assert_eq!(*reported.borrow(), [0.5, 0.25, 0.8]);
 ui.key_input(KeyCode::Escape, KeyAction::Release)?;
 
-// The focused control draws the focus ring: four sides in the ring's color,
-// made distinct here from `Primary`, which built-in palettes match.
+// The focused control draws the focus ring: one shape with a border in the
+// ring's color, made distinct here from `Primary`, which built-in palettes match.
 let ring = Color::from_linear(1.0, 0.0, 0.5, 1.0)?;
 ui.theme().set_color(ui.theme().mode()?, ColorRole::FocusRing, ring)?;
 ui.flush(Duration::ZERO)?;
-let sides = ui.paint()?.commands().iter()
-    .filter(|command| matches!(command, DrawCommand::FillRect { color, .. } if *color == ring))
+let rings = ui.paint()?.commands().iter()
+    .filter(|command| matches!(command, DrawCommand::DrawShape { border: Some(border), .. }
+        if border.paint() == pert_ui::Paint::Solid(ring)))
     .count();
-assert_eq!(sides, 4);
+assert_eq!(rings, 1);
 
 // Focus loss restores in `cancel_input`, which reports nothing to `on_change`.
 ui.pointer_input(press(40.0)?)?;

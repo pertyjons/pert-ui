@@ -12,6 +12,7 @@ mod native_smoke;
 #[cfg(test)]
 mod realtime_probe;
 mod retained;
+mod shapes;
 mod textures;
 
 use pert_ui_runtime::{
@@ -22,10 +23,12 @@ use retained::{RetainedGeometry, changed_bytes};
 use std::{cell::RefCell, collections::HashMap, rc::Rc, sync::Arc, time::Duration};
 
 // What a run of vertices samples: nothing, a mask, or an image with a filter.
-// Indices refer to the prepared scene's deduplicated resource tables.
+// Indices refer to the prepared scene's deduplicated resource tables. A run of
+// shapes is a range of records in the shape buffer instead of vertices.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum Source {
     Fill,
+    Shape,
     Mask(usize),
     Image { index: usize, filter: usize },
 }
@@ -53,6 +56,10 @@ pub enum RenderError {
     /// scene. The next successful scene is prepared from scratch.
     #[error(transparent)]
     Limit(#[from] LimitError),
+    /// A shape command could not be prepared for the frame: its geometry
+    /// lies outside the range a renderer evaluates, or it is malformed.
+    #[error(transparent)]
+    Shape(#[from] pert_ui_runtime::ShapePrepareError),
     /// The renderer has no nonzero surface extent: it was created at zero size
     /// or last resized to zero. A nonzero [`Renderer::resize`] configures it.
     #[error("the surface has no nonzero extent to render into")]
@@ -108,6 +115,7 @@ pub enum Frame {
 #[derive(Clone)]
 struct Pipelines {
     fill: wgpu::RenderPipeline,
+    shapes: shapes::Pipeline,
     masks: textures::Textures<MaskImage>,
     images: textures::Textures<RasterImage>,
 }
@@ -155,7 +163,15 @@ impl Shared {
 /// hosts may integrate it directly. Only this explicit backend crate exposes wgpu
 /// surface interop; the runtime and ordinary facade APIs contain no wgpu types.
 /// Vector geometry uses a retained CPU coverage fallback; original paths stay in
-/// the public scene. Unchanged command slots reuse encoded vertices. Changed byte
+/// the public scene. A [`DrawCommand::DrawShape`] is prepared with
+/// [`pert_ui_runtime::PreparedShape`] into fixed-size records of a storage
+/// buffer, each drawn as an instanced quad whose fragment stage evaluates the
+/// reference coverage formulas: one record over the span for an arc or a
+/// triangle, and for a rectangle up to five, the strips around its
+/// [`pert_ui_runtime::PreparedShape::solid_box`] and the box, which is
+/// painted without evaluation. Consecutive shapes are one draw.
+/// A shape's records are in frame pixels, so they are encoded again when the
+/// surface's extent changes, also for an unchanged scene. Unchanged command slots reuse encoded vertices. Changed byte
 /// ranges upload into a retained buffer, whose capacity grows geometrically.
 /// Insertions/reordering may invalidate later slots; viewport changes invalidate
 /// all geometry. Composition, comparison and CPU byte assembly remain scene-linear.
@@ -246,8 +262,12 @@ pub struct Renderer {
     extent: Option<PhysicalExtent>,
     pipelines: Pipelines,
     vertices: Option<wgpu::Buffer>,
+    // The storage buffer of shape records and its binding.
+    records: Option<(wgpu::Buffer, wgpu::BindGroup)>,
     batches: Vec<Batch>,
     scene: Option<DisplayList>,
+    // The frame mapping `scene` was prepared for.
+    mapping: Option<pert_ui_runtime::FrameMapping>,
     rasterizer: pert_ui_runtime::VectorRasterizer,
     encoded: RetainedGeometry,
 }
@@ -462,6 +482,8 @@ impl Renderer {
             extent: None,
             pipelines,
             vertices: None,
+            records: None,
+            mapping: None,
             batches: Vec::new(),
             scene: None,
             rasterizer: Default::default(),
@@ -573,9 +595,21 @@ impl Renderer {
             });
             if let Some(vertices) = &self.vertices {
                 pass.set_vertex_buffer(0, vertices.slice(..));
+            }
+            {
                 let pipelines = &self.pipelines;
                 for batch in &self.batches {
                     match batch.source {
+                        Source::Shape => {
+                            let (_, records) = self.records.as_ref().ok_or_else(|| {
+                                RenderError::Graphics("shape records are missing".into())
+                            })?;
+                            pass.set_pipeline(&pipelines.shapes.pipeline);
+                            pass.set_bind_group(0, records, &[]);
+                            // One quad per record, in the batch's record range.
+                            pass.draw(0..6, batch.range.clone());
+                            continue;
+                        }
                         Source::Fill => pass.set_pipeline(&pipelines.fill),
                         Source::Mask(index) => {
                             pass.set_pipeline(&pipelines.masks.pipeline);
@@ -606,7 +640,12 @@ impl Renderer {
     /// # Errors
     /// - [`RenderError::Limit`] when the scene exceeds a
     ///   [`ResourceKind::scene_budget_bytes`], a resource exceeds the device texture
-    ///   dimension, or its vertices exceed the device buffer or a `u32` draw range.
+    ///   dimension, its vertices exceed the device buffer or a `u32` draw range,
+    ///   or its shape records exceed the device's storage buffer binding size
+    ///   ([`LimitError::ShapeRecords`]).
+    /// - [`RenderError::Shape`] when a shape cannot be prepared for the frame:
+    ///   its geometry lies beyond the range that can be evaluated, or it is
+    ///   malformed.
     /// - [`RenderError::Drawing`] when the vector fallback cannot flatten or
     ///   rasterize a path.
     /// - [`RenderError::UnsupportedGraphics`] for a drawing command or sampling
@@ -786,10 +825,15 @@ impl Renderer {
     }
     // Encodes and uploads a scene whose vectors are already coverage masks.
     fn prepare_rasterized(&mut self, scene: DisplayList) -> Result<(), RenderError> {
-        if self.scene.as_ref() != Some(&scene) {
+        let mapping = self.extent.and_then(|extent| frame_mapping(&scene, extent));
+        if !prepared_for(self.scene.as_ref(), self.mapping, &scene, mapping) {
             // Every failed preparation must force a full rebuild on the next call.
             self.scene = None;
-            let encoded = self.encoded.prepare(&scene)?;
+            let limits = self.device.limits();
+            let record_budget = limits
+                .max_storage_buffer_binding_size
+                .min(limits.max_buffer_size);
+            let encoded = self.encoded.prepare_for(&scene, mapping, record_budget)?;
             let bytes = &encoded.bytes;
             let mut upload = changed_bytes(&self.encoded.bytes, bytes);
             self.pipelines
@@ -833,20 +877,93 @@ impl Renderer {
                         .write_buffer(buffer, upload.start as u64, &bytes[upload]);
                 }
             }
+            // Nothing after this point fails, so the records the buffer
+            // holds and `self.encoded`, which the next upload is compared
+            // with, change together.
+            self.upload_records(&encoded.records);
             self.encoded = encoded;
             self.scene = Some(scene);
+            self.mapping = mapping;
         }
         Ok(())
     }
+    // Uploads the changed part of the frame's shape records, growing the
+    // storage buffer geometrically and rebinding it when it is replaced.
+    // Preparation has already checked the records against the binding limit.
+    fn upload_records(&mut self, records: &[u8]) {
+        let limits = self.device.limits();
+        if records.is_empty() {
+            return;
+        }
+        let mut upload = changed_bytes(&self.encoded.records, records);
+        let required = records.len() as u64;
+        if self
+            .records
+            .as_ref()
+            .is_none_or(|(buffer, _)| buffer.size() < required)
+        {
+            let capacity = required
+                .checked_next_power_of_two()
+                .unwrap_or(required)
+                .min(limits.max_buffer_size)
+                .max(required);
+            upload = 0..records.len();
+            let buffer = self.device.create_buffer(&wgpu::BufferDescriptor {
+                label: Some("pert-ui shape records"),
+                size: capacity,
+                usage: wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
+                mapped_at_creation: false,
+            });
+            let binding = self.pipelines.shapes.bind(&self.device, &buffer);
+            self.records = Some((buffer, binding));
+        }
+        if let Some((buffer, _)) = &self.records
+            && !upload.is_empty()
+        {
+            self.queue
+                .write_buffer(buffer, upload.start as u64, &records[upload]);
+        }
+    }
+}
+
+// Whether the scene prepared last, for the frame mapping it was prepared
+// for, is still what `scene` needs under `mapping`. Shape records are in
+// frame pixels, so an equal scene is prepared again for another extent.
+fn prepared_for(
+    current: Option<&DisplayList>,
+    current_mapping: Option<pert_ui_runtime::FrameMapping>,
+    scene: &DisplayList,
+    mapping: Option<pert_ui_runtime::FrameMapping>,
+) -> bool {
+    current == Some(scene) && current_mapping == mapping
+}
+
+// How `scene`'s logical coordinates map onto a frame of `extent`; `None`
+// when either has no extent, where nothing is drawn.
+fn frame_mapping(
+    scene: &DisplayList,
+    extent: PhysicalExtent,
+) -> Option<pert_ui_runtime::FrameMapping> {
+    pert_ui_runtime::FrameMapping::new(extent.width(), extent.height(), scene.viewport()).ok()
 }
 
 #[cfg(test)]
 fn geometry(scene: &DisplayList) -> Result<(Vec<u8>, Vec<Batch>), RenderError> {
-    geometry_commands(scene, scene.commands())
+    geometry_commands(
+        scene,
+        scene.commands(),
+        frame_mapping(scene, scene.viewport().frame_extent()).as_ref(),
+        &mut Vec::new(),
+    )
 }
+// Encodes `commands`: vertices for quads, and the records appended to
+// `records` for each shape, whose batch is a range of record indices counted
+// from `records`' start.
 fn geometry_commands(
     scene: &DisplayList,
     commands: &[DrawCommand],
+    mapping: Option<&pert_ui_runtime::FrameMapping>,
+    records: &mut Vec<u8>,
 ) -> Result<(Vec<u8>, Vec<Batch>), RenderError> {
     let width = f64::from(scene.viewport().width());
     let height = f64::from(scene.viewport().height());
@@ -856,6 +973,36 @@ fn geometry_commands(
         return Ok((bytes, batches));
     }
     for command in commands {
+        if let DrawCommand::DrawShape {
+            geometry,
+            fill,
+            border,
+            clip,
+            ..
+        } = command
+        {
+            // Without a frame mapping the frame has no extent to draw into.
+            let start = u32::try_from(records.len() / shapes::RECORD_BYTES)
+                .map_err(|_| LimitError::VertexCount)?;
+            let count = match mapping {
+                Some(mapping) => shapes::append(geometry, *fill, *border, *clip, mapping, records)?,
+                None => 0,
+            };
+            if count > 0 {
+                let end = start.checked_add(count).ok_or(LimitError::VertexCount)?;
+                if let Some(last) = batches.last_mut()
+                    && last.source == Source::Shape
+                {
+                    last.range.end = end;
+                } else {
+                    batches.push(Batch {
+                        range: start..end,
+                        source: Source::Shape,
+                    });
+                }
+            }
+            continue;
+        }
         let (rect, color, clip, source, turn) = match *command {
             DrawCommand::FillRect { rect, color } => {
                 (rect, color, None, Source::Fill, QuarterTurn::None)
@@ -966,6 +1113,19 @@ fn vertices(scene: &DisplayList) -> Result<Vec<u8>, RenderError> {
 mod tests {
     use super::*;
     use pert_ui_runtime::Element;
+
+    #[test]
+    fn a_shape_that_cannot_be_prepared_keeps_its_typed_cause() {
+        use pert_ui_runtime::ShapePrepareError;
+        for cause in [
+            ShapePrepareError::OutOfRange,
+            ShapePrepareError::BorderNotAllowed,
+        ] {
+            let error = RenderError::from(cause);
+            assert!(matches!(error, RenderError::Shape(kept) if kept == cause));
+            assert_eq!(error.to_string(), cause.to_string());
+        }
+    }
 
     #[test]
     fn renderer_implements_debug() {
@@ -1253,11 +1413,13 @@ fn create_pipelines(
     });
     let masks = textures::Textures::new(device, format, &shared.masks);
     let images = textures::Textures::new(device, format, &shared.images);
+    let shapes = shapes::Pipeline::new(device, format);
     if let Some(error) = pollster::block_on(error_scope.pop()) {
         return Err(RenderError::Graphics(error.to_string()));
     }
     Ok(Pipelines {
         fill,
+        shapes,
         masks,
         images,
     })
@@ -1317,6 +1479,8 @@ impl Renderer {
             extent: None,
             pipelines,
             vertices: None,
+            records: None,
+            mapping: None,
             batches: Vec::new(),
             scene: None,
             rasterizer: Default::default(),

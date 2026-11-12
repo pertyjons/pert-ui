@@ -1,12 +1,39 @@
 # Rendering capabilities and performance
 
-Status: **draft, open exploratory plan**, created 2026-10-26 at the
-maintainer's request. Phase 0 started 2026-11-05: its report,
-[rendering/phase0-report.md](rendering/phase0-report.md), is Codex-reviewed
-and corrected, and the maintainer decided on 2026-11-06: path 1, phase 1 =
-B + C, then A, D and G1; J1 investigated beside it. See the report's
-Decisions section. Nothing here is a commitment until the maintainer has chosen what to
-build.
+Status: **phases 0 and 1 done; the next phase is not chosen.** Created
+2026-10-26 at the maintainer's request as an open exploratory plan. The
+[roadmap](#roadmap) below says what is decided, what is in progress and what
+is still open. A candidate without a decision is not a commitment.
+
+## Roadmap
+
+| Step | Content | State |
+|---|---|---|
+| Phase 0 | Investigation: needs, gradients, other libraries, baseline, peniko and a vello spike | Done 2026-11-05. [Report](rendering/phase0-report.md), Codex-reviewed; decisions 2026-11-06 |
+| J1 | UI work on resize and scale change, found by the baseline | Done in 0.3.103: 18–94 ms per frame became 0.8–3 ms ([j1-resize.md](rendering/j1-resize.md)) |
+| Phase 1 | B + C: analytic shapes as one `DrawShape` command, with a paint slot | Done 2026-11-12 (0.3.104–0.3.111). The specification's rules are in rustdoc and [docs/rendering-platform.md](../docs/rendering-platform.md); the [plan](rendering/phase1-plan.md) records the slices, measurements and reviews; RENDER-05 in TODO.md is the open follow-up |
+| Phase 2 | A: `Paint` with gradients, Oklab by default | Decided as next; no spec yet |
+| Phase 3 | D: analytic box shadows | Decided to follow A; no spec yet |
+| Phase 4 | G1: rounded clips and group opacity | Decided to follow D; no spec yet |
+| Open | F (GPU polyline), J2 (CPU renderer speed), I (latency) | Ranked 4–6 in the report, each with a measured cost; not scheduled |
+| Deferred | E (glyph atlas), G2 (affine transforms) | No measured need, or not prioritized |
+| Dropped | H (layers and partial redraw), vello as a backend | No measured gain; vello breaks the linear-light blend contract |
+
+Decisions that bind every later phase (the report's Decisions section):
+
+- **Path 1:** pert-ui's own renderers, blending in linear light. vello is a
+  reference and a measuring stick, and peniko a model for `Paint`, not a
+  dependency of the runtime or the facade.
+- **Parity:** interiors stay exact or within ±1 per channel; analytic edges
+  get their own documented tier, set by measurement in phase 1.
+- **Each phase** gets a spec, a Codex review and the maintainer's approval
+  before implementation, and its own before and after measurement.
+
+What the phases chosen so far are for: phases 1–4 add capability (corners,
+gradients, shadows, clips) and remove code. They are not expected to make
+frames faster; phase 0 and phase 1's slice 0 show that shapes cost little
+today. The measured costs that remain are the open candidates F, J2 and I.
+Whether one of them should come before phase 2 is the maintainer's choice.
 
 ## Why
 
@@ -54,16 +81,18 @@ unpublished library).
   gate, and native evidence on the platforms available, recording what
   could not be run.
 
-## Phase 0: investigation
+## Phase 0: investigation (done)
 
-The first step, and the only one planned in detail. Its output is a
-report in `plans/rendering/` with a ranked list of candidates, each with
-its expected gain, cost, risk and the `DisplayList` change it needs; the
-maintainer then chooses the implementation phases.
+The first step. Its output is the [report](rendering/phase0-report.md) in
+`plans/rendering/`, with a ranked list of candidates, each with its
+expected gain, cost, risk and the `DisplayList` change it needs. The items
+below are what it was asked to cover, kept as the record of its scope. The
+report marks item 4 incomplete; phase 1's probe has since measured the
+mixer and the diagram editor, and latency waits for candidate I.
 
 1. **Needs.** What the repository's applications and probes draw today
-   and what they work around or cannot draw: the gallery, the mixer
-   (meters, traces, knobs), the diagram editor (edges, selection,
+   and what they work around or cannot draw: the gallery (knobs and
+   traces), the mixer (meters and sliders), the diagram editor (edges, selection,
    zoom), the log explorer and inventory (dense text and tables),
    floating windows, menus and popovers (separation from the content
    behind them), focus indication and themes. Include what a theme
@@ -145,7 +174,8 @@ maintainer then chooses the implementation phases.
 
 ## Candidate directions
 
-None is chosen. Phase 0 ranks them and may add or drop any.
+As listed before phase 0. The [roadmap](#roadmap) says which are chosen;
+the report ranks them and gives each one's measured case.
 
 - **A. A paint model with gradients.** `Paint` for fills and strokes:
   solid, linear, radial and conic gradients, with defined interpolation
@@ -155,9 +185,11 @@ None is chosen. Phase 0 ranks them and may add or drop any.
   borders, ellipses and arcs computed in the fragment shader from
   distance fields, and by the same formula in the CPU renderer. It
   removes CPU coverage masks for ordinary shapes, their cache and their
-  uploads, and makes animated sizes and radii free.
+  uploads, and makes animated sizes and radii free. Phase 1 covers
+  rounded and cut rectangles, arcs and triangles; ellipses stay paths.
 - **C. Instanced rendering.** One instance per primitive instead of six
-  vertices: less data, smaller uploads, simpler batching.
+  vertices: less data, smaller uploads, simpler batching. Phase 1 does
+  this for shapes only; rectangles, masks and images keep their quads.
 - **D. Shadows and blur.** Analytic box shadows (an error-function
   falloff, no blur pass) for elevation; a true backdrop blur only if the
   needs survey shows a use worth its render passes.
@@ -180,15 +212,15 @@ None is chosen. Phase 0 ranks them and may add or drop any.
   drawing cost for playing and recording music.
 - **J. Anything phase 0 finds** with comparable value.
 
-## Open questions for the maintainer
+## The original open questions, answered
 
-1. Which visual capabilities matter most for the intended applications:
-   gradients, shadows, blur, transforms, or others?
-2. Is exact pixel parity between the CPU and GPU renderers required, or a
-   stated tolerance per primitive?
-3. May the investigation consider a rendering dependency (such as vello)
-   as an option, or should the renderer stay self-written?
-4. Where does this plan run relative to the usability work and round 2?
+The maintainer answered them on 2026-11-06 (the report's Decisions):
+
+1. **Capabilities:** rounded shapes, then gradients, shadows, and rounded
+   clips with group opacity; arbitrary rotation is not prioritized.
+2. **Parity:** a stated tolerance per tier, not exact parity at edges.
+3. **A rendering dependency:** considered and declined (path 1).
+4. **Scheduling:** the plan runs now, as the next work.
 
 ## Review record
 

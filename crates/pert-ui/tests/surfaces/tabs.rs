@@ -45,12 +45,7 @@ fn overflow_arrow_has_neutral_hover_background() {
             .unwrap()
             .commands()
             .iter()
-            .filter(|command| {
-                matches!(command,
-                    DrawCommand::FillRect { color: fill, .. }
-                    | DrawCommand::DrawMask { color: fill, .. }
-                    if *fill == color)
-            })
+            .filter(|command| crate::support::paints_with(command, color))
             .count()
     };
     let resting = count(&mut ui);
@@ -429,7 +424,17 @@ fn horizontal_metric_edits_reveal_the_selected_header_without_changing_height() 
         ui.flush(Duration::ZERO).unwrap();
         let scene = ui.paint().unwrap();
         assert_eq!(selected(&ui), "c");
-        assert!(scene.commands().iter().any(|command| matches!(command, DrawCommand::DrawMask { rect, color, .. } | DrawCommand::FillRect { rect, color } if *color == Palette::dark().color(ColorRole::TabSelected) && rect.x() >= 32.0 && rect.x() < 168.0)), "{role:?}");
+        assert!(
+            scene
+                .commands()
+                .iter()
+                .any(|command| crate::support::paints_with(
+                    command,
+                    Palette::dark().color(ColorRole::TabSelected)
+                ) && crate::support::extent(command)
+                    .is_some_and(|rect| rect.x() >= 32.0 && rect.x() < 168.0)),
+            "{role:?}"
+        );
     }
 }
 #[test]

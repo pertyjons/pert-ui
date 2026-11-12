@@ -204,6 +204,10 @@ pub enum CaptureError {
     /// same way.
     #[error(transparent)]
     Limit(crate::LimitError),
+    /// A shape command could not be prepared for the frame: its geometry
+    /// lies outside the range a renderer evaluates, or it is malformed.
+    #[error(transparent)]
+    Shape(crate::ShapePrepareError),
     /// [`Runtime::MAX_PENDING_CAPTURES`](crate::Runtime::MAX_PENDING_CAPTURES)
     /// captures are already waiting for the host; wait for one, then ask
     /// again.

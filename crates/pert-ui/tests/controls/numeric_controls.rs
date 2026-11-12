@@ -1,4 +1,5 @@
 //! Parameter controls preserve transaction and identity boundaries.
+use crate::support;
 use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::time::Duration;
@@ -420,23 +421,9 @@ fn labeled_slider_endpoints_follow_the_painted_track_and_text_does_not_edit() {
         .unwrap();
         ui.flush(Duration::ZERO).unwrap();
         let scene = ui.paint().unwrap();
-        // Rounded tracks compose clipped corner masks and solid interior bands.
-        let bounds = scene
-            .commands()
-            .iter()
-            .filter_map(|command| match command {
-                DrawCommand::FillRect { rect, color }
-                    if *color == Palette::dark().color(ColorRole::Outline) =>
-                {
-                    Some(*rect)
-                }
-                DrawCommand::DrawMask {
-                    rect, color, clip, ..
-                } if *color == Palette::dark().color(ColorRole::Outline) => {
-                    Some(clip.map_or(*rect, |clip| rect.intersection(clip)))
-                }
-                _ => None,
-            })
+        // The track and its ends are shapes in the outline color.
+        let bounds = support::colored(&scene, Palette::dark().color(ColorRole::Outline))
+            .into_iter()
             .fold(
                 [
                     f32::INFINITY,
@@ -728,26 +715,10 @@ fn slider_fill_follows_logarithmic_normalized_values_without_layout_or_idle_work
         .color(ColorRole::Primary);
     // The filled part of the track is the only Primary geometry in the scene.
     let coverage = |scene: &DisplayList| {
-        scene
-            .commands()
+        support::colored(scene, primary)
             .iter()
-            .filter_map(|command| match command {
-                DrawCommand::DrawMask { mask, color, .. } if *color == primary => Some(
-                    scene
-                        .mask(*mask)
-                        .unwrap()
-                        .pixels()
-                        .iter()
-                        .map(|value| u64::from(*value))
-                        .sum::<u64>(),
-                ),
-                DrawCommand::FillRect { rect, color, .. } if *color == primary => {
-                    let [_, _, w, h] = rect.values();
-                    Some((w * h) as u64)
-                }
-                _ => None,
-            })
-            .sum::<u64>()
+            .map(|rect| f64::from(rect.width()) * f64::from(rect.height()))
+            .sum::<f64>()
     };
     let minimum = ui.paint().unwrap();
     let bounds = ui.bounds(&id).unwrap();

@@ -3,7 +3,7 @@
 //! Everything here is a pure function of validation data and the viewport, so
 //! composing the overlay can invalidate nothing. The drawing is plain
 //! rectangles in fixed colors: it must not depend on the theme it may be
-//! debugging, and it must not enter the shape cache or a resource table.
+//! debugging, and it must not enter a resource table.
 use crate::{Color, DrawCommand, Rect, Viewport};
 
 /// Outline color of a marker whose own color is not a valid color.

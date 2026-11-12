@@ -120,7 +120,6 @@ impl Runtime {
                     focused = node.presentation_parent();
                 }
                 let mut painter = crate::Painter {
-                    shapes: self.shared.shapes.clone(),
                     text: self.text.clone(),
                     font_reads: Cell::new(0),
                     text_drawn: Cell::new(false),
@@ -322,6 +321,39 @@ impl Runtime {
                             tint,
                             sampling,
                             turn,
+                            clip,
+                        }
+                    }
+                    crate::DrawCommand::DrawShape {
+                        geometry,
+                        fill,
+                        border,
+                        clip: local_clip,
+                    } => {
+                        let local_clip = local_clip.map(place).transpose()?;
+                        let clip = match (clip, local_clip) {
+                            (Some(a), Some(b)) => Some(a.intersection(b)),
+                            (a, b) => a.or(b),
+                        };
+                        if clip.is_some_and(crate::Rect::is_empty) {
+                            continue;
+                        }
+                        // Positions map through the origin and the view scale,
+                        // and lengths by the view scale, so a magnified shape
+                        // is evaluated at the size it is shown at.
+                        let Some(geometry) = geometry.placed(origin, view)? else {
+                            continue;
+                        };
+                        // As for a rectangle or a mask, what the clip removes
+                        // whole costs no command.
+                        if clip.is_some_and(|clip| geometry.misses(clip, viewport)) {
+                            continue;
+                        }
+                        let border = border.map(|border| border.scaled(view)).transpose()?;
+                        crate::DrawCommand::DrawShape {
+                            geometry,
+                            fill,
+                            border,
                             clip,
                         }
                     }

@@ -1,4 +1,5 @@
 //! Bundled typography selection, equal advances and retained font-specific masks.
+use crate::support;
 use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc, time::Duration};
@@ -146,7 +147,11 @@ fn filled_buttons_and_tab_cards_have_distinct_default_surfaces() {
     ui.flush(Duration::ZERO).unwrap();
     let scene = ui.paint().unwrap();
     for expected in [Color::BUTTON, Color::TAB, Color::TAB_SELECTED] {
-        assert!(scene.commands().iter().any(|c| matches!(c, DrawCommand::DrawMask { color, rect, .. } if *color == expected && rect.width() > 0.0 && rect.height() > 0.0)));
+        assert!(
+            support::colored(&scene, expected)
+                .iter()
+                .any(|rect| rect.width() > 0.0 && rect.height() > 0.0)
+        );
         assert_ne!(expected, Color::SURFACE);
         assert_eq!(expected.alpha(), 1.0);
     }

@@ -754,7 +754,7 @@ impl Component for ZoomView {
         let (true, size) = (self.focused, painter.size()) else {
             return Ok(());
         };
-        painter.focus_ring(Rect::from_size(size), Shape::Rectangle)
+        painter.focus_ring(Rect::from_size(size), Shape::RECTANGLE)
     }
     fn inspect(&self) -> ComponentDetails {
         let mut details = ComponentDetails::default();

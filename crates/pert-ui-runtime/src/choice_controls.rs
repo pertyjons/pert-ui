@@ -139,7 +139,7 @@ pub(crate) fn validate<T: Eq>(choices: &[Choice<T>]) -> Result<(), ChoiceError> 
 }
 
 pub(crate) fn rounded(radius: f32) -> Result<Shape, DrawError> {
-    Ok(Shape::Rounded(Length::new(radius)?))
+    Ok(Shape::rounded(Length::new(radius)?))
 }
 /// Shared editable-field frame: a Surface fill, or SurfaceHover on an enabled
 /// hovered field, with a rounded outline: the border width in Outline at rest,
@@ -153,23 +153,24 @@ pub(crate) fn field_frame(
     hovered: bool,
 ) -> Result<(), DrawError> {
     let shape = rounded(p.metric(MetricRole::CornerRadius))?;
-    p.fill_shape(
-        rect,
-        shape,
-        p.color(if hovered {
-            ColorRole::SurfaceHover
-        } else {
-            ColorRole::Surface
-        }),
-    )?;
+    let fill = p.color(if hovered {
+        ColorRole::SurfaceHover
+    } else {
+        ColorRole::Surface
+    });
+    // The focused border is the focus ring: `FocusRing` at `FocusWidth`.
     let (role, width) = if invalid {
         (ColorRole::Error, MetricRole::FocusWidth)
     } else if focused {
-        return p.focus_ring(rect, shape);
+        (ColorRole::FocusRing, MetricRole::FocusWidth)
     } else {
         (ColorRole::Outline, MetricRole::BorderWidth)
     };
-    p.stroke_shape(rect, shape, Length::new(p.metric(width))?, p.color(role))
+    p.draw_shape(
+        rect,
+        shape,
+        ShapeStyle::fill(fill).with_border(Length::new(p.metric(width))?, p.color(role)),
+    )
 }
 /// The focus ring on the standard rounded control silhouette.
 pub(crate) fn focus_ring(p: &mut Painter, rect: Rect) -> Result<(), DrawError> {

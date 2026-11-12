@@ -28,8 +28,8 @@ pub enum DebugMode {
 /// The overlay is part of the [`DisplayList`](crate::DisplayList), so every
 /// backend, headless test and captured scene sees the same drawing. It consists
 /// of plain [`FillRect`](crate::DrawCommand::FillRect) commands in fixed colors
-/// that do not depend on the theme, carries no clip, and enters neither the
-/// shape cache nor a resource table. It changes no layout, hit testing, focus,
+/// that do not depend on the theme, carries no clip, and enters no resource
+/// table. It changes no layout, hit testing, focus,
 /// inspected component data or workspace document.
 ///
 /// Both drawing modes read what the development validation engine collected and

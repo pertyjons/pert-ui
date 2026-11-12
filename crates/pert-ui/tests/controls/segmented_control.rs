@@ -1,4 +1,5 @@
 //! Joined, mutually exclusive choices through the public facade.
+use crate::support;
 use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::Cell, rc::Rc, time::Duration};
@@ -186,15 +187,11 @@ fn segments_carry_no_underline_or_baseline() {
     ui.flush(Duration::ZERO).unwrap();
     let scene = ui.paint().unwrap();
     let palette = ui.theme().palette(ThemeMode::Dark).unwrap();
-    let tint = |command: &DrawCommand| match command {
-        DrawCommand::FillRect { color, .. } | DrawCommand::DrawMask { color, .. } => Some(*color),
-        _ => None,
-    };
     let count = |role: ColorRole| {
         scene
             .commands()
             .iter()
-            .filter(|command| tint(command) == Some(palette.color(role)))
+            .filter(|command| support::paints_with(command, palette.color(role)))
             .count()
     };
     assert_eq!(

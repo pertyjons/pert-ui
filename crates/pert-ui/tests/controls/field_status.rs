@@ -3,7 +3,7 @@
 use crate::support;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc, time::Duration};
-use support::find;
+use support::{colored, find};
 
 fn ui() -> Runtime {
     let ui = Runtime::new();
@@ -18,21 +18,6 @@ fn draw(ui: &mut Runtime) -> DisplayList {
 fn role(ui: &Runtime, role: ColorRole) -> Color {
     let theme = ui.theme();
     theme.palette(theme.mode().unwrap()).unwrap().color(role)
-}
-fn colored(scene: &DisplayList, color: Color) -> Vec<Rect> {
-    scene
-        .commands()
-        .iter()
-        .filter_map(|command| match command {
-            DrawCommand::FillRect { rect, color: c }
-            | DrawCommand::DrawMask { rect, color: c, .. }
-                if *c == color =>
-            {
-                Some(*rect)
-            }
-            _ => None,
-        })
-        .collect()
 }
 fn property(ui: &Runtime, key: &str, name: &str) -> InspectValue {
     ui.inspect()

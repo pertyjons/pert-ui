@@ -857,7 +857,7 @@ impl Component for Canvas {
                 let [x, y, w, h] = self.view_rect(self.shown_rect(node))?.values();
                 painter.stroke_shape(
                     Rect::new(x - 3.0, y - 3.0, w + 6.0, h + 6.0)?,
-                    Shape::Rounded(Length::new(4.0)?),
+                    Shape::rounded(Length::new(4.0)?),
                     Length::new(2.0)?,
                     primary,
                 )?;
@@ -867,7 +867,7 @@ impl Component for Canvas {
             Gesture::Band { from, to, .. } => {
                 let band = self.view_rect(band_rect(from, to)?)?;
                 painter.fill_rect(band, primary.scale_alpha(0.15)?);
-                painter.stroke_shape(band, Shape::Rectangle, Length::new(1.0)?, primary)?;
+                painter.stroke_shape(band, Shape::RECTANGLE, Length::new(1.0)?, primary)?;
             }
             Gesture::Connecting { from, to } => {
                 if let Some(node) = self.doc.node(from) {
@@ -946,9 +946,12 @@ impl Component for NodeView {
         let width = Length::new(1.5)?;
         match self.node.shape {
             NodeShape::Box => {
-                let shape = Shape::Rounded(Length::new(6.0)?);
-                painter.fill_shape(rect, shape, self.node.fill)?;
-                painter.stroke_shape(rect, shape, width, border)?;
+                let shape = Shape::rounded(Length::new(6.0)?);
+                painter.draw_shape(
+                    rect,
+                    shape,
+                    ShapeStyle::fill(self.node.fill).with_border(width, border),
+                )?;
             }
             NodeShape::Ellipse => {
                 painter.fill_ellipse(rect, self.node.fill)?;

@@ -1,4 +1,5 @@
 //! Hover feedback on editable surfaces through the public facade.
+use crate::support;
 use pert_ui::*;
 use std::time::Duration;
 
@@ -24,12 +25,7 @@ fn count(ui: &mut Runtime, role: ColorRole) -> usize {
         .unwrap()
         .commands()
         .iter()
-        .filter(|command| {
-            matches!(command,
-                DrawCommand::FillRect { color: fill, .. }
-                | DrawCommand::DrawMask { color: fill, .. }
-                if *fill == color)
-        })
+        .filter(|command| support::paints_with(command, color))
         .count()
 }
 
@@ -127,11 +123,8 @@ fn toast_buttons_use_action_hover_color() {
         .unwrap()
         .commands()
         .iter()
-        .find_map(|command| match command {
-            DrawCommand::FillRect { rect, color } if *color == button => Some(*rect),
-            DrawCommand::DrawMask { rect, color, .. } if *color == button => Some(*rect),
-            _ => None,
-        })
+        .filter(|command| support::paints_with(command, button))
+        .find_map(support::extent)
         .expect("toast action is painted");
     move_to(
         &mut ui,

@@ -250,7 +250,7 @@ impl Component for Group {
     }
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
         let size = painter.size();
-        let shape = Shape::Rounded(Length::new(painter.metric(MetricRole::CornerRadius))?);
+        let shape = Shape::rounded(Length::new(painter.metric(MetricRole::CornerRadius))?);
         painter.fill_shape(
             Rect::from_size(size),
             shape,
@@ -266,7 +266,7 @@ impl Component for Group {
             } else {
                 ColorRole::PanelBorder
             };
-            let shape = Shape::Rounded(Length::new(painter.metric(MetricRole::CornerRadius))?);
+            let shape = Shape::rounded(Length::new(painter.metric(MetricRole::CornerRadius))?);
             let width = Length::new(painter.metric(MetricRole::BorderWidth))?;
             painter.stroke_shape(Rect::from_size(size), shape, width, painter.color(role))?;
         }

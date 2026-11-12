@@ -2174,6 +2174,10 @@ the facade's `host` page carries a complete host loop. A host takes on what
   ([runtime shutdown](#runtime-shutdown)).
 - **Captures.** Frames that a host supplies with the wrong byte count, extent
   or crop region fail with a typed `CaptureError::Frame`. That error keeps the
-  dimensions involved and serializes like other portable outcomes. Only
+  dimensions involved and serializes like other portable outcomes. A shape
+  command that cannot be prepared for the frame, because its geometry lies
+  beyond the range a renderer evaluates or it is malformed, fails with
+  `CaptureError::Shape` holding the `ShapePrepareError`; the renderers report
+  the same cause as `CpuRenderError::Shape` and `RenderError::Shape`. Only
   backend-specific rendering diagnostics remain text ([rendered
   capture](#rendered-capture)).

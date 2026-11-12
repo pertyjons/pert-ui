@@ -201,7 +201,11 @@ mod vector_scene;
 pub use geometry::{
     FillRule, LineCap, LineJoin, Path, PathBuilder, PathElement, PathError, StrokeStyle,
 };
-pub use shapes::Shape;
+pub use shapes::{
+    ArcGeometry, Border, Boundary, Corner, CornerKind, CornerPosition, FrameMapping, Inner, Paint,
+    PreparedCorner, PreparedShape, Shape, ShapeCoverage, ShapeGeometry, ShapeParameters,
+    ShapePrepareError, ShapeStyle, TriangleGeometry,
+};
 pub use vector_scene::{VectorGeometry, VectorId, VectorRasterizer, VectorStyle};
 mod color_picker;
 pub use color_picker::ColorPicker;
@@ -631,10 +635,11 @@ pub mod component {
     pub use crate::{ClickCounter, DraftAlign, DraftEditor, DraftEditorController, DraftSelection};
     #[doc(no_inline)]
     pub use crate::{
-        Color, ColorRole, DisplayList, DrawCommand, FillRule, Icon, IconSource, ImageId,
-        ImageSampling, Length, LineCap, LineJoin, MaskId, MaskImage, MetricRole, Painter, Path,
-        PathBuilder, PathElement, QuarterTurn, RasterImage, RichText, Shape, StrokeStyle,
-        TextLayout, TextOverflow, TextStyle, VectorGeometry, VectorId,
+        Color, ColorRole, Corner, CornerKind, CornerPosition, DisplayList, DrawCommand, FillRule,
+        Icon, IconSource, ImageId, ImageSampling, Length, LineCap, LineJoin, MaskId, MaskImage,
+        MetricRole, Painter, Path, PathBuilder, PathElement, QuarterTurn, RasterImage, RichText,
+        Shape, ShapeStyle, StrokeStyle, TextLayout, TextOverflow, TextStyle, VectorGeometry,
+        VectorId,
     };
     #[doc(no_inline)]
     pub use crate::{

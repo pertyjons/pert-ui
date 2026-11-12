@@ -25,6 +25,7 @@ mod name_sources;
 mod placeholder_sources;
 mod progress;
 mod scrollbar_emphasis;
+mod shape_joins;
 mod svg;
 mod text_overflow;
 mod text_source;

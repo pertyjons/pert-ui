@@ -40,6 +40,7 @@ impl core::panic::unwind_safe::UnwindSafe for pert_ui_wgpu::Notice
 pub pert_ui_wgpu::RenderError::Drawing(pert_ui_runtime::drawing::DrawError)
 pub pert_ui_wgpu::RenderError::Graphics(alloc::string::String)
 pub pert_ui_wgpu::RenderError::Limit(pert_ui_runtime::render_limits::LimitError)
+pub pert_ui_wgpu::RenderError::Shape(pert_ui_runtime::shapes::prepare::ShapePrepareError)
 pub pert_ui_wgpu::RenderError::Surface(alloc::string::String)
 pub pert_ui_wgpu::RenderError::Unconfigured
 pub pert_ui_wgpu::RenderError::UnsupportedGraphics(alloc::string::String)
@@ -52,6 +53,8 @@ impl core::convert::From<pert_ui_runtime::drawing::DrawError> for pert_ui_wgpu::
 pub fn pert_ui_wgpu::RenderError::from(pert_ui_runtime::drawing::DrawError) -> Self
 impl core::convert::From<pert_ui_runtime::render_limits::LimitError> for pert_ui_wgpu::RenderError
 pub fn pert_ui_wgpu::RenderError::from(pert_ui_runtime::render_limits::LimitError) -> Self
+impl core::convert::From<pert_ui_runtime::shapes::prepare::ShapePrepareError> for pert_ui_wgpu::RenderError
+pub fn pert_ui_wgpu::RenderError::from(pert_ui_runtime::shapes::prepare::ShapePrepareError) -> Self
 impl core::error::Error for pert_ui_wgpu::RenderError
 pub fn pert_ui_wgpu::RenderError::source(&self) -> core::option::Option<&(dyn core::error::Error + 'static)>
 impl core::fmt::Debug for pert_ui_wgpu::RenderError

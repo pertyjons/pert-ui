@@ -863,6 +863,7 @@ fn capture_render_error(error: crate::platform::presenter::RenderError) -> crate
         crate::platform::presenter::RenderError::Limit(
             limit @ crate::LimitError::FrameSize { .. },
         ) => crate::CaptureError::Limit(limit),
+        crate::platform::presenter::RenderError::Shape(error) => crate::CaptureError::Shape(error),
         error => crate::CaptureError::Backend(error.to_string()),
     }
 }
@@ -1368,5 +1369,21 @@ mod tests {
             surface_limit(Err(RenderError::Surface("lost".into()))),
             Err(AppError::Surface(_))
         ));
+    }
+}
+
+#[cfg(test)]
+mod shape_errors {
+    use crate::{CaptureError, ShapePrepareError};
+
+    #[test]
+    fn a_capture_keeps_the_cause_of_a_shape_the_renderer_refused() {
+        for cause in [
+            ShapePrepareError::OutOfRange,
+            ShapePrepareError::BorderNotAllowed,
+        ] {
+            let error = super::capture_render_error(super::presenter::RenderError::Shape(cause));
+            assert!(matches!(error, CaptureError::Shape(kept) if kept == cause));
+        }
     }
 }

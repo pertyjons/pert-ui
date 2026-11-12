@@ -41,12 +41,7 @@ fn role_count(ui: &mut Runtime, role: ColorRole) -> usize {
         .unwrap()
         .commands()
         .iter()
-        .filter(|command| {
-            matches!(command,
-                DrawCommand::FillRect { color: fill, .. }
-                | DrawCommand::DrawMask { color: fill, .. }
-                if *fill == color)
-        })
+        .filter(|command| support::paints_with(command, color))
         .count()
 }
 fn activate(ui: &mut Runtime, id: &WidgetId) {
@@ -985,20 +980,16 @@ fn frameless_icon_has_no_resting_fill_and_keeps_activation_and_hover() {
     .unwrap();
     settle(&mut ui);
     let before = ui.paint().unwrap();
-    assert!(
-        !before
-            .commands()
-            .iter()
-            .any(|c| matches!(c, DrawCommand::FillRect { .. }))
-    );
+    assert!(!before.commands().iter().any(|c| matches!(
+        c,
+        DrawCommand::FillRect { .. } | DrawCommand::DrawShape { .. }
+    )));
     pointer(&mut ui, 20.0, 20.0, PointerKind::Move);
     let hovered = ui.paint().unwrap();
-    assert!(
-        hovered
-            .commands()
-            .iter()
-            .any(|c| matches!(c, DrawCommand::FillRect { .. }))
-    );
+    assert!(hovered.commands().iter().any(|c| matches!(
+        c,
+        DrawCommand::FillRect { .. } | DrawCommand::DrawShape { .. }
+    )));
     down(&mut ui, 20.0, 20.0);
     up(&mut ui, 20.0, 20.0);
     assert_eq!(clicks.get().unwrap(), 1);

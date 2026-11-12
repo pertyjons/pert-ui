@@ -1,5 +1,6 @@
 //! The table as a consumer of the virtualized list and the shared selection:
 //! columns, a header that does not scroll, sorting by callback and resizing.
+use crate::support;
 use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::RefCell, rc::Rc, time::Duration};
@@ -961,14 +962,8 @@ fn the_active_cell_moves_with_the_arrows_and_scrolls_its_column_into_view() -> T
         .paint()?
         .commands()
         .iter()
-        .filter_map(|command| match command {
-            DrawCommand::FillRect { rect, color } | DrawCommand::DrawMask { rect, color, .. }
-                if *color == primary =>
-            {
-                Some(*rect)
-            }
-            _ => None,
-        })
+        .filter(|command| support::paints_with(command, primary))
+        .filter_map(support::extent)
         .collect();
     assert!(!outlined.is_empty());
     let header = ThemeMetrics::default().metric(MetricRole::ControlHeight);

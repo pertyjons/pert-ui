@@ -696,17 +696,13 @@ fn inline_slider_pointer_endpoints_match_the_painted_track() {
     let [x, y, w, h] = scene
         .commands()
         .iter()
-        .find_map(|cmd| match cmd {
-            DrawCommand::FillRect { rect, color }
-                if *color == outline && rect.height() == 2.0 && rect.width() > 2.0 =>
-            {
-                Some(rect.values())
-            }
-            _ => None,
-        })
-        .unwrap();
-    // Rounded track caps add one logical pixel at either end of this central fill.
-    for (x, value) in [(x - 1.0, 0.0), (x + w + 1.0, 100.0)] {
+        .filter(|cmd| support::paints_with(cmd, outline))
+        .filter_map(support::extent)
+        .find(|rect| rect.height() == 2.0 && rect.width() > 2.0)
+        .unwrap()
+        .values();
+    // The track is one rounded shape, so its rectangle includes the caps.
+    for (x, value) in [(x, 0.0), (x + w, 100.0)] {
         let p = Point::new(x, y + h / 2.0).unwrap();
         pointer(&mut ui, p, PointerKind::Press(PointerButton::Primary));
         pointer(&mut ui, p, PointerKind::Release(PointerButton::Primary));

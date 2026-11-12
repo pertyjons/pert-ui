@@ -1712,16 +1712,15 @@ impl Component for Tabs {
                     )?;
                     // Rounded above, square where the tab meets the strip divider.
                     let shape =
-                        Shape::RoundedTop(Length::new(painter.metric(MetricRole::CornerRadius))?);
-                    painter.fill_shape(rect, shape, color)?;
+                        Shape::rounded_top(Length::new(painter.metric(MetricRole::CornerRadius))?);
+                    let mut style = ShapeStyle::fill(color);
                     if leaving || detached {
-                        painter.stroke_shape(
-                            rect,
-                            shape,
+                        style = style.with_border(
                             Length::new(border)?,
                             painter.color(ColorRole::PanelBorder),
-                        )?;
+                        );
                     }
+                    painter.draw_shape(rect, shape, style)?;
                     let [x, _, w, _] = self.displayed_header(header)?.values();
                     header.text.paint(
                         painter,
@@ -1807,7 +1806,7 @@ impl Component for Tabs {
                 if self.hover == Some(target) {
                     painter.fill_shape(
                         Rect::new(base, 0.0, inset, self.height.get() - border)?,
-                        Shape::Rounded(Length::new(painter.metric(MetricRole::CornerRadius))?),
+                        Shape::rounded(Length::new(painter.metric(MetricRole::CornerRadius))?),
                         painter.color(ColorRole::SurfaceHover),
                     )?;
                 }

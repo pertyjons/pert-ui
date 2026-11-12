@@ -2,6 +2,7 @@
 //! rendered pixels on a pressed button in both built-in palettes, the
 //! independence of the focus color from the `Primary` accent, and pressed
 //! colors that follow it by default.
+use crate::support;
 use pert_ui::*;
 use std::time::Duration;
 
@@ -36,14 +37,7 @@ fn pressed_focused_button(
 }
 
 /// Whether any fill or mask in the scene is drawn in `color`.
-fn uses(scene: &DisplayList, color: Color) -> bool {
-    scene.commands().iter().any(|command| {
-        matches!(command,
-            DrawCommand::FillRect { color: drawn, .. }
-            | DrawCommand::DrawMask { color: drawn, .. }
-            if *drawn == color)
-    })
-}
+use support::uses;
 
 /// The rendered pixels across the left edge of a focused, pressed button: the
 /// ring band and the pressed fill, each sampled at the

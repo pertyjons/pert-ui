@@ -520,23 +520,37 @@ impl Painted {
 /// frame, a `Surface` fill and an inward `Outline` border. Button and the
 /// Select and MultiSelect anchors share it, so their disabled treatment
 /// cannot drift apart.
+///
+/// With `focus_ring`, the focus ring is drawn on the frame as well, for a
+/// control that draws nothing between the two: as the border of the same
+/// command when the frame has no outline, over the outline otherwise. The
+/// ring is not part of the reported border.
 pub(crate) fn control_frame(
     p: &mut Painter,
     rect: Rect,
     fill: Option<ColorRole>,
+    focus_ring: bool,
 ) -> Result<Painted, DrawError> {
-    let shape = Shape::Rounded(Length::new(p.metric(MetricRole::CornerRadius))?);
+    let shape = Shape::rounded(Length::new(p.metric(MetricRole::CornerRadius))?);
     let background = p.color(fill.unwrap_or(ColorRole::Surface));
-    p.fill_shape(rect, shape, background)?;
     // A zero border width paints no outline, so none is reported.
     let width = p.metric(MetricRole::BorderWidth);
-    let border = if fill.is_none() && width > 0.0 {
-        let color = p.color(ColorRole::Outline);
-        p.stroke_shape(rect, shape, Length::new(width)?, color)?;
-        Some((width, color))
-    } else {
-        None
-    };
+    let border = (fill.is_none() && width > 0.0).then(|| (width, p.color(ColorRole::Outline)));
+    // Fill and outline are one silhouette, so no fill shows outside the
+    // border's curve.
+    let mut style = ShapeStyle::fill(background);
+    if let Some((width, color)) = border {
+        style = style.with_border(Length::new(width)?, color);
+    } else if focus_ring {
+        style = style.with_border(
+            Length::new(p.metric(MetricRole::FocusWidth))?,
+            p.color(ColorRole::FocusRing),
+        );
+    }
+    p.draw_shape(rect, shape, style)?;
+    if focus_ring && border.is_some() {
+        p.focus_ring(rect, shape)?;
+    }
     Ok(Painted {
         background: Some(background),
         foreground: None,
@@ -895,10 +909,10 @@ impl Component for Button {
                         ColorRole::Button
                     }
                 }),
+                self.input.focused,
             )?;
-        }
-        if self.input.focused {
-            let shape = Shape::Rounded(Length::new(painter.metric(MetricRole::CornerRadius))?);
+        } else if self.input.focused {
+            let shape = Shape::rounded(Length::new(painter.metric(MetricRole::CornerRadius))?);
             painter.focus_ring(rect, shape)?;
         }
         if let Some(text) = self.prepared.borrow().as_ref() {

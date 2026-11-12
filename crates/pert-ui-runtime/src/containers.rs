@@ -16,6 +16,8 @@ impl From<u16> for Length {
     }
 }
 impl Length {
+    /// No extent.
+    pub(crate) const ZERO: Self = Self(0.0);
     /// Validates a logical extent, rejecting non-finite and negative input.
     ///
     /// # Errors
@@ -382,7 +384,7 @@ impl Component for Container {
 
 /// The rounded panel outline shared by bordered containers.
 fn panel_shape(painter: &Painter) -> Result<Shape, DrawError> {
-    Ok(Shape::Rounded(Length::new(
+    Ok(Shape::rounded(Length::new(
         painter.metric(MetricRole::CornerRadius),
     )?))
 }

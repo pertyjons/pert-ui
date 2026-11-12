@@ -13,6 +13,23 @@
 //! may be snapped across it, which the rendering contract leaves outside both
 //! tiers. Evidence for the
 //! adapter it ran on; run through `pert-ui-native-checks`.
+//!
+//! Analytic shapes have a third tier. Each pixel of a shape fixture is
+//! classified from the CPU reference: it is an *edge* pixel when a shape whose
+//! span holds it decides it neither by exact arithmetic nor with every
+//! reference distance at least half a pixel plus
+//! [`PreparedShape::PARITY_MARGIN`] from its boundary. Edge pixels may differ
+//! by at most [`EDGE_TIER`]; every other pixel of a shape fixture is in the
+//! tolerance tier, or in the exact tier where the fixture says so. The run
+//! prints the largest difference of each tier.
+//!
+//! The edge tier is one step per channel and the margin 1/16 pixel: on
+//! 2026-11-11 the corpus measured a largest edge difference of 1, and no
+//! decided pixel outside its tier, on Intel UHD Graphics 770 with Mesa on
+//! Vulkan, the only adapter available. They are measurements on that adapter.
+//! A larger difference on another one is a finding to correct in the shader
+//! or the preparation, up to [`EDGE_LIMIT`], beyond which the approach itself
+//! is in question; `docs/rendering-platform.md` states the tiers.
 use super::native_smoke::native_test_event_loop;
 use super::*;
 use pert_ui_runtime::{
@@ -21,6 +38,7 @@ use pert_ui_runtime::{
     RichText, Runtime, RuntimeError, ScrollArea, Shape, TextColor, TextRenderingMode, TextStyle,
     UpdateContext, Viewport,
 };
+use pert_ui_runtime::{Corner, CornerPosition, FrameMapping, PreparedShape, ShapeStyle};
 use winit::{
     application::ApplicationHandler,
     event::WindowEvent,
@@ -30,6 +48,17 @@ use winit::{
 
 /// The corpus's logical and physical size.
 const SIZE: u32 = 64;
+
+/// The largest channel difference an edge pixel of an analytic shape may
+/// show: what the corpus measured on the available adapter.
+const EDGE_TIER: u8 = 1;
+
+/// The largest value [`EDGE_TIER`] may ever be raised to after a measurement
+/// on another adapter.
+const EDGE_LIMIT: u8 = 4;
+
+// The tier never exceeds its limit.
+const _: () = assert!(EDGE_TIER <= EDGE_LIMIT);
 
 type Paint = Box<dyn Fn(&mut Painter) -> Result<(), DrawError>>;
 
@@ -85,6 +114,391 @@ fn tree(
         exact: false,
         scene: ui.paint()?,
     })
+}
+
+/// A fixture of analytic shapes on a `SIZE`-pixel frame at `scale`: every
+/// shape method records `DrawShape`.
+fn shapes(
+    name: &'static str,
+    exact: bool,
+    scale: f64,
+    paint: impl Fn(&mut Painter) -> Result<(), DrawError> + 'static,
+) -> Result<Case, Box<dyn std::error::Error>> {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::from_physical(
+        pert_ui_runtime::PhysicalExtent::new(SIZE, SIZE),
+        scale,
+    )?)?;
+    ui.mount_tree(Element::new("fixture", Fixture(Box::new(paint))))?;
+    ui.flush(std::time::Duration::ZERO)?;
+    Ok(Case {
+        name,
+        exact,
+        scene: ui.paint()?,
+    })
+}
+
+/// Which pixels of `scene` are edge pixels of an analytic shape, by the CPU
+/// reference; empty when the scene has no shape.
+fn edge_pixels(scene: &DisplayList) -> Result<Vec<bool>, Box<dyn std::error::Error>> {
+    let mut edges = Vec::new();
+    let mapping = FrameMapping::new(SIZE, SIZE, scene.viewport())?;
+    let clear = 0.5 + PreparedShape::PARITY_MARGIN;
+    for command in scene.commands() {
+        let DrawCommand::DrawShape {
+            geometry,
+            border,
+            clip,
+            ..
+        } = command
+        else {
+            continue;
+        };
+        if edges.is_empty() {
+            edges = vec![false; (SIZE * SIZE) as usize];
+        }
+        let Some(shape) = PreparedShape::new(geometry, border.as_ref(), *clip, &mapping)? else {
+            continue;
+        };
+        let [x0, y0, x1, y1] = shape.span();
+        for y in y0..y1 {
+            for x in x0..x1 {
+                let coverage = shape.coverage(x, y);
+                let decided = coverage.exact_arithmetic()
+                    || (coverage.outer_distance().abs() >= clear
+                        && coverage
+                            .inner_distance()
+                            .is_none_or(|distance| distance.abs() >= clear));
+                edges[(y * SIZE + x) as usize] |= !decided;
+            }
+        }
+    }
+    Ok(edges)
+}
+
+/// The shape fixtures: every geometry at sub-pixel phases and three scales.
+fn shape_corpus() -> Result<Vec<Case>, Box<dyn std::error::Error>> {
+    let red = Color::from_srgb8(230, 40, 20, 255);
+    let green = Color::from_srgb8(30, 180, 60, 255);
+    let translucent = Color::from_linear(0.2, 0.4, 1.0, 0.45)?;
+    let orange = Color::from_linear(1.0, 0.5, 0.0, 0.3)?;
+    let length = |value: f32| Length::new(value);
+    let mut cases = Vec::new();
+    for (scale, name) in [
+        (1.0, "shapes: rounded and cut, scale 1"),
+        (1.25, "shapes: rounded and cut, scale 1.25"),
+        (2.0, "shapes: rounded and cut, scale 2"),
+    ] {
+        cases.push(shapes(name, true, scale, move |p| {
+            // Opaque exact colors at fractional positions: interiors are exact.
+            p.draw_shape(
+                Rect::new(1.3, 1.7, 14.4, 9.2)?,
+                Shape::rounded(length(3.0)?),
+                ShapeStyle::fill(red),
+            )?;
+            let mixed = Shape::rounded(length(2.5)?)
+                .with_corner(CornerPosition::TopRight, Corner::cut(length(4.0)?))
+                .with_corner(CornerPosition::BottomLeft, Corner::SQUARE);
+            p.draw_shape(
+                Rect::new(17.6, 2.2, 12.1, 10.9)?,
+                mixed,
+                ShapeStyle::fill(green).with_border(length(1.0)?, red),
+            )?;
+            // One corner past half, round and cut, and a radius below a pixel.
+            let single =
+                Shape::RECTANGLE.with_corner(CornerPosition::TopLeft, Corner::round(length(9.0)?));
+            p.draw_shape(
+                Rect::new(1.1, 13.4, 14.0, 9.0)?,
+                single,
+                ShapeStyle::fill(green),
+            )?;
+            p.draw_shape(
+                Rect::new(17.2, 14.6, 12.0, 8.0)?,
+                Shape::cut_top_right(length(8.0)?),
+                ShapeStyle::fill(red),
+            )?;
+            p.draw_shape(
+                Rect::new(1.4, 24.3, 6.0, 5.0)?,
+                Shape::rounded(length(0.6)?),
+                ShapeStyle::fill(red),
+            )?;
+            // Corners that do not fit, a border wider than half and a hairline.
+            p.draw_shape(
+                Rect::new(9.3, 24.1, 9.0, 5.5)?,
+                Shape::rounded(length(20.0)?),
+                ShapeStyle::fill(green).with_border(length(1.5)?, red),
+            )?;
+            p.draw_shape(
+                Rect::new(20.2, 24.4, 9.0, 4.0)?,
+                Shape::rounded(length(1.5)?),
+                ShapeStyle::fill(green).with_border(length(3.0)?, red),
+            )?;
+            p.stroke_shape(
+                Rect::new(1.2, 30.1, 0.4, 1.2)?,
+                Shape::cut_top_right(length(0.3)?),
+                length(0.2)?,
+                green,
+            )
+        })?);
+    }
+    for (scale, name) in [
+        (1.0, "shapes: translucent, scale 1"),
+        (1.25, "shapes: translucent, scale 1.25"),
+        (2.0, "shapes: translucent, scale 2"),
+    ] {
+        cases.push(shapes(name, false, scale, move |p| {
+            // A translucent border over a translucent fill, over a fill.
+            p.fill_rect(Rect::new(4.0, 4.0, 20.0, 20.0)?, red);
+            p.draw_shape(
+                Rect::new(2.3, 2.6, 26.2, 16.4)?,
+                Shape::rounded(length(5.0)?)
+                    .with_corner(CornerPosition::BottomRight, Corner::cut(length(6.0)?)),
+                ShapeStyle::fill(translucent).with_border(length(2.0)?, orange),
+            )?;
+            // Clipped at fractional edges.
+            p.with_clip(Rect::new(6.4, 20.3, 17.7, 7.1)?, |p| {
+                p.draw_shape(
+                    Rect::new(2.0, 18.0, 27.0, 12.0)?,
+                    Shape::rounded(length(4.0)?),
+                    ShapeStyle::fill(orange).with_border(length(1.0)?, translucent),
+                )
+            })
+        })?);
+    }
+    for (scale, name) in [
+        (1.0, "shapes: arcs and triangles, scale 1"),
+        (1.25, "shapes: arcs and triangles, scale 1.25"),
+        (2.0, "shapes: arcs and triangles, scale 2"),
+    ] {
+        cases.push(shapes(name, false, scale, move |p| {
+            // A full ring, a part with caps, a thin stroke and a tiny arc.
+            p.stroke_arc(
+                Point::new(8.3, 8.6)?,
+                length(6.0)?,
+                0.0,
+                360.0,
+                length(2.0)?,
+                red,
+            )?;
+            p.stroke_arc(
+                Point::new(22.7, 8.2)?,
+                length(6.0)?,
+                33.0,
+                200.0,
+                length(2.5)?,
+                green,
+            )?;
+            p.stroke_arc(
+                Point::new(8.4, 23.1)?,
+                length(6.0)?,
+                -70.0,
+                290.0,
+                length(0.4)?,
+                red,
+            )?;
+            p.stroke_arc(
+                Point::new(18.0, 20.0)?,
+                length(1.2)?,
+                10.0,
+                90.0,
+                length(0.8)?,
+                green,
+            )?;
+            p.stroke_arc(
+                Point::new(25.1, 25.4)?,
+                length(4.0)?,
+                271.0,
+                0.5,
+                length(3.0)?,
+                translucent,
+            )?;
+            // Triangles in both windings, an obtuse one and a sliver.
+            p.fill_triangle(
+                [
+                    Point::new(14.2, 14.1)?,
+                    Point::new(21.9, 15.3)?,
+                    Point::new(15.4, 19.8)?,
+                ],
+                translucent,
+            )?;
+            p.fill_triangle(
+                [
+                    Point::new(22.3, 16.2)?,
+                    Point::new(24.1, 23.7)?,
+                    Point::new(30.6, 17.4)?,
+                ],
+                orange,
+            )?;
+            p.fill_triangle(
+                [
+                    Point::new(1.2, 30.4)?,
+                    Point::new(30.7, 30.9)?,
+                    Point::new(16.0, 31.3)?,
+                ],
+                red,
+            )
+        })?);
+    }
+    // Geometry far beyond the frame: relocated edges and a clipped view of a
+    // large ring.
+    cases.push(shapes("shapes: beyond the frame", false, 1.0, move |p| {
+        p.draw_shape(
+            Rect::new(-30_000.0, 40.3, 30_050.4, 30_000.0)?,
+            Shape::rounded(length(9.0)?),
+            ShapeStyle::fill(translucent).with_border(length(2.0)?, red),
+        )?;
+        p.stroke_arc(
+            Point::new(-900.0, 20.0)?,
+            length(940.0)?,
+            350.0,
+            20.0,
+            length(3.0)?,
+            green,
+        )
+    })?);
+    cases.push(domain_edge_case()?);
+    for (scale, name) in [
+        (1.0, "shapes: thresholds, scale 1"),
+        (1.25, "shapes: thresholds, scale 1.25"),
+        (2.0, "shapes: thresholds, scale 2"),
+    ] {
+        cases.push(shapes(name, false, scale, move |p| {
+            // Border widths on either side of the rounding threshold.
+            for (index, width) in [1.49f32, 1.5, 0.49, 0.5, 2.5].into_iter().enumerate() {
+                p.draw_shape(
+                    Rect::new(1.3 + 6.1 * index as f32, 1.2, 5.2, 7.4)?,
+                    Shape::rounded(length(1.5)?),
+                    ShapeStyle::fill(translucent).with_border(length(width)?, red),
+                )?;
+            }
+            // Arcs approaching zero width and zero sweep.
+            for (index, (sweep, width)) in [
+                (300.0f32, 0.05f32),
+                (300.0, 0.004),
+                (0.01, 2.0),
+                (0.01, 0.3),
+                (359.99, 1.0),
+            ]
+            .into_iter()
+            .enumerate()
+            {
+                p.stroke_arc(
+                    Point::new(4.2 + 6.0 * index as f32, 14.3)?,
+                    length(2.4)?,
+                    17.0,
+                    sweep,
+                    length(width)?,
+                    green,
+                )?;
+            }
+            // Triangles close to degenerate: a short edge and a thin needle.
+            p.fill_triangle(
+                [
+                    Point::new(2.0, 20.0)?,
+                    Point::new(2.01, 20.0)?,
+                    Point::new(2.0, 30.0)?,
+                ],
+                red,
+            )?;
+            p.fill_triangle(
+                [
+                    Point::new(5.0, 20.3)?,
+                    Point::new(30.0, 20.4)?,
+                    Point::new(5.0, 20.5)?,
+                ],
+                green,
+            )?;
+            p.fill_triangle(
+                [
+                    Point::new(5.1, 23.2)?,
+                    Point::new(12.3, 23.2)?,
+                    Point::new(8.7, 23.9)?,
+                ],
+                orange,
+            )
+        })?);
+    }
+    Ok(cases)
+}
+
+/// Shapes whose prepared parameters lie far from the span, near the
+/// evaluation domain's limit of 65 536 pixels, where `f32` has the fewest
+/// fraction bits left.
+fn domain_edge_case() -> Result<Case, Box<dyn std::error::Error>> {
+    let red = Color::from_srgb8(230, 40, 20, 255);
+    let green = Color::from_srgb8(30, 180, 60, 255);
+    let translucent = Color::from_linear(0.2, 0.4, 1.0, 0.45)?;
+    let length = |value: f32| Length::new(value);
+    shapes("shapes: near the domain's edge", false, 1.0, move |p| {
+        // A corner radius of about 16 000 pixels, whose center is that far
+        // from the frame.
+        p.draw_shape(
+            Rect::new(-32_000.0, -32_000.0, 32_050.3, 32_040.6)?,
+            Shape::rounded(length(30_000.0)?),
+            ShapeStyle::fill(translucent).with_border(length(2.0)?, red),
+        )?;
+        // An arc of radius 30 020 around a center 30 000 pixels to the left.
+        p.stroke_arc(
+            Point::new(-30_000.0, 31.7)?,
+            length(30_020.0)?,
+            355.0,
+            10.0,
+            length(3.0)?,
+            green,
+        )?;
+        // A triangle with a vertex 65 000 pixels away.
+        p.fill_triangle(
+            [
+                Point::new(-65_000.0, 10.2)?,
+                Point::new(40.3, 44.1)?,
+                Point::new(40.3, 60.2)?,
+            ],
+            red,
+        )
+    })
+}
+
+#[test]
+fn the_domain_fixture_evaluates_far_from_its_span() -> Result<(), Box<dyn std::error::Error>> {
+    use pert_ui_runtime::ShapeParameters;
+    let case = domain_edge_case()?;
+    let mapping = FrameMapping::new(SIZE, SIZE, case.scene.viewport())?;
+    let mut farthest = Vec::new();
+    for command in case.scene.commands() {
+        let DrawCommand::DrawShape {
+            geometry,
+            border,
+            clip,
+            ..
+        } = command
+        else {
+            continue;
+        };
+        let shape = PreparedShape::new(geometry, border.as_ref(), *clip, &mapping)?
+            .ok_or("a domain fixture shape draws nothing")?;
+        farthest.push(match shape.parameters() {
+            ShapeParameters::Rect { outer, .. } => outer
+                .corners()
+                .iter()
+                .map(|corner| corner.size())
+                .fold(0.0f32, f32::max),
+            ShapeParameters::Arc { center, radius, .. } => center[0].abs().min(radius),
+            ShapeParameters::Triangle { vertices, .. } => vertices
+                .iter()
+                .flatten()
+                .fold(0.0f32, |a, b| a.max(b.abs())),
+            _ => 0.0,
+        });
+    }
+    // The corner, the arc and the triangle, each with a parameter of at
+    // least 16 000 pixels, the last close to the limit.
+    assert_eq!(farthest.len(), 3, "{farthest:?}");
+    assert!(
+        farthest.iter().all(|value| *value >= 16_000.0),
+        "{farthest:?}"
+    );
+    assert!(farthest[2] >= 64_000.0, "{farthest:?}");
+    Ok(())
 }
 
 fn text_mode_case(
@@ -241,7 +655,7 @@ fn corpus() -> Result<Vec<Case>, Box<dyn std::error::Error>> {
                 Fixture(Box::new(|p| {
                     p.stroke_shape(
                         Rect::new(10.25, 10.25, 40.0, 20.0)?,
-                        Shape::Rounded(Length::new(4.0)?),
+                        Shape::rounded(Length::new(4.0)?),
                         Length::new(1.0)?,
                         Color::WHITE,
                     )
@@ -254,17 +668,6 @@ fn corpus() -> Result<Vec<Case>, Box<dyn std::error::Error>> {
             Ok(())
         })?,
     ])
-}
-
-/// The largest channel difference and how many channels differ at all.
-fn difference(gpu: &pert_ui_runtime::FrameImage, cpu: &pert_ui_runtime::FrameImage) -> (u8, usize) {
-    gpu.pixels()
-        .iter()
-        .zip(cpu.pixels())
-        .fold((0, 0), |(largest, count), (a, b)| {
-            let difference = a.abs_diff(*b);
-            (largest.max(difference), count + usize::from(difference > 0))
-        })
 }
 
 struct Parity {
@@ -286,17 +689,46 @@ impl ApplicationHandler<Notice> for Parity {
             println!("Parity adapter: {} ({:?})", info.name, info.backend);
             let mut cpu = pert_ui_cpu::CpuRenderer::new();
             let mut failures = Vec::new();
-            for case in corpus()? {
+            let mut edge_tier = 0;
+            for case in corpus()?.into_iter().chain(shape_corpus()?) {
                 let gpu = renderer.render_offscreen(case.scene.clone())?;
                 let software = cpu.render(&case.scene)?;
-                let (largest, differing) = difference(&gpu, &software);
+                let edges = edge_pixels(&case.scene)?;
+                // An edge pixel of a shape is judged by the edge tier, every
+                // other pixel by the fixture's own tier.
+                let (mut largest, mut differing, mut edge_largest, mut edge_count) = (0, 0, 0, 0);
+                for (index, (a, b)) in gpu
+                    .pixels()
+                    .as_chunks::<4>()
+                    .0
+                    .iter()
+                    .zip(software.pixels().as_chunks::<4>().0.iter())
+                    .enumerate()
+                {
+                    let difference = a
+                        .iter()
+                        .zip(b)
+                        .map(|(a, b)| a.abs_diff(*b))
+                        .max()
+                        .unwrap_or(0);
+                    if edges.get(index).copied().unwrap_or(false) {
+                        edge_count += 1;
+                        edge_largest = edge_largest.max(difference);
+                    } else {
+                        largest = largest.max(difference);
+                        differing += usize::from(difference > 0);
+                    }
+                }
+                edge_tier = edge_tier.max(edge_largest);
                 let allowed = if case.exact { 0 } else { 1 };
                 println!(
-                    "Parity {}: {} tier, largest channel difference {largest}, {differing} of {} channels differ",
+                    "Parity {}: {} tier, largest channel difference {largest}, {differing} pixels differ; {edge_count} edge pixels, largest difference {edge_largest}",
                     case.name,
                     if case.exact { "exact" } else { "tolerance" },
-                    gpu.pixels().len()
                 );
+                if edge_largest > EDGE_TIER {
+                    largest = largest.max(edge_largest);
+                }
                 if largest > allowed {
                     // Both images go beside each other in the temporary
                     // directory, so the difference can be inspected.
@@ -314,6 +746,9 @@ impl ApplicationHandler<Notice> for Parity {
                     ));
                 }
             }
+            println!(
+                "Parity edge tier: largest difference {edge_tier} over the shape fixtures (bound {EDGE_TIER})"
+            );
             if failures.is_empty() {
                 Ok(())
             } else {

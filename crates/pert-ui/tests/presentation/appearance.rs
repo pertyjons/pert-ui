@@ -1,16 +1,11 @@
 //! Public shape, panel boundary and cursor contracts.
+use crate::support;
 use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::time::Duration;
 fn draw(ui: &mut Runtime) -> DisplayList {
     ui.flush(Duration::ZERO).unwrap();
     ui.paint().unwrap()
-}
-fn tint(command: &DrawCommand) -> Color {
-    match command {
-        DrawCommand::FillRect { color, .. } | DrawCommand::DrawMask { color, .. } => *color,
-        _ => panic!("unexpected drawing command"),
-    }
 }
 #[test]
 fn groups_have_resting_borders_and_focus_within_repaints_only_ancestors() {
@@ -40,7 +35,7 @@ fn groups_have_resting_borders_and_focus_within_repaints_only_ancestors() {
             scene
                 .commands()
                 .iter()
-                .any(|c| tint(c) == palette.color(ColorRole::PanelBorder))
+                .any(|c| support::paints_with(c, palette.color(ColorRole::PanelBorder)))
         );
         ui.focus(&button).unwrap();
         let focused = draw(&mut ui);
@@ -48,13 +43,13 @@ fn groups_have_resting_borders_and_focus_within_repaints_only_ancestors() {
             focused
                 .commands()
                 .iter()
-                .any(|c| tint(c) == palette.color(ColorRole::Primary))
+                .any(|c| support::paints_with(c, palette.color(ColorRole::Primary)))
         );
         assert!(
             !focused
                 .commands()
                 .iter()
-                .any(|c| tint(c) == palette.color(ColorRole::PanelBorder))
+                .any(|c| support::paints_with(c, palette.color(ColorRole::PanelBorder)))
         );
         ui.focus(&children[1]).unwrap();
         let unfocused = draw(&mut ui);
@@ -62,7 +57,7 @@ fn groups_have_resting_borders_and_focus_within_repaints_only_ancestors() {
             unfocused
                 .commands()
                 .iter()
-                .any(|c| tint(c) == palette.color(ColorRole::PanelBorder))
+                .any(|c| support::paints_with(c, palette.color(ColorRole::PanelBorder)))
         );
         ui.clear_focus();
         draw(&mut ui);
@@ -99,7 +94,7 @@ fn locking_retains_geometry_but_removes_grip_and_resize_cursor() {
             resting
                 .commands()
                 .iter()
-                .any(|c| tint(c) == Palette::dark().color(ColorRole::ResizeHandle))
+                .any(|c| support::paints_with(c, Palette::dark().color(ColorRole::ResizeHandle)))
         );
         let bounds = ui.bounds(&children[1]).unwrap();
         ui.pointer_input(PointerEvent::new(
@@ -117,13 +112,13 @@ fn locking_retains_geometry_but_removes_grip_and_resize_cursor() {
             locked
                 .commands()
                 .iter()
-                .any(|c| tint(c) == Palette::dark().color(ColorRole::Divider))
+                .any(|c| support::paints_with(c, Palette::dark().color(ColorRole::Divider)))
         );
         assert!(
             !locked
                 .commands()
                 .iter()
-                .any(|c| tint(c) == Palette::dark().color(ColorRole::ResizeHandle))
+                .any(|c| support::paints_with(c, Palette::dark().color(ColorRole::ResizeHandle)))
         );
     }
 }
@@ -135,12 +130,12 @@ impl Component for Shapes {
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
         painter.fill_shape(
             Rect::new(0.0, 0.0, 40.0, 30.0)?,
-            Shape::CutTopRight(10.into()),
+            Shape::cut_top_right(10.into()),
             painter.color(ColorRole::Tab),
         )?;
         painter.stroke_shape(
             Rect::new(50.0, 0.0, 40.0, 30.0)?,
-            Shape::Rounded(4.into()),
+            Shape::rounded(4.into()),
             1.into(),
             painter.color(ColorRole::PanelBorder),
         )?;
@@ -148,7 +143,7 @@ impl Component for Shapes {
     }
 }
 #[test]
-fn shape_coverage_cuts_only_top_right_strokes_have_empty_centers_and_colors_reuse_masks() {
+fn shapes_cut_only_the_top_right_and_strokes_have_empty_centers() {
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(100.0, 50.0, 1.0).unwrap())
         .unwrap();
@@ -162,9 +157,26 @@ fn shape_coverage_cuts_only_top_right_strokes_have_empty_centers_and_colors_reus
     assert_eq!(coverage(&scene, 70.5, 0.5), 1.0);
     ui.theme().set_mode(ThemeMode::Light).unwrap();
     let light = draw(&mut ui);
-    for (a, b) in scene.masks().iter().zip(light.masks()) {
-        assert_eq!(a.pixels().as_ptr(), b.pixels().as_ptr());
-    }
+    // One command per shape and no coverage image; a color change keeps
+    // the geometry, the border width and the clip.
+    let geometry = |scene: &DisplayList| {
+        scene
+            .commands()
+            .iter()
+            .map(|command| match command {
+                DrawCommand::DrawShape {
+                    geometry,
+                    border,
+                    clip,
+                    ..
+                } => (*geometry, border.map(Border::width), *clip),
+                _ => panic!("not a shape"),
+            })
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(geometry(&scene).len(), 2);
+    assert_eq!(geometry(&scene), geometry(&light));
+    assert!(scene.masks().is_empty() && light.masks().is_empty());
     assert_ne!(scene.commands(), light.commands());
 }
 
@@ -176,12 +188,12 @@ impl Component for TopRounded {
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
         painter.fill_shape(
             Rect::new(0.0, 0.0, 40.0, 30.0)?,
-            Shape::RoundedTop(6.into()),
+            Shape::rounded_top(6.into()),
             painter.color(ColorRole::Tab),
         )?;
         painter.stroke_shape(
             Rect::new(50.0, 0.0, 40.0, 30.0)?,
-            Shape::RoundedTop(6.into()),
+            Shape::rounded_top(6.into()),
             2.into(),
             painter.color(ColorRole::Primary),
         )
@@ -262,7 +274,7 @@ fn stationary_pointer_tracks_subregions_after_metric_changes_and_drag_cancels() 
         scene
             .commands()
             .iter()
-            .any(|c| tint(c) == Palette::dark().color(ColorRole::ResizeHandleHover))
+            .any(|c| support::paints_with(c, Palette::dark().color(ColorRole::ResizeHandleHover)))
     );
     ui.pointer_input(PointerEvent::new(
         Point::new(105.0, 30.0).unwrap(),
@@ -287,10 +299,23 @@ fn stationary_pointer_tracks_subregions_after_metric_changes_and_drag_cancels() 
     assert_eq!(ui.bounds(&first).unwrap().unwrap().width(), 100.0);
 }
 
+/// The alpha drawn at a logical point: rectangles, masks and shapes
+/// composited in command order, a shape evaluated at the physical pixel
+/// that holds the point.
 fn coverage(scene: &DisplayList, x: f32, y: f32) -> f32 {
     let inside = |rect: Rect| {
         let [a, b, w, h] = rect.values();
         x >= a && y >= b && x < a + w && y < b + h
+    };
+    let viewport = scene.viewport();
+    let scale = viewport.scale();
+    let frame = |extent: f32| (f64::from(extent) * scale).round().max(1.0) as u32;
+    let mapping =
+        FrameMapping::new(frame(viewport.width()), frame(viewport.height()), viewport).unwrap();
+    let pixel = |value: f32| (f64::from(value) * scale).floor() as u32;
+    let alpha_of = |paint: Paint| match paint {
+        Paint::Solid(color) => color.alpha(),
+        _ => panic!("unexpected paint"),
     };
     scene.commands().iter().fold(0.0, |old, command| {
         let alpha = match command {
@@ -308,6 +333,19 @@ fn coverage(scene: &DisplayList, x: f32, y: f32) -> f32 {
                 let iy = (((y - b) / h) * image.height() as f32).floor() as usize;
                 f32::from(image.pixels()[iy * image.width() as usize + ix]) / 255.0 * color.alpha()
             }
+            DrawCommand::DrawShape {
+                geometry,
+                fill,
+                border,
+                clip,
+                ..
+            } => PreparedShape::new(geometry, border.as_ref(), *clip, &mapping)
+                .unwrap()
+                .map_or(0.0, |prepared| {
+                    let at = prepared.coverage(pixel(x), pixel(y));
+                    let line = border.map_or(0.0, |border| alpha_of(border.paint())) * at.border();
+                    line + fill.map_or(0.0, alpha_of) * (at.outer() - line)
+                }),
             _ => 0.0,
         };
         alpha + old * (1.0 - alpha)
@@ -322,30 +360,32 @@ impl Component for LargePanel {
         let rect = Rect::new(0.0, 0.0, 6016.0, 3384.0)?;
         painter.fill_shape(
             rect,
-            Shape::Rounded(4.into()),
+            Shape::rounded(4.into()),
             painter.color(ColorRole::Surface),
         )?;
         painter.stroke_shape(
             rect,
-            Shape::Rounded(4.into()),
+            Shape::rounded(4.into()),
             1.into(),
             painter.color(ColorRole::PanelBorder),
         )
     }
 }
 #[test]
-fn large_and_clipped_panels_use_small_reusable_corner_masks() {
+fn large_and_clipped_panels_are_two_commands_without_coverage_images() {
     for size in [[6016.0, 3384.0], [100.0, 80.0]] {
         let mut ui = Runtime::new();
         ui.set_viewport(Viewport::new(size[0], size[1], 1.25).unwrap())
             .unwrap();
         ui.mount_tree(Element::new("large", LargePanel)).unwrap();
-        let dark = draw(&mut ui);
-        assert!(dark.masks().iter().all(|mask| mask.pixels().len() <= 100));
-        ui.theme().set_mode(ThemeMode::Light).unwrap();
-        let light = draw(&mut ui);
-        for (a, b) in dark.masks().iter().zip(light.masks()) {
-            assert_eq!(a.pixels().as_ptr(), b.pixels().as_ptr());
+        for mode in [ThemeMode::Dark, ThemeMode::Light] {
+            ui.theme().set_mode(mode).unwrap();
+            let scene = draw(&mut ui);
+            assert!(matches!(
+                scene.commands(),
+                [DrawCommand::DrawShape { .. }, DrawCommand::DrawShape { .. }]
+            ));
+            assert!(scene.masks().is_empty() && scene.images().is_empty());
         }
     }
 }
@@ -381,7 +421,7 @@ impl Component for Triangles {
     }
 }
 #[test]
-fn public_triangles_preserve_winding_coverage_clips_and_translation_reuse() {
+fn public_triangles_preserve_winding_coverage_and_clips() {
     for scale in [1.0, 1.25, 2.0] {
         let mut ui = Runtime::new();
         ui.set_viewport(Viewport::new(60.0, 30.0, scale).unwrap())
@@ -389,18 +429,22 @@ fn public_triangles_preserve_winding_coverage_clips_and_translation_reuse() {
         ui.mount_tree(Element::new("triangles", Triangles)).unwrap();
         let scene = draw(&mut ui);
         assert_eq!(scene.commands().len(), 3);
-        // Both windings and the translated copy produce equal coverage, which
-        // the scene stores once and every command references.
-        assert_eq!(scene.masks().len(), 1);
+        // Each triangle is one shape command, and none stores coverage.
+        assert!(scene.masks().is_empty());
         assert!(scene.commands().iter().all(|command| matches!(
             command,
-            DrawCommand::DrawMask { mask, .. } if mask.index() == 0
+            DrawCommand::DrawShape {
+                geometry: ShapeGeometry::Triangle(_),
+                ..
+            }
         )));
         assert!(coverage(&scene, 2.0, 10.0) > 0.99);
         assert_eq!(coverage(&scene, 19.0, 1.0), 0.0);
         assert!(coverage(&scene, 32.0, 10.0) > 0.99);
         assert_eq!(coverage(&scene, 42.0, 10.0), 0.0);
-        assert!(scene.masks()[0].pixels().iter().any(|a| *a > 0 && *a < 255));
+        // The slanted edges are antialiased.
+        let partial = coverage(&scene, 10.0, 5.2);
+        assert!(partial > 0.0 && partial < 1.0, "{partial}");
     }
 }
 
@@ -422,7 +466,7 @@ fn slider_thumbs_and_split_grips_are_slim_and_rounded_and_tabs_join_the_baseline
     let [x, y, right, bottom] = mask_bounds(&scene, Color::ACCENT);
     assert!((bottom - y - 16.0 * 0.65).abs() < 0.001);
     assert!(right - x > bottom - y);
-    assert!(scene.masks().iter().any(|m| m.pixels().contains(&0)));
+    assert!(rounded(&scene, Color::ACCENT));
     ui.unmount(&slider).unwrap();
     for axis in [SplitAxis::LeftRight, SplitAxis::TopBottom] {
         let split = ui
@@ -447,12 +491,10 @@ fn slider_thumbs_and_split_grips_are_slim_and_rounded_and_tabs_join_the_baseline
                 (24.0, 3.0)
             }
         );
-        assert!(
-            scene
-                .masks()
-                .iter()
-                .any(|m| m.pixels().iter().any(|a| *a > 0 && *a < 255))
-        );
+        assert!(rounded(
+            &scene,
+            Palette::dark().color(ColorRole::ResizeHandle)
+        ));
         ui.unmount(&split).unwrap();
     }
     ui.mount_tree(Element::new(
@@ -467,14 +509,21 @@ fn slider_thumbs_and_split_grips_are_slim_and_rounded_and_tabs_join_the_baseline
     assert!(scene.commands().iter().any(|c| matches!(c, DrawCommand::FillRect { rect, color } if *color == Palette::dark().color(ColorRole::Divider) && rect.values() == [0.0, 35.0, 300.0, 1.0])));
 }
 
+/// The union of the masks and shapes painted with `tint`, clipped, as
+/// `[left, top, right, bottom]`.
 fn mask_bounds(scene: &DisplayList, tint: Color) -> [f32; 4] {
     scene
         .commands()
         .iter()
         .filter_map(|command| match command {
-            DrawCommand::DrawMask {
-                rect, color, clip, ..
-            } if *color == tint => Some(clip.map_or(*rect, |clip| rect.intersection(clip))),
+            DrawCommand::DrawMask { rect, clip, .. }
+            | DrawCommand::DrawShape {
+                geometry: ShapeGeometry::Rect { rect, .. },
+                clip,
+                ..
+            } if support::paints_with(command, tint) => {
+                Some(clip.map_or(*rect, |clip| rect.intersection(clip)))
+            }
             _ => None,
         })
         .fold(
@@ -489,6 +538,18 @@ fn mask_bounds(scene: &DisplayList, tint: Color) -> [f32; 4] {
                 [b[0].min(x), b[1].min(y), b[2].max(x + w), b[3].max(y + h)]
             },
         )
+}
+
+/// Whether a shape painted with `tint` has a round corner.
+fn rounded(scene: &DisplayList, tint: Color) -> bool {
+    scene.commands().iter().any(|command| {
+        matches!(command, DrawCommand::DrawShape {
+            geometry: ShapeGeometry::Rect { shape, .. },
+            ..
+        } if support::paints_with(command, tint)
+            && shape.corner(CornerPosition::TopLeft).kind() == CornerKind::Round
+            && shape.corner(CornerPosition::TopLeft).size().get() > 0.0)
+    })
 }
 
 #[test]

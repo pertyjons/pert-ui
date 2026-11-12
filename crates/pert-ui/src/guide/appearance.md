@@ -1,8 +1,9 @@
 Appearance is shared state the runtime tracks like any binding: palettes and
 color roles, density metrics, the application zoom, fonts and icons. A change
 repaints or remeasures only the components that read what changed. Drawing goes
-through [`Painter`], whose shapes, paths, text, icons and images are cached
-independently of the graphics adapter.
+through [`Painter`], whose paths, text, icons and images are cached
+independently of the graphics adapter; shapes are retained as commands and
+computed by the renderer, with no rasterized coverage cached for them.
 
 # Themes and color roles
 
@@ -257,10 +258,10 @@ let _frame = ui.paint()?;
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
-Custom widgets use the same shape cache, focus and cursor contracts. This complete
-example uses a theme size in layout and a focus-sensitive rounded frame. The
-runtime caches shape coverage separately from its color, bounded to 128 entries
-and 16 MiB. Cached display lists may retain evicted masks. This is UI-thread work.
+Custom widgets use the same shape, focus and cursor contracts. This complete
+example uses a theme size in layout and a focus-sensitive rounded frame. Each
+shape is one drawing command whose coverage the renderer computes per pixel,
+so painting one rasterizes and caches nothing on the UI thread.
 
 ```rust
 use pert_ui::{component::*, prelude::*};
@@ -277,14 +278,14 @@ impl Component for CustomPanel {
         let radius = Length::new(painter.metric(MetricRole::CornerRadius))?;
         let width = Length::new(painter.metric(MetricRole::BorderWidth))?;
         let role = if painter.focus_within() { ColorRole::Primary } else { ColorRole::PanelBorder };
-        painter.fill_shape(rect, Shape::Rounded(radius), painter.color(ColorRole::Surface))?;
+        painter.fill_shape(rect, Shape::rounded(radius), painter.color(ColorRole::Surface))?;
         painter.fill_triangle(
             [Point::new(4.0, 4.0)?,
              Point::new(16.0, 10.0)?,
              Point::new(4.0, 16.0)?],
             painter.color(ColorRole::Primary),
         )?;
-        painter.stroke_shape(rect, Shape::Rounded(radius), width, painter.color(role))?;
+        painter.stroke_shape(rect, Shape::rounded(radius), width, painter.color(role))?;
         Ok(())
     }
 }

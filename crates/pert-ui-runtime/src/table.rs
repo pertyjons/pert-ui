@@ -1177,7 +1177,7 @@ impl Component for TableRow {
         let cell = Rect::new(start - self.shared.offset.get(), 0.0, width, size.height())?
             .intersection(Rect::from_size(size));
         if !cell.is_empty() {
-            painter.focus_ring(cell, crate::Shape::Rectangle)?;
+            painter.focus_ring(cell, crate::Shape::RECTANGLE)?;
         }
         Ok(())
     }

@@ -523,11 +523,9 @@ fn a_disabled_static_swatch_mutes_its_outline_like_a_disabled_action() {
         scene
             .commands()
             .iter()
-            .filter_map(|command| match command {
-                DrawCommand::FillRect { color, .. }
-                | DrawCommand::DrawVector { color, .. }
-                | DrawCommand::DrawMask { color, .. } => Some(*color),
-                _ => None,
+            .flat_map(|command| match command {
+                DrawCommand::DrawVector { color, .. } => vec![*color],
+                _ => support::paints(command),
             })
             .collect::<Vec<_>>()
     };

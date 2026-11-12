@@ -1362,6 +1362,8 @@ impl<T: Clone + Eq + 'static> Component for SelectAnchor<T> {
             } else {
                 ColorRole::Button
             }),
+            // The caption is drawn before this control's focus ring.
+            false,
         )?;
         if let Some(text) = self.prepared.borrow().as_ref() {
             let foreground = p.color(if self.focusable() {

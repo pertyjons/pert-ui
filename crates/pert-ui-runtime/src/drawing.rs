@@ -42,9 +42,8 @@ pub enum DrawError {
     },
     /// A coverage mask that drawing needs would exceed
     /// [`MaskImage::MAX_PIXELS`]. Vector coverage is cropped to its clip
-    /// first, so drawing a vector smaller or clipping it avoids this. A shape
-    /// or arc mask is checked at its full size before the clipped draw, so a
-    /// clip does not help it; draw it smaller.
+    /// first, so drawing a vector smaller or clipping it avoids this. Shapes,
+    /// arcs and triangles need no mask and never report it.
     #[error("a coverage mask would exceed its size limit")]
     CoverageTooLarge,
     /// A command refers to a vector its display list does not hold, as an ID
@@ -1161,6 +1160,35 @@ pub enum DrawCommand {
         /// Additional window-coordinate clip; cropping must preserve source UVs.
         clip: Option<Rect>,
     },
+    /// Draw a rounded or cut rectangle, a circular arc or a triangle whose
+    /// coverage a backend computes per pixel from the geometry.
+    ///
+    /// A backend prepares the command with
+    /// [`PreparedShape::new`](crate::PreparedShape::new), which maps, snaps
+    /// and clips it for the frame, and evaluates the prepared parameters at
+    /// each pixel center of its span as
+    /// [`PreparedShape::coverage`](crate::PreparedShape::coverage) does; that
+    /// evaluation is the reference. With the silhouette's coverage `c_o`, the
+    /// border's share `c_b` and premultiplied linear paints `F` (fill) and
+    /// `B` (border), zero when absent, the source is
+    /// `B·c_b + F·(c_o − B.a·c_b)`, blended once, source-over. Only a
+    /// rectangle may have a border; a border on an arc or a triangle is
+    /// refused as
+    /// [`ShapePrepareError::BorderNotAllowed`](crate::ShapePrepareError::BorderNotAllowed).
+    /// An arc and a triangle are painted with `fill`. A backend that meets a
+    /// geometry or a paint it does not know reports the command as
+    /// unsupported; it never drops it.
+    #[non_exhaustive]
+    DrawShape {
+        /// What to draw, in window logical coordinates.
+        geometry: crate::ShapeGeometry,
+        /// The paint of the silhouette's interior.
+        fill: Option<crate::Paint>,
+        /// A rectangle's border, inside its edges.
+        border: Option<crate::Border>,
+        /// Additional window-coordinate clipping rectangle.
+        clip: Option<Rect>,
+    },
 }
 
 /// Opaque index into one owned display list's coverage resources.
@@ -1401,7 +1429,6 @@ pub struct Painter {
     pub(crate) physical_scale: f64,
     pub(crate) text: std::rc::Rc<crate::text::TextCache>,
     pub(crate) profiler: crate::profiling::Profiler,
-    pub(crate) shapes: std::rc::Rc<std::cell::RefCell<crate::shapes::ShapeCache>>,
     pub(crate) focus_within: bool,
     pub(crate) view_scale: f32,
     pub(crate) window_scale: f64,

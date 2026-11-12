@@ -1,4 +1,5 @@
 //! Disabled framed actions have a neutral boundary, without changing admission.
+use crate::support;
 use pert_ui::testing::Driver;
 use pert_ui::*;
 use std::time::Duration;
@@ -11,14 +12,7 @@ fn runtime() -> TestResult<Runtime> {
     Ok(ui)
 }
 
-fn uses(scene: &DisplayList, color: Color) -> bool {
-    scene.commands().iter().any(|command| {
-        matches!(command,
-            DrawCommand::FillRect { color: found, .. }
-            | DrawCommand::DrawMask { color: found, .. }
-            if *found == color)
-    })
-}
+use support::uses;
 
 #[test]
 fn revocation_repaints_a_held_button_and_reenable_does_not_replay_it() -> TestResult {
@@ -529,21 +523,19 @@ fn drawn_in(scene: &DisplayList, bounds: Rect) -> Vec<Color> {
     scene
         .commands()
         .iter()
-        .filter_map(|command| match command {
-            DrawCommand::FillRect { rect, color } | DrawCommand::DrawMask { rect, color, .. }
-                if inside(rect) =>
-            {
-                Some(*color)
-            }
+        .flat_map(|command| match command {
             DrawCommand::DrawVector { origin, color, .. }
                 if origin.x() >= bounds.x() - 0.5
                     && origin.x() <= bounds.x() + bounds.width()
                     && origin.y() >= bounds.y() - 0.5
                     && origin.y() <= bounds.y() + bounds.height() =>
             {
-                Some(*color)
+                vec![*color]
             }
-            _ => None,
+            _ if support::extent(command).is_some_and(|rect| inside(&rect)) => {
+                support::paints(command)
+            }
+            _ => Vec::new(),
         })
         .collect()
 }

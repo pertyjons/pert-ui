@@ -867,12 +867,18 @@ fn bordered_container_paints_a_rounded_panel_above_its_child() {
     ui.flush(Duration::ZERO).unwrap();
     let scene = ui.paint().unwrap();
     let commands = scene.commands();
+    let rounded = |command: &DrawCommand| {
+        matches!(command, DrawCommand::DrawShape { geometry: ShapeGeometry::Rect { shape, .. }, .. }
+            if shape.corner(CornerPosition::TopLeft).kind() == CornerKind::Round
+                && shape.corner(CornerPosition::TopLeft).size().get() > 0.0)
+    };
     let border = Palette::dark().color(ColorRole::PanelBorder);
     let surface = Palette::dark().color(ColorRole::Surface);
+    // The border is one inward stroke of the border width along the panel.
     let top_edge = commands
         .iter()
-        .position(|c| matches!(c, DrawCommand::FillRect { rect, color } if *color == border && rect.y() == 0.0 && rect.height() == 1.0))
-        .expect("top border edge at border width");
+        .position(|c| matches!(c, DrawCommand::DrawShape { geometry: ShapeGeometry::Rect { rect, .. }, fill: None, border: Some(stroke), .. } if stroke.paint() == Paint::Solid(border) && stroke.width().get() == 1.0 && rect.y() == 0.0))
+        .expect("border stroke at border width");
     let child = commands
         .iter()
         .position(|c| matches!(c, DrawCommand::FillRect { color, .. } if *color == Color::ACCENT))
@@ -881,13 +887,13 @@ fn bordered_container_paints_a_rounded_panel_above_its_child() {
     assert!(
         commands
             .iter()
-            .any(|c| matches!(c, DrawCommand::DrawMask { color, .. } if *color == surface)),
+            .any(|c| rounded(c) && support::paints_with(c, surface)),
         "the fill uses rounded corners"
     );
     assert!(
         commands
             .iter()
-            .any(|c| matches!(c, DrawCommand::DrawMask { color, .. } if *color == border)),
+            .any(|c| rounded(c) && support::paints_with(c, border)),
         "the border uses rounded corners"
     );
 }

@@ -1267,12 +1267,13 @@ impl Component for ToastStack {
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
         for (item, t) in self.items.iter().zip(self.prepared.borrow().iter()) {
             let shape = rounded(p.metric(MetricRole::CornerRadius))?;
-            p.fill_shape(t.rect, shape, p.color(ColorRole::Surface))?;
-            p.stroke_shape(
+            p.draw_shape(
                 t.rect,
                 shape,
-                Length::new(p.metric(MetricRole::BorderWidth))?,
-                p.color(ColorRole::PanelBorder),
+                ShapeStyle::fill(p.color(ColorRole::Surface)).with_border(
+                    Length::new(p.metric(MetricRole::BorderWidth))?,
+                    p.color(ColorRole::PanelBorder),
+                ),
             )?;
             let [_, y, _, _] = t.rect.values();
             let pad = p

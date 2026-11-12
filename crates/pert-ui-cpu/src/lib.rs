@@ -2,8 +2,9 @@
 
 use pert_ui_runtime::host::HostIntegration;
 use pert_ui_runtime::{
-    CaptureError, Color, DisplayList, DrawCommand, DrawError, FrameImage, ImageSampling,
-    LimitError, MaskImage, QuarterTurn, RasterImage, Runtime, VectorRasterizer,
+    CaptureError, Color, DisplayList, DrawCommand, DrawError, FrameImage, FrameMapping,
+    ImageSampling, LimitError, MaskImage, Paint, PreparedShape, QuarterTurn, RasterImage, Runtime,
+    ShapeCoverage, ShapePrepareError, VectorRasterizer,
 };
 
 mod srgb;
@@ -34,6 +35,11 @@ pub enum CpuRenderError {
         /// The bytes the frame's pixels need.
         bytes: u64,
     },
+    /// A shape command could not be prepared for the frame: its geometry
+    /// lies outside the range this renderer evaluates, or it is malformed,
+    /// as a border on an arc or a triangle is.
+    #[error(transparent)]
+    Shape(#[from] ShapePrepareError),
     /// A command names a mask or image that its scene does not hold, as an ID
     /// copied from another scene would.
     #[error("a command refers to a resource missing from its scene")]
@@ -45,14 +51,15 @@ pub enum CpuRenderError {
 }
 
 impl From<CpuRenderError> for CaptureError {
-    /// Drawing failures keep their typed cause, an oversized frame is
-    /// [`CaptureError::Limit`] with the same limit, an empty viewport has no
-    /// surface to render and the remaining renderer diagnostics, a failed
-    /// allocation included, are backend text.
+    /// Drawing failures and a shape that cannot be prepared keep their typed
+    /// cause, an oversized frame is [`CaptureError::Limit`] with the same
+    /// limit, an empty viewport has no surface to render and the remaining
+    /// renderer diagnostics, a failed allocation included, are backend text.
     fn from(error: CpuRenderError) -> Self {
         match error {
             CpuRenderError::Drawing(error) => error.into(),
             CpuRenderError::Limit(limit) => Self::Limit(limit),
+            CpuRenderError::Shape(error) => Self::Shape(error),
             CpuRenderError::EmptyViewport => Self::SurfaceUnavailable,
             error => Self::Backend(error.to_string()),
         }
@@ -196,9 +203,11 @@ impl CpuRenderer {
                 width,
                 height,
             }))?;
+        let mapping = FrameMapping::new(width, height, viewport)
+            .map_err(|_| CpuRenderError::EmptyViewport)?;
         // Validate every command before preparing or allocating anything.
         for command in scene.commands() {
-            check(scene, command)?;
+            check(scene, command, &mapping)?;
         }
         let scene = self.vectors.prepare(scene)?;
         let background = scene.background();
@@ -221,6 +230,7 @@ impl CpuRenderer {
             scale_x: f64::from(width) / f64::from(viewport.width()),
             scale_y: f64::from(height) / f64::from(viewport.height()),
             logical: (f64::from(viewport.width()), f64::from(viewport.height())),
+            mapping,
         };
         for command in scene.commands() {
             frame.draw(&scene, command)?;
@@ -278,9 +288,25 @@ impl CpuRenderer {
 }
 
 /// Rejects a command this renderer cannot draw or whose resource is missing.
-fn check(scene: &DisplayList, command: &DrawCommand) -> Result<(), CpuRenderError> {
+fn check(
+    scene: &DisplayList,
+    command: &DrawCommand,
+    mapping: &FrameMapping,
+) -> Result<(), CpuRenderError> {
     match command {
         DrawCommand::FillRect { .. } => Ok(()),
+        DrawCommand::DrawShape {
+            geometry,
+            fill,
+            border,
+            clip,
+            ..
+        } => {
+            fill.map(solid).transpose()?;
+            border.map(|border| solid(border.paint())).transpose()?;
+            PreparedShape::new(geometry, border.as_ref(), *clip, mapping)?;
+            Ok(())
+        }
         DrawCommand::DrawMask { mask, .. } => scene
             .mask(*mask)
             .map(|_| ())
@@ -304,6 +330,14 @@ fn check(scene: &DisplayList, command: &DrawCommand) -> Result<(), CpuRenderErro
     }
 }
 
+/// The premultiplied color of a paint this renderer knows.
+fn solid(paint: Paint) -> Result<[f32; 4], CpuRenderError> {
+    match paint {
+        Paint::Solid(color) => Ok(premultiplied(color)),
+        _ => Err(CpuRenderError::Unsupported),
+    }
+}
+
 /// A straight linear color premultiplied by its alpha.
 fn premultiplied(color: Color) -> [f32; 4] {
     let [red, green, blue, alpha] = color.channels();
@@ -320,6 +354,14 @@ fn encoded([red, green, blue, alpha]: [f32; 4]) -> [u8; 4] {
     ]
 }
 
+/// The last blend's stored bytes, source and result.
+#[derive(Clone, Copy)]
+struct Blend {
+    stored: [u8; 4],
+    source: [f32; 4],
+    result: [u8; 4],
+}
+
 /// The frame being drawn and its logical-to-physical mapping.
 struct Frame {
     pixels: Vec<u8>,
@@ -328,10 +370,122 @@ struct Frame {
     scale_x: f64,
     scale_y: f64,
     logical: (f64, f64),
+    mapping: FrameMapping,
 }
 
 impl Frame {
+    /// Draws a shape from its prepared coverage: with the silhouette's
+    /// coverage `c_o`, the border's share `c_b` and premultiplied paints `F`
+    /// and `B`, the source is `B·c_b + F·(c_o − B.a·c_b)`, blended once.
+    fn draw_shape(&mut self, shape: &PreparedShape, fill: [f32; 4], border: [f32; 4]) {
+        let source = |coverage: ShapeCoverage| -> [f32; 4] {
+            let (outer, band) = (coverage.outer(), coverage.border());
+            let inside = outer - border[3] * band;
+            std::array::from_fn(|channel| border[channel] * band + fill[channel] * inside)
+        };
+        let [x0, y0, x1, y1] = shape.span();
+        let mut memo = None;
+        for row in y0..y1 {
+            // The solid run inside a rectangle has one source, so it is
+            // filled as a run; only the pixels outside it evaluate the
+            // distance.
+            let [first, past] = shape.solid_run(row).unwrap_or([x1, x1]);
+            for column in (x0..first).chain(past..x1) {
+                let coverage = shape.coverage(column, row);
+                if coverage.outer() > 0.0 {
+                    let column = column as usize;
+                    self.fill_run(
+                        row as usize,
+                        column..column + 1,
+                        source(coverage),
+                        &mut memo,
+                    );
+                }
+            }
+            if past > first {
+                let source = source(shape.coverage(first, row));
+                self.fill_run(
+                    row as usize,
+                    first as usize..past as usize,
+                    source,
+                    &mut memo,
+                );
+            }
+        }
+    }
+
+    /// Source-over of one linear premultiplied `source` onto the pixels
+    /// `columns` of `row`. A source that adds nothing leaves them unread, an
+    /// opaque one replaces them unread, and any other is blended, reusing
+    /// `memo`'s result while the source and the stored bytes repeat, as they
+    /// do across a uniform background.
+    fn fill_run(
+        &mut self,
+        row: usize,
+        columns: std::ops::Range<usize>,
+        source: [f32; 4],
+        memo: &mut Option<Blend>,
+    ) {
+        if source.iter().all(|channel| *channel <= 0.0) {
+            return;
+        }
+        let start = (row * self.width + columns.start) * 4;
+        let pixels = &mut self.pixels[start..start + columns.len() * 4];
+        if source[3] >= 1.0 {
+            // Nothing of the destination remains: `blended` would return
+            // these bytes for any stored pixel.
+            let bytes = encoded(source);
+            for pixel in pixels.as_chunks_mut::<4>().0 {
+                *pixel = bytes;
+            }
+            return;
+        }
+        for pixel in pixels.as_chunks_mut::<4>().0 {
+            let stored = *pixel;
+            let result = match *memo {
+                Some(Blend {
+                    stored: before,
+                    source: with,
+                    result,
+                }) if before == stored && with == source => result,
+                _ => {
+                    let result = blended(stored, source);
+                    *memo = Some(Blend {
+                        stored,
+                        source,
+                        result,
+                    });
+                    result
+                }
+            };
+            *pixel = result;
+        }
+    }
+
     fn draw(&mut self, scene: &DisplayList, command: &DrawCommand) -> Result<(), CpuRenderError> {
+        if let DrawCommand::DrawShape {
+            geometry,
+            fill,
+            border,
+            clip,
+            ..
+        } = command
+        {
+            let fill = fill.map(solid).transpose()?.unwrap_or([0.0; 4]);
+            let paint = border
+                .map(|border| solid(border.paint()))
+                .transpose()?
+                .unwrap_or([0.0; 4]);
+            if fill[3] == 0.0 && paint[3] == 0.0 {
+                return Ok(());
+            }
+            if let Some(shape) =
+                PreparedShape::new(geometry, border.as_ref(), *clip, &self.mapping)?
+            {
+                self.draw_shape(&shape, fill, paint);
+            }
+            return Ok(());
+        }
         let (rect, color, clip, source, turn) = match *command {
             DrawCommand::FillRect { rect, color } => {
                 (rect, color, None, Source::Fill, QuarterTurn::None)
@@ -384,29 +538,9 @@ impl Frame {
         let rows = span(top, bottom, self.scale_y, self.height);
         let tint = premultiplied(color);
         if matches!(source, Source::Fill) {
-            // Every covered pixel gets the same source, so its result depends
-            // on the stored bytes alone: reuse the last result while they
-            // repeat, as they do across a uniform background.
-            let mut last: Option<([u8; 4], [u8; 4])> = None;
+            let mut memo = None;
             for row in rows {
-                for column in columns.clone() {
-                    let start = (row * self.width + column) * 4;
-                    let stored: [u8; 4] = [
-                        self.pixels[start],
-                        self.pixels[start + 1],
-                        self.pixels[start + 2],
-                        self.pixels[start + 3],
-                    ];
-                    let result = match last {
-                        Some((before, after)) if before == stored => after,
-                        _ => {
-                            let after = blended(stored, tint);
-                            last = Some((stored, after));
-                            after
-                        }
-                    };
-                    self.pixels[start..start + 4].copy_from_slice(&result);
-                }
+                self.fill_run(row, columns.clone(), tint, &mut memo);
             }
             return Ok(());
         }
@@ -533,4 +667,58 @@ fn sample_image(image: &RasterImage, sampling: ImageSampling, u: f32, v: f32) ->
         let bottom = c[channel] * (1.0 - fx) + d[channel] * fx;
         top * (1.0 - fy) + bottom * fy
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pert_ui_runtime::Viewport;
+
+    #[test]
+    fn a_filled_run_is_the_per_pixel_blend() -> Result<(), Box<dyn std::error::Error>> {
+        // Stored pixels that repeat and vary: opaque, translucent and clear.
+        let stored: Vec<[u8; 4]> = (0..64u8)
+            .map(|index| match index % 4 {
+                0 | 1 => [40, 90, 200, 255],
+                2 => [index, 255 - index, index * 3, 255],
+                _ => [index / 2, index / 3, index / 4, index],
+            })
+            .collect();
+        let width = stored.len();
+        let viewport = Viewport::new(width as f32, 1.0, 1.0)?;
+        let sources = [
+            // Nothing, opaque, translucent, and coverage-scaled paints.
+            [0.0, 0.0, 0.0, 0.0],
+            [0.2, 0.4, 0.6, 1.0],
+            [0.1, 0.2, 0.3, 0.5],
+            [0.25, 0.0, 0.0, 0.25],
+            [0.999, 0.999, 0.999, 0.999],
+        ];
+        for source in sources {
+            let mut frame = Frame {
+                pixels: stored.iter().flatten().copied().collect(),
+                width,
+                height: 1,
+                scale_x: 1.0,
+                scale_y: 1.0,
+                logical: (width as f64, 1.0),
+                mapping: FrameMapping::new(width as u32, 1, viewport)?,
+            };
+            // The run leaves the first and last pixel alone.
+            frame.fill_run(0, 1..width - 1, source, &mut None);
+            let expected: Vec<u8> = stored
+                .iter()
+                .enumerate()
+                .flat_map(|(index, pixel)| {
+                    if index == 0 || index == width - 1 {
+                        *pixel
+                    } else {
+                        blended(*pixel, source)
+                    }
+                })
+                .collect();
+            assert_eq!(frame.pixels, expected, "{source:?}");
+        }
+        Ok(())
+    }
 }

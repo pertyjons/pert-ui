@@ -732,13 +732,13 @@ impl Component for Stripe {
             if expanded {
                 p.fill_shape(
                     placed.rect,
-                    Shape::Rounded(radius),
+                    Shape::rounded(radius),
                     p.color(ColorRole::TabSelected),
                 )?;
             } else if allowed && (armed || self.hovered.as_ref() == Some(&placed.key)) {
                 p.fill_shape(
                     placed.rect,
-                    Shape::Rounded(radius),
+                    Shape::rounded(radius),
                     p.color(ColorRole::SurfaceHover),
                 )?;
             }
@@ -754,7 +754,7 @@ impl Component for Stripe {
                 text.paint(p, *point, color)?;
             }
             if self.focused && self.active.as_ref() == Some(&placed.key) {
-                p.focus_ring(placed.rect, Shape::Rounded(radius))?;
+                p.focus_ring(placed.rect, Shape::rounded(radius))?;
             }
         }
         // Where a drop would insert the dragged button.

@@ -377,7 +377,7 @@ impl Component for EdgeDivider {
             };
             p.fill_shape(
                 grip,
-                Shape::Rounded(Length::new(p.metric(MetricRole::CornerRadius))?),
+                Shape::rounded(Length::new(p.metric(MetricRole::CornerRadius))?),
                 color,
             )?;
         }

@@ -948,7 +948,7 @@ impl Component for SplitPane {
                 };
                 painter.fill_shape(
                     grip,
-                    Shape::Rounded(Length::new(painter.metric(MetricRole::CornerRadius))?),
+                    Shape::rounded(Length::new(painter.metric(MetricRole::CornerRadius))?),
                     color,
                 )?;
             }

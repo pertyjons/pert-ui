@@ -1144,11 +1144,7 @@ fn a_refused_binding_keeps_the_field_and_the_runtime_working() {
             .unwrap()
             .commands()
             .iter()
-            .any(|command| matches!(
-                command,
-                DrawCommand::FillRect { color, .. } | DrawCommand::DrawMask { color, .. }
-                    if *color == error
-            ))
+            .any(|command| support::paints_with(command, error))
     );
     // The next acceptable value ends the refusal and editing resumes.
     value.set("from a file\n".into()).unwrap();

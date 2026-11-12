@@ -1,4 +1,5 @@
 //! Public theme management, role dependencies and retained widget behavior.
+use crate::support;
 use pert_ui::testing::HostIntegration;
 use pert_ui::*;
 use std::{cell::Cell, rc::Rc, time::Duration};
@@ -301,7 +302,10 @@ fn standard_widgets_recolor_without_new_layout_or_text_masks() -> Result {
             ..
         }
     )));
-    assert!(light.commands().iter().any(|cmd| matches!(cmd, DrawCommand::DrawMask { color, .. } if *color == Palette::light().color(ColorRole::Surface))));
+    assert!(light.commands().iter().any(|cmd| {
+        matches!(cmd, DrawCommand::DrawShape { .. })
+            && support::paints_with(cmd, Palette::light().color(ColorRole::Surface))
+    }));
     for stat in ui.profile().stats {
         assert!(!matches!(
             stat.operation,

@@ -278,7 +278,7 @@ impl Path {
     /// A rectangle with equal circular corners, closed and clockwise.
     ///
     /// The radius clamps to half the shorter side, as for
-    /// [`Shape::Rounded`](crate::Shape::Rounded); zero gives square corners.
+    /// [`Shape::rounded`](crate::Shape::rounded); zero gives square corners.
     ///
     /// # Errors
     /// As for [`Path::ellipse`].
@@ -687,8 +687,9 @@ impl Painter {
     /// Half the width lies on each side of the path, so the stroke extends
     /// past the path's bounds: by half the width along a segment, and further
     /// at miter joins and square caps. [`Self::stroke_shape`] strokes a
-    /// rectangle, rounded rectangle or ellipse inward instead, keeping the
-    /// whole stroke inside the shape. Open subpaths receive the
+    /// rectangle with square, round or cut corners inward instead, keeping
+    /// the whole stroke inside the shape; [`Self::stroke_ellipse`] strokes an
+    /// ellipse centered on its outline. Open subpaths receive the
     /// style's cap at both ends; closed subpaths join at their start instead.
     /// Joins apply between consecutive segments, including between the flattened
     /// pieces of a curve, where the turn is small. Zero-length subpaths draw a

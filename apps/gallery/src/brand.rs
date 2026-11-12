@@ -146,19 +146,17 @@ impl Component for BrandMark {
     fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
         let size = painter.size();
         let rect = Rect::new(0.0, 0.0, size.width(), size.height())?;
-        let shape = Shape::Rounded(Length::new(painter.metric(MetricRole::CornerRadius))?);
-        if self.pressed || self.hovered {
-            painter.fill_shape(rect, shape, painter.color(ColorRole::SurfaceHover))?;
-        }
-        if self.focused {
-            painter.stroke_shape(
-                rect,
-                shape,
-                Length::new(painter.metric(MetricRole::FocusWidth))?,
-                painter.color(ColorRole::FocusRing),
-            )?;
-        }
-        Ok(())
+        let shape = Shape::rounded(Length::new(painter.metric(MetricRole::CornerRadius))?);
+        let ring = Length::new(painter.metric(MetricRole::FocusWidth))?;
+        let ring_color = painter.color(ColorRole::FocusRing);
+        let style = match (self.pressed || self.hovered, self.focused) {
+            (true, true) => ShapeStyle::fill(painter.color(ColorRole::SurfaceHover))
+                .with_border(ring, ring_color),
+            (true, false) => ShapeStyle::fill(painter.color(ColorRole::SurfaceHover)),
+            (false, true) => ShapeStyle::border(ring, ring_color),
+            (false, false) => return Ok(()),
+        };
+        painter.draw_shape(rect, shape, style)
     }
     fn inspect(&self) -> ComponentDetails {
         let mut details = ComponentDetails::default();

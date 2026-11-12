@@ -5,6 +5,67 @@ needs: additions, behavior changes, breaking changes with their replacement,
 and notable fixes. The detailed per-version entries up to 0.3.101 are in Git
 history (this file at commit f5fde76).
 
+## 0.3.104–0.3.111 (2026-11-12): Analytic shapes
+
+A rounded or cut rectangle can be drawn as one command whose coverage the
+renderer computes per pixel, with a size and a kind per corner and with fill
+and border as one silhouette. Both renderers draw it, the wgpu renderer
+from records in a storage buffer. The uniform interior of a larger rectangle is not
+evaluated per pixel: it is filled directly, or skipped when nothing is
+drawn there. Built-in rounded and cut
+rectangles, arcs and triangles are drawn this way.
+
+- **Breaking:** `Shape` is a struct with one `Corner` per position instead
+  of an enum.
+
+  | Old | New |
+  |---|---|
+  | `Shape::Rounded(r)` | `Shape::rounded(r)` |
+  | `Shape::RoundedTop(r)` | `Shape::rounded_top(r)` |
+  | `Shape::CutTopRight(c)` | `Shape::cut_top_right(c)` |
+  | `Shape::Rectangle` | `Shape::RECTANGLE` |
+  | `match` on `Shape` | `Shape::corner` |
+- **Added:** `Painter::draw_shape` with `ShapeStyle`; `Corner`,
+  `CornerKind`, `CornerPosition` and `Shape::with_corner`;
+  `DrawCommand::DrawShape` with `ShapeGeometry`, `ArcGeometry`,
+  `TriangleGeometry`, `Paint` and `Border`; the shared preparation a backend
+  uses, `FrameMapping`, `PreparedShape`, `ShapeParameters` (with `Boundary`,
+  `Inner`, `PreparedCorner`), `ShapeCoverage` and `ShapePrepareError`; the
+  errors `CpuRenderError::Shape`, `RenderError::Shape`,
+  `CaptureError::Shape` and `LimitError::ShapeRecords`;
+  `PreparedShape::solid_run`, `solid_box` and `PreparedShape::PARITY_MARGIN`;
+  `FrameMapping::frame_width` and `frame_height`.
+- **Parity:** the CPU and wgpu renderers agree on a shape's edge pixels
+  within one step per channel, measured on one adapter; the rendering
+  contract states the tiers.
+- **Changed:** `fill_shape`, `stroke_shape`, the focus ring, `stroke_arc`
+  and `fill_triangle` record one `DrawShape` each; a fill without corners
+  stays a `FillRect`. The shape coverage cache is gone: no shape is
+  rasterized on the UI thread, and a knob turned through many values adds no
+  mask. On screen, a rectangular shape's edges snap to physical pixels and
+  its border is a whole number of physical pixels; arcs and triangles keep
+  sub-pixel placement; corners, arcs and triangles are antialiased by
+  distance; corners that do not fit are scaled as CSS does
+  (a `rounded_top` radius may exceed half the smaller side), and shapes stay
+  sharp during a zoom and beyond 8× magnification.
+- **Changed:** a built-in frame whose fill is directly followed by an
+  outline of the same shape is one `DrawShape`: the inactive control frame
+  of buttons and of the Select and MultiSelect anchors, field frames,
+  toasts, detached tab slots, and the focus ring of buttons, chips and
+  links. No fill shows beside the border's curve. A frame or ring drawn
+  over a caption or over children stays a separate stroke.
+- **Added:** `pert_ui::component` also exports `ShapeStyle`, the style
+  `Painter::draw_shape` takes, and `Corner`, `CornerKind` and
+  `CornerPosition`, which build and read a `Shape`.
+- **Changed:** shape drawing no longer returns
+  `DrawError::CoverageTooLarge`. A shape beyond the evaluation range is
+  refused by the renderer with `ShapePrepareError::OutOfRange`.
+- **Removed:** the interim `Runtime::set_shape_recording`,
+  `Runtime::shape_recording` and `ShapeRecording` of 0.3.105–0.3.107; every
+  shape is recorded as `DrawShape`, so there is no mode to select.
+- **Tests that inspect a display list:** a shape is a `DrawShape` with a
+  fill, a border or both, not rectangles and corner masks.
+
 ## 0.3.103 (2026-11-06): Resize and scale-change cost
 
 Resizing a window or changing its scale does far less UI work: components

@@ -246,7 +246,7 @@ impl Headers {
             if self.focused && self.active.as_ref() == Some(&placed.key) {
                 p.focus_ring(
                     rect,
-                    Shape::Rounded(Length::new(p.metric(MetricRole::CornerRadius))?),
+                    Shape::rounded(Length::new(p.metric(MetricRole::CornerRadius))?),
                 )?;
             }
         }
