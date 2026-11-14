@@ -9,10 +9,10 @@ pub pert_ui_cpu::CpuRenderError::Limit(pert_ui_runtime::render_limits::LimitErro
 pub pert_ui_cpu::CpuRenderError::Shape(pert_ui_runtime::shapes::prepare::ShapePrepareError)
 pub pert_ui_cpu::CpuRenderError::Unsupported
 impl core::clone::Clone for pert_ui_cpu::CpuRenderError
-pub fn pert_ui_cpu::CpuRenderError::clone(&self) -> pert_ui_cpu::CpuRenderError
+pub fn pert_ui_cpu::CpuRenderError::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_cpu::CpuRenderError
 impl core::cmp::PartialEq for pert_ui_cpu::CpuRenderError
-pub fn pert_ui_cpu::CpuRenderError::eq(&self, &pert_ui_cpu::CpuRenderError) -> bool
+pub fn pert_ui_cpu::CpuRenderError::eq(&self, &Self) -> bool
 impl core::convert::From<pert_ui_cpu::CpuRenderError> for pert_ui_runtime::capture::CaptureError
 pub fn pert_ui_runtime::capture::CaptureError::from(pert_ui_cpu::CpuRenderError) -> Self
 impl core::convert::From<pert_ui_runtime::drawing::DrawError> for pert_ui_cpu::CpuRenderError
@@ -40,7 +40,7 @@ pub fn pert_ui_cpu::CpuRenderer::render(&mut self, &pert_ui_runtime::drawing::Di
 pub fn pert_ui_cpu::CpuRenderer::render_opaque(&mut self, &pert_ui_runtime::drawing::DisplayList) -> core::result::Result<pert_ui_runtime::capture::FrameImage, pert_ui_cpu::CpuRenderError>
 pub fn pert_ui_cpu::CpuRenderer::serve_captures(&mut self, &mut pert_ui_runtime::runtime::Runtime) -> usize
 impl core::default::Default for pert_ui_cpu::CpuRenderer
-pub fn pert_ui_cpu::CpuRenderer::default() -> pert_ui_cpu::CpuRenderer
+pub fn pert_ui_cpu::CpuRenderer::default() -> Self
 impl core::fmt::Debug for pert_ui_cpu::CpuRenderer
 pub fn pert_ui_cpu::CpuRenderer::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_cpu::CpuRenderer

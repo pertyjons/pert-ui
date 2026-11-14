@@ -604,6 +604,33 @@ fn cover(
     factor: f64,
     clip: Option<Rect>,
 ) -> Result<Option<(MaskImage, Rect)>, DrawError> {
+    cover_ordered(pieces, min, max, factor, clip, Ordering::Chosen)
+}
+
+// How the spans of a mask are brought into sub-scanline order.
+#[derive(Clone, Copy, PartialEq)]
+enum Ordering {
+    // Buckets when the mask has no more sub-scanlines than span slots.
+    Chosen,
+    // One comparison sort, whatever the mask; the other path's reference.
+    #[cfg(test)]
+    Sorted,
+}
+
+const EMPTY: Span = Span {
+    scanline: 0,
+    left: f64::INFINITY,
+    right: f64::NEG_INFINITY,
+};
+
+fn cover_ordered(
+    pieces: &[Piece],
+    min: Vec2,
+    max: Vec2,
+    factor: f64,
+    clip: Option<Rect>,
+    ordering: Ordering,
+) -> Result<Option<(MaskImage, Rect)>, DrawError> {
     let Some(grid) = RasterGrid::new(min, max, factor, clip)? else {
         return Ok(None);
     };
@@ -634,31 +661,85 @@ fn cover(
         return Err(DrawError::TooComplex);
     }
     // Every piece's span on every sub-scanline it meets, clamped to the mask.
-    let mut spans = Vec::with_capacity(work);
-    for &piece in pieces {
-        let shape = Shape::new(piece, local, factor, Some(&grid));
-        let Some(range) = reach(&piece) else {
-            continue;
-        };
-        for scanline in range {
-            let (a, b) = shape.span((scanline as f64 + 0.5) * SCANLINE_WEIGHT);
-            let (a, b) = (a.max(left_edge), b.min(right_edge));
-            if a < b {
-                spans.push(Span {
-                    scanline: scanline - top,
-                    left: a,
-                    right: b,
+    let span = |shape: &Shape, scanline: usize| {
+        let (a, b) = shape.span((scanline as f64 + 0.5) * SCANLINE_WEIGHT);
+        let (a, b) = (a.max(left_edge), b.min(right_edge));
+        (a < b).then_some(Span {
+            scanline: scanline - top,
+            left: a,
+            right: b,
+        })
+    };
+    let by_position = |a: &Span, b: &Span| a.left.total_cmp(&b.left);
+    // One comparison sort over all spans was most of a trace's coverage
+    // time. When the mask has no more sub-scanlines than the pieces have
+    // span slots, each span is instead written straight into the bucket of
+    // its sub-scanline, in piece order, and each bucket, which is short and
+    // for a trace already nearly ordered, is ordered by position. The bucket
+    // bounds take about eight bytes per sub-scanline, so the memory stays
+    // proportional to the bounded work rather than to the mask's height,
+    // which a tall narrow mask makes large; such a mask keeps the sort.
+    let rows = height * scanlines;
+    let bucketed = rows <= work && u32::try_from(work).is_ok();
+    #[cfg(test)]
+    let bucketed = bucketed && ordering != Ordering::Sorted;
+    let _ = ordering;
+    let spans = if bucketed {
+        // How many pieces meet each sub-scanline, as differences, then where
+        // each bucket starts; the last entry is the end of the last bucket.
+        let mut starts = vec![0u32; rows + 1];
+        for piece in pieces {
+            if let Some(range) = reach(piece).filter(|range| !range.is_empty()) {
+                let (first, end) = (range.start() - top, range.end() - top);
+                starts[first] = starts[first].wrapping_add(1);
+                starts[end + 1] = starts[end + 1].wrapping_sub(1);
+            }
+        }
+        let (mut meeting, mut start) = (0u32, 0u32);
+        for entry in &mut starts {
+            meeting = meeting.wrapping_add(*entry);
+            *entry = start;
+            start += meeting;
+        }
+        // A slot per piece and sub-scanline; one without a span stays empty,
+        // orders last and adds nothing.
+        let mut next = starts[..rows].to_vec();
+        let mut spans = vec![EMPTY; work];
+        for &piece in pieces {
+            let Some(range) = reach(&piece) else {
+                continue;
+            };
+            let shape = Shape::new(piece, local, factor, Some(&grid));
+            for scanline in range {
+                let bucket = scanline - top;
+                let slot = &mut spans[next[bucket] as usize];
+                next[bucket] += 1;
+                *slot = span(&shape, scanline).unwrap_or(Span {
+                    scanline: bucket,
+                    ..EMPTY
                 });
             }
         }
-    }
+        for bucket in starts.windows(2) {
+            spans[bucket[0] as usize..bucket[1] as usize].sort_unstable_by(by_position);
+        }
+        spans
+    } else {
+        let mut spans = Vec::with_capacity(work);
+        for &piece in pieces {
+            let shape = Shape::new(piece, local, factor, Some(&grid));
+            let Some(range) = reach(&piece) else {
+                continue;
+            };
+            spans.extend(range.filter_map(|scanline| span(&shape, scanline)));
+        }
+        // Sorting the spans themselves needs no memory beyond them.
+        spans.sort_unstable_by(|a, b| a.scanline.cmp(&b.scanline).then(by_position(a, b)));
+        spans
+    };
     if spans.is_empty() {
         return Ok(None);
     }
-    // Order the spans by sub-scanline, then by position. Sorting the spans
-    // themselves keeps the memory proportional to the bounded work rather
-    // than to the mask's height, which a tall narrow mask makes large.
-    spans.sort_unstable_by(|a, b| a.scanline.cmp(&b.scanline).then(a.left.total_cmp(&b.left)));
     let mut pixels = vec![0u8; width * height];
     let mut row = vec![0.0f64; width];
     let mut any = false;
@@ -742,6 +823,70 @@ pub(super) fn rasterize_anchored(
 
 #[cfg(test)]
 mod tests {
+    // Bucketing the spans gives the mask one comparison sort gives, bit for
+    // bit, for masks on both sides of the rule that chooses between them.
+    #[test]
+    fn bucketed_spans_cover_as_sorted_spans_do() -> Result<(), Box<dyn std::error::Error>> {
+        let trace: Vec<Vec2> = (0..300)
+            .map(|i| {
+                let t = f64::from(i);
+                (
+                    t * 0.7,
+                    40.0 + 30.0 * (t * 0.9).sin() + 6.0 * (t * 7.3).cos(),
+                )
+            })
+            .collect();
+        let crossing = vec![
+            (0.0, 0.0),
+            (60.0, 50.0),
+            (0.0, 50.0),
+            (60.0, 0.0),
+            (30.0, 70.0),
+        ];
+        // Taller in sub-scanlines than it has span slots: the sort is chosen.
+        let dots = vec![(2.0, 2.0), (2.0, 2.0)];
+        for (points, more) in [(trace, None), (crossing, None), (dots, Some((2.0, 900.0)))] {
+            for (cap, join) in [
+                (LineCap::Butt, LineJoin::Miter),
+                (LineCap::Round, LineJoin::Round),
+                (LineCap::Square, LineJoin::Bevel),
+            ] {
+                let style = StrokeStyle::new(crate::Length::new(2.5)?)
+                    .with_cap(cap)
+                    .with_join(join);
+                let subpaths: Vec<Subpath> = std::iter::once(points.clone())
+                    .chain(more.map(|point| vec![point, point]))
+                    .map(|points| Subpath {
+                        tangents: vec![[None, None]; points.len()],
+                        points,
+                        closed: false,
+                    })
+                    .collect();
+                // Unclipped; a clip through the stroke, which leaves pieces
+                // with empty slots; and a clip beside it, where none has a span.
+                let clips = [
+                    None,
+                    Some(Rect::new(10.3, 20.7, 25.0, 30.0)?),
+                    Some(Rect::new(-40.0, -40.0, 20.0, 2000.0)?),
+                ];
+                for (factor, clip) in [1.0, 1.25, 2.0]
+                    .into_iter()
+                    .flat_map(|factor| clips.map(|clip| (factor, clip)))
+                {
+                    let pieces = pieces(&subpaths, 1.25, style)?;
+                    let (min, max) = bounds(&pieces)?;
+                    let cover = |ordering| cover_ordered(&pieces, min, max, factor, clip, ordering);
+                    let (chosen, sorted) = (cover(Ordering::Chosen)?, cover(Ordering::Sorted)?);
+                    if clip.is_none() {
+                        assert_eq!(chosen.is_some(), cap != LineCap::Butt || more.is_none());
+                    }
+                    assert_eq!(chosen, sorted, "{cap:?} {join:?} {factor} {clip:?}");
+                }
+            }
+        }
+        Ok(())
+    }
+
     #[test]
     fn remote_strokes_keep_visible_endpoints_and_crop_grid_coverage()
     -> Result<(), Box<dyn std::error::Error>> {
@@ -945,6 +1090,179 @@ mod tests {
         );
         let (left, right) = shape.span(9.5);
         assert!(left < right);
+        Ok(())
+    }
+
+    // Whether a piece holds `p`, boundary included.
+    fn holds(piece: &Piece, p: Vec2) -> bool {
+        let inside = |corners: &[Vec2]| {
+            (0..corners.len()).all(|i| {
+                let (a, b) = (corners[i], corners[(i + 1) % corners.len()]);
+                cross(sub(b, a), sub(p, a)) >= 0.0
+            })
+        };
+        match *piece {
+            Piece::Disc { center, radius } => len(sub(p, center)) <= radius,
+            Piece::Band {
+                origin,
+                direction,
+                half,
+                start,
+                end,
+                ..
+            } => {
+                let q = sub(p, origin);
+                let along = q.0 * direction.0 + q.1 * direction.1;
+                cross(direction, q).abs() <= half && (start..=end).contains(&along)
+            }
+            Piece::Polygon { corners, count } => inside(&corners[..count]),
+            Piece::Sector {
+                center,
+                radius,
+                corners,
+                count,
+            } => len(sub(p, center)) <= radius && inside(&corners[..count]),
+        }
+    }
+
+    // The region the renderers' stroke coverage calls inside is the union of
+    // the pieces the mask coverage is built from: joins, caps, closure,
+    // reversals, repeated points and points alike.
+    #[test]
+    fn the_prepared_stroke_covers_the_region_of_the_pieces()
+    -> Result<(), Box<dyn std::error::Error>> {
+        use crate::{
+            FrameMapping, PathBuilder, Point, PreparedStroke, VectorGeometry, VectorStyle, Viewport,
+        };
+        let mapping = FrameMapping::new(96, 96, Viewport::new(96.0, 96.0, 1.0)?)?;
+        let mut state = 9u64;
+        let mut random = move || {
+            state = state
+                .wrapping_mul(6_364_136_223_846_793_005)
+                .wrapping_add(1_442_695_040_888_963_407);
+            (state >> 40) as f32 / (1u64 << 24) as f32
+        };
+        // Subpaths as points and whether they close; coordinates are whole
+        // eighths, so the path holds them exactly.
+        type Outline = Vec<(Vec<(f32, f32)>, bool)>;
+        let mut shapes: Vec<Outline> = vec![
+            // A reversal, an exact straight continuation and a repeated point.
+            vec![(
+                vec![
+                    (10.0, 20.0),
+                    (40.0, 20.0),
+                    (60.0, 20.0),
+                    (60.0, 20.0),
+                    (30.0, 20.0),
+                    (30.0, 50.0),
+                ],
+                false,
+            )],
+            // Segments shorter than the half width, and a short capped end.
+            vec![(
+                vec![
+                    (20.0, 60.0),
+                    (40.0, 60.0),
+                    (41.0, 61.0),
+                    (42.0, 60.0),
+                    (60.0, 62.0),
+                    (60.5, 62.0),
+                ],
+                false,
+            )],
+            // Two subpaths, one closed, and two points.
+            vec![
+                (vec![(15.0, 15.0), (45.0, 18.0), (25.0, 40.0)], true),
+                (vec![(55.0, 70.0), (80.0, 50.0)], false),
+                (vec![(70.0, 20.0), (70.0, 20.0)], false),
+                (vec![(20.0, 80.0)], true),
+            ],
+        ];
+        for index in 0..12 {
+            let count = 3 + index % 5;
+            let path = (0..count)
+                .map(|_| {
+                    let eighth = |v: f32| (v * 8.0).round() / 8.0;
+                    (
+                        eighth(12.0 + 72.0 * random()),
+                        eighth(12.0 + 72.0 * random()),
+                    )
+                })
+                .collect();
+            shapes.push(vec![(path, index % 2 == 0)]);
+        }
+        for (shape, subpaths) in shapes.iter().enumerate() {
+            let mut builder = PathBuilder::new();
+            for (points, closed) in subpaths {
+                builder = builder.move_to(Point::new(points[0].0, points[0].1)?);
+                for &(x, y) in &points[1..] {
+                    builder = builder.line_to(Point::new(x, y)?);
+                }
+                if *closed {
+                    builder = builder.close();
+                }
+            }
+            let path = builder.build()?;
+            let flattened: Vec<Subpath> = crate::geometry::stroke_subpaths(&path, 0.2)?
+                .into_iter()
+                .map(|subpath| Subpath {
+                    tangents: vec![[None, None]; subpath.points.len()],
+                    points: subpath.points,
+                    closed: subpath.closed,
+                })
+                .collect();
+            for width in [1.0f32, 3.0, 7.0] {
+                for cap in [LineCap::Butt, LineCap::Round, LineCap::Square] {
+                    for join in [LineJoin::Round, LineJoin::Bevel, LineJoin::Miter] {
+                        let style = StrokeStyle::new(crate::Length::new(width)?)
+                            .with_cap(cap)
+                            .with_join(join)
+                            .with_miter_limit(6.0)?;
+                        let region = pieces(&flattened, f64::from(width) / 2.0, style)?;
+                        let vector = VectorGeometry::new(path.clone(), VectorStyle::Stroke(style));
+                        let Some(stroke) =
+                            PreparedStroke::new(&vector, Point::ZERO, 1.0, None, &mapping)?
+                        else {
+                            assert!(region.is_empty(), "shape {shape} {cap:?} {join:?}");
+                            continue;
+                        };
+                        let [x0, y0, ..] = stroke.span();
+                        let (mut inside, mut outside) = (0, 0);
+                        for _ in 0..3000 {
+                            let (x, y) = (96.0 * random(), 96.0 * random());
+                            let p = [x - x0 as f32, y - y0 as f32];
+                            let distance = stroke
+                                .segments()
+                                .iter()
+                                .map(|segment| segment.distance(stroke.half_width(), p))
+                                .fold(f32::INFINITY, f32::min);
+                            // Clear of the boundary by more than rounding.
+                            if distance.abs() < 1.0 / 256.0 {
+                                continue;
+                            }
+                            let held = region
+                                .iter()
+                                .any(|piece| holds(piece, (f64::from(x), f64::from(y))));
+                            assert_eq!(
+                                distance < 0.0,
+                                held,
+                                "shape {shape} width {width} {cap:?} {join:?} at ({x}, {y}): \
+                                 distance {distance}"
+                            );
+                            if held {
+                                inside += 1;
+                            } else {
+                                outside += 1;
+                            }
+                        }
+                        assert!(
+                            inside > 0 && outside > 0,
+                            "shape {shape} width {width}: {inside} inside, {outside} outside"
+                        );
+                    }
+                }
+            }
+        }
         Ok(())
     }
 }

@@ -11,5 +11,7 @@ error[E0277]: `BTreeMap<String, Vec<String>>` cannot be used as a tree hierarchy
 note: required by a bound in `TreeSource::new`
  --> $WORKSPACE/crates/pert-ui-runtime/src/tree.rs
   |
+  | impl TreeSource {
+  |     /// Wraps a hierarchy.
   |     pub fn new(items: impl TreeItems + 'static) -> Self {
   |                            ^^^^^^^^^ required by this bound in `TreeSource::new`

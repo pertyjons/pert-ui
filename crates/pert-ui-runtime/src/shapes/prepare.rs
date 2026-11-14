@@ -23,7 +23,7 @@ pub(crate) const PARITY_MARGIN: f32 = 1.0 / 16.0;
 /// Every prepared parameter and span extent lies within this many physical
 /// pixels of the span's origin, so that one `f32` rounding is at most 1/256
 /// pixel.
-const DOMAIN: f64 = 65536.0;
+pub(super) const DOMAIN: f64 = 65536.0;
 
 /// A triangle with an edge shorter than this, in physical pixels after
 /// narrowing to `f32`, draws nothing.
@@ -509,11 +509,11 @@ impl ShapeStyle {
 /// How window logical coordinates map to a frame's physical pixels.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct FrameMapping {
-    width: u32,
-    height: u32,
-    sx: f64,
-    sy: f64,
-    scale: f64,
+    pub(super) width: u32,
+    pub(super) height: u32,
+    pub(super) sx: f64,
+    pub(super) sy: f64,
+    pub(super) scale: f64,
 }
 
 impl FrameMapping {
@@ -877,18 +877,18 @@ pub struct PreparedShape {
 
 /// A half-open span of frame pixels in `f64`, whole numbers within the frame.
 #[derive(Clone, Copy)]
-struct Span {
-    x0: f64,
-    y0: f64,
-    x1: f64,
-    y1: f64,
+pub(super) struct Span {
+    pub(super) x0: f64,
+    pub(super) y0: f64,
+    pub(super) x1: f64,
+    pub(super) y1: f64,
 }
 
 impl Span {
     /// The box `[x0, x1) × [y0, y1)` of whole pixels intersected with the
     /// frame and the snapped clip; `None` when nothing remains or the span
     /// exceeds the domain.
-    fn new(
+    pub(super) fn new(
         bounds: [f64; 4],
         clip: Option<Rect>,
         mapping: &FrameMapping,
@@ -915,7 +915,7 @@ impl Span {
         Ok(Some(Self { x0, y0, x1, y1 }))
     }
 
-    fn pixels(self) -> [u32; 4] {
+    pub(super) fn pixels(self) -> [u32; 4] {
         // Whole numbers within the frame, whose extent is a `u32`.
         [
             self.x0 as u32,

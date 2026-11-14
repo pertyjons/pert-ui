@@ -23,5 +23,7 @@ help: the following other types implement trait `CombineInput`
 note: required by a bound in `pert_ui::ReadSignal::<T>::combine`
  --> $WORKSPACE/crates/pert-ui-runtime/src/signal.rs
   |
+  | impl<T: Clone + PartialEq + 'static> ReadSignal<T> {
+...
   |     pub fn combine<I: CombineInputs>(
   |                       ^^^^^^^^^^^^^ required by this bound in `ReadSignal::<T>::combine`

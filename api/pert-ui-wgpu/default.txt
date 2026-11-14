@@ -7,10 +7,10 @@ pub pert_ui_wgpu::Frame::Presented
 pub pert_ui_wgpu::Frame::Recreate
 pub pert_ui_wgpu::Frame::Retry
 impl core::clone::Clone for pert_ui_wgpu::Frame
-pub fn pert_ui_wgpu::Frame::clone(&self) -> pert_ui_wgpu::Frame
+pub fn pert_ui_wgpu::Frame::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_wgpu::Frame
 impl core::cmp::PartialEq for pert_ui_wgpu::Frame
-pub fn pert_ui_wgpu::Frame::eq(&self, &pert_ui_wgpu::Frame) -> bool
+pub fn pert_ui_wgpu::Frame::eq(&self, &Self) -> bool
 impl core::fmt::Debug for pert_ui_wgpu::Frame
 pub fn pert_ui_wgpu::Frame::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Copy for pert_ui_wgpu::Frame
@@ -26,7 +26,7 @@ pub enum pert_ui_wgpu::Notice
 pub pert_ui_wgpu::Notice::Error(alloc::string::String)
 pub pert_ui_wgpu::Notice::Lost(alloc::string::String)
 impl core::clone::Clone for pert_ui_wgpu::Notice
-pub fn pert_ui_wgpu::Notice::clone(&self) -> pert_ui_wgpu::Notice
+pub fn pert_ui_wgpu::Notice::clone(&self) -> Self
 impl core::fmt::Debug for pert_ui_wgpu::Notice
 pub fn pert_ui_wgpu::Notice::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Freeze for pert_ui_wgpu::Notice
@@ -45,10 +45,10 @@ pub pert_ui_wgpu::RenderError::Surface(alloc::string::String)
 pub pert_ui_wgpu::RenderError::Unconfigured
 pub pert_ui_wgpu::RenderError::UnsupportedGraphics(alloc::string::String)
 impl core::clone::Clone for pert_ui_wgpu::RenderError
-pub fn pert_ui_wgpu::RenderError::clone(&self) -> pert_ui_wgpu::RenderError
+pub fn pert_ui_wgpu::RenderError::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_wgpu::RenderError
 impl core::cmp::PartialEq for pert_ui_wgpu::RenderError
-pub fn pert_ui_wgpu::RenderError::eq(&self, &pert_ui_wgpu::RenderError) -> bool
+pub fn pert_ui_wgpu::RenderError::eq(&self, &Self) -> bool
 impl core::convert::From<pert_ui_runtime::drawing::DrawError> for pert_ui_wgpu::RenderError
 pub fn pert_ui_wgpu::RenderError::from(pert_ui_runtime::drawing::DrawError) -> Self
 impl core::convert::From<pert_ui_runtime::render_limits::LimitError> for pert_ui_wgpu::RenderError
@@ -72,6 +72,7 @@ impl !core::panic::unwind_safe::UnwindSafe for pert_ui_wgpu::RenderError
 pub struct pert_ui_wgpu::Renderer
 impl pert_ui_wgpu::Renderer
 pub const pert_ui_wgpu::Renderer::READBACK_TIMEOUT: core::time::Duration
+pub const pert_ui_wgpu::Renderer::STROKE_COVERAGE_BUDGET: u64
 pub fn pert_ui_wgpu::Renderer::extent(&self) -> core::option::Option<pert_ui_runtime::drawing::PhysicalExtent>
 pub fn pert_ui_wgpu::Renderer::new(impl core::convert::Into<wgpu::api::surface::SurfaceTarget<'static>>, pert_ui_runtime::drawing::PhysicalExtent, impl core::ops::function::Fn(pert_ui_wgpu::Notice) + core::marker::Send + core::marker::Sync + 'static) -> core::result::Result<Self, pert_ui_wgpu::RenderError>
 pub fn pert_ui_wgpu::Renderer::recreate(&mut self, impl core::convert::Into<wgpu::api::surface::SurfaceTarget<'static>>) -> core::result::Result<(), pert_ui_wgpu::RenderError>

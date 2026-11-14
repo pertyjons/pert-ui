@@ -65,8 +65,16 @@ pub enum DrawError {
     /// [`VectorRasterizer::MAX_COVERAGE_WORK`](crate::VectorRasterizer::MAX_COVERAGE_WORK)
     /// sub-scanline steps, as a long path crossing the mask's height many
     /// times does. Draw fewer points, a shorter vertical extent, or clip it.
+    /// A stroke a renderer covers itself reports this instead when it
+    /// exceeds [`PreparedStroke::MAX_TILE_REFERENCES`](crate::PreparedStroke::MAX_TILE_REFERENCES)
+    /// or [`PreparedStroke::MAX_TILE_SEGMENTS`](crate::PreparedStroke::MAX_TILE_SEGMENTS),
+    /// as thousands of segments crossing the same few pixels do.
     #[error("vector coverage exceeds its work budget")]
     TooComplex,
+    /// A stroke could not be prepared for the frame: its geometry lies
+    /// outside the range a renderer evaluates.
+    #[error(transparent)]
+    Stroke(#[from] crate::StrokePrepareError),
     /// Updates must be flushed before recording the scene.
     #[error("flush pending component updates before painting")]
     PendingUpdates,
@@ -1099,7 +1107,9 @@ impl Viewport {
 #[derive(Clone, Copy, Debug, PartialEq)]
 #[non_exhaustive]
 pub enum DrawCommand {
-    /// Preserved vector geometry. Backends may tessellate or use [`crate::VectorRasterizer`].
+    /// Preserved vector geometry. Backends may tessellate, use
+    /// [`crate::VectorRasterizer`] or, for a stroke, evaluate
+    /// [`crate::PreparedStroke`].
     DrawVector {
         /// Resource in this display list's vector table.
         vector: crate::VectorId,
@@ -1346,6 +1356,11 @@ impl DisplayList {
     /// Explicit CPU coverage fallback. Prefer retaining a [`crate::VectorRasterizer`]
     /// in a backend to reuse unchanged geometry.
     /// The input scene remains intact on failure.
+    ///
+    /// Every vector becomes a mask, strokes included.
+    /// A renderer that covers those strokes itself
+    /// ([`PreparedStroke`](crate::PreparedStroke)), as the CPU renderer does,
+    /// draws their edge pixels differently from these masks.
     ///
     /// # Errors
     /// The errors of [`VectorRasterizer::prepare`](crate::VectorRasterizer::prepare).

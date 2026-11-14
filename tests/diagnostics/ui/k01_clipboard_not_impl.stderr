@@ -11,5 +11,7 @@ error[E0277]: `String` is not a clipboard service
 note: required by a bound in `set_clipboard`
  --> $WORKSPACE/crates/pert-ui-runtime/src/host.rs
   |
+  | pub trait HostIntegration: sealed::HostIntegrationSeal {
+...
   |     fn set_clipboard(&mut self, clipboard: impl Clipboard + 'static) -> Result<(), RuntimeError>;
   |                                                 ^^^^^^^^^ required by this bound in `HostIntegration::set_clipboard`

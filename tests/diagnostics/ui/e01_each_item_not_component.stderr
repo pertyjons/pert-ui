@@ -14,5 +14,7 @@ help: the trait `EachItem` is implemented for `pert_ui::Element`
 note: required by a bound in `pert_ui::Each::<T>::new`
  --> $WORKSPACE/crates/pert-ui-runtime/src/described.rs
   |
+  | impl<T: Clone + 'static> Each<T> {
+...
   |     pub fn new<R: EachItem>(
   |                   ^^^^^^^^ required by this bound in `Each::<T>::new`

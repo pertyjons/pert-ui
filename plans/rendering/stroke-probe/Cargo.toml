@@ -1,0 +1,18 @@
+[package]
+name = "stroke-probe"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+# The mask path of today, through the public facade: recording, the vector
+# rasterizer and the CPU renderer.
+pert-ui = { path = "../../../crates/pert-ui", features = ["cpu"] }
+# The same wgpu as pert-ui-wgpu (30.0.1), Vulkan only, headless.
+wgpu = { version = "30.0.1", default-features = false, features = ["std", "wgsl", "vulkan"] }
+pollster = "1.0.1"
+
+[profile.release]
+debug = false
+
+[workspace]

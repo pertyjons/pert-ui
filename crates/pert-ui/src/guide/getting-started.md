@@ -22,7 +22,7 @@ checkout:
 pert-ui = { path = "../pert-ui/crates/pert-ui" }
 ```
 
-pert-ui requires Rust 1.99.1 or later. Either dependency uses the default
+pert-ui requires Rust 1.100.0 or later. Either dependency uses the default
 `desktop` feature; a headless consumer adds `default-features = false`. The
 package includes the sources of its examples, but `cargo run -p pert-ui
 --example …`, as the guide runs them, works only in a checkout.

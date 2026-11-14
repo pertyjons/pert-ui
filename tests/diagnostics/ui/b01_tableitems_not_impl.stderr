@@ -11,5 +11,7 @@ error[E0277]: `Vec<Vec<String>>` cannot be used as table rows
 note: required by a bound in `pert_ui::TableSource::new`
  --> $WORKSPACE/crates/pert-ui-runtime/src/table.rs
   |
+  | impl TableSource {
+  |     /// Wraps a row set.
   |     pub fn new(items: impl TableItems + 'static) -> Self {
   |                            ^^^^^^^^^^ required by this bound in `TableSource::new`

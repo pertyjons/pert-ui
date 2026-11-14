@@ -3,7 +3,9 @@
 //! `raster` module.
 mod raster;
 use crate::{Color, DrawError, Length, Painter, Point, Rect};
-pub(crate) use raster::{MAX_EDGES, coverage_bounds, rasterize_vector};
+pub(crate) use raster::{
+    CHORD_TOLERANCE, MAX_EDGES, coverage_bounds, line_x, rasterize_vector, stroke_subpaths,
+};
 use std::sync::Arc;
 
 /// Invalid vector path construction or stroke configuration.
@@ -698,7 +700,21 @@ impl Painter {
     /// and joins are covered once. Clipping, caching and errors are those of
     /// [`Self::fill_path`].
     ///
-    /// Coverage is sampled as [`Self::fill_path`] samples it. A path of
+    /// A renderer may cover a stroke itself, per pixel from its distance to
+    /// the stroke's edge, as [`PreparedStroke`](crate::PreparedStroke)
+    /// defines and both of pert-ui's renderers do: no mask is built, curves
+    /// are flattened to chords within 0.2 physical pixels at the displayed
+    /// size, the edge is antialiased over one pixel, a stroke narrower than
+    /// a physical pixel is drawn one pixel wide and faded by its width, and
+    /// a magnifying view keeps it sharp. The region of a stroke at least a
+    /// pixel wide is the one described above, with joins inside a
+    /// flattened curve round and caps and joins at a curve's end along its
+    /// tangent, as in the mask coverage below; the two differ at edge
+    /// pixels and by the flattening. A renderer without that path draws
+    /// the mask coverage, which
+    /// [`DisplayList::rasterized`](crate::DisplayList::rasterized) returns.
+    ///
+    /// As a mask, coverage is sampled as [`Self::fill_path`] samples it. A path of
     /// straight segments, with any join and cap, is covered directly from its
     /// segment bodies, joins and caps, with exact round joins and caps, without
     /// building an outline. Its cost grows with the number of pixel rows each
@@ -710,7 +726,9 @@ impl Painter {
     ///
     /// # Errors
     /// As [`Self::fill_path`]: recording cannot fail, and backend preparation can fail for
-    /// the coverage or flattening budget.
+    /// the coverage or flattening budget. A renderer that covers the stroke
+    /// itself reports the errors of
+    /// [`PreparedStroke::new`](crate::PreparedStroke::new) instead.
     pub fn stroke_path(
         &mut self,
         path: &Path,

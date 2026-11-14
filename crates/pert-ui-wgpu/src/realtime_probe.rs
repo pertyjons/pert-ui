@@ -180,7 +180,7 @@ impl Renderer {
             });
             let view = target.create_view(&Default::default());
             println!(
-                "Real-time probe on {:?}: {WIDTH}x{HEIGHT}, scale {}, {FRAMES} frames after {WARMUP} warm-up frames, plot {PLOT:?}. Times: update = signal set + flush (includes producing the data), compose = paint (includes building the waterfall image), rasterize = CPU vector coverage, prepare = vertex encoding and resource upload, GPU = encode + submit + wait for completion of one full offscreen pass. Presentation is not measured.",
+                "Real-time probe on {:?}: {WIDTH}x{HEIGHT}, scale {}, {FRAMES} frames after {WARMUP} warm-up frames, plot {PLOT:?}. Times: update = signal set + flush (includes producing the data), compose = paint (includes building the waterfall image), rasterize = CPU coverage masks of fills, prepare = stroke preparation, vertex and record encoding and resource upload, GPU = encode + submit + wait for completion of one full offscreen pass, the strokes' coverage passes included. Presentation is not measured.",
                 self.adapter.get_info(),
                 window.scale_factor(),
             );
@@ -228,7 +228,7 @@ impl Renderer {
             }
             previous = Some(scene.clone());
             let start = Instant::now();
-            let rasterized = self.rasterizer.prepare(&scene)?;
+            let rasterized = self.rasterizer.prepare_fills(&scene)?;
             let rasterize = start.elapsed();
             let start = Instant::now();
             self.prepare_rasterized(rasterized)?;
@@ -253,15 +253,20 @@ impl Renderer {
         let scene = self.scene.as_ref().ok_or("no prepared scene")?;
         let mask_bytes: usize = scene.masks().iter().map(|m| m.pixels().len()).sum();
         let image_bytes: usize = scene.images().iter().map(|i| i.pixels().len()).sum();
-        if matches!(workload, Workload::Polyline { .. }) && scene.masks().is_empty() {
-            return Err("the polyline produced no coverage mask".into());
+        // The renderer covers a polyline itself: no mask, and its segments
+        // as records.
+        if matches!(workload, Workload::Polyline { .. })
+            && (!scene.masks().is_empty() || self.encoded.strokes.segments.is_empty())
+        {
+            return Err("the polyline was not covered from its segment records".into());
         }
         let [update, compose, rasterize, prepare, gpu, total] = &mut phases;
         println!(
-            "Real-time probe {}: last frame {} commands, {} vertex bytes, {} batches, {} masks ({mask_bytes} bytes), {} images ({image_bytes} bytes); update {}; compose {}; rasterize {}; prepare {}; GPU {}; total {}",
+            "Real-time probe {}: last frame {} commands, {} vertex bytes, {} stroke record bytes, {} batches, {} masks ({mask_bytes} bytes), {} images ({image_bytes} bytes); update {}; compose {}; rasterize {}; prepare {}; GPU {}; total {}",
             workload.name(),
             scene.len(),
             self.encoded.bytes.len(),
+            self.encoded.strokes.segments.len() + self.encoded.strokes.strokes.len(),
             self.batches.len(),
             scene.masks().len(),
             scene.images().len(),

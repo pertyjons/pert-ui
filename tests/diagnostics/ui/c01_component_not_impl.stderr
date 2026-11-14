@@ -26,5 +26,7 @@ help: the trait `pert_ui::Component` is not implemented for `Panel`
 note: required by a bound in `pert_ui::Element::new`
  --> $WORKSPACE/crates/pert-ui-runtime/src/layout.rs
   |
+  | impl Element {
+  |     /// Describes a component. Key validation occurs atomically before mounting.
   |     pub fn new<C: Component + 'static>(key: impl Into<String>, mut component: C) -> Self {
   |                   ^^^^^^^^^ required by this bound in `Element::new`

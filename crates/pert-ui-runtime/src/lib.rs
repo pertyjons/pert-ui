@@ -203,8 +203,9 @@ pub use geometry::{
 };
 pub use shapes::{
     ArcGeometry, Border, Boundary, Corner, CornerKind, CornerPosition, FrameMapping, Inner, Paint,
-    PreparedCorner, PreparedShape, Shape, ShapeCoverage, ShapeGeometry, ShapeParameters,
-    ShapePrepareError, ShapeStyle, TriangleGeometry,
+    PreparedCorner, PreparedShape, PreparedStroke, Shape, ShapeCoverage, ShapeGeometry,
+    ShapeParameters, ShapePrepareError, ShapeStyle, StrokeCoverage, StrokePrepareError,
+    StrokeSegment, TriangleGeometry,
 };
 pub use vector_scene::{VectorGeometry, VectorId, VectorRasterizer, VectorStyle};
 mod color_picker;

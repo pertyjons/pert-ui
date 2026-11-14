@@ -95,10 +95,10 @@ pub pert_ui::svg_images::SvgError::TooLarge
 pub pert_ui::svg_images::SvgError::TooLarge::height: u32
 pub pert_ui::svg_images::SvgError::TooLarge::width: u32
 impl core::clone::Clone for pert_ui::svg_images::SvgError
-pub fn pert_ui::svg_images::SvgError::clone(&self) -> pert_ui::svg_images::SvgError
+pub fn pert_ui::svg_images::SvgError::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui::svg_images::SvgError
 impl core::cmp::PartialEq for pert_ui::svg_images::SvgError
-pub fn pert_ui::svg_images::SvgError::eq(&self, &pert_ui::svg_images::SvgError) -> bool
+pub fn pert_ui::svg_images::SvgError::eq(&self, &Self) -> bool
 impl core::convert::From<pert_ui_runtime::drawing::DrawError> for pert_ui::svg_images::SvgError
 pub fn pert_ui::svg_images::SvgError::from(pert_ui_runtime::drawing::DrawError) -> Self
 impl core::error::Error for pert_ui::svg_images::SvgError

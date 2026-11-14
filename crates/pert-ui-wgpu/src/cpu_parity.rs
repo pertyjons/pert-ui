@@ -14,6 +14,12 @@
 //! tiers. Evidence for the
 //! adapter it ran on; run through `pert-ui-native-checks`.
 //!
+//! Strokes, which both renderers cover themselves,
+//! share the third tier of analytic shapes below: a stroke's edge pixels are
+//! those its reference, `PreparedStroke::coverage`, does not decide. A pixel
+//! on the edge of several shapes or strokes may differ by the tier once for
+//! each, since every command stores its result in 8 bits.
+//!
 //! Analytic shapes have a third tier. Each pixel of a shape fixture is
 //! classified from the CPU reference: it is an *edge* pixel when a shape whose
 //! span holds it decides it neither by exact arithmetic nor with every
@@ -38,7 +44,9 @@ use pert_ui_runtime::{
     RichText, Runtime, RuntimeError, ScrollArea, Shape, TextColor, TextRenderingMode, TextStyle,
     UpdateContext, Viewport,
 };
-use pert_ui_runtime::{Corner, CornerPosition, FrameMapping, PreparedShape, ShapeStyle};
+use pert_ui_runtime::{
+    Corner, CornerPosition, FrameMapping, PreparedShape, PreparedStroke, ShapeStyle,
+};
 use winit::{
     application::ApplicationHandler,
     event::WindowEvent,
@@ -138,13 +146,46 @@ fn shapes(
     })
 }
 
-/// Which pixels of `scene` are edge pixels of an analytic shape, by the CPU
-/// reference; empty when the scene has no shape.
-fn edge_pixels(scene: &DisplayList) -> Result<Vec<bool>, Box<dyn std::error::Error>> {
+/// For how many of `scene`'s analytic shapes and renderer-covered strokes
+/// each pixel is an edge pixel, by the CPU reference; empty when the scene
+/// has neither. Each command stores its result in 8 bits, so a pixel on the
+/// edge of several may differ by the tier once for each.
+fn edge_pixels(scene: &DisplayList) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     let mut edges = Vec::new();
     let mapping = FrameMapping::new(SIZE, SIZE, scene.viewport())?;
     let clear = 0.5 + PreparedShape::PARITY_MARGIN;
     for command in scene.commands() {
+        // A stroke the renderers cover themselves: its undecided pixels.
+        if let DrawCommand::DrawVector {
+            vector,
+            origin,
+            scale,
+            color,
+            clip,
+        } = *command
+            && let Some(vector) = scene.vector(vector)
+            && PreparedStroke::accepts(vector)
+        {
+            // A transparent stroke is not drawn and adds no allowance.
+            if color.alpha() == 0.0 {
+                continue;
+            }
+            if edges.is_empty() {
+                edges = vec![0u8; (SIZE * SIZE) as usize];
+            }
+            if let Some(stroke) = PreparedStroke::new(vector, origin, scale, clip, &mapping)? {
+                for [x0, y0, x1, y1] in stroke.tiles() {
+                    for y in y0..y1 {
+                        for x in x0..x1 {
+                            let edge = &mut edges[(y * SIZE + x) as usize];
+                            *edge =
+                                edge.saturating_add(u8::from(!stroke.coverage(x, y).is_decided()));
+                        }
+                    }
+                }
+            }
+            continue;
+        }
         let DrawCommand::DrawShape {
             geometry,
             border,
@@ -155,7 +196,7 @@ fn edge_pixels(scene: &DisplayList) -> Result<Vec<bool>, Box<dyn std::error::Err
             continue;
         };
         if edges.is_empty() {
-            edges = vec![false; (SIZE * SIZE) as usize];
+            edges = vec![0u8; (SIZE * SIZE) as usize];
         }
         let Some(shape) = PreparedShape::new(geometry, border.as_ref(), *clip, &mapping)? else {
             continue;
@@ -169,11 +210,125 @@ fn edge_pixels(scene: &DisplayList) -> Result<Vec<bool>, Box<dyn std::error::Err
                         && coverage
                             .inner_distance()
                             .is_none_or(|distance| distance.abs() >= clear));
-                edges[(y * SIZE + x) as usize] |= !decided;
+                let edge = &mut edges[(y * SIZE + x) as usize];
+                *edge = edge.saturating_add(u8::from(!decided));
             }
         }
     }
     Ok(edges)
+}
+
+/// The stroke fixtures: every join and cap at three scales, each with open
+/// and closed paths, short segments, a reversal, a straight continuation, a
+/// point, widths from a quarter pixel to twelve, a long miter, geometry far
+/// from the frame, curves, a clip that cuts segments and a translucent
+/// stroke over the others. At the larger
+/// scales the frame cuts them.
+fn stroke_corpus() -> Result<Vec<Case>, Box<dyn std::error::Error>> {
+    use pert_ui_runtime::{LineCap, LineJoin, PathBuilder, StrokeStyle};
+    let red = Color::from_srgb8(230, 40, 20, 255);
+    let green = Color::from_srgb8(30, 180, 60, 255);
+    let translucent = Color::from_linear(0.2, 0.4, 1.0, 0.45)?;
+    let mut cases = Vec::new();
+    for (scale, scale_name) in [(1.0, "100%"), (1.25, "125%"), (2.0, "200%")] {
+        for (join, join_name) in [
+            (LineJoin::Round, "round"),
+            (LineJoin::Bevel, "bevel"),
+            (LineJoin::Miter, "miter"),
+        ] {
+            for (cap, cap_name) in [
+                (LineCap::Butt, "butt"),
+                (LineCap::Round, "round"),
+                (LineCap::Square, "square"),
+            ] {
+                let name: &'static str =
+                    format!("strokes {join_name} joins {cap_name} caps {scale_name}").leak();
+                cases.push(shapes(name, false, scale, move |p| {
+                    let style = |width: f32| -> Result<StrokeStyle, DrawError> {
+                        Ok(StrokeStyle::new(Length::new(width)?)
+                            .with_cap(cap)
+                            .with_join(join)
+                            .with_miter_limit(8.0)?)
+                    };
+                    let points = |values: &[(f32, f32)]| -> Result<Vec<Point>, DrawError> {
+                        Ok(values
+                            .iter()
+                            .map(|&(x, y)| Point::new(x, y))
+                            .collect::<Result<_, _>>()?)
+                    };
+                    // A wave at a sub-pixel phase, with short segments.
+                    let wave: Vec<(f32, f32)> = (0..40)
+                        .map(|i| {
+                            let t = i as f32;
+                            (2.3 + t * 1.37, 14.6 + 9.0 * (t * 0.8).sin())
+                        })
+                        .collect();
+                    p.stroke_polyline(&points(&wave)?, style(1.5)?, red)?;
+                    // Sharp turns, a reversal and a straight continuation.
+                    p.stroke_polyline(
+                        &points(&[
+                            (4.25, 30.5),
+                            (20.0, 27.0),
+                            (6.0, 34.0),
+                            (22.0, 36.25),
+                            (30.0, 36.25),
+                            (14.0, 36.25),
+                            (14.0, 44.0),
+                            (14.0, 50.0),
+                        ])?,
+                        style(3.0)?,
+                        green,
+                    )?;
+                    // A closed path and a point.
+                    let closed = PathBuilder::new()
+                        .move_to(Point::new(30.2, 40.4)?)
+                        .line_to(Point::new(44.7, 43.1)?)
+                        .line_to(Point::new(33.5, 55.8)?)
+                        .close()
+                        .move_to(Point::new(50.5, 50.25)?)
+                        .close()
+                        .build()?;
+                    p.stroke_path(&closed, style(4.0)?, red)?;
+                    // Widths below a pixel, and a wide stroke.
+                    p.stroke_polyline(&points(&[(2.0, 3.3), (60.0, 5.1)])?, style(0.25)?, green)?;
+                    p.stroke_polyline(&points(&[(2.0, 7.7), (60.0, 6.2)])?, style(0.75)?, green)?;
+                    p.stroke_polyline(
+                        &points(&[(40.0, 22.0), (58.0, 30.0)])?,
+                        style(12.0)?,
+                        translucent,
+                    )?;
+                    // Geometry far from the frame, through it.
+                    p.stroke_polyline(
+                        &points(&[(-1.0e6, -3.0e5), (26.0, 58.5), (2.0e6, 61.0)])?,
+                        style(2.0)?,
+                        red,
+                    )?;
+                    // Curves, flattened alike by both renderers: an ellipse
+                    // and an open cubic with its caps.
+                    p.stroke_ellipse(Rect::new(48.3, 36.4, 13.0, 9.5)?, style(1.5)?, red)?;
+                    let arch = PathBuilder::new()
+                        .move_to(Point::new(3.2, 62.0)?)
+                        .cubic_to(
+                            Point::new(3.2, 50.0)?,
+                            Point::new(12.0, 52.0)?,
+                            Point::new(11.5, 62.5)?,
+                        )
+                        .quad_to(Point::new(16.0, 56.0)?, Point::new(22.0, 63.0)?)
+                        .build()?;
+                    p.stroke_path(&arch, style(2.5)?, green)?;
+                    // A clip that cuts segments, at a sub-pixel edge.
+                    let cut: Vec<(f32, f32)> = (0..12)
+                        .map(|i| (44.0 + 1.6 * i as f32, 8.0 + 9.0 * (i % 2) as f32))
+                        .collect();
+                    p.with_clip(Rect::new(47.3, 10.6, 11.2, 5.9)?, |p| {
+                        p.stroke_polyline(&points(&cut)?, style(2.5)?, green)
+                    })?;
+                    Ok(())
+                })?);
+            }
+        }
+    }
+    Ok(cases)
 }
 
 /// The shape fixtures: every geometry at sub-pixel phases and three scales.
@@ -690,13 +845,19 @@ impl ApplicationHandler<Notice> for Parity {
             let mut cpu = pert_ui_cpu::CpuRenderer::new();
             let mut failures = Vec::new();
             let mut edge_tier = 0;
-            for case in corpus()?.into_iter().chain(shape_corpus()?) {
+            for case in corpus()?
+                .into_iter()
+                .chain(shape_corpus()?)
+                .chain(stroke_corpus()?)
+            {
                 let gpu = renderer.render_offscreen(case.scene.clone())?;
                 let software = cpu.render(&case.scene)?;
                 let edges = edge_pixels(&case.scene)?;
-                // An edge pixel of a shape is judged by the edge tier, every
+                // An edge pixel of a shape or a stroke is judged by the edge
+                // tier, once for each command it is an edge pixel of, every
                 // other pixel by the fixture's own tier.
                 let (mut largest, mut differing, mut edge_largest, mut edge_count) = (0, 0, 0, 0);
+                let (mut shared_largest, mut beyond) = (0, 0);
                 for (index, (a, b)) in gpu
                     .pixels()
                     .as_chunks::<4>()
@@ -711,9 +872,17 @@ impl ApplicationHandler<Notice> for Parity {
                         .map(|(a, b)| a.abs_diff(*b))
                         .max()
                         .unwrap_or(0);
-                    if edges.get(index).copied().unwrap_or(false) {
+                    let commands = edges.get(index).copied().unwrap_or(0);
+                    if commands > 0 {
                         edge_count += 1;
-                        edge_largest = edge_largest.max(difference);
+                        if commands == 1 {
+                            edge_largest = edge_largest.max(difference);
+                        } else {
+                            shared_largest = shared_largest.max(difference);
+                        }
+                        if difference > EDGE_TIER.saturating_mul(commands).min(EDGE_LIMIT) {
+                            beyond = beyond.max(difference);
+                        }
                     } else {
                         largest = largest.max(difference);
                         differing += usize::from(difference > 0);
@@ -722,12 +891,12 @@ impl ApplicationHandler<Notice> for Parity {
                 edge_tier = edge_tier.max(edge_largest);
                 let allowed = if case.exact { 0 } else { 1 };
                 println!(
-                    "Parity {}: {} tier, largest channel difference {largest}, {differing} pixels differ; {edge_count} edge pixels, largest difference {edge_largest}",
+                    "Parity {}: {} tier, largest channel difference {largest}, {differing} pixels differ; {edge_count} edge pixels, largest difference {edge_largest}, {shared_largest} where edges overlap",
                     case.name,
                     if case.exact { "exact" } else { "tolerance" },
                 );
-                if edge_largest > EDGE_TIER {
-                    largest = largest.max(edge_largest);
+                if beyond > 0 {
+                    largest = largest.max(beyond);
                 }
                 if largest > allowed {
                     // Both images go beside each other in the temporary
@@ -747,7 +916,7 @@ impl ApplicationHandler<Notice> for Parity {
                 }
             }
             println!(
-                "Parity edge tier: largest difference {edge_tier} over the shape fixtures (bound {EDGE_TIER})"
+                "Parity edge tier: largest difference {edge_tier} over the shape and stroke fixtures (bound {EDGE_TIER})"
             );
             if failures.is_empty() {
                 Ok(())

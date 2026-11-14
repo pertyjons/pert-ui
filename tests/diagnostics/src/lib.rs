@@ -23,3 +23,7 @@
 //! except a reviewed list of records a test reads by field or passes on. It
 //! is not ignored and runs in `cargo test --locked --workspace`; the API
 //! listing gate keeps its input current.
+
+// The cases under `ui/` are compiled against this package's dependencies,
+// so the facade is one although nothing here names it otherwise.
+use pert_ui as _;

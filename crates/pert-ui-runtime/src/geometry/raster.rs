@@ -177,6 +177,99 @@ fn flatten(path: &Path, tolerance: f64) -> Result<Vec<Subpath>, PathError> {
     Ok(f.subpaths)
 }
 
+/// A subpath as the stroke coverage reads it: its points in the path's own
+/// units, for each whether it lies inside a flattened curve, where the
+/// stroke's edge is smooth and the join is round whatever the style, and
+/// whether the subpath is closed.
+pub(crate) struct StrokeSubpath {
+    pub(crate) points: Vec<Vec2>,
+    pub(crate) smooth: Vec<bool>,
+    pub(crate) closed: bool,
+}
+
+/// The chord tolerance of flattened curves, in physical pixels.
+pub(crate) const CHORD_TOLERANCE: f64 = TOLERANCE;
+
+/// The subpaths of a path for the stroke coverage, with curves flattened
+/// within `tolerance` in the path's units.
+///
+/// A curve's first and last chord do not have its tangent's direction at
+/// the path vertex, which would turn a cap or a join there by an angle that
+/// matters for a wide stroke. Each such vertex therefore gets a neighbor
+/// along the exact tangent, so that the segment at the vertex has the
+/// tangent's direction, as the outlining stroker's caps and joins do; the
+/// neighbor itself is smooth. It lies 0.35 of the chord's length from the
+/// vertex, or nearer where that would take it farther than half the
+/// tolerance from the chord: the curve stays within the tolerance of its
+/// chord, but a tangent may leave the chord at any angle, as where a
+/// control point almost coincides with the vertex.
+pub(crate) fn stroke_subpaths(
+    path: &Path,
+    tolerance: f64,
+) -> Result<Vec<StrokeSubpath>, PathError> {
+    Ok(flatten(path, tolerance)?
+        .into_iter()
+        .map(|subpath| {
+            let count = subpath.points.len();
+            let mut points = Vec::with_capacity(count + 2);
+            let mut smooth = Vec::with_capacity(count + 2);
+            // A neighbor of `at` along `tangent`, toward `other` for
+            // `sign` 1 and away from it for -1, unless the chord already
+            // runs that way, as a line's does, up to the rounding of the
+            // tangent's normalization.
+            let neighbor = |at: Vec2, other: Vec2, tangent: Option<Vec2>, sign: f64| {
+                let direction = scale(tangent.and_then(unit)?, sign);
+                let chord = sub(other, at);
+                let length = len(chord);
+                let across = cross(chord, direction).abs();
+                let along = chord.0 * direction.0 + chord.1 * direction.1;
+                if across <= 1e-9 * length && along > 0.0 {
+                    return None;
+                }
+                // Half the tolerance from the chord at most. Where the
+                // tangent points away from the chord the curve turns back
+                // within it: that turn is the path's own, joined in the
+                // stroke's style, not a smooth vertex.
+                let step = (0.35 * length).min(0.5 * tolerance * length / across);
+                Some((add(at, scale(direction, step)), along >= 0.0))
+            };
+            for (i, (&p, tangents)) in subpath.points.iter().zip(&subpath.tangents).enumerate() {
+                let previous = if i > 0 {
+                    Some(subpath.points[i - 1])
+                } else if subpath.closed {
+                    subpath.points.last().copied()
+                } else {
+                    None
+                };
+                let next = if i + 1 < count {
+                    Some(subpath.points[i + 1])
+                } else if subpath.closed {
+                    subpath.points.first().copied()
+                } else {
+                    None
+                };
+                if let Some((before, inside)) =
+                    previous.and_then(|q| neighbor(p, q, tangents[0], -1.0))
+                {
+                    points.push(before);
+                    smooth.push(inside);
+                }
+                points.push(p);
+                smooth.push(*tangents == [None, None]);
+                if let Some((after, inside)) = next.and_then(|q| neighbor(p, q, tangents[1], 1.0)) {
+                    points.push(after);
+                    smooth.push(inside);
+                }
+            }
+            StrokeSubpath {
+                points,
+                smooth,
+                closed: subpath.closed,
+            }
+        })
+        .collect())
+}
+
 fn divisions(n: f64, remaining: usize) -> Result<usize, PathError> {
     let count = n.ceil().max(1.0);
     if !n.is_finite() || count > remaining as f64 {
@@ -443,7 +536,7 @@ const REMOTE_GRID: f64 = 1_099_511_627_776.0;
 
 // Evaluate a line near its visible endpoint. If both endpoints are remote,
 // retain cancellation in the determinant with compensated products.
-fn line_x(a: Vec2, b: Vec2, y: f64) -> f64 {
+pub(crate) fn line_x(a: Vec2, b: Vec2, y: f64) -> f64 {
     let dx = b.0 - a.0;
     let dy = b.1 - a.1;
     let near = if (a.1 - y).abs() < (b.1 - y).abs() {

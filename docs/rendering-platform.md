@@ -135,8 +135,23 @@ Its model is the GPU's, written down so that both can be checked against it:
 - **Blending.** Source-over: `out = src + dst × (1 − src.a)`, with fills and
   mask tints premultiplied from straight `Color`, and image texels multiplied
   by the premultiplied tint.
-- **Vectors.** They are prepared into coverage masks by the runtime's
-  `VectorRasterizer`, with its limits, as for the GPU.
+- **Vectors.** A stroke is covered per pixel center from its distance, by
+  the reference `PreparedStroke::coverage`, its curves flattened to chords
+  within 0.2 physical pixels at the displayed size: the ramp
+  `clamp(0.5 − D, 0, 1)` of the smallest candidate distance over the
+  stroke's segments, times the stroke's width in pixels when that is below
+  one. No mask is built, and the view's eight-pixel cap does not apply.
+  Fills are prepared into coverage masks by the runtime's
+  `VectorRasterizer::prepare_fills`, with its limits. The wgpu
+  renderer covers the same strokes from the same records: one quad per
+  segment evaluates the reference's candidates into the stroke's region of
+  a half-float coverage page, with a maximum blend, in a pass before the
+  scene's, and the scene pass draws the stroke's covered tiles from the
+  page. The masks `VectorRasterizer::prepare` and `DisplayList::rasterized`
+  still return for such a stroke cover the same region, for a stroke at
+  least a physical pixel wide in a frame whose axes both map by the
+  viewport's scale, with area coverage instead; a narrower stroke is drawn
+  one pixel wide and faded by the renderers.
 - **Budget.** The frame must fit `FrameImage::MAX_BYTES`, checked before
   allocation; vector preparation keeps its own limits. A refused scene leaves
   the renderer usable.
@@ -145,8 +160,9 @@ Byte-identical output across backends is not promised. The CPU renderer is
 tested against hand-computed pixels. On hardware it is compared with the GPU in
 two tiers. The exact tier (opaque integer-aligned fills in exact sRGB colors,
 nearest images and their quarter turns, the opaque clear) must match byte for
-byte. The tolerance tier (translucency, bilinear filtering, text, vectors,
-fractional edges and scales, arbitrary linear colors) allows one step per
+byte. The tolerance tier (translucency, bilinear filtering, text, vector
+fills, fractional edges and scales, arbitrary linear colors) allows one step
+per
 channel. One exception is outside both tiers: a rectangle edge within the GPU's
 subpixel precision of a pixel center (typically 1/256 pixel) can be snapped
 across it by the hardware. That pixel is then covered by one renderer and not
@@ -174,6 +190,20 @@ shape's span:
 - **No snapped-edge exception.** A shape's span has whole-pixel edges and
   its coverage comes from the formulas, so the hardware's edge snapping
   does not decide any of its pixels, clip edges included.
+
+Strokes are compared the same way against
+`PreparedStroke::coverage`: a pixel is decided when its distance is at least
+half a pixel plus the margin from zero (`StrokeCoverage::is_decided`), and
+an edge pixel otherwise. The stroke corpus (the three joins and caps, open
+and closed paths, short segments, a reversal, a straight continuation, a
+point, widths from a quarter pixel to twelve, a miter limit of eight, a
+translucent stroke, geometry a million pixels away, a clip that cuts
+segments, and the frame cutting them, at scales 1, 1.25 and 2) measured one step for edge pixels and kept
+decided pixels in the tolerance tier. A pixel on the edge of several
+commands may differ by the tier once for each of them, since every command
+stores its result in 8 bits; the corpus measured two steps where two
+strokes' edges overlap. Not in the corpus: a command scale from a view
+transform, and miter limits near the evaluation range.
 
 The edge tier and the margin are measurements, not proofs: they were set on
 Intel UHD Graphics 770 with Mesa on Vulkan, the only adapter available.
@@ -219,7 +249,16 @@ transformed child are placed at the window's scale. Vector coverage is bounded
 per primitive: besides the flattening budget and the mask size limit, a vector
 whose edges or stroke pieces would cross more than
 `VectorRasterizer::MAX_COVERAGE_WORK` sub-scanlines is rejected with
-`DrawError::TooComplex` before any coverage work.
+`DrawError::TooComplex` before any coverage work. A stroke, which the
+renderers cover themselves, is bounded instead by
+`PreparedStroke::MAX_SEGMENTS` kept after its curves are flattened and it is
+clipped, by `PreparedStroke::MAX_TILE_REFERENCES` and
+`PreparedStroke::MAX_TILE_SEGMENTS`, with the same error, by the flattening
+budget, and by the evaluation range of 65 536 pixels, beyond which it is
+refused with `StrokePrepareError::OutOfRange`. It is prepared at the
+displayed scale without the eight-pixel cap, so a curve under a large
+magnification is flattened into more chords; a stroke that misses the frame
+or its clip is skipped before it is flattened.
 
 Vector fallback preparation retains the documented 0.2 physical-pixel chord
 tolerance within its generated-point and outline budgets. If that tolerance

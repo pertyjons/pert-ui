@@ -1,8 +1,16 @@
-//! CPU encoding retention; unchanged command slots retain their encoded quad.
+//! CPU encoding retention; unchanged command slots retain their encoded quad,
+//! shape records or prepared stroke.
 use super::*;
 
-// One command's encoding: its vertices or its shape record, and its batch.
-type Chunk = (std::sync::Arc<[u8]>, std::sync::Arc<[u8]>, Option<Batch>);
+// One command's encoding: its vertices or its shape records and its batch,
+// or its prepared stroke, whose vertices and batch depend on where the frame
+// places it.
+type Chunk = (
+    std::sync::Arc<[u8]>,
+    std::sync::Arc<[u8]>,
+    Option<Batch>,
+    Option<std::sync::Arc<strokes::Encoded>>,
+);
 
 #[derive(Default)]
 pub(super) struct RetainedGeometry {
@@ -11,10 +19,15 @@ pub(super) struct RetainedGeometry {
     // same mapping onto the same physical extent.
     mapping: Option<pert_ui_runtime::FrameMapping>,
     commands: Vec<DrawCommand>,
+    // The geometry of each slot's stroke: a vector's ID is an index into its
+    // own scene, so an equal command may name other geometry.
+    vectors: Vec<Option<pert_ui_runtime::VectorGeometry>>,
     chunks: Vec<Chunk>,
     pub(super) bytes: Vec<u8>,
     // The frame's shape records, `shapes::RECORD_BYTES` each.
     pub(super) records: Vec<u8>,
+    // The frame's strokes, placed in coverage pages.
+    pub(super) strokes: strokes::Frame,
     pub(super) batches: Vec<Batch>,
     #[cfg(test)]
     encoded_commands: usize,
@@ -49,14 +62,21 @@ impl RetainedGeometry {
             mapping,
             bytes: Vec::with_capacity(self.bytes.len()),
             records: Vec::new(),
+            strokes: strokes::Frame::new(mapping.as_ref()),
             chunks: Vec::with_capacity(scene.commands().len()),
             commands: Vec::with_capacity(scene.commands().len()),
+            vectors: Vec::with_capacity(scene.commands().len()),
             ..Default::default()
         };
         for (index, command) in scene.commands().iter().enumerate() {
+            let vector = match command {
+                DrawCommand::DrawVector { vector, .. } => scene.vector(*vector),
+                _ => None,
+            };
             let chunk = if self.viewport == next.viewport
                 && self.mapping == next.mapping
                 && self.commands.get(index) == Some(command)
+                && self.vectors.get(index).map(Option::as_ref) == Some(vector)
             {
                 self.chunks[index].clone()
             } else {
@@ -65,14 +85,48 @@ impl RetainedGeometry {
                     next.encoded_commands += 1;
                 }
                 let mut records = Vec::new();
+                let mut stroke = None;
                 let (bytes, batches) = geometry_commands(
                     scene,
                     std::slice::from_ref(command),
                     mapping.as_ref(),
                     &mut records,
+                    &mut stroke,
                 )?;
-                (bytes.into(), records.into(), batches.into_iter().next())
+                (
+                    bytes.into(),
+                    records.into(),
+                    batches.into_iter().next(),
+                    stroke.map(std::sync::Arc::new),
+                )
             };
+            // A stroke's quads are appended where the frame places it, and
+            // its batch is the range they take.
+            let placed = match (&chunk.3, mapping.as_ref()) {
+                (Some(stroke), Some(mapping)) => {
+                    let start = next.bytes.len() / 32;
+                    let page =
+                        next.strokes
+                            .push(stroke, mapping, record_budget, &mut next.bytes)?;
+                    let range = u32::try_from(start).map_err(|_| LimitError::VertexCount)?
+                        ..u32::try_from(next.bytes.len() / 32)
+                            .map_err(|_| LimitError::VertexCount)?;
+                    (!range.is_empty()).then_some(Batch {
+                        range,
+                        source: Source::Stroke(page),
+                    })
+                }
+                _ => None,
+            };
+            if let Some(batch) = placed {
+                if let Some(last) = next.batches.last_mut()
+                    && last.source == batch.source
+                {
+                    last.range.end = batch.range.end;
+                } else {
+                    next.batches.push(batch);
+                }
+            }
             // A shape's batch counts records, any other one vertices.
             let shape = chunk
                 .2
@@ -106,6 +160,7 @@ impl RetainedGeometry {
             shapes::check_records(next.records.len() + chunk.1.len(), record_budget)?;
             next.records.extend_from_slice(&chunk.1);
             next.commands.push(*command);
+            next.vectors.push(vector.cloned());
             next.chunks.push(chunk);
         }
         Ok(next)

@@ -31,10 +31,13 @@ Shader source and MIT/Apache-2.0 licenses are included in the package. See
 `Renderer` rustdoc for owned-target lifetime, zero-size and error callback
 requirements.
 
-Vector commands preserve curves and stroke styles until backend preparation. This
-adapter currently uses the shared `VectorRasterizer` coverage fallback, retaining
-only geometry used by the last successful scene. CPU fallback limits and failures
-are explicit; no GPU-native path speedup is claimed.
+Vector commands preserve curves and stroke styles until backend preparation. A
+stroke is covered on the GPU from its segments, curves flattened to chords,
+without a CPU mask: `Renderer` rustdoc describes the coverage pages. Fills
+use the shared `VectorRasterizer` coverage fallback, retaining
+only geometry used by the last successful scene. Limits and failures of both
+are explicit. `docs/verification.md` records what the stroke path was measured
+to cost on the one adapter it ran on; no speedup is claimed elsewhere.
 
 Unchanged command slots reuse encoded quads. Only changed byte ranges are uploaded
 into a retained vertex buffer; insertions and reordering may invalidate later slots,

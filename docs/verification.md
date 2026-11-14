@@ -77,8 +77,11 @@ few test binaries instead of one per test file.
 
 ### Text engine and toolchain
 
-The toolchain and declared minimum Rust version are 1.99.1 since 0.3.52; that
-point release needed no source change. Parley is at 0.12.0. Its
+The toolchain and declared minimum Rust version are 1.100.0 since 0.3.116.
+The update changed no library source: the diagnostics package now names
+the facade it depends on, which Cargo's new unused-dependency lint asks for;
+the compiler-message snapshots gained the context lines rustc now prints;
+and the API listings spell a derived method's own type as `Self`. Parley is at 0.12.0. Its
 [release](https://github.com/linebender/parley/releases/tag/v0.12.0)
 adds grapheme-sized shaped clusters, CSS-like line-box and whitespace behavior,
 vertical alignment for spans and inline boxes, CJK line-break control and the
@@ -124,6 +127,12 @@ execution evidence. Every other matrix platform has **no native evidence**;
 headless CI does not change that status. A later run should record its OS patch,
 adapter and driver rather than infer missing details.
 
+A run on 2026-11-13 at 0.3.118, with the renderers covering strokes
+themselves, passed the 18 checks other than the clipboard's, which was left
+out: Fedora 45, kernel 7.3.3-300.fc45.x86_64, GNOME on Wayland, Intel UHD
+Graphics 770 (ADL-S GT1) with Mesa 26.2.6 on Vulkan, rustc 1.100.0, winit
+0.30.13 and wgpu 30.0.1.
+
 The latest full run passed **all 19 checks** of `cargo run --locked -p
 pert-ui-native-checks` on 2026-11-05 at 9655e56 (0.3.101): Fedora 44, kernel
 7.2.15-200.fc44.x86_64, GNOME Shell and Mutter 50.6 on Wayland, Intel UHD
@@ -164,6 +173,7 @@ evidence for any of them.
 | Minimize during a gallery probe (NATIVE-04) | **Failed** 2026-11-05: a window minimized with Super+H is never reported hidden. The GPU interaction check failed on an unrelated step, the CPU one timed out and `workspace_restart` passed unaware. winit 0.30.13 delivers no `WindowEvent::Occluded` on Wayland, and the surface did not report `Frame::Occluded`. |
 | CPU/GPU parity (`pert-ui-wgpu::tests::native_cpu_gpu_parity`) | Passed: the exact tier matched byte for byte and the tolerance tier differed by at most one per channel. No other adapter, and no CI software-driver comparison, has run. |
 | Analytic shape parity (the shape fixtures of the same check) | Passed 2026-11-11, run by itself: over rounded and cut corners, borders, arcs, triangles and clips at sub-pixel phases and scales 1, 1.25 and 2, and geometry up to 65 000 pixels from its span, decided pixels kept their tier and edge pixels differed by at most one per channel, which set the edge tier. The gallery's GPU interaction check passed the same day (39 steps); built-in widgets do not record `DrawShape` yet, so it is evidence that the pipeline's presence disturbs nothing, not for shapes on screen. No other adapter has run. |
+| Stroke parity (the stroke fixtures of the same check) | Passed 2026-11-13 on Fedora 45, GNOME/Wayland, Intel UHD Graphics 770, Mesa 26.2.6, Vulkan: over the three joins and caps, open and closed paths, short segments, a reversal, a point, widths from a quarter pixel to twelve, a miter limit of eight, a translucent stroke, geometry a million pixels away, an ellipse, an open cubic and quadratic path (since 0.3.117) and a clip that cuts segments, at scales 1, 1.25 and 2, decided pixels stayed within one step and edge pixels differed by at most one per channel, two where two strokes' edges overlap. No other adapter has run. |
 
 Run `cargo run --locked -p pert-ui-native-checks` on an unlocked desktop session
 with a hardware GPU to exercise the opt-in native suite. Besides the libtest
@@ -217,6 +227,29 @@ the native CPU/GPU parity case passed on Fedora 44 Wayland with Intel UHD
 Graphics 770 (Vulkan); the parity case differed by at most one 8-bit channel.
 This checks stroke visibility and backend agreement for that fixture, not every
 control geometry or zoom phase.
+
+### Strokes covered by the renderer
+
+`PreparedStroke` is tested in `pert-ui-runtime` without a renderer:
+hand-computed distances for caps, joins, reversals and points; continuity
+across every region boundary, sampled over random paths with long segments;
+the tile lists' smallest distance against every segment's; no coverage beyond the span for miters
+over a thousand widths long; clipping, geometry a million pixels away and
+the refusals; and the covered region against the pieces the mask coverage is
+built from, at equal axis scales. End points 1e20 pixels away, the last
+pixels of a frame as large as a `u32` holds and unequal axis scales have a
+test each. The CPU renderer's oracle checks a stroke's pixels, and that a
+stroke it cannot prepare is a typed error after which the renderer stays
+usable; that the refusal precedes every pixel is read from the code, not
+tested. The two discontinuities the reference keeps (a
+capped segment shorter than a pixel, and a joined end line on the inner side
+of a turn whose next segment is too short to cover it) are not tested as
+continuous. A circle's distance is checked against the exact ring's within
+the flattening tolerance at four scales, and an open cubic for its caps and
+continuity across its chords. The wgpu renderer's stroke parity with this reference is the
+native parity check's stroke corpus, recorded in the table of native checks
+above; its encoding, placement in coverage pages, budgets and retention
+have tests that need no GPU.
 
 ### Text rendering modes
 
@@ -406,6 +439,25 @@ Rasterization times were bimodal across runs, each run landing near one of
 the two ends of its range, which suggests which processor cores the test
 thread ran on rather than a change in work; the probe does not pin threads.
 
+Since 0.3.115 the wgpu renderer covers a polyline on the GPU from its
+segment records, so the probe's rasterize phase is empty for it, its prepare
+phase holds the stroke's preparation and record upload, and its GPU pass
+includes the coverage pass. Five release runs of 0.3.118 on 2026-11-13
+(Fedora 45, Mesa 26.2.6, the same adapter), alternating with five of
+0.3.112, which drew the mask, each on a quiet machine; medians, and the
+range of the totals:
+
+| Workload | Version | Rasterize | Prepare | GPU pass | Total |
+|---|---|---|---|---|---|
+| Polyline, 800 points | 0.3.112 | 2.40 ms | 0.10 ms | 0.94 ms | 3.52 ms (3.40–3.53) |
+| Polyline, 800 points | 0.3.118 | 1 µs | 0.16 ms | 0.99 ms | 1.22 ms (1.00–1.23) |
+| Polyline, 4096 points | 0.3.112 | 4.40 ms | 0.07 ms | 0.86 ms | 5.56 ms (3.50–5.59) |
+| Polyline, 4096 points | 0.3.118 | 1 µs | 0.30 ms | 1.27 ms | 1.78 ms (1.73–2.07) |
+
+The baseline's rasterization is bimodal, as above. The raw output and the
+CPU renderer's rows are in
+`plans/rendering/stroke-probe/results/after/`.
+
 The opt-in `pert-ui-runtime` test `stroke_phase_profile` splits the CPU cost of
 one stroke into flattening, outlining, scan conversion and direct coverage,
 and reports the mean active outline edges per sub-scanline. Run it with:
@@ -420,6 +472,27 @@ per sub-scanline and took about 50–60 ms, against about 10–13 ms for direct
 coverage.
 
 ### CPU rendering cost
+
+`cargo run --release -p pert-ui-cpu --example stroke_cost` strokes
+polylines over an 800×400 plot and reports the median render time of the
+frame less that of the frame without its strokes: with new points on every
+frame, and for two scenes that do not change. On the same machine, pinned
+to one core and quiet, on 2026-11-13, five runs of 0.3.118 alternating with
+five of 0.3.112, which drew the strokes from masks; the runs agree within
+2 %:
+
+| Workload | Scale 1: masks | Scale 1: covered | Scale 2: masks | Scale 2: covered |
+|---|---|---|---|---|
+| Trace, 800 points | 5.4 ms | 0.6 ms | 19.9 ms | 1.3 ms |
+| Trace, 4096 points | 7.2 ms | 2.1 ms | 23.1 ms | 3.6 ms |
+| Noise, 800 points | 17.4 ms | 6.0 ms | 54.8 ms | 16.4 ms |
+| Noise, 16 384 points | 248 ms | 75 ms | refused | 184 ms |
+| Diagram, 60 edges | 49.2 ms | 1.9 ms | 194 ms | 5.2 ms |
+| Trace, 800 points, unchanged | 4.7 ms | 0.6 ms | 18.5 ms | 1.3 ms |
+| Ellipses, 60, unchanged | 4.5 ms | 1.1 ms | 16.8 ms | 2.8 ms |
+
+For an unchanged scene the mask path has its coverage cached and pays for
+drawing the masks; the covered path prepares and evaluates on every frame.
 
 `cargo run --release -p pert-ui-cpu --example frame_cost` renders a grid of
 translucent panels, mask rows and filtered images that scales with the window

@@ -105,6 +105,29 @@ pub enum LimitError {
         /// The device's maximum storage buffer binding size in bytes.
         max: u64,
     },
+    /// A scene's stroke segment records exceed what the device binds as one
+    /// storage buffer, as for [`Self::ShapeRecords`].
+    #[error(
+        "{bytes} bytes of stroke records exceed the device's storage buffer binding limit {max}"
+    )]
+    StrokeRecords {
+        /// Record bytes the scene's strokes need.
+        bytes: u64,
+        /// The device's maximum storage buffer binding size in bytes.
+        max: u64,
+    },
+    /// The coverage pages a hardware renderer keeps for the strokes it
+    /// covers itself would exceed its budget: the strokes' spans, each a
+    /// whole-pixel box around its stroke, need more pages than the budget
+    /// holds. Long diagonal strokes take the most; draw fewer of them,
+    /// shorter ones or split them.
+    #[error("{bytes} bytes of stroke coverage pages exceed their budget {max}")]
+    StrokeCoverage {
+        /// The bytes the pages would hold.
+        bytes: u64,
+        /// The renderer's budget in bytes.
+        max: u64,
+    },
     /// A scene has more vertices than a `u32` draw range can address.
     #[error("the scene has more vertices than a draw range can address")]
     VertexCount,

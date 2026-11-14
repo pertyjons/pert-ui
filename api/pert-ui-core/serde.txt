@@ -21,9 +21,9 @@ pub fn pert_ui_core::AnyParameterSnapshot::new<T: pert_ui_core::ParameterValue>(
 pub fn pert_ui_core::AnyParameterSnapshot::revision(&self) -> pert_ui_core::Revision
 pub fn pert_ui_core::AnyParameterSnapshot::try_new<T: pert_ui_core::ParameterValue>(pert_ui_core::ParameterSpec<T>, pert_ui_core::ParameterSnapshot<T>) -> core::result::Result<Self, pert_ui_core::ParameterError>
 impl core::clone::Clone for pert_ui_core::AnyParameterSnapshot
-pub fn pert_ui_core::AnyParameterSnapshot::clone(&self) -> pert_ui_core::AnyParameterSnapshot
+pub fn pert_ui_core::AnyParameterSnapshot::clone(&self) -> Self
 impl core::cmp::PartialEq for pert_ui_core::AnyParameterSnapshot
-pub fn pert_ui_core::AnyParameterSnapshot::eq(&self, &pert_ui_core::AnyParameterSnapshot) -> bool
+pub fn pert_ui_core::AnyParameterSnapshot::eq(&self, &Self) -> bool
 impl core::fmt::Debug for pert_ui_core::AnyParameterSnapshot
 pub fn pert_ui_core::AnyParameterSnapshot::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::StructuralPartialEq for pert_ui_core::AnyParameterSnapshot
@@ -49,9 +49,9 @@ pub fn pert_ui_core::AnySpec::family(&self) -> pert_ui_core::ParameterFamily
 pub fn pert_ui_core::AnySpec::is_editable(&self) -> bool
 pub fn pert_ui_core::AnySpec::name(&self) -> &str
 impl core::clone::Clone for pert_ui_core::AnySpec
-pub fn pert_ui_core::AnySpec::clone(&self) -> pert_ui_core::AnySpec
+pub fn pert_ui_core::AnySpec::clone(&self) -> Self
 impl core::cmp::PartialEq for pert_ui_core::AnySpec
-pub fn pert_ui_core::AnySpec::eq(&self, &pert_ui_core::AnySpec) -> bool
+pub fn pert_ui_core::AnySpec::eq(&self, &Self) -> bool
 impl core::fmt::Debug for pert_ui_core::AnySpec
 pub fn pert_ui_core::AnySpec::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::StructuralPartialEq for pert_ui_core::AnySpec
@@ -75,9 +75,9 @@ pub pert_ui_core::AnyValue::Stepped(i64)
 impl pert_ui_core::AnyValue
 pub fn pert_ui_core::AnyValue::family(&self) -> pert_ui_core::ParameterFamily
 impl core::clone::Clone for pert_ui_core::AnyValue
-pub fn pert_ui_core::AnyValue::clone(&self) -> pert_ui_core::AnyValue
+pub fn pert_ui_core::AnyValue::clone(&self) -> Self
 impl core::cmp::PartialEq for pert_ui_core::AnyValue
-pub fn pert_ui_core::AnyValue::eq(&self, &pert_ui_core::AnyValue) -> bool
+pub fn pert_ui_core::AnyValue::eq(&self, &Self) -> bool
 impl core::convert::From<bool> for pert_ui_core::AnyValue
 pub fn pert_ui_core::AnyValue::from(bool) -> Self
 impl core::convert::From<f32> for pert_ui_core::AnyValue
@@ -124,10 +124,10 @@ pub pert_ui_core::EditError::StaleSequence
 pub pert_ui_core::EditError::Unavailable
 pub pert_ui_core::EditError::UnknownEdit
 impl core::clone::Clone for pert_ui_core::EditError
-pub fn pert_ui_core::EditError::clone(&self) -> pert_ui_core::EditError
+pub fn pert_ui_core::EditError::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_core::EditError
 impl core::cmp::PartialEq for pert_ui_core::EditError
-pub fn pert_ui_core::EditError::eq(&self, &pert_ui_core::EditError) -> bool
+pub fn pert_ui_core::EditError::eq(&self, &Self) -> bool
 impl core::convert::From<pert_ui_core::ParameterError> for pert_ui_core::EditError
 pub fn pert_ui_core::EditError::from(pert_ui_core::ParameterError) -> Self
 impl core::error::Error for pert_ui_core::EditError
@@ -153,9 +153,9 @@ pub pert_ui_core::EditOutcome::Rejected(pert_ui_core::EditError)
 pub pert_ui_core::EditOutcome::Submitted
 pub pert_ui_core::EditOutcome::Submitted::value: T
 impl<T: core::clone::Clone> core::clone::Clone for pert_ui_core::EditOutcome<T>
-pub fn pert_ui_core::EditOutcome<T>::clone(&self) -> pert_ui_core::EditOutcome<T>
+pub fn pert_ui_core::EditOutcome<T>::clone(&self) -> Self
 impl<T: core::cmp::PartialEq> core::cmp::PartialEq for pert_ui_core::EditOutcome<T>
-pub fn pert_ui_core::EditOutcome<T>::eq(&self, &pert_ui_core::EditOutcome<T>) -> bool
+pub fn pert_ui_core::EditOutcome<T>::eq(&self, &Self) -> bool
 impl<T: core::cmp::PartialEq> core::marker::StructuralPartialEq for pert_ui_core::EditOutcome<T>
 impl<T: core::fmt::Debug> core::fmt::Debug for pert_ui_core::EditOutcome<T>
 pub fn pert_ui_core::EditOutcome<T>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
@@ -171,10 +171,10 @@ pub pert_ui_core::LiveError::CapacityExceeded(usize)
 pub pert_ui_core::LiveError::Exhausted
 pub pert_ui_core::LiveError::ZeroCapacity
 impl core::clone::Clone for pert_ui_core::LiveError
-pub fn pert_ui_core::LiveError::clone(&self) -> pert_ui_core::LiveError
+pub fn pert_ui_core::LiveError::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_core::LiveError
 impl core::cmp::PartialEq for pert_ui_core::LiveError
-pub fn pert_ui_core::LiveError::eq(&self, &pert_ui_core::LiveError) -> bool
+pub fn pert_ui_core::LiveError::eq(&self, &Self) -> bool
 impl core::error::Error for pert_ui_core::LiveError
 impl core::fmt::Debug for pert_ui_core::LiveError
 pub fn pert_ui_core::LiveError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
@@ -193,10 +193,10 @@ impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::LiveError
 pub pert_ui_core::NormalizedValueError::NonFinite
 pub pert_ui_core::NormalizedValueError::OutOfRange
 impl core::clone::Clone for pert_ui_core::NormalizedValueError
-pub fn pert_ui_core::NormalizedValueError::clone(&self) -> pert_ui_core::NormalizedValueError
+pub fn pert_ui_core::NormalizedValueError::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_core::NormalizedValueError
 impl core::cmp::PartialEq for pert_ui_core::NormalizedValueError
-pub fn pert_ui_core::NormalizedValueError::eq(&self, &pert_ui_core::NormalizedValueError) -> bool
+pub fn pert_ui_core::NormalizedValueError::eq(&self, &Self) -> bool
 impl core::error::Error for pert_ui_core::NormalizedValueError
 impl core::fmt::Debug for pert_ui_core::NormalizedValueError
 pub fn pert_ui_core::NormalizedValueError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
@@ -226,10 +226,10 @@ pub pert_ui_core::ParameterError::OffLattice
 pub pert_ui_core::ParameterError::OutOfRange
 pub pert_ui_core::ParameterError::UnknownOption(pert_ui_core::ChoiceId)
 impl core::clone::Clone for pert_ui_core::ParameterError
-pub fn pert_ui_core::ParameterError::clone(&self) -> pert_ui_core::ParameterError
+pub fn pert_ui_core::ParameterError::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_core::ParameterError
 impl core::cmp::PartialEq for pert_ui_core::ParameterError
-pub fn pert_ui_core::ParameterError::eq(&self, &pert_ui_core::ParameterError) -> bool
+pub fn pert_ui_core::ParameterError::eq(&self, &Self) -> bool
 impl core::convert::From<pert_ui_core::ParameterError> for pert_ui_core::EditError
 pub fn pert_ui_core::EditError::from(pert_ui_core::ParameterError) -> Self
 impl core::error::Error for pert_ui_core::ParameterError
@@ -251,10 +251,10 @@ pub pert_ui_core::ParameterFamily::Choice
 pub pert_ui_core::ParameterFamily::Continuous
 pub pert_ui_core::ParameterFamily::Stepped
 impl core::clone::Clone for pert_ui_core::ParameterFamily
-pub fn pert_ui_core::ParameterFamily::clone(&self) -> pert_ui_core::ParameterFamily
+pub fn pert_ui_core::ParameterFamily::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_core::ParameterFamily
 impl core::cmp::PartialEq for pert_ui_core::ParameterFamily
-pub fn pert_ui_core::ParameterFamily::eq(&self, &pert_ui_core::ParameterFamily) -> bool
+pub fn pert_ui_core::ParameterFamily::eq(&self, &Self) -> bool
 impl core::fmt::Debug for pert_ui_core::ParameterFamily
 pub fn pert_ui_core::ParameterFamily::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::fmt::Display for pert_ui_core::ParameterFamily
@@ -275,10 +275,10 @@ pub pert_ui_core::ParameterIdError::EmptyKey
 pub pert_ui_core::ParameterIdError::IncarnationExhausted
 pub pert_ui_core::ParameterIdError::PaddedKey
 impl core::clone::Clone for pert_ui_core::ParameterIdError
-pub fn pert_ui_core::ParameterIdError::clone(&self) -> pert_ui_core::ParameterIdError
+pub fn pert_ui_core::ParameterIdError::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_core::ParameterIdError
 impl core::cmp::PartialEq for pert_ui_core::ParameterIdError
-pub fn pert_ui_core::ParameterIdError::eq(&self, &pert_ui_core::ParameterIdError) -> bool
+pub fn pert_ui_core::ParameterIdError::eq(&self, &Self) -> bool
 impl core::error::Error for pert_ui_core::ParameterIdError
 impl core::fmt::Debug for pert_ui_core::ParameterIdError
 pub fn pert_ui_core::ParameterIdError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
@@ -298,12 +298,12 @@ pub pert_ui_core::ParameterMapping::Linear
 pub pert_ui_core::ParameterMapping::Logarithmic
 pub pert_ui_core::ParameterMapping::Power(pert_ui_core::PowerExponent)
 impl core::clone::Clone for pert_ui_core::ParameterMapping
-pub fn pert_ui_core::ParameterMapping::clone(&self) -> pert_ui_core::ParameterMapping
+pub fn pert_ui_core::ParameterMapping::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_core::ParameterMapping
 impl core::cmp::PartialEq for pert_ui_core::ParameterMapping
-pub fn pert_ui_core::ParameterMapping::eq(&self, &pert_ui_core::ParameterMapping) -> bool
+pub fn pert_ui_core::ParameterMapping::eq(&self, &Self) -> bool
 impl core::default::Default for pert_ui_core::ParameterMapping
-pub fn pert_ui_core::ParameterMapping::default() -> pert_ui_core::ParameterMapping
+pub fn pert_ui_core::ParameterMapping::default() -> Self
 impl core::fmt::Debug for pert_ui_core::ParameterMapping
 pub fn pert_ui_core::ParameterMapping::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Copy for pert_ui_core::ParameterMapping
@@ -323,10 +323,10 @@ pub enum pert_ui_core::PreviewOutcome
 pub pert_ui_core::PreviewOutcome::Applied
 pub pert_ui_core::PreviewOutcome::Stale
 impl core::clone::Clone for pert_ui_core::PreviewOutcome
-pub fn pert_ui_core::PreviewOutcome::clone(&self) -> pert_ui_core::PreviewOutcome
+pub fn pert_ui_core::PreviewOutcome::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_core::PreviewOutcome
 impl core::cmp::PartialEq for pert_ui_core::PreviewOutcome
-pub fn pert_ui_core::PreviewOutcome::eq(&self, &pert_ui_core::PreviewOutcome) -> bool
+pub fn pert_ui_core::PreviewOutcome::eq(&self, &Self) -> bool
 impl core::fmt::Debug for pert_ui_core::PreviewOutcome
 pub fn pert_ui_core::PreviewOutcome::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Copy for pert_ui_core::PreviewOutcome
@@ -345,10 +345,10 @@ pub pert_ui_core::PublishOutcome::Exhausted
 pub pert_ui_core::PublishOutcome::Invalid
 pub pert_ui_core::PublishOutcome::Overflowed
 impl core::clone::Clone for pert_ui_core::PublishOutcome
-pub fn pert_ui_core::PublishOutcome::clone(&self) -> pert_ui_core::PublishOutcome
+pub fn pert_ui_core::PublishOutcome::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_core::PublishOutcome
 impl core::cmp::PartialEq for pert_ui_core::PublishOutcome
-pub fn pert_ui_core::PublishOutcome::eq(&self, &pert_ui_core::PublishOutcome) -> bool
+pub fn pert_ui_core::PublishOutcome::eq(&self, &Self) -> bool
 impl core::fmt::Debug for pert_ui_core::PublishOutcome
 pub fn pert_ui_core::PublishOutcome::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::hash::Hash for pert_ui_core::PublishOutcome
@@ -368,14 +368,14 @@ pub const pert_ui_core::Capacity::MAX: Self
 pub const fn pert_ui_core::Capacity::get(self) -> usize
 pub const fn pert_ui_core::Capacity::new(usize) -> core::result::Result<Self, pert_ui_core::LiveError>
 impl core::clone::Clone for pert_ui_core::Capacity
-pub fn pert_ui_core::Capacity::clone(&self) -> pert_ui_core::Capacity
+pub fn pert_ui_core::Capacity::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_core::Capacity
 impl core::cmp::Ord for pert_ui_core::Capacity
-pub fn pert_ui_core::Capacity::cmp(&self, &pert_ui_core::Capacity) -> core::cmp::Ordering
+pub fn pert_ui_core::Capacity::cmp(&self, &Self) -> core::cmp::Ordering
 impl core::cmp::PartialEq for pert_ui_core::Capacity
-pub fn pert_ui_core::Capacity::eq(&self, &pert_ui_core::Capacity) -> bool
+pub fn pert_ui_core::Capacity::eq(&self, &Self) -> bool
 impl core::cmp::PartialOrd for pert_ui_core::Capacity
-pub fn pert_ui_core::Capacity::partial_cmp(&self, &pert_ui_core::Capacity) -> core::option::Option<core::cmp::Ordering>
+pub fn pert_ui_core::Capacity::partial_cmp(&self, &Self) -> core::option::Option<core::cmp::Ordering>
 impl core::convert::From<pert_ui_core::Capacity> for usize
 pub fn usize::from(pert_ui_core::Capacity) -> Self
 impl core::convert::TryFrom<usize> for pert_ui_core::Capacity
@@ -399,14 +399,14 @@ impl pert_ui_core::ChoiceId
 pub fn pert_ui_core::ChoiceId::as_str(&self) -> &str
 pub fn pert_ui_core::ChoiceId::new(impl core::convert::Into<alloc::string::String>) -> core::result::Result<Self, pert_ui_core::ParameterError>
 impl core::clone::Clone for pert_ui_core::ChoiceId
-pub fn pert_ui_core::ChoiceId::clone(&self) -> pert_ui_core::ChoiceId
+pub fn pert_ui_core::ChoiceId::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_core::ChoiceId
 impl core::cmp::Ord for pert_ui_core::ChoiceId
-pub fn pert_ui_core::ChoiceId::cmp(&self, &pert_ui_core::ChoiceId) -> core::cmp::Ordering
+pub fn pert_ui_core::ChoiceId::cmp(&self, &Self) -> core::cmp::Ordering
 impl core::cmp::PartialEq for pert_ui_core::ChoiceId
-pub fn pert_ui_core::ChoiceId::eq(&self, &pert_ui_core::ChoiceId) -> bool
+pub fn pert_ui_core::ChoiceId::eq(&self, &Self) -> bool
 impl core::cmp::PartialOrd for pert_ui_core::ChoiceId
-pub fn pert_ui_core::ChoiceId::partial_cmp(&self, &pert_ui_core::ChoiceId) -> core::option::Option<core::cmp::Ordering>
+pub fn pert_ui_core::ChoiceId::partial_cmp(&self, &Self) -> core::option::Option<core::cmp::Ordering>
 impl core::convert::AsRef<str> for pert_ui_core::ChoiceId
 pub fn pert_ui_core::ChoiceId::as_ref(&self) -> &str
 impl core::convert::From<pert_ui_core::ChoiceId> for pert_ui_core::AnyValue
@@ -451,10 +451,10 @@ pub fn pert_ui_core::ChoiceOption::id(&self) -> &pert_ui_core::ChoiceId
 pub fn pert_ui_core::ChoiceOption::label(&self) -> &str
 pub fn pert_ui_core::ChoiceOption::new(pert_ui_core::ChoiceId, impl core::convert::Into<alloc::string::String>) -> Self
 impl core::clone::Clone for pert_ui_core::ChoiceOption
-pub fn pert_ui_core::ChoiceOption::clone(&self) -> pert_ui_core::ChoiceOption
+pub fn pert_ui_core::ChoiceOption::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_core::ChoiceOption
 impl core::cmp::PartialEq for pert_ui_core::ChoiceOption
-pub fn pert_ui_core::ChoiceOption::eq(&self, &pert_ui_core::ChoiceOption) -> bool
+pub fn pert_ui_core::ChoiceOption::eq(&self, &Self) -> bool
 impl core::fmt::Debug for pert_ui_core::ChoiceOption
 pub fn pert_ui_core::ChoiceOption::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::StructuralPartialEq for pert_ui_core::ChoiceOption
@@ -479,12 +479,12 @@ pub pert_ui_core::DrainReport::incarnation_changed: bool
 pub pert_ui_core::DrainReport::missing: u64
 pub pert_ui_core::DrainReport::rejected: u64
 impl core::clone::Clone for pert_ui_core::DrainReport
-pub fn pert_ui_core::DrainReport::clone(&self) -> pert_ui_core::DrainReport
+pub fn pert_ui_core::DrainReport::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_core::DrainReport
 impl core::cmp::PartialEq for pert_ui_core::DrainReport
-pub fn pert_ui_core::DrainReport::eq(&self, &pert_ui_core::DrainReport) -> bool
+pub fn pert_ui_core::DrainReport::eq(&self, &Self) -> bool
 impl core::default::Default for pert_ui_core::DrainReport
-pub fn pert_ui_core::DrainReport::default() -> pert_ui_core::DrainReport
+pub fn pert_ui_core::DrainReport::default() -> Self
 impl core::fmt::Debug for pert_ui_core::DrainReport
 pub fn pert_ui_core::DrainReport::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Copy for pert_ui_core::DrainReport
@@ -501,14 +501,14 @@ impl pert_ui_core::EditSequence
 pub const fn pert_ui_core::EditSequence::get(self) -> u64
 pub const fn pert_ui_core::EditSequence::new(u64) -> Self
 impl core::clone::Clone for pert_ui_core::EditSequence
-pub fn pert_ui_core::EditSequence::clone(&self) -> pert_ui_core::EditSequence
+pub fn pert_ui_core::EditSequence::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_core::EditSequence
 impl core::cmp::Ord for pert_ui_core::EditSequence
-pub fn pert_ui_core::EditSequence::cmp(&self, &pert_ui_core::EditSequence) -> core::cmp::Ordering
+pub fn pert_ui_core::EditSequence::cmp(&self, &Self) -> core::cmp::Ordering
 impl core::cmp::PartialEq for pert_ui_core::EditSequence
-pub fn pert_ui_core::EditSequence::eq(&self, &pert_ui_core::EditSequence) -> bool
+pub fn pert_ui_core::EditSequence::eq(&self, &Self) -> bool
 impl core::cmp::PartialOrd for pert_ui_core::EditSequence
-pub fn pert_ui_core::EditSequence::partial_cmp(&self, &pert_ui_core::EditSequence) -> core::option::Option<core::cmp::Ordering>
+pub fn pert_ui_core::EditSequence::partial_cmp(&self, &Self) -> core::option::Option<core::cmp::Ordering>
 impl core::fmt::Debug for pert_ui_core::EditSequence
 pub fn pert_ui_core::EditSequence::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::hash::Hash for pert_ui_core::EditSequence
@@ -527,10 +527,10 @@ impl pert_ui_core::EditSource
 pub const fn pert_ui_core::EditSource::get(self) -> u64
 pub const fn pert_ui_core::EditSource::new(u64) -> Self
 impl core::clone::Clone for pert_ui_core::EditSource
-pub fn pert_ui_core::EditSource::clone(&self) -> pert_ui_core::EditSource
+pub fn pert_ui_core::EditSource::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_core::EditSource
 impl core::cmp::PartialEq for pert_ui_core::EditSource
-pub fn pert_ui_core::EditSource::eq(&self, &pert_ui_core::EditSource) -> bool
+pub fn pert_ui_core::EditSource::eq(&self, &Self) -> bool
 impl core::fmt::Debug for pert_ui_core::EditSource
 pub fn pert_ui_core::EditSource::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::hash::Hash for pert_ui_core::EditSource
@@ -553,10 +553,10 @@ impl pert_ui_core::EditToken
 pub fn pert_ui_core::EditToken::source(&self) -> pert_ui_core::EditSource
 pub fn pert_ui_core::EditToken::target(&self) -> &pert_ui_core::ParameterId
 impl core::clone::Clone for pert_ui_core::EditToken
-pub fn pert_ui_core::EditToken::clone(&self) -> pert_ui_core::EditToken
+pub fn pert_ui_core::EditToken::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_core::EditToken
 impl core::cmp::PartialEq for pert_ui_core::EditToken
-pub fn pert_ui_core::EditToken::eq(&self, &pert_ui_core::EditToken) -> bool
+pub fn pert_ui_core::EditToken::eq(&self, &Self) -> bool
 impl core::fmt::Debug for pert_ui_core::EditToken
 pub fn pert_ui_core::EditToken::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::hash::Hash for pert_ui_core::EditToken
@@ -574,14 +574,14 @@ impl pert_ui_core::Incarnation
 pub const pert_ui_core::Incarnation::FIRST: Self
 pub const fn pert_ui_core::Incarnation::get(self) -> u64
 impl core::clone::Clone for pert_ui_core::Incarnation
-pub fn pert_ui_core::Incarnation::clone(&self) -> pert_ui_core::Incarnation
+pub fn pert_ui_core::Incarnation::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_core::Incarnation
 impl core::cmp::Ord for pert_ui_core::Incarnation
-pub fn pert_ui_core::Incarnation::cmp(&self, &pert_ui_core::Incarnation) -> core::cmp::Ordering
+pub fn pert_ui_core::Incarnation::cmp(&self, &Self) -> core::cmp::Ordering
 impl core::cmp::PartialEq for pert_ui_core::Incarnation
-pub fn pert_ui_core::Incarnation::eq(&self, &pert_ui_core::Incarnation) -> bool
+pub fn pert_ui_core::Incarnation::eq(&self, &Self) -> bool
 impl core::cmp::PartialOrd for pert_ui_core::Incarnation
-pub fn pert_ui_core::Incarnation::partial_cmp(&self, &pert_ui_core::Incarnation) -> core::option::Option<core::cmp::Ordering>
+pub fn pert_ui_core::Incarnation::partial_cmp(&self, &Self) -> core::option::Option<core::cmp::Ordering>
 impl core::fmt::Debug for pert_ui_core::Incarnation
 pub fn pert_ui_core::Incarnation::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::hash::Hash for pert_ui_core::Incarnation
@@ -601,12 +601,12 @@ pub const pert_ui_core::NormalizedValue::MAX: Self
 pub const pert_ui_core::NormalizedValue::MIN: Self
 pub const fn pert_ui_core::NormalizedValue::get(self) -> f32
 impl core::clone::Clone for pert_ui_core::NormalizedValue
-pub fn pert_ui_core::NormalizedValue::clone(&self) -> pert_ui_core::NormalizedValue
+pub fn pert_ui_core::NormalizedValue::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_core::NormalizedValue
 impl core::cmp::Ord for pert_ui_core::NormalizedValue
 pub fn pert_ui_core::NormalizedValue::cmp(&self, &Self) -> core::cmp::Ordering
 impl core::cmp::PartialEq for pert_ui_core::NormalizedValue
-pub fn pert_ui_core::NormalizedValue::eq(&self, &pert_ui_core::NormalizedValue) -> bool
+pub fn pert_ui_core::NormalizedValue::eq(&self, &Self) -> bool
 impl core::cmp::PartialOrd for pert_ui_core::NormalizedValue
 pub fn pert_ui_core::NormalizedValue::partial_cmp(&self, &Self) -> core::option::Option<core::cmp::Ordering>
 impl core::convert::From<pert_ui_core::NormalizedValue> for f32
@@ -640,10 +640,10 @@ pub fn pert_ui_core::ParameterId::next_incarnation(&self) -> core::result::Resul
 pub const fn pert_ui_core::ParameterId::object(&self) -> u128
 pub const fn pert_ui_core::ParameterId::session(&self) -> u128
 impl core::clone::Clone for pert_ui_core::ParameterId
-pub fn pert_ui_core::ParameterId::clone(&self) -> pert_ui_core::ParameterId
+pub fn pert_ui_core::ParameterId::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_core::ParameterId
 impl core::cmp::PartialEq for pert_ui_core::ParameterId
-pub fn pert_ui_core::ParameterId::eq(&self, &pert_ui_core::ParameterId) -> bool
+pub fn pert_ui_core::ParameterId::eq(&self, &Self) -> bool
 impl core::fmt::Debug for pert_ui_core::ParameterId
 pub fn pert_ui_core::ParameterId::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::hash::Hash for pert_ui_core::ParameterId
@@ -670,9 +670,9 @@ pub pert_ui_core::ParameterSnapshot::revision: pert_ui_core::Revision
 impl<'de, T> serde_core::de::Deserialize<'de> for pert_ui_core::ParameterSnapshot<T> where T: pert_ui_core::ParameterValue + serde_core::de::Deserialize<'de>
 pub fn pert_ui_core::ParameterSnapshot<T>::deserialize<D: serde_core::de::Deserializer<'de>>(D) -> core::result::Result<Self, <D as serde_core::de::Deserializer>::Error>
 impl<T: core::clone::Clone> core::clone::Clone for pert_ui_core::ParameterSnapshot<T>
-pub fn pert_ui_core::ParameterSnapshot<T>::clone(&self) -> pert_ui_core::ParameterSnapshot<T>
+pub fn pert_ui_core::ParameterSnapshot<T>::clone(&self) -> Self
 impl<T: core::cmp::PartialEq> core::cmp::PartialEq for pert_ui_core::ParameterSnapshot<T>
-pub fn pert_ui_core::ParameterSnapshot<T>::eq(&self, &pert_ui_core::ParameterSnapshot<T>) -> bool
+pub fn pert_ui_core::ParameterSnapshot<T>::eq(&self, &Self) -> bool
 impl<T: core::cmp::PartialEq> core::marker::StructuralPartialEq for pert_ui_core::ParameterSnapshot<T>
 impl<T: core::fmt::Debug> core::fmt::Debug for pert_ui_core::ParameterSnapshot<T>
 pub fn pert_ui_core::ParameterSnapshot<T>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
@@ -788,12 +788,12 @@ pub const pert_ui_core::PowerExponent::MIN: Self
 pub const fn pert_ui_core::PowerExponent::get(self) -> f32
 pub fn pert_ui_core::PowerExponent::new(f32) -> core::result::Result<Self, pert_ui_core::ParameterError>
 impl core::clone::Clone for pert_ui_core::PowerExponent
-pub fn pert_ui_core::PowerExponent::clone(&self) -> pert_ui_core::PowerExponent
+pub fn pert_ui_core::PowerExponent::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_core::PowerExponent
 impl core::cmp::Ord for pert_ui_core::PowerExponent
 pub fn pert_ui_core::PowerExponent::cmp(&self, &Self) -> core::cmp::Ordering
 impl core::cmp::PartialEq for pert_ui_core::PowerExponent
-pub fn pert_ui_core::PowerExponent::eq(&self, &pert_ui_core::PowerExponent) -> bool
+pub fn pert_ui_core::PowerExponent::eq(&self, &Self) -> bool
 impl core::cmp::PartialOrd for pert_ui_core::PowerExponent
 pub fn pert_ui_core::PowerExponent::partial_cmp(&self, &Self) -> core::option::Option<core::cmp::Ordering>
 impl core::convert::From<pert_ui_core::PowerExponent> for f32
@@ -823,16 +823,16 @@ impl pert_ui_core::Revision
 pub const pert_ui_core::Revision::INITIAL: Self
 pub const fn pert_ui_core::Revision::get(self) -> u64
 impl core::clone::Clone for pert_ui_core::Revision
-pub fn pert_ui_core::Revision::clone(&self) -> pert_ui_core::Revision
+pub fn pert_ui_core::Revision::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_core::Revision
 impl core::cmp::Ord for pert_ui_core::Revision
-pub fn pert_ui_core::Revision::cmp(&self, &pert_ui_core::Revision) -> core::cmp::Ordering
+pub fn pert_ui_core::Revision::cmp(&self, &Self) -> core::cmp::Ordering
 impl core::cmp::PartialEq for pert_ui_core::Revision
-pub fn pert_ui_core::Revision::eq(&self, &pert_ui_core::Revision) -> bool
+pub fn pert_ui_core::Revision::eq(&self, &Self) -> bool
 impl core::cmp::PartialOrd for pert_ui_core::Revision
-pub fn pert_ui_core::Revision::partial_cmp(&self, &pert_ui_core::Revision) -> core::option::Option<core::cmp::Ordering>
+pub fn pert_ui_core::Revision::partial_cmp(&self, &Self) -> core::option::Option<core::cmp::Ordering>
 impl core::default::Default for pert_ui_core::Revision
-pub fn pert_ui_core::Revision::default() -> pert_ui_core::Revision
+pub fn pert_ui_core::Revision::default() -> Self
 impl core::fmt::Debug for pert_ui_core::Revision
 pub fn pert_ui_core::Revision::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::hash::Hash for pert_ui_core::Revision
@@ -856,9 +856,9 @@ pub pert_ui_core::Sample::sequence: pert_ui_core::Sequence
 pub pert_ui_core::Sample::timestamp: pert_ui_core::Timestamp
 pub pert_ui_core::Sample::value: T
 impl<T: core::clone::Clone> core::clone::Clone for pert_ui_core::Sample<T>
-pub fn pert_ui_core::Sample<T>::clone(&self) -> pert_ui_core::Sample<T>
+pub fn pert_ui_core::Sample<T>::clone(&self) -> Self
 impl<T: core::cmp::PartialEq> core::cmp::PartialEq for pert_ui_core::Sample<T>
-pub fn pert_ui_core::Sample<T>::eq(&self, &pert_ui_core::Sample<T>) -> bool
+pub fn pert_ui_core::Sample<T>::eq(&self, &Self) -> bool
 impl<T: core::cmp::PartialEq> core::marker::StructuralPartialEq for pert_ui_core::Sample<T>
 impl<T: core::fmt::Debug> core::fmt::Debug for pert_ui_core::Sample<T>
 pub fn pert_ui_core::Sample<T>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
@@ -878,9 +878,9 @@ pub fn pert_ui_core::SampleWindow<T>::iter(&self) -> impl core::iter::traits::do
 pub fn pert_ui_core::SampleWindow<T>::latest(&self) -> core::option::Option<&pert_ui_core::SampleWindowEntry<T>>
 pub fn pert_ui_core::SampleWindow<T>::len(&self) -> usize
 impl<T: core::clone::Clone> core::clone::Clone for pert_ui_core::SampleWindow<T>
-pub fn pert_ui_core::SampleWindow<T>::clone(&self) -> pert_ui_core::SampleWindow<T>
+pub fn pert_ui_core::SampleWindow<T>::clone(&self) -> Self
 impl<T: core::cmp::PartialEq> core::cmp::PartialEq for pert_ui_core::SampleWindow<T>
-pub fn pert_ui_core::SampleWindow<T>::eq(&self, &pert_ui_core::SampleWindow<T>) -> bool
+pub fn pert_ui_core::SampleWindow<T>::eq(&self, &Self) -> bool
 impl<T: core::cmp::PartialEq> core::marker::StructuralPartialEq for pert_ui_core::SampleWindow<T>
 impl<T: core::fmt::Debug> core::fmt::Debug for pert_ui_core::SampleWindow<T>
 pub fn pert_ui_core::SampleWindow<T>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
@@ -895,9 +895,9 @@ pub struct pert_ui_core::SampleWindowEntry<T>
 pub pert_ui_core::SampleWindowEntry::discontinuity_before: bool
 pub pert_ui_core::SampleWindowEntry::sample: pert_ui_core::Sample<T>
 impl<T: core::clone::Clone> core::clone::Clone for pert_ui_core::SampleWindowEntry<T>
-pub fn pert_ui_core::SampleWindowEntry<T>::clone(&self) -> pert_ui_core::SampleWindowEntry<T>
+pub fn pert_ui_core::SampleWindowEntry<T>::clone(&self) -> Self
 impl<T: core::cmp::PartialEq> core::cmp::PartialEq for pert_ui_core::SampleWindowEntry<T>
-pub fn pert_ui_core::SampleWindowEntry<T>::eq(&self, &pert_ui_core::SampleWindowEntry<T>) -> bool
+pub fn pert_ui_core::SampleWindowEntry<T>::eq(&self, &Self) -> bool
 impl<T: core::cmp::PartialEq> core::marker::StructuralPartialEq for pert_ui_core::SampleWindowEntry<T>
 impl<T: core::fmt::Debug> core::fmt::Debug for pert_ui_core::SampleWindowEntry<T>
 pub fn pert_ui_core::SampleWindowEntry<T>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
@@ -915,14 +915,14 @@ pub const pert_ui_core::Sequence::FIRST: Self
 pub const fn pert_ui_core::Sequence::get(self) -> u64
 pub const fn pert_ui_core::Sequence::new(u64) -> core::option::Option<Self>
 impl core::clone::Clone for pert_ui_core::Sequence
-pub fn pert_ui_core::Sequence::clone(&self) -> pert_ui_core::Sequence
+pub fn pert_ui_core::Sequence::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_core::Sequence
 impl core::cmp::Ord for pert_ui_core::Sequence
-pub fn pert_ui_core::Sequence::cmp(&self, &pert_ui_core::Sequence) -> core::cmp::Ordering
+pub fn pert_ui_core::Sequence::cmp(&self, &Self) -> core::cmp::Ordering
 impl core::cmp::PartialEq for pert_ui_core::Sequence
-pub fn pert_ui_core::Sequence::eq(&self, &pert_ui_core::Sequence) -> bool
+pub fn pert_ui_core::Sequence::eq(&self, &Self) -> bool
 impl core::cmp::PartialOrd for pert_ui_core::Sequence
-pub fn pert_ui_core::Sequence::partial_cmp(&self, &pert_ui_core::Sequence) -> core::option::Option<core::cmp::Ordering>
+pub fn pert_ui_core::Sequence::partial_cmp(&self, &Self) -> core::option::Option<core::cmp::Ordering>
 impl core::fmt::Debug for pert_ui_core::Sequence
 pub fn pert_ui_core::Sequence::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::hash::Hash for pert_ui_core::Sequence
@@ -943,10 +943,10 @@ pub const fn pert_ui_core::SeriesConfig::ring_capacity(&self) -> pert_ui_core::C
 pub const fn pert_ui_core::SeriesConfig::window_capacity(&self) -> pert_ui_core::Capacity
 pub const fn pert_ui_core::SeriesConfig::with_ring_capacity(self, pert_ui_core::Capacity) -> Self
 impl core::clone::Clone for pert_ui_core::SeriesConfig
-pub fn pert_ui_core::SeriesConfig::clone(&self) -> pert_ui_core::SeriesConfig
+pub fn pert_ui_core::SeriesConfig::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_core::SeriesConfig
 impl core::cmp::PartialEq for pert_ui_core::SeriesConfig
-pub fn pert_ui_core::SeriesConfig::eq(&self, &pert_ui_core::SeriesConfig) -> bool
+pub fn pert_ui_core::SeriesConfig::eq(&self, &Self) -> bool
 impl core::fmt::Debug for pert_ui_core::SeriesConfig
 pub fn pert_ui_core::SeriesConfig::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::hash::Hash for pert_ui_core::SeriesConfig
@@ -1006,16 +1006,16 @@ impl pert_ui_core::Timestamp
 pub const fn pert_ui_core::Timestamp::get(self) -> u64
 pub const fn pert_ui_core::Timestamp::new(u64) -> Self
 impl core::clone::Clone for pert_ui_core::Timestamp
-pub fn pert_ui_core::Timestamp::clone(&self) -> pert_ui_core::Timestamp
+pub fn pert_ui_core::Timestamp::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_core::Timestamp
 impl core::cmp::Ord for pert_ui_core::Timestamp
-pub fn pert_ui_core::Timestamp::cmp(&self, &pert_ui_core::Timestamp) -> core::cmp::Ordering
+pub fn pert_ui_core::Timestamp::cmp(&self, &Self) -> core::cmp::Ordering
 impl core::cmp::PartialEq for pert_ui_core::Timestamp
-pub fn pert_ui_core::Timestamp::eq(&self, &pert_ui_core::Timestamp) -> bool
+pub fn pert_ui_core::Timestamp::eq(&self, &Self) -> bool
 impl core::cmp::PartialOrd for pert_ui_core::Timestamp
-pub fn pert_ui_core::Timestamp::partial_cmp(&self, &pert_ui_core::Timestamp) -> core::option::Option<core::cmp::Ordering>
+pub fn pert_ui_core::Timestamp::partial_cmp(&self, &Self) -> core::option::Option<core::cmp::Ordering>
 impl core::default::Default for pert_ui_core::Timestamp
-pub fn pert_ui_core::Timestamp::default() -> pert_ui_core::Timestamp
+pub fn pert_ui_core::Timestamp::default() -> Self
 impl core::fmt::Debug for pert_ui_core::Timestamp
 pub fn pert_ui_core::Timestamp::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::hash::Hash for pert_ui_core::Timestamp
@@ -1036,7 +1036,7 @@ pub fn pert_ui_core::WakeFlag::new() -> Self
 pub fn pert_ui_core::WakeFlag::request(&self) -> bool
 pub fn pert_ui_core::WakeFlag::reset(&self) -> bool
 impl core::default::Default for pert_ui_core::WakeFlag
-pub fn pert_ui_core::WakeFlag::default() -> pert_ui_core::WakeFlag
+pub fn pert_ui_core::WakeFlag::default() -> Self
 impl core::fmt::Debug for pert_ui_core::WakeFlag
 pub fn pert_ui_core::WakeFlag::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl !core::marker::Freeze for pert_ui_core::WakeFlag

@@ -22,5 +22,7 @@ help: the trait `StateOwner` is not implemented for `Model`
 note: required by a bound in `ListController::new`
  --> $WORKSPACE/crates/pert-ui-runtime/src/virtual_list.rs
   |
+  | impl ListController {
+...
   |     pub fn new(ui: &impl crate::StateOwner) -> Self {
   |                          ^^^^^^^^^^^^^^^^^ required by this bound in `ListController::new`

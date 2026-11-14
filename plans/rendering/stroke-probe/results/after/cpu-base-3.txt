@@ -1,0 +1,30 @@
+<!-- start 2026-11-13T20:21:52+01:00, waited 0 min, load 1.16 2.31 1.44
+%CPU COMMAND
+ 1.7 gnome-terminal-
+ 1.1 jetbrains-toolb
+ 1.1 gnome-shell
+ 0.9 claude
+ 0.5 codex
+-->
+scale 1: trace, 800 points: 5.40 ms
+scale 1: trace, 4096 points: 7.16 ms
+scale 1: noise, 800 points: 17.31 ms
+scale 1: noise, 16384 points: 246.42 ms
+scale 1: diagram, 60 edges: 49.27 ms
+scale 1: trace, 800 points, unchanged: 4.72 ms
+scale 1: ellipses, 60, unchanged: 4.52 ms
+scale 2: trace, 800 points: 19.88 ms
+scale 2: trace, 4096 points: 23.15 ms
+scale 2: noise, 800 points: 54.75 ms
+scale 2: noise, 16384 points: refused: vector coverage exceeds its work budget
+scale 2: diagram, 60 edges: 193.59 ms
+scale 2: trace, 800 points, unchanged: 18.46 ms
+scale 2: ellipses, 60, unchanged: 16.79 ms
+<!-- end 2026-11-13T20:22:02+01:00, load 1.12 2.24 1.44, highest during the run 1.16
+%CPU COMMAND
+ 1.7 gnome-terminal-
+ 1.1 jetbrains-toolb
+ 1.1 gnome-shell
+ 0.9 claude
+ 0.5 codex
+-->

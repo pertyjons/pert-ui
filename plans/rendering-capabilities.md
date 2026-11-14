@@ -1,6 +1,6 @@
 # Rendering capabilities and performance
 
-Status: **phases 0 and 1 done; the next phase is not chosen.** Created
+Status: **phases 0 and 1 done; candidate F runs next, before phase 2.** Created
 2026-10-26 at the maintainer's request as an open exploratory plan. The
 [roadmap](#roadmap) below says what is decided, what is in progress and what
 is still open. A candidate without a decision is not a commitment.
@@ -15,7 +15,8 @@ is still open. A candidate without a decision is not a commitment.
 | Phase 2 | A: `Paint` with gradients, Oklab by default | Decided as next; no spec yet |
 | Phase 3 | D: analytic box shadows | Decided to follow A; no spec yet |
 | Phase 4 | G1: rounded clips and group opacity | Decided to follow D; no spec yet |
-| Open | F (GPU polyline), J2 (CPU renderer speed), I (latency) | Ranked 4–6 in the report, each with a measured cost; not scheduled |
+| F | Strokes covered by the renderers (GPU polyline) | Chosen 2026-11-12 to run before phase 2. [Spec](rendering/stroke-spec.md) with its decisions approved; slice 0 measured 2026-11-12 and 2026-11-13. The tile lists are too slow on the GPU; the spec's alternative (per-segment quads into a coverage atlas) is below today's path in every changing workload and meets the gate the maintainer revised on 2026-11-13: go. All five slices are done (0.3.118): the preparation and its reference are public and both renderers draw every stroke from them, curves flattened, the wgpu renderer on the GPU. Measured after: a frame with a changing polyline takes about a third of the mask path's time in the wgpu renderer, and the CPU renderer draws strokes 3 to 37 times faster. Open: the maintainer's decision on the fallback's stroke code, and the merge. The mask path's span sort was repaired first (0.3.112) |
+| Open | J2 (CPU renderer speed), I (latency) | Ranked 5–6 in the report, each with a measured cost; not scheduled |
 | Deferred | E (glyph atlas), G2 (affine transforms) | No measured need, or not prioritized |
 | Dropped | H (layers and partial redraw), vello as a backend | No measured gain; vello breaks the linear-light blend contract |
 
@@ -32,8 +33,8 @@ Decisions that bind every later phase (the report's Decisions section):
 What the phases chosen so far are for: phases 1–4 add capability (corners,
 gradients, shadows, clips) and remove code. They are not expected to make
 frames faster; phase 0 and phase 1's slice 0 show that shapes cost little
-today. The measured costs that remain are the open candidates F, J2 and I.
-Whether one of them should come before phase 2 is the maintainer's choice.
+today. The measured costs that remain are the candidates F, J2 and I; the
+maintainer chose F to come before phase 2.
 
 ## Why
 

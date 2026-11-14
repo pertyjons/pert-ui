@@ -695,6 +695,8 @@ impl Renderer {
     ) -> Result<wgpu::CommandEncoder, RenderError> {
         let encoder = if let Some([x, y, width, height]) = damage {
             let mut encoder = self.device.create_command_encoder(&Default::default());
+            self.atlas
+                .encode(&mut encoder, &self.pipelines.strokes, &self.encoded.strokes)?;
             {
                 let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                     label: Some("damage probe scissored scene"),
@@ -724,6 +726,10 @@ impl Renderer {
                                 pass.set_bind_group(0, records, &[]);
                                 pass.draw(0..6, batch.range.clone());
                                 continue;
+                            }
+                            Source::Stroke(page) => {
+                                pass.set_pipeline(&self.pipelines.strokes.composite);
+                                pass.set_bind_group(0, self.atlas.page(page as usize)?, &[]);
                             }
                             Source::Fill => pass.set_pipeline(&self.pipelines.fill),
                             Source::Mask(index) => {

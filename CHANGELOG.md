@@ -5,6 +5,95 @@ needs: additions, behavior changes, breaking changes with their replacement,
 and notable fixes. The detailed per-version entries up to 0.3.101 are in Git
 history (this file at commit f5fde76).
 
+## 0.3.118 (2026-11-13): Faster stroke coverage in the CPU renderer
+
+`PreparedStroke::for_each_covered` visits the pixels a stroke covers with
+their coverage, evaluating each segment only where it can reach, and the
+CPU renderer draws strokes from it. Against the masks of 0.3.112 it renders
+strokes 3 to 37 times faster in the measured workloads: a changing
+800-point trace in 0.6 ms instead of 5.4, a diagram's sixty edges in 1.9 ms
+instead of 49, and sixty unchanged ellipse outlines in 1.1 ms instead of
+4.5 (`docs/verification.md`, CPU rendering cost).
+
+Added: `PreparedStroke::for_each_covered`.
+
+## 0.3.117 (2026-11-13): Strokes with curves covered by the renderers
+
+A stroke whose path has curves is covered by both renderers as a stroke of
+straight segments is since 0.3.115, from its distance, with its curves
+flattened to chords within 0.2 physical pixels at the displayed size; no
+mask is built for any stroke. `PreparedStroke::accepts` is true for every
+stroke, so `VectorRasterizer::prepare_fills` leaves them all in the scene
+and makes masks of fills only. As in the mask coverage, a join inside a
+flattened curve is round whatever the style, and a cap or a join where a
+curve ends follows the curve's tangent. A stroke that misses the frame or
+its clip is skipped before its curves are flattened.
+
+Added: `PreparedStroke::MAX_SEGMENTS`. A stroke that keeps more segments
+after flattening and clipping is refused with `DrawError::TooComplex`;
+flattening itself keeps `VectorRasterizer::MAX_FLATTENED_POINTS`.
+`StrokePrepareError::Unsupported` now means a fill only. A curve under a
+magnifying view is flattened at its displayed size, without the earlier
+ceiling of eight pixels per unit, so a very large magnification of a
+visible curve can exceed the flattening limit where it did not before.
+
+## 0.3.116 (2026-11-13): Rust 1.100.0
+
+The pinned toolchain and the declared minimum Rust version (`rust-version`)
+move from 1.99.1 to 1.100.0; no library source change is needed. The API
+listings and the compiler-message snapshots are regenerated with it: the
+listings now spell a derived method's own type as `Self`, and the messages
+show more context lines.
+
+## 0.3.113–0.3.115 (2026-11-13): Strokes covered by the renderers
+
+Both renderers cover a stroke of straight segments per pixel from its
+distance to the stroke's edge instead of drawing a CPU coverage mask. Its
+region is unchanged in a frame whose axes both map by the viewport's scale,
+as every window's does; a custom frame mapping that stretches one axis now
+moves a stroke's points with it and keeps its width, where a mask was
+stretched whole. Its edge pixels are antialiased by distance instead of
+by area, a stroke narrower than a physical pixel is drawn one pixel wide
+and faded by its width, and a stroke under a magnifying view is no longer
+stretched beyond eight pixels per unit. The wgpu renderer draws one quad
+per segment into a coverage page on the GPU, so a changing trace no longer
+rasterizes and uploads a mask on the UI thread: on the one adapter measured,
+a frame with a changing 800-point polyline took 1.2 ms instead of 3.5 and
+one with 4096 points 1.8 ms instead of 5.6. The CPU renderer draws strokes
+faster too (see 0.3.118); a 16 384-point trace at scale 2, refused before,
+is drawn.
+On the stroke corpus the two renderers differ by at most one step per
+channel, two where two strokes' edges overlap.
+
+Added: `PreparedStroke` (the preparation and the reference coverage, with
+`accepts`, `tiles`, `segments` and its tile budgets), `StrokeSegment`,
+`StrokeCoverage`, `StrokePrepareError`, `DrawError::Stroke`,
+`LimitError::StrokeRecords`, `LimitError::StrokeCoverage`,
+`Renderer::STROKE_COVERAGE_BUDGET` and `VectorRasterizer::prepare_fills`, which
+leaves those strokes in the scene for a renderer that covers them.
+`VectorRasterizer::prepare` and `DisplayList::rasterized` are unchanged and
+still return a mask for every vector; drawing those masks no longer
+reproduces a straight stroke's edge pixels as the renderers draw them.
+
+Changed errors: such a stroke is refused with `DrawError::TooComplex` by
+its tile budgets (`PreparedStroke::MAX_TILE_REFERENCES`,
+`MAX_TILE_SEGMENTS`) instead of `VectorRasterizer::MAX_COVERAGE_WORK`,
+never with `DrawError::CoverageTooLarge`, and with
+`DrawError::Stroke(StrokePrepareError::OutOfRange)` beyond 65 536 pixels.
+The wgpu renderer bounds its strokes' coverage pages by
+`Renderer::STROKE_COVERAGE_BUDGET` (`LimitError::StrokeCoverage`) instead
+of counting their masks against the mask budget.
+
+## 0.3.112 (2026-11-12): Faster straight strokes
+
+A stroke of straight segments is covered faster where many of its pieces
+share pixel rows: its spans are bucketed by sub-scanline instead of sorted
+together. A changing trace of 800 or 4096 points took about a third and a
+half of its earlier coverage time in the stroke profile. Coverage is
+unchanged, bit for bit.
+`VectorRasterizer::MAX_COVERAGE_WORK` now documents eight more bytes of
+working memory per step.
+
 ## 0.3.104–0.3.111 (2026-11-12): Analytic shapes
 
 A rounded or cut rectangle can be drawn as one command whose coverage the

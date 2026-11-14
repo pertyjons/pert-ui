@@ -5,8 +5,8 @@ use pert_ui_runtime::testing::HostIntegration;
 use pert_ui_runtime::{
     CaptureRequest, CaptureTarget, Color, Component, DisplayList, DrawError, Element, FillRule,
     FrameImage, ImageSampling, Length, LimitError, MaskImage, Painter, Path, Point, QuarterTurn,
-    RasterImage, Rect, Runtime, RuntimeError, Shape, ShapePrepareError, ShapeStyle, UpdateContext,
-    Viewport,
+    RasterImage, Rect, Runtime, RuntimeError, Shape, ShapePrepareError, ShapeStyle,
+    StrokePrepareError, StrokeStyle, UpdateContext, Viewport,
 };
 use std::time::Duration;
 
@@ -324,6 +324,71 @@ fn vectors_are_prepared_into_coverage_and_drawn() -> TestResult {
     // Edge pixels carry partial coverage.
     let edge = pixel(&frame, 4, 10);
     assert!(edge != background() && edge != [255; 4], "{edge:?}");
+    Ok(())
+}
+
+#[test]
+fn a_straight_stroke_is_covered_by_its_distance_without_a_mask() -> TestResult {
+    let white = Color::WHITE;
+    let line = |y: f32, width: f32| -> Result<FrameImage, Box<dyn std::error::Error>> {
+        Ok(render(&scene(20.0, 20.0, 1.0, move |p| {
+            p.stroke_polyline(
+                &[Point::new(4.0, y)?, Point::new(16.0, y)?],
+                StrokeStyle::new(Length::new(width)?),
+                white,
+            )
+        })?)?)
+    };
+    // Two pixels wide on a pixel boundary: rows 9 and 10, butt ends at
+    // x = 4 and x = 16.
+    let frame = line(10.0, 2.0)?;
+    for (x, y, covered) in [
+        (10, 9, true),
+        (10, 10, true),
+        (10, 8, false),
+        (10, 11, false),
+        (4, 9, true),
+        (3, 9, false),
+        (15, 10, true),
+        (16, 10, false),
+    ] {
+        let expected = if covered { [255; 4] } else { background() };
+        assert_eq!(pixel(&frame, x, y), expected, "({x}, {y})");
+    }
+    // Half a pixel lower its edges pass through pixel centers: half
+    // coverage on rows 9 and 11.
+    let frame = line(10.5, 2.0)?;
+    let half = over(background(), white, 0.5);
+    assert_eq!(pixel(&frame, 10, 9), half);
+    assert_eq!(pixel(&frame, 10, 10), [255; 4]);
+    assert_eq!(pixel(&frame, 10, 11), half);
+    // A stroke a quarter pixel wide is drawn one pixel wide at a quarter
+    // of the coverage.
+    let frame = line(10.5, 0.25)?;
+    assert_eq!(pixel(&frame, 10, 10), over(background(), white, 0.25));
+    assert_eq!(pixel(&frame, 10, 9), background());
+    Ok(())
+}
+
+#[test]
+fn a_stroke_that_cannot_be_prepared_is_a_typed_error() -> TestResult {
+    let mut renderer = CpuRenderer::new();
+    let wide = scene(20.0, 20.0, 1.0, |p| {
+        p.fill_rect(Rect::new(0.0, 0.0, 20.0, 20.0)?, Color::WHITE);
+        p.stroke_polyline(
+            &[Point::new(4.0, 10.0)?, Point::new(16.0, 10.0)?],
+            StrokeStyle::new(Length::new(140_000.0)?),
+            Color::WHITE,
+        )
+    })?;
+    assert_eq!(
+        renderer.render(&wide),
+        Err(CpuRenderError::Drawing(DrawError::Stroke(
+            StrokePrepareError::OutOfRange
+        )))
+    );
+    // The renderer stays usable.
+    assert!(renderer.render(&scene(1.0, 1.0, 1.0, |_| Ok(()))?).is_ok());
     Ok(())
 }
 

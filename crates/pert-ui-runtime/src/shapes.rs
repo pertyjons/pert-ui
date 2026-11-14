@@ -3,11 +3,13 @@
 use crate::{Color, DrawCommand, DrawError, Length, Painter, Point, Rect};
 
 mod prepare;
+mod stroke;
 pub use prepare::{
     ArcGeometry, Border, Boundary, Corner, CornerKind, CornerPosition, FrameMapping, Inner, Paint,
     PreparedCorner, PreparedShape, Shape, ShapeCoverage, ShapeGeometry, ShapeParameters,
     ShapePrepareError, ShapeStyle, TriangleGeometry,
 };
+pub use stroke::{PreparedStroke, StrokeCoverage, StrokePrepareError, StrokeSegment};
 
 impl Painter {
     /// Strokes a circular arc with round end caps in local logical coordinates.

@@ -289,5 +289,5 @@ doctest. The item pages of this crate hold each item's complete contract.
 The sections above cover what a custom host or graphics integration that
 depends on this crate directly needs beyond the guide.
 
-Requires Rust 1.99.1 or later, edition 2024. Licensed under either MIT or
+Requires Rust 1.100.0 or later, edition 2024. Licensed under either MIT or
 Apache-2.0, at your option; both license texts are included in this package.

@@ -140,8 +140,8 @@ impl VectorRasterizer {
     /// vector over the budget is rejected with [`DrawError::TooComplex`]
     /// before any coverage work, which bounds preparation time and the memory
     /// held for a stroke's spans: at most one span (24 bytes on 64-bit
-    /// targets) per step, besides the mask itself, however tall and narrow the
-    /// mask is. A trace of thousands of points that crosses
+    /// targets), used or not, and about eight bytes for ordering them per
+    /// step, besides the mask itself, however tall and narrow the mask is. A trace of thousands of points that crosses
     /// a few hundred pixels per point stays well inside it.
     pub const MAX_COVERAGE_WORK: usize = 1 << 24;
 
@@ -168,6 +168,30 @@ impl VectorRasterizer {
     /// finite command scale that is zero or negative. A command that is wholly clipped
     /// or fully transparent is skipped before its scale is checked.
     pub fn prepare(&mut self, scene: &DisplayList) -> Result<DisplayList, DrawError> {
+        self.lower(scene, false)
+    }
+
+    /// As [`Self::prepare`], but leaves in the scene every stroke, for a
+    /// renderer that covers strokes itself: a [`DrawCommand::DrawVector`]
+    /// whose vector
+    /// [`PreparedStroke::accepts`](crate::PreparedStroke::accepts). Fills
+    /// become masks as in [`Self::prepare`]. The renderer prepares each remaining
+    /// stroke with [`PreparedStroke::new`](crate::PreparedStroke::new),
+    /// which checks its scale and reports its own errors; this method
+    /// checks only that its vector is in `scene`.
+    ///
+    /// Such a stroke needs no mask, is not held to eight pixels per
+    /// geometry unit under a magnifying view and does not count toward
+    /// [`Self::MAX_COVERAGE_WORK`].
+    ///
+    /// # Errors
+    /// As for [`Self::prepare`], for the vectors that become masks, and
+    /// [`DrawError::MissingVector`] for any vector missing from `scene`.
+    pub fn prepare_fills(&mut self, scene: &DisplayList) -> Result<DisplayList, DrawError> {
+        self.lower(scene, true)
+    }
+
+    fn lower(&mut self, scene: &DisplayList, keep_strokes: bool) -> Result<DisplayList, DrawError> {
         let mut result = DisplayList {
             background: scene.background,
             viewport: scene.viewport,
@@ -188,6 +212,16 @@ impl VectorRasterizer {
                     let vector = scene
                         .vector(vector)
                         .ok_or(DrawError::MissingVector(vector))?;
+                    if keep_strokes && crate::PreparedStroke::accepts(vector) {
+                        result.fills.push(DrawCommand::DrawVector {
+                            vector: VectorId(result.vectors.intern(vector)),
+                            origin,
+                            scale,
+                            color,
+                            clip,
+                        });
+                        continue;
+                    }
                     let command_clip = clip;
                     let clip = clip.map_or(viewport, |c| c.intersection(viewport));
                     if clip.is_empty() || color.alpha() == 0.0 {
@@ -328,6 +362,88 @@ mod tests {
         });
         scene
     }
+    #[test]
+    fn preparing_fills_leaves_strokes_and_masks_fills() -> Result<(), Box<dyn std::error::Error>> {
+        let style = StrokeStyle::new(Length::new(2.0)?);
+        let line = Path::polyline([Point::new(2.0, 2.0)?, Point::new(14.0, 9.0)?])?;
+        let curve = PathBuilder::new()
+            .move_to(Point::new(2.0, 2.0)?)
+            .quad_to(Point::new(8.0, 14.0)?, Point::new(14.0, 2.0)?)
+            .build()?;
+        let mut scene = DisplayList {
+            viewport: Viewport::new(16.0, 16.0, 1.0)?,
+            ..Default::default()
+        };
+        let clip = Some(Rect::new(1.0, 1.0, 12.0, 12.0)?);
+        for (path, style) in [
+            (curve.clone(), VectorStyle::Fill(FillRule::NonZero)),
+            (line.clone(), VectorStyle::Stroke(style)),
+            (curve, VectorStyle::Stroke(style)),
+            (line, VectorStyle::Stroke(style)),
+        ] {
+            let id = VectorId(scene.vectors.intern(&VectorGeometry::new(path, style)));
+            scene.fills.push(DrawCommand::DrawVector {
+                vector: id,
+                origin: Point::new(1.0, 0.5)?,
+                scale: 1.5,
+                color: Color::WHITE,
+                clip,
+            });
+        }
+        let prepared = VectorRasterizer::default().prepare_fills(&scene)?;
+        let kept: Vec<bool> = prepared
+            .commands()
+            .iter()
+            .map(|command| matches!(command, DrawCommand::DrawVector { .. }))
+            .collect();
+        // The fill becomes a mask; the strokes stay, curved or not.
+        assert_eq!(kept, [false, true, true, true]);
+        assert!(matches!(
+            prepared.commands()[0],
+            DrawCommand::DrawMask { .. }
+        ));
+        // The kept strokes keep their placement, and equal ones share a
+        // vector.
+        assert_eq!(prepared.vectors().len(), 2);
+        assert_eq!(prepared.commands()[1], prepared.commands()[3]);
+        for command in prepared.commands()[1..].iter().copied() {
+            let DrawCommand::DrawVector {
+                vector,
+                origin,
+                scale,
+                color,
+                clip: kept_clip,
+            } = command
+            else {
+                unreachable!("checked above");
+            };
+            assert!(crate::PreparedStroke::accepts(
+                prepared.vector(vector).ok_or("the kept vector")?
+            ));
+            assert_eq!(
+                (origin, scale, color, kept_clip),
+                (Point::new(1.0, 0.5)?, 1.5, Color::WHITE, clip)
+            );
+        }
+        // `prepare` lowers every vector.
+        let lowered = scene.rasterized()?;
+        assert!(lowered.vectors().is_empty());
+        assert!(
+            lowered
+                .commands()
+                .iter()
+                .all(|command| matches!(command, DrawCommand::DrawMask { .. }))
+        );
+        // A stroke with a non-finite scale is the renderer's to refuse.
+        let Some(DrawCommand::DrawVector { scale, .. }) = scene.fills.get_mut(2) else {
+            unreachable!("recorded above");
+        };
+        *scale = f32::NAN;
+        assert!(VectorRasterizer::default().prepare_fills(&scene).is_ok());
+        assert!(VectorRasterizer::default().prepare(&scene).is_err());
+        Ok(())
+    }
+
     #[test]
     fn a_reference_missing_from_its_scene_names_the_id() {
         let mut cache = VectorRasterizer::default();

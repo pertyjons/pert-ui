@@ -3,8 +3,8 @@
 use pert_ui_runtime::host::HostIntegration;
 use pert_ui_runtime::{
     CaptureError, Color, DisplayList, DrawCommand, DrawError, FrameImage, FrameMapping,
-    ImageSampling, LimitError, MaskImage, Paint, PreparedShape, QuarterTurn, RasterImage, Runtime,
-    ShapeCoverage, ShapePrepareError, VectorRasterizer,
+    ImageSampling, LimitError, MaskImage, Paint, PreparedShape, PreparedStroke, QuarterTurn,
+    RasterImage, Runtime, ShapeCoverage, ShapePrepareError, VectorRasterizer,
 };
 
 mod srgb;
@@ -17,7 +17,8 @@ mod srgb;
 #[non_exhaustive]
 pub enum CpuRenderError {
     /// Preparing the scene's vectors failed, with the errors of
-    /// [`VectorRasterizer::prepare`].
+    /// [`VectorRasterizer::prepare_fills`] for a fill and of
+    /// [`PreparedStroke::new`] for a stroke.
     #[error(transparent)]
     Drawing(#[from] DrawError),
     /// The viewport has no physical pixels, as a minimized window does.
@@ -71,7 +72,7 @@ impl From<CpuRenderError> for CaptureError {
 /// It needs no window, GPU, display server or worker thread, so a test, a
 /// headless tool or an inspection client can render the same scenes the
 /// native renderer presents. Keep one renderer for a sequence of frames: it
-/// retains the vector coverage of unchanged geometry between them.
+/// retains the mask coverage of unchanged fills between them.
 ///
 /// **Rendering model.** The frame has the scene's
 /// [`Viewport::frame_extent`](pert_ui_runtime::Viewport::frame_extent) and starts
@@ -84,7 +85,9 @@ impl From<CpuRenderError> for CaptureError {
 /// images are sampled at each pixel center through their quarter turn with
 /// clamp-to-edge addressing: bilinearly for masks and linear images, and from the
 /// nearest texel for nearest sampling. Image texels are decoded from sRGB to
-/// linear light before they are filtered. The rendering contract in
+/// linear light before they are filtered. A stroke is covered per pixel
+/// center from its distance, as [`PreparedStroke`] defines, without a mask;
+/// fills are drawn from the masks of [`VectorRasterizer::prepare_fills`]. The rendering contract in
 /// `docs/rendering-platform.md` records these rules and the tolerances against
 /// the GPU renderer.
 ///
@@ -209,7 +212,33 @@ impl CpuRenderer {
         for command in scene.commands() {
             check(scene, command, &mapping)?;
         }
-        let scene = self.vectors.prepare(scene)?;
+        let scene = self.vectors.prepare_fills(scene)?;
+        // The strokes the rasterizer left, one entry per `DrawVector` in
+        // command order, prepared before any pixel is written so that a
+        // refusal leaves no partial frame.
+        let mut strokes = Vec::new();
+        for command in scene.commands() {
+            if let DrawCommand::DrawVector {
+                vector,
+                origin,
+                scale,
+                color,
+                clip,
+            } = *command
+            {
+                let vector = scene
+                    .vector(vector)
+                    .ok_or(CpuRenderError::InvalidReference)?;
+                // A transparent stroke is skipped before its scale is
+                // checked, as the rasterizer skips one.
+                strokes.push(if color.alpha() == 0.0 {
+                    None
+                } else {
+                    PreparedStroke::new(vector, origin, scale, clip, &mapping)?
+                        .map(|stroke| (stroke, premultiplied(color)))
+                });
+            }
+        }
         let background = scene.background();
         let clear = encoded(if opaque {
             [background.red(), background.green(), background.blue(), 1.0]
@@ -232,8 +261,15 @@ impl CpuRenderer {
             logical: (f64::from(viewport.width()), f64::from(viewport.height())),
             mapping,
         };
+        let mut strokes = strokes.into_iter();
         for command in scene.commands() {
-            frame.draw(&scene, command)?;
+            if matches!(command, DrawCommand::DrawVector { .. }) {
+                if let Some((stroke, color)) = strokes.next().flatten() {
+                    frame.draw_stroke(&stroke, color);
+                }
+            } else {
+                frame.draw(&scene, command)?;
+            }
         }
         FrameImage::new(width, height, frame.pixels).map_err(|error| match error {
             CaptureError::Limit(limit) => CpuRenderError::Limit(limit),
@@ -414,6 +450,22 @@ impl Frame {
         }
     }
 
+    /// Draws a stroke from its prepared coverage: the premultiplied color
+    /// times the coverage, blended once per pixel of the tiles that can
+    /// hold any.
+    fn draw_stroke(&mut self, stroke: &PreparedStroke, color: [f32; 4]) {
+        let mut memo = None;
+        stroke.for_each_covered(|column, row, coverage| {
+            let column = column as usize;
+            self.fill_run(
+                row as usize,
+                column..column + 1,
+                color.map(|channel| channel * coverage),
+                &mut memo,
+            );
+        });
+    }
+
     /// Source-over of one linear premultiplied `source` onto the pixels
     /// `columns` of `row`. A source that adds nothing leaves them unread, an
     /// opaque one replaces them unread, and any other is blended, reusing
@@ -511,7 +563,7 @@ impl Frame {
                 let image = scene.image(image).ok_or(CpuRenderError::InvalidReference)?;
                 (rect, tint, clip, Source::Image(image, sampling), turn)
             }
-            // Prepared scenes hold no vectors; anything else was refused.
+            // Strokes are drawn by `draw_stroke`; anything else was refused.
             _ => return Err(CpuRenderError::Unsupported),
         };
         let [x, y, w, h] = rect.values().map(f64::from);

@@ -96,7 +96,10 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   Give it a `ColorRole` with a default in the role table and use it in both,
   documenting the role in the appearance guide.
 - [ ] **RENDER-04** 2026-11-05 `crates/pert-ui-runtime/src/geometry/raster.rs`
-  `RasterGrid::new` — Improvement: vector coverage is rasterized on a grid
+  `RasterGrid::new` — Improvement (since 0.3.117 for fills and for the
+  masks `VectorRasterizer::prepare` returns only: both renderers cover
+  strokes on whole frame pixels without a mask, so the polyline example
+  below no longer occurs in them): vector coverage is rasterized on a grid
   anchored at the geometry's own bounds, so a prepared `DrawMask` rectangle
   has an arbitrary fractional physical position. A vector at a fractional
   phase, nearly every one, is then resampled bilinearly, and its first column and row straddle a pixel: the
@@ -143,3 +146,16 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   of `(64, 1e-10)` at scale `1e10`): a triangle covering a pixel inside its
   clip is then dropped. Take the allowance per axis in the frame's terms, as
   the arc's reach is, and add the case to the tests.
+- [ ] 2026-11-13 `crates/pert-ui-runtime/src/shapes/stroke/tests.rs` —
+  Verification and review (tests tied to contracts): no test reaches
+  `PreparedStroke::MAX_SEGMENTS`. Reaching it needs more kept segments than
+  a path of straight segments holds points, so it takes curves: for example
+  16 384 short quadratic subpaths across a large frame, four chords each,
+  with one segment or one point subpath more refused as
+  `DrawError::TooComplex` and one fewer prepared. Add both boundary cases.
+- [ ] 2026-11-13 `crates/pert-ui-wgpu/src/cpu_parity.rs` `stroke_corpus` —
+  Verification and review (GPU evidence): the stroke parity corpus has no
+  stroke under a command scale from a view transform, below and above eight,
+  and no miter near the evaluation range (a miter limit in the thousands at
+  a turn close to a reversal), both of which the spec's parity section
+  lists. Add fixtures for both and run `native_cpu_gpu_parity`.

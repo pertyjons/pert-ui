@@ -1,0 +1,27 @@
+<!-- start 2026-11-12T21:29:53+01:00, waited 0 min, load 1.38 1.43 1.18
+%CPU COMMAND
+ 3.9 chrome
+ 3.0 gnome-terminal-
+ 2.8 gnome-shell
+ 2.0 chrome
+ 1.5 codex
+-->
+
+running 1 test
+test tests::native_realtime_workload_probe ... Real-time probe on AdapterInfo { name: "Intel(R) UHD Graphics 770 (ADL-S GT1)", vendor: 32902, device: 18048, device_type: IntegratedGpu, device_pci_bus_id: "0000:00:02.0", driver: "Intel open-source Mesa driver", driver_info: "Mesa 26.2.6", backend: Vulkan, subgroup_min_size: 8, subgroup_max_size: 32, transient_saves_memory: Some(false), limit_bucket: None }: 960x640, scale 1, 300 frames after 12 warm-up frames, plot [80.0, 120.0, 800.0, 400.0]. Times: update = signal set + flush (includes producing the data), compose = paint (includes building the waterfall image), rasterize = CPU vector coverage, prepare = vertex encoding and resource upload, GPU = encode + submit + wait for completion of one full offscreen pass. Presentation is not measured.
+Real-time probe min/max columns, 4096 samples: last frame 800 commands, 153600 vertex bytes, 1 batches, 0 masks (0 bytes), 0 images (0 bytes); update median 57.476µs, p95 95.849µs; compose median 28.49µs, p95 30.287µs; rasterize median 7.312µs, p95 9.039µs; prepare median 369.346µs, p95 393.282µs; GPU median 518.185µs, p95 569.421µs; total median 983.028µs, p95 1.04863ms
+Real-time probe stroked polyline, 800 points: last frame 1 commands, 192 vertex bytes, 1 batches, 1 masks (302354 bytes), 0 images (0 bytes); update median 17.872µs, p95 81.745µs; compose median 22.622µs, p95 25.214µs; rasterize median 1.466688ms, p95 1.510351ms; prepare median 39.762µs, p95 45.103µs; GPU median 781.786µs, p95 928.566µs; total median 2.356899ms, p95 2.500971ms
+Real-time probe stroked polyline, 4096 points: last frame 1 commands, 192 vertex bytes, 1 batches, 1 masks (302354 bytes), 0 images (0 bytes); update median 55.238µs, p95 117.704µs; compose median 96.395µs, p95 108.492µs; rasterize median 2.351379ms, p95 2.397313ms; prepare median 39.955µs, p95 47.039µs; GPU median 895.959µs, p95 1.011913ms; total median 3.462618ms, p95 3.581819ms
+Real-time probe waterfall image 512x256: last frame 1 commands, 192 vertex bytes, 1 batches, 0 masks (0 bytes), 1 images (524288 bytes); update median 59.62µs, p95 72.889µs; compose median 456.574µs, p95 485.599µs; rasterize median 227ns, p95 272ns; prepare median 28.057µs, p95 32.216µs; GPU median 642.214µs, p95 700.438µs; total median 1.166641ms, p95 1.258975ms
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 33 filtered out; finished in 2.57s
+
+<!-- end 2026-11-12T21:29:56+01:00, load 1.27 1.40 1.17, highest during the run 1.38
+%CPU COMMAND
+ 3.9 chrome
+ 3.0 gnome-terminal-
+ 2.8 gnome-shell
+ 2.0 chrome
+ 1.5 codex
+-->

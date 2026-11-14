@@ -793,7 +793,7 @@ pub(crate) fn vector_shapes() -> Element {
         [
             label(
                 "shapes-help",
-                "Stars filled with the nonzero and even-odd rules; butt, square and round caps over their endpoints; miter, bevel and round joins; a filled and a stroked ellipse, a rounded rectangle and a sampled trace. Every shape is one antialiased coverage mask, rasterized when the page paints.",
+                "Stars filled with the nonzero and even-odd rules; butt, square and round caps over their endpoints; miter, bevel and round joins; a filled and a stroked ellipse, a rounded rectangle and a sampled trace. Every shape is recorded as its path; the renderer covers the strokes from their segments and the fills from a coverage mask.",
             ),
             Element::new("vector-shapes", VectorShapes),
         ],

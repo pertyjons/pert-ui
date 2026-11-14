@@ -17,5 +17,7 @@ help: the trait `ListItems` is implemented for `Rows`
 note: required by a bound in `ListSource::new`
   --> $WORKSPACE/crates/pert-ui-runtime/src/virtual_list.rs
    |
+   | impl ListSource {
+   |     /// Wraps a row set.
    |     pub fn new(items: impl ListItems + 'static) -> Self {
    |                            ^^^^^^^^^ required by this bound in `ListSource::new`

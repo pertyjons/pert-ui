@@ -17,7 +17,7 @@ jobs:
         toolchain: [stable]
         include:
           - os: ubuntu-latest
-            toolchain: 1.99.1
+            toolchain: 1.100.0
     runs-on: ${{ matrix.os }}
     env:
       RUSTUP_TOOLCHAIN: ${{ matrix.toolchain }}

@@ -102,12 +102,12 @@ pub enum pert_ui::prelude::ErrorAction
 pub pert_ui::prelude::ErrorAction::Exit
 pub pert_ui::prelude::ErrorAction::Retry
 impl core::clone::Clone for pert_ui::ErrorAction
-pub fn pert_ui::ErrorAction::clone(&self) -> pert_ui::ErrorAction
+pub fn pert_ui::ErrorAction::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui::ErrorAction
 impl core::cmp::PartialEq for pert_ui::ErrorAction
-pub fn pert_ui::ErrorAction::eq(&self, &pert_ui::ErrorAction) -> bool
+pub fn pert_ui::ErrorAction::eq(&self, &Self) -> bool
 impl core::default::Default for pert_ui::ErrorAction
-pub fn pert_ui::ErrorAction::default() -> pert_ui::ErrorAction
+pub fn pert_ui::ErrorAction::default() -> Self
 impl core::fmt::Debug for pert_ui::ErrorAction
 pub fn pert_ui::ErrorAction::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Copy for pert_ui::ErrorAction
@@ -204,10 +204,10 @@ pub pert_ui::svg_images::SvgError::TooLarge
 pub pert_ui::svg_images::SvgError::TooLarge::height: u32
 pub pert_ui::svg_images::SvgError::TooLarge::width: u32
 impl core::clone::Clone for pert_ui::svg_images::SvgError
-pub fn pert_ui::svg_images::SvgError::clone(&self) -> pert_ui::svg_images::SvgError
+pub fn pert_ui::svg_images::SvgError::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui::svg_images::SvgError
 impl core::cmp::PartialEq for pert_ui::svg_images::SvgError
-pub fn pert_ui::svg_images::SvgError::eq(&self, &pert_ui::svg_images::SvgError) -> bool
+pub fn pert_ui::svg_images::SvgError::eq(&self, &Self) -> bool
 impl core::convert::From<pert_ui_runtime::drawing::DrawError> for pert_ui::svg_images::SvgError
 pub fn pert_ui::svg_images::SvgError::from(pert_ui_runtime::drawing::DrawError) -> Self
 impl core::error::Error for pert_ui::svg_images::SvgError
@@ -333,12 +333,12 @@ pub enum pert_ui::ErrorAction
 pub pert_ui::ErrorAction::Exit
 pub pert_ui::ErrorAction::Retry
 impl core::clone::Clone for pert_ui::ErrorAction
-pub fn pert_ui::ErrorAction::clone(&self) -> pert_ui::ErrorAction
+pub fn pert_ui::ErrorAction::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui::ErrorAction
 impl core::cmp::PartialEq for pert_ui::ErrorAction
-pub fn pert_ui::ErrorAction::eq(&self, &pert_ui::ErrorAction) -> bool
+pub fn pert_ui::ErrorAction::eq(&self, &Self) -> bool
 impl core::default::Default for pert_ui::ErrorAction
-pub fn pert_ui::ErrorAction::default() -> pert_ui::ErrorAction
+pub fn pert_ui::ErrorAction::default() -> Self
 impl core::fmt::Debug for pert_ui::ErrorAction
 pub fn pert_ui::ErrorAction::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl core::marker::Copy for pert_ui::ErrorAction

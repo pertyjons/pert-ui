@@ -1,0 +1,30 @@
+<!-- start 2026-11-13T20:38:09+01:00, waited 0 min, load 1.10 2.07 1.84
+%CPU COMMAND
+ 1.7 gnome-terminal-
+ 1.1 gnome-shell
+ 1.1 jetbrains-toolb
+ 1.0 claude
+ 0.5 codex
+-->
+scale 1: trace, 800 points: 0.58 ms
+scale 1: trace, 4096 points: 2.14 ms
+scale 1: noise, 800 points: 6.00 ms
+scale 1: noise, 16384 points: 75.35 ms
+scale 1: diagram, 60 edges: 1.91 ms
+scale 1: trace, 800 points, unchanged: 0.57 ms
+scale 1: ellipses, 60, unchanged: 1.11 ms
+scale 2: trace, 800 points: 1.28 ms
+scale 2: trace, 4096 points: 3.58 ms
+scale 2: noise, 800 points: 16.47 ms
+scale 2: noise, 16384 points: 183.93 ms
+scale 2: diagram, 60 edges: 5.18 ms
+scale 2: trace, 800 points, unchanged: 1.31 ms
+scale 2: ellipses, 60, unchanged: 2.80 ms
+<!-- end 2026-11-13T20:38:14+01:00, load 1.09 2.05 1.83, highest during the run 1.10
+%CPU COMMAND
+ 1.7 gnome-terminal-
+ 1.1 gnome-shell
+ 1.1 jetbrains-toolb
+ 1.0 claude
+ 0.5 codex
+-->

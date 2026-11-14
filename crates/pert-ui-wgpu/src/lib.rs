@@ -13,6 +13,7 @@ mod native_smoke;
 mod realtime_probe;
 mod retained;
 mod shapes;
+mod strokes;
 mod textures;
 
 use pert_ui_runtime::{
@@ -24,11 +25,13 @@ use std::{cell::RefCell, collections::HashMap, rc::Rc, sync::Arc, time::Duration
 
 // What a run of vertices samples: nothing, a mask, or an image with a filter.
 // Indices refer to the prepared scene's deduplicated resource tables. A run of
-// shapes is a range of records in the shape buffer instead of vertices.
+// shapes is a range of records in the shape buffer instead of vertices. A
+// stroke's vertices read the coverage page of the given index.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum Source {
     Fill,
     Shape,
+    Stroke(u32),
     Mask(usize),
     Image { index: usize, filter: usize },
 }
@@ -47,7 +50,8 @@ struct Batch {
 #[derive(Clone, Debug, Eq, PartialEq, thiserror::Error)]
 #[non_exhaustive]
 pub enum RenderError {
-    /// Vector fallback could not flatten or rasterize the supplied geometry.
+    /// Vector fallback could not flatten or rasterize the supplied geometry,
+    /// or a stroke could not be prepared, with the errors of [`pert_ui_runtime::PreparedStroke::new`].
     #[error(transparent)]
     Drawing(#[from] pert_ui_runtime::DrawError),
     /// A surface, capture or scene exceeds a documented budget or a device limit.
@@ -116,6 +120,7 @@ pub enum Frame {
 struct Pipelines {
     fill: wgpu::RenderPipeline,
     shapes: shapes::Pipeline,
+    strokes: strokes::Pipelines,
     masks: textures::Textures<MaskImage>,
     images: textures::Textures<RasterImage>,
 }
@@ -162,8 +167,15 @@ impl Shared {
 /// The standalone `pert-ui` facade selects this adapter automatically. Advanced
 /// hosts may integrate it directly. Only this explicit backend crate exposes wgpu
 /// surface interop; the runtime and ordinary facade APIs contain no wgpu types.
-/// Vector geometry uses a retained CPU coverage fallback; original paths stay in
-/// the public scene. A [`DrawCommand::DrawShape`] is prepared with
+/// A stroke is covered on the GPU: it is prepared with
+/// [`pert_ui_runtime::PreparedStroke`], which flattens its curves, into
+/// segment records, one quad per
+/// segment writes its coverage into the stroke's region of a half-float
+/// coverage page in a pass before the scene's, and the scene pass draws the
+/// stroke's covered tiles from that page. No mask is rasterized or uploaded
+/// for it, and the pages keep their coverage while the frame's strokes do
+/// not change. Fills use a retained CPU coverage fallback; original paths stay in the public scene. A
+/// [`DrawCommand::DrawShape`] is prepared with
 /// [`pert_ui_runtime::PreparedShape`] into fixed-size records of a storage
 /// buffer, each drawn as an instanced quad whose fragment stage evaluates the
 /// reference coverage formulas: one record over the span for an arc or a
@@ -264,6 +276,8 @@ pub struct Renderer {
     vertices: Option<wgpu::Buffer>,
     // The storage buffer of shape records and its binding.
     records: Option<(wgpu::Buffer, wgpu::BindGroup)>,
+    // The coverage pages and record buffers of the frame's strokes.
+    atlas: strokes::Atlas,
     batches: Vec<Batch>,
     scene: Option<DisplayList>,
     // The frame mapping `scene` was prepared for.
@@ -394,6 +408,15 @@ impl Renderer {
     /// changed data, happens before that and does not count against it.
     pub const READBACK_TIMEOUT: Duration = Duration::from_secs(5);
 
+    /// The most bytes of coverage pages one frame's strokes may use: 128
+    /// MiB. A stroke takes a box of whole pixels around
+    /// it in a page; a page holds two bytes per pixel, is at least 2048
+    /// pixels a side and never smaller than the surface, and is counted
+    /// whole. The first page is always allowed, so a surface whose own
+    /// page is larger than this still draws strokes; a further page beyond
+    /// the budget is refused with [`LimitError::StrokeCoverage`].
+    pub const STROKE_COVERAGE_BUDGET: u64 = strokes::COVERAGE_BUDGET;
+
     /// Creates a hardware renderer for an owned native surface target.
     ///
     /// Pass an owned target (typically an `Arc` window) so wgpu can retain its
@@ -483,6 +506,7 @@ impl Renderer {
             pipelines,
             vertices: None,
             records: None,
+            atlas: Default::default(),
             mapping: None,
             batches: Vec::new(),
             scene: None,
@@ -574,6 +598,9 @@ impl Renderer {
         destination: Destination,
     ) -> Result<wgpu::CommandEncoder, RenderError> {
         let mut encoder = self.device.create_command_encoder(&Default::default());
+        // The strokes' coverage, in passes of its own before the scene's.
+        self.atlas
+            .encode(&mut encoder, &self.pipelines.strokes, &self.encoded.strokes)?;
         let clear = destination.clear(
             self.scene
                 .as_ref()
@@ -610,6 +637,10 @@ impl Renderer {
                             pass.draw(0..6, batch.range.clone());
                             continue;
                         }
+                        Source::Stroke(page) => {
+                            pass.set_pipeline(&pipelines.strokes.composite);
+                            pass.set_bind_group(0, self.atlas.page(page as usize)?, &[]);
+                        }
                         Source::Fill => pass.set_pipeline(&pipelines.fill),
                         Source::Mask(index) => {
                             pass.set_pipeline(&pipelines.masks.pipeline);
@@ -641,13 +672,16 @@ impl Renderer {
     /// - [`RenderError::Limit`] when the scene exceeds a
     ///   [`ResourceKind::scene_budget_bytes`], a resource exceeds the device texture
     ///   dimension, its vertices exceed the device buffer or a `u32` draw range,
-    ///   or its shape records exceed the device's storage buffer binding size
-    ///   ([`LimitError::ShapeRecords`]).
+    ///   its shape or stroke records exceed the device's storage buffer
+    ///   binding size ([`LimitError::ShapeRecords`],
+    ///   [`LimitError::StrokeRecords`]), or the coverage pages of its strokes
+    ///   exceed [`Renderer::STROKE_COVERAGE_BUDGET`]
+    ///   ([`LimitError::StrokeCoverage`]).
     /// - [`RenderError::Shape`] when a shape cannot be prepared for the frame:
     ///   its geometry lies beyond the range that can be evaluated, or it is
     ///   malformed.
     /// - [`RenderError::Drawing`] when the vector fallback cannot flatten or
-    ///   rasterize a path.
+    ///   rasterize a path, or a stroke cannot be prepared: beyond the evaluation range or over its tile budgets.
     /// - [`RenderError::UnsupportedGraphics`] for a drawing command or sampling
     ///   mode, added by a newer runtime, that this adapter does not know.
     /// - [`RenderError::Graphics`] when the scene breaks an internal invariant,
@@ -820,10 +854,11 @@ impl Renderer {
             .map_err(|e| RenderError::Graphics(e.to_string()))
     }
     fn prepare_scene(&mut self, scene: DisplayList) -> Result<(), RenderError> {
-        let scene = self.rasterizer.prepare(&scene)?;
+        let scene = self.rasterizer.prepare_fills(&scene)?;
         self.prepare_rasterized(scene)
     }
-    // Encodes and uploads a scene whose vectors are already coverage masks.
+    // Encodes and uploads a scene whose vectors are coverage masks, except
+    // the strokes this renderer covers itself.
     fn prepare_rasterized(&mut self, scene: DisplayList) -> Result<(), RenderError> {
         let mapping = self.extent.and_then(|extent| frame_mapping(&scene, extent));
         if !prepared_for(self.scene.as_ref(), self.mapping, &scene, mapping) {
@@ -881,6 +916,13 @@ impl Renderer {
             // holds and `self.encoded`, which the next upload is compared
             // with, change together.
             self.upload_records(&encoded.records);
+            self.atlas.upload(
+                &self.device,
+                &self.queue,
+                &self.pipelines.strokes,
+                &self.encoded.strokes,
+                &encoded.strokes,
+            );
             self.encoded = encoded;
             self.scene = Some(scene);
             self.mapping = mapping;
@@ -954,16 +996,19 @@ fn geometry(scene: &DisplayList) -> Result<(Vec<u8>, Vec<Batch>), RenderError> {
         scene.commands(),
         frame_mapping(scene, scene.viewport().frame_extent()).as_ref(),
         &mut Vec::new(),
+        &mut None,
     )
 }
 // Encodes `commands`: vertices for quads, and the records appended to
 // `records` for each shape, whose batch is a range of record indices counted
-// from `records`' start.
+// from `records`' start. A stroke is prepared into `stroke`, which holds the
+// last one: it has neither vertices nor a batch until the frame places it.
 fn geometry_commands(
     scene: &DisplayList,
     commands: &[DrawCommand],
     mapping: Option<&pert_ui_runtime::FrameMapping>,
     records: &mut Vec<u8>,
+    stroke: &mut Option<strokes::Encoded>,
 ) -> Result<(Vec<u8>, Vec<Batch>), RenderError> {
     let width = f64::from(scene.viewport().width());
     let height = f64::from(scene.viewport().height());
@@ -1000,6 +1045,23 @@ fn geometry_commands(
                         source: Source::Shape,
                     });
                 }
+            }
+            continue;
+        }
+        if let DrawCommand::DrawVector {
+            vector,
+            origin,
+            scale,
+            color,
+            clip,
+        } = *command
+        {
+            let vector = scene
+                .vector(vector)
+                .ok_or_else(|| RenderError::Graphics("invalid scene vector reference".into()))?;
+            // Without a frame mapping the frame has no extent to draw into.
+            if let Some(mapping) = mapping {
+                *stroke = strokes::encode(vector, origin, scale, color, clip, mapping)?;
             }
             continue;
         }
@@ -1414,12 +1476,14 @@ fn create_pipelines(
     let masks = textures::Textures::new(device, format, &shared.masks);
     let images = textures::Textures::new(device, format, &shared.images);
     let shapes = shapes::Pipeline::new(device, format);
+    let strokes = strokes::Pipelines::new(device, format);
     if let Some(error) = pollster::block_on(error_scope.pop()) {
         return Err(RenderError::Graphics(error.to_string()));
     }
     Ok(Pipelines {
         fill,
         shapes,
+        strokes,
         masks,
         images,
     })
@@ -1480,6 +1544,7 @@ impl Renderer {
             pipelines,
             vertices: None,
             records: None,
+            atlas: Default::default(),
             mapping: None,
             batches: Vec::new(),
             scene: None,
