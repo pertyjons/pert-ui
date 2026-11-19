@@ -2,13 +2,14 @@
 //! shape records or prepared stroke.
 use super::*;
 
-// One command's encoding: its vertices or its shape records and its batch,
-// or its prepared stroke, whose vertices and batch depend on where the frame
-// places it.
+// One command's encoding: its vertices, its shape records and their batches
+// in draw order (a rectangle's strips are records and its solid box a fill
+// quad), or its prepared stroke, whose vertices and batch depend on where the
+// frame places it.
 type Chunk = (
     std::sync::Arc<[u8]>,
     std::sync::Arc<[u8]>,
-    Option<Batch>,
+    [Option<Batch>; 2],
     Option<std::sync::Arc<strokes::Encoded>>,
 );
 
@@ -96,7 +97,14 @@ impl RetainedGeometry {
                 (
                     bytes.into(),
                     records.into(),
-                    batches.into_iter().next(),
+                    {
+                        // A shape with a solid box has two batches, any other
+                        // command at most one.
+                        let mut batches = batches.into_iter();
+                        let chunk = [batches.next(), batches.next()];
+                        debug_assert!(batches.next().is_none());
+                        chunk
+                    },
                     stroke.map(std::sync::Arc::new),
                 )
             };
@@ -128,17 +136,16 @@ impl RetainedGeometry {
                 }
             }
             // A shape's batch counts records, any other one vertices.
-            let shape = chunk
-                .2
-                .as_ref()
-                .is_some_and(|batch| batch.source == Source::Shape);
-            let offset = if shape {
-                next.records.len() / shapes::RECORD_BYTES
-            } else {
-                next.bytes.len() / 32
-            };
-            let offset = u32::try_from(offset).map_err(|_| LimitError::VertexCount)?;
-            if let Some(batch) = &chunk.2 {
+            let records = u32::try_from(next.records.len() / shapes::RECORD_BYTES)
+                .map_err(|_| LimitError::VertexCount)?;
+            let vertices =
+                u32::try_from(next.bytes.len() / 32).map_err(|_| LimitError::VertexCount)?;
+            for batch in chunk.2.iter().flatten() {
+                let offset = if batch.source == Source::Shape {
+                    records
+                } else {
+                    vertices
+                };
                 let start = offset
                     .checked_add(batch.range.start)
                     .ok_or(LimitError::VertexCount)?;

@@ -218,11 +218,22 @@ fn transforming_maps_the_outline_and_leaves_the_stroke_width_alone() {
         .unwrap();
     ui.flush(Duration::ZERO).unwrap();
     let scene = ui.paint().unwrap().rasterized().unwrap();
-    let DrawCommand::DrawMask { rect, .. } = scene.commands()[0] else {
+    let DrawCommand::DrawMask { mask, .. } = scene.commands()[0] else {
         panic!("a stroke lowers to one mask");
     };
-    assert_eq!(rect.width(), 100.0, "the outline is ten times as long");
-    assert_eq!(rect.height(), 2.0, "and still two pixels wide");
+    // The mask holds one texel per frame pixel; count the covered ones.
+    let mask = scene.mask(mask).unwrap();
+    let width = mask.width() as usize;
+    let rows = mask.pixels().chunks_exact(width);
+    let covered_rows = rows
+        .clone()
+        .filter(|row| row.iter().any(|&c| c > 0))
+        .count();
+    let covered_columns = (0..width)
+        .filter(|&x| rows.clone().any(|row| row[x] > 0))
+        .count();
+    assert_eq!(covered_columns, 100, "the outline is ten times as long");
+    assert_eq!(covered_rows, 2, "and still two pixels wide");
 }
 
 #[test]

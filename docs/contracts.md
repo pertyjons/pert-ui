@@ -2178,6 +2178,10 @@ the facade's `host` page carries a complete host loop. A host takes on what
   command that cannot be prepared for the frame, because its geometry lies
   beyond the range a renderer evaluates or it is malformed, fails with
   `CaptureError::Shape` holding the `ShapePrepareError`; the renderers report
-  the same cause as `CpuRenderError::Shape` and `RenderError::Shape`. Only
-  backend-specific rendering diagnostics remain text ([rendered
-  capture](#rendered-capture)).
+  the same cause as `CpuRenderError::Shape` and `RenderError::Shape`, and
+  `App` as `AppError::Shape`, a component failure that goes through
+  `App::on_error` like `AppError::Drawing`. A host that draws moved content
+  before completing a presentation request reports it as
+  `WindowError::Shape`; `App` completes a detach first, so it reports none.
+  Only backend-specific rendering diagnostics remain
+  text ([rendered capture](#rendered-capture)).

@@ -1,0 +1,4 @@
+head=HEAD (5b35dfc)
+threshold=8e55be3cd15fe1306d43b810ff365cb6257d53f8 (8e55be3)
+every=5328264e2943d0d1023edbc5c1dc3954e3fb84d1 (5328264)
+runs pinned to core 2

@@ -2,12 +2,14 @@
 //! [`DrawCommand::DrawShape`], read from a storage buffer by instance index.
 //!
 //! An arc or a triangle has one record, drawn over its span. A rectangle
-//! with a [`PreparedShape::solid_box`] has one record for the box, which the
-//! fragment stage paints without evaluating a distance and which is left out
-//! when its color is fully transparent, and one for each strip of the span
-//! around it (above, below, left and right, where they have pixels), which
-//! differ only in group 0. Most of a large frame or fill is then not
-//! evaluated per pixel.
+//! with a [`PreparedShape::solid_box`] of at least [`MIN_SOLID_BOX_PIXELS`]
+//! has one record for each strip of the span around the box (above, below,
+//! left and right, where they have pixels), which differ only in group 0, and
+//! its box is a [`SolidBox`]: one color, drawn by the fill pipeline and left
+//! out when fully transparent. Most of a large frame or fill is then not
+//! evaluated per pixel, and its pixels do not run the shape shader at all.
+//! Any other rectangle has one record over its span, so a run of small
+//! shapes stays one draw.
 //!
 //! A record is nine 16-byte groups, 144 bytes, little-endian as WGSL lays
 //! host-shared values out (the
@@ -25,7 +27,7 @@
 //! | 5 | outer corner sizes, clockwise from the top left | middle cos, sin; half sweep cos, sin | vertex 2; winding sign; 0 |
 //! | 6 | inner edges | 0 | 0 |
 //! | 7 | inner corner sizes | 0 | 0 |
-//! | 8 (`u32`) | 0; inner (0 no border, 1 all border, 2 inner area); corner kinds, two bits each (1 round, 2 cut); 1 in a solid box's record | 1; 1 for a full circle; 0; 0 | 2; 0; 0; 0 |
+//! | 8 (`u32`) | 0; inner (0 no border, 1 all border, 2 inner area); corner kinds, two bits each (1 round, 2 cut); 0 | 1; 1 for a full circle; 0; 0 | 2; 0; 0; 0 |
 use super::*;
 use pert_ui_runtime::{
     Border, Boundary, CornerKind, FrameMapping, Inner, Paint, PreparedShape, Rect, ShapeGeometry,
@@ -34,6 +36,18 @@ use pert_ui_runtime::{
 
 /// The size of one record in the storage buffer.
 pub(super) const RECORD_BYTES: usize = 144;
+
+/// The fewest pixels a solid box has to be drawn as a fill quad of its own.
+/// A smaller box would cost more as its own draw, which splits the run of
+/// consecutive shapes into separate draws and adds vertices to encode, than
+/// its pixels cost evaluated: a rectangle with a smaller box is one record
+/// over its whole span. On Intel UHD Graphics 770 the gallery's cards zoomed
+/// out, with every box split out, took up to 6 % longer on the GPU and 11 %
+/// longer to present than with this threshold, while large panels' boxes
+/// are what made pages faster (`plans/rendering/render05-probe`). Tests use 256 pixels,
+/// so the parity check's 64-pixel frames reach both paths; the paths are the
+/// same code whatever the threshold.
+pub(super) const MIN_SOLID_BOX_PIXELS: u64 = if cfg!(test) { 256 } else { 4096 };
 
 /// The premultiplied linear color of a paint this renderer knows.
 fn solid(paint: Option<Paint>) -> Result<[f32; 4], RenderError> {
@@ -65,9 +79,33 @@ fn kinds(boundary: &Boundary) -> Result<u32, RenderError> {
     Ok(packed)
 }
 
+/// A rectangle's solid box: whole frame pixels of one coverage, painted in
+/// one color by the fill pipeline instead of the shape shader.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub(super) struct SolidBox {
+    /// Its corners in normalized device coordinates: left, top, right, bottom.
+    pub(super) ndc: [f32; 4],
+    /// Its premultiplied linear color, `B·c_b + F·(c_o − B.a·c_b)` at its
+    /// coverage, with a nonzero alpha.
+    pub(super) color: [f32; 4],
+}
+
+impl SolidBox {
+    /// The color as straight alpha, as the fill pipeline blends it. Each
+    /// premultiplied channel is a sum of products of channels no larger than
+    /// their paint's alpha with the same coverages as the alpha's terms, and
+    /// rounding is monotonic, so it never exceeds the alpha and its quotient
+    /// lies in `0..=1`, also for a subnormal alpha.
+    pub(super) fn straight(&self) -> [f32; 4] {
+        let [red, green, blue, alpha] = self.color;
+        [red / alpha, green / alpha, blue / alpha, alpha]
+    }
+}
+
 /// Appends the records of one shape command for a frame to `records` and
-/// returns how many: none when it draws nothing there, clipped away,
-/// collapsed or fully transparent.
+/// returns how many, none when it draws nothing there (clipped away,
+/// collapsed or fully transparent), and its solid box, if it has one that
+/// draws.
 pub(super) fn append(
     geometry: &ShapeGeometry,
     fill: Option<Paint>,
@@ -75,14 +113,14 @@ pub(super) fn append(
     clip: Option<Rect>,
     mapping: &FrameMapping,
     records: &mut Vec<u8>,
-) -> Result<u32, RenderError> {
+) -> Result<(u32, Option<SolidBox>), RenderError> {
     let fill = solid(fill)?;
     let stroke = solid(border.map(Border::paint))?;
     let Some(shape) = PreparedShape::new(geometry, border.as_ref(), clip, mapping)? else {
-        return Ok(0);
+        return Ok((0, None));
     };
     if fill[3] == 0.0 && stroke[3] == 0.0 {
-        return Ok(0);
+        return Ok((0, None));
     }
     let [x0, y0, x1, y1] = shape.span();
     let (width, height) = (
@@ -151,37 +189,41 @@ pub(super) fn append(
         }
     }
     let mut count = 0;
-    let mut push = |part: [u32; 4], groups: &[[f32; 4]; 8], meta: [u32; 4]| {
+    let mut push = |part: [u32; 4]| {
         if part[2] <= part[0] || part[3] <= part[1] {
             return;
         }
-        let mut groups = *groups;
+        let mut groups = groups;
         groups[0] = ndc(part);
         let values = groups.iter().flatten().map(|value| value.to_le_bytes());
         let flags = meta.iter().map(|value| value.to_le_bytes());
         records.extend(values.chain(flags).flatten());
         count += 1;
     };
-    let Some([left, top, right, bottom]) = shape.solid_box() else {
-        push([x0, y0, x1, y1], &groups, meta);
-        return Ok(count);
+    let large = |[left, top, right, bottom]: &[u32; 4]| {
+        u64::from(right - left) * u64::from(bottom - top) >= MIN_SOLID_BOX_PIXELS
+    };
+    let Some([left, top, right, bottom]) = shape.solid_box().filter(large) else {
+        push([x0, y0, x1, y1]);
+        return Ok((count, None));
     };
     // The strips around the box, evaluated per pixel.
-    push([x0, y0, x1, top], &groups, meta);
-    push([x0, bottom, x1, y1], &groups, meta);
-    push([x0, top, left, bottom], &groups, meta);
-    push([right, top, x1, bottom], &groups, meta);
-    // The box has one coverage. The fragment stage computes its color
-    // from the same paints as in the strips; here it only decides whether
-    // the box draws anything: `B·c_b + F·(c_o − B.a·c_b)`.
+    push([x0, y0, x1, top]);
+    push([x0, bottom, x1, y1]);
+    push([x0, top, left, bottom]);
+    push([right, top, x1, bottom]);
+    // The box has one coverage, so one color from the strips' paints, as
+    // the shape shader composes them: `B·c_b + F·(c_o − B.a·c_b)`.
     let coverage = shape.coverage(left, top);
     let (outer, band) = (coverage.outer(), coverage.border());
     let inside = outer - stroke[3] * band;
-    if (0..4).any(|channel| stroke[channel] * band + fill[channel] * inside > 0.0) {
-        meta[3] = 1;
-        push([left, top, right, bottom], &groups, meta);
-    }
-    Ok(count)
+    let color: [f32; 4] =
+        std::array::from_fn(|channel| stroke[channel] * band + fill[channel] * inside);
+    let solid_box = (color[3] > 0.0).then(|| SolidBox {
+        ndc: ndc([left, top, right, bottom]),
+        color,
+    });
+    Ok((count, solid_box))
 }
 
 /// Refuses records beyond what one storage buffer binding may hold.
@@ -335,12 +377,19 @@ mod tests {
                 ShapeStyle::fill(fill).with_border(Length::new(2.0)?, line),
             )
         })?;
-        let records = records(&scene, PhysicalExtent::new(100, 50))?;
-        // The four strips around the solid box, then the box.
-        assert_eq!(records.len(), 5 * RECORD_BYTES);
-        // The span is the rectangle grown by one pixel: 9..51 × 4..26. The
-        // box is the inner area below the rows its cut corner reaches and
-        // above those of its round one: 12..48 × 13..21.
+        let extent = PhysicalExtent::new(100, 50);
+        let encoded = RetainedGeometry::default().prepare_for(
+            &scene,
+            frame_mapping(&scene, extent),
+            u64::MAX,
+        )?;
+        let records = encoded.records;
+        // The span is the rectangle grown by one pixel: 9..51 × 4..26. Its
+        // solid box, the inner area below the rows its cut corner reaches
+        // and above those of its round one, is 12..48 × 13..21: 288 pixels,
+        // at least the tests' `MIN_SOLID_BOX_PIXELS`. So four strips around
+        // it are records, and the box is a fill.
+        assert_eq!(records.len(), 4 * RECORD_BYTES);
         let parts: Vec<_> = records
             .chunks(RECORD_BYTES)
             .map(|record| floats(record, 0))
@@ -352,15 +401,11 @@ mod tests {
                 [-0.82, 0.16, 0.02, -0.04],
                 [-0.82, 0.48, -0.76, 0.16],
                 [-0.04, 0.48, 0.02, 0.16],
-                [-0.76, 0.48, -0.04, 0.16],
             ]
         );
-        // The box is marked and not evaluated; the strips are. All have
-        // the same parameters.
-        let solid = &records[4 * RECORD_BYTES..];
-        assert_eq!(flags(solid), [0, 2, 0b00_01_10_01, 1]);
-        assert_eq!(solid[16..128], records[16..128]);
-        for strip in records[..4 * RECORD_BYTES].chunks(RECORD_BYTES) {
+        assert_eq!(encoded.bytes.len(), 6 * 32);
+        // The strips have the same parameters.
+        for strip in records.chunks(RECORD_BYTES) {
             assert_eq!(strip[16..], records[16..RECORD_BYTES]);
         }
         assert_eq!(floats(&records, 1), [9.0, 4.0, 1.0, 0.0]);
@@ -377,6 +422,162 @@ mod tests {
         assert!((inner[1] - (6.0 - (2.0 - std::f32::consts::SQRT_2) * 2.0)).abs() < 1e-5);
         // A rectangle with an inner area; round, cut, round, square.
         assert_eq!(flags(&records), [0, 2, 0b00_01_10_01, 0]);
+        Ok(())
+    }
+
+    #[test]
+    fn a_large_solid_box_is_a_fill_quad_after_the_strips_around_it() -> Outcome {
+        let fill = Color::from_linear(0.0, 0.0, 1.0, 0.5)?;
+        let line = Color::from_linear(1.0, 0.0, 0.0, 1.0)?;
+        let style = ShapeStyle::fill(fill).with_border(Length::new(2.0)?, line);
+        let shape = Shape::rounded(Length::new(6.0)?);
+        let rect = Rect::new(10.3, 5.0, 150.0, 80.0)?;
+        let scene = scene(200.0, 100.0, 1.0, move |p| p.draw_shape(rect, shape, style))?;
+        let extent = PhysicalExtent::new(200, 100);
+        let mapping = frame_mapping(&scene, extent).ok_or("no frame mapping")?;
+        let encoded = RetainedGeometry::default().prepare_for(&scene, Some(mapping), u64::MAX)?;
+        let DrawCommand::DrawShape {
+            geometry,
+            border,
+            clip,
+            ..
+        } = scene.commands()[0]
+        else {
+            return Err("not a shape".into());
+        };
+        let prepared = PreparedShape::new(&geometry, border.as_ref(), clip, &mapping)?
+            .ok_or("the shape draws nothing")?;
+        let [left, top, right, bottom] = prepared.solid_box().ok_or("no solid box")?;
+        assert!(u64::from(right - left) * u64::from(bottom - top) >= MIN_SOLID_BOX_PIXELS);
+        // Four strips that, with the box, tile the span exactly.
+        assert_eq!(encoded.records.len(), 4 * RECORD_BYTES);
+        let pixels = |[l, t, r, b]: [f32; 4]| {
+            let x = |ndc: f32| f64::from(ndc + 1.0) * 100.0;
+            let y = |ndc: f32| f64::from(1.0 - ndc) * 50.0;
+            ((x(r) - x(l)) * (y(b) - y(t))).round() as u64
+        };
+        let strips: u64 = encoded
+            .records
+            .chunks(RECORD_BYTES)
+            .map(|record| pixels(floats(record, 0)))
+            .sum();
+        let [x0, y0, x1, y1] = prepared.span();
+        let solid = u64::from(right - left) * u64::from(bottom - top);
+        assert_eq!(strips + solid, u64::from(x1 - x0) * u64::from(y1 - y0));
+        // The box after the strips: one quad of the fill pipeline, in the
+        // fill's color as straight alpha, since no border reaches it.
+        let batches: Vec<_> = encoded
+            .batches
+            .iter()
+            .map(|batch| (batch.source, batch.range.clone()))
+            .collect();
+        assert_eq!(batches, [(Source::Shape, 0..4), (Source::Fill, 0..6)]);
+        let vertex = |index: usize| -> [f32; 6] {
+            std::array::from_fn(|value| {
+                let start = index * 32 + value * 4;
+                f32::from_ne_bytes(
+                    encoded.bytes[start..start + 4]
+                        .try_into()
+                        .expect("four bytes"),
+                )
+            })
+        };
+        let ndc_x = |x: u32| (2.0 * f64::from(x) / 200.0 - 1.0) as f32;
+        let ndc_y = |y: u32| (1.0 - 2.0 * f64::from(y) / 100.0) as f32;
+        assert_eq!(vertex(0), [ndc_x(left), ndc_y(top), 0.0, 0.0, 1.0, 0.5]);
+        assert_eq!(vertex(5), [ndc_x(right), ndc_y(bottom), 0.0, 0.0, 1.0, 0.5]);
+        Ok(())
+    }
+
+    #[test]
+    fn a_solid_box_splits_out_from_the_threshold() -> Outcome {
+        // Rounded rectangles whose solid boxes have exactly the threshold's
+        // pixels, and one fewer.
+        let extent = PhysicalExtent::new(100, 100);
+        let encode = |width: f32, height: f32| -> Result<_, Box<dyn std::error::Error>> {
+            let scene = scene(100.0, 100.0, 1.0, move |p| {
+                p.draw_shape(
+                    Rect::new(2.0, 2.0, width, height)?,
+                    Shape::rounded(Length::new(2.0)?),
+                    ShapeStyle::fill(Color::WHITE),
+                )
+            })?;
+            let mapping = frame_mapping(&scene, extent).ok_or("no frame mapping")?;
+            let DrawCommand::DrawShape {
+                geometry,
+                border,
+                clip,
+                ..
+            } = scene.commands()[0]
+            else {
+                return Err("not a shape".into());
+            };
+            let area = PreparedShape::new(&geometry, border.as_ref(), clip, &mapping)?
+                .and_then(|shape| shape.solid_box())
+                .map_or(0, |[l, t, r, b]| u64::from(r - l) * u64::from(b - t));
+            let encoded =
+                RetainedGeometry::default().prepare_for(&scene, Some(mapping), u64::MAX)?;
+            Ok((
+                area,
+                encoded.records.len() / RECORD_BYTES,
+                encoded.bytes.len() / 32,
+            ))
+        };
+        let mut found = [false; 2];
+        for width in 1..60u8 {
+            for height in 1..60u8 {
+                let (area, records, vertices) = encode(f32::from(width), f32::from(height))?;
+                if area == MIN_SOLID_BOX_PIXELS {
+                    assert_eq!((records, vertices), (4, 6), "{width}×{height}");
+                    found[0] = true;
+                } else if area == MIN_SOLID_BOX_PIXELS - 1 {
+                    assert_eq!((records, vertices), (1, 0), "{width}×{height}");
+                    found[1] = true;
+                }
+            }
+        }
+        assert_eq!(found, [true, true]);
+        Ok(())
+    }
+
+    #[test]
+    fn a_solid_box_color_is_straight_and_takes_a_border_that_covers_it() -> Outcome {
+        // Subnormal, tiny and ordinary alphas with channels up to the alpha.
+        for alpha in [f32::from_bits(1), 1.0e-38, 1.0e-20, 0.25, 1.0] {
+            let solid = SolidBox {
+                ndc: [0.0; 4],
+                color: [alpha, alpha * 0.5, 0.0, alpha],
+            };
+            let straight = solid.straight();
+            assert!(straight.iter().all(|value| (0.0..=1.0).contains(value)));
+            assert_eq!((straight[0], straight[3]), (1.0, alpha));
+        }
+        // A border wider than half the rectangle covers all of it, its box
+        // included, which takes the border's color over the fill.
+        let border = Color::from_linear(1.0, 0.0, 0.0, 0.5)?;
+        let scene = scene(100.0, 100.0, 1.0, move |p| {
+            p.draw_shape(
+                Rect::new(2.0, 2.0, 60.0, 60.0)?,
+                Shape::rounded(Length::new(2.0)?),
+                ShapeStyle::fill(Color::WHITE).with_border(Length::new(40.0)?, border),
+            )
+        })?;
+        let encoded = RetainedGeometry::default().prepare_for(
+            &scene,
+            frame_mapping(&scene, PhysicalExtent::new(100, 100)),
+            u64::MAX,
+        )?;
+        assert_eq!(encoded.bytes.len(), 6 * 32);
+        let channel = |index: usize| {
+            let start = 8 + index * 4;
+            f32::from_ne_bytes(
+                encoded.bytes[start..start + 4]
+                    .try_into()
+                    .expect("four bytes"),
+            )
+        };
+        // Premultiplied `B·1 + F·(1 − B.a·1)` is (0.5 + 0.5, 0.5, 0.5, 1).
+        assert_eq!([0, 1, 2, 3].map(channel), [1.0, 0.5, 0.5, 1.0]);
         Ok(())
     }
 
@@ -449,8 +650,9 @@ mod tests {
             )
         })?;
         let encoded = RetainedGeometry::default().prepare(&scene)?;
-        // Each drawn shape has its four strips and its box.
-        assert_eq!(encoded.records.len(), 15 * RECORD_BYTES);
+        // Each drawn shape, too small for a solid box of its own, has one
+        // record, and consecutive shapes are one batch.
+        assert_eq!(encoded.records.len(), 3 * RECORD_BYTES);
         let batches: Vec<_> = encoded
             .batches
             .iter()
@@ -459,9 +661,9 @@ mod tests {
         assert_eq!(
             batches,
             [
-                (Source::Shape, 0..10),
+                (Source::Shape, 0..2),
                 (Source::Fill, 0..6),
-                (Source::Shape, 10..15)
+                (Source::Shape, 2..3)
             ]
         );
         Ok(())
@@ -496,11 +698,11 @@ mod tests {
         let same = cache.prepare_for(&first, frame_mapping(&first, extent), u64::MAX)?;
         assert_eq!(same.encoded_commands(), 0);
         assert_eq!(same.records, cache.records);
-        // A moved shape encodes only its own record.
+        // A moved shape encodes only its own records.
         let moved = scene(64.0, 64.0, 1.0, paint(6.0))?;
         let next = same.prepare_for(&moved, frame_mapping(&moved, extent), u64::MAX)?;
         assert_eq!(next.encoded_commands(), 1);
-        let first = 5 * RECORD_BYTES;
+        let first = RECORD_BYTES;
         assert_eq!(next.records[..first], cache.records[..first]);
         assert_ne!(next.records[first..], cache.records[first..]);
         Ok(())
@@ -508,13 +710,23 @@ mod tests {
 
     #[test]
     fn a_command_whose_record_count_changes_keeps_later_commands_in_place() -> Outcome {
-        // The first command is a filled frame (strips and a box), a frame
-        // without fill (strips only, its transparent box left out), a pill
-        // (one record) or absent; the commands after it are unchanged.
+        // A fill and a small shape come first, so the varying command starts
+        // at nonzero vertex and record offsets. It is a filled frame (strips,
+        // and a box drawn as a fill quad), a frame without fill (strips only,
+        // its transparent box left out), a pill (one record) or absent. The
+        // commands after it are unchanged, among them two shapes clipped to
+        // their boxes, which leave no strip and are only fill quads; their
+        // records, quads and batches stay in place.
         let paint = |first: u8| {
             move |p: &mut Painter| -> Result<(), DrawError> {
-                let frame = Rect::new(2.0, 2.0, 30.0, 20.0)?;
+                let frame = Rect::new(2.0, 2.0, 100.0, 80.0)?;
                 let line = Length::new(1.0)?;
+                p.fill_rect(Rect::new(150.0, 2.0, 5.0, 5.0)?, Color::WHITE);
+                p.draw_shape(
+                    Rect::new(150.0, 20.0, 12.0, 12.0)?,
+                    Shape::rounded(Length::new(3.0)?),
+                    ShapeStyle::fill(Color::WHITE),
+                )?;
                 match first {
                     0 => p.draw_shape(
                         frame,
@@ -534,26 +746,36 @@ mod tests {
                     )?,
                     _ => {}
                 }
-                p.fill_rect(Rect::new(40.0, 2.0, 5.0, 5.0)?, Color::WHITE);
+                p.fill_rect(Rect::new(110.0, 2.0, 5.0, 5.0)?, Color::WHITE);
                 p.draw_shape(
-                    Rect::new(2.0, 30.0, 30.0, 20.0)?,
+                    Rect::new(2.0, 100.0, 12.0, 12.0)?,
                     Shape::rounded(Length::new(3.0)?),
                     ShapeStyle::fill(Color::WHITE),
                 )?;
                 p.fill_triangle(
                     [
-                        Point::new(40.0, 40.0)?,
-                        Point::new(50.0, 40.0)?,
-                        Point::new(40.0, 50.0)?,
+                        Point::new(140.0, 140.0)?,
+                        Point::new(150.0, 140.0)?,
+                        Point::new(140.0, 150.0)?,
                     ],
                     Color::WHITE,
-                )
+                )?;
+                for y in [125.0, 160.0] {
+                    p.with_clip(Rect::new(30.0, y, 40.0, 30.0)?, |p| {
+                        p.draw_shape(
+                            Rect::new(10.0, 120.0, 100.0, 75.0)?,
+                            Shape::rounded(Length::new(3.0)?),
+                            ShapeStyle::fill(Color::WHITE),
+                        )
+                    })?;
+                }
+                Ok(())
             }
         };
-        let extent = PhysicalExtent::new(64, 64);
+        let extent = PhysicalExtent::new(200, 200);
         let scenes = [0, 1, 2, 3, 0, 2, 1, 3, 1, 0]
             .into_iter()
-            .map(|first| scene(64.0, 64.0, 1.0, paint(first)))
+            .map(|first| scene(200.0, 200.0, 1.0, paint(first)))
             .collect::<Result<Vec<_>, _>>()?;
         let mut counts = Vec::new();
         let mut cache = RetainedGeometry::default();
@@ -571,11 +793,43 @@ mod tests {
                     .collect()
             };
             assert_eq!(ranges(&cache), ranges(&fresh));
+            // Both match encoding the whole scene at once, which places
+            // every batch without rebasing a retained slot.
+            let mut records = Vec::new();
+            let (bytes, batches) = geometry_commands(
+                scene,
+                scene.commands(),
+                mapping.as_ref(),
+                &mut records,
+                &mut None,
+            )?;
+            let whole: Vec<_> = batches
+                .iter()
+                .map(|batch| (batch.source, batch.range.clone()))
+                .collect();
+            assert_eq!(ranges(&cache), whole);
+            assert_eq!(cache.bytes, bytes);
+            assert_eq!(cache.records, records);
+            if std::ptr::eq(scene, &scenes[0]) {
+                // The frame's strips join the small shape's record, its box
+                // the fill before it and the one after, and the clipped
+                // shapes' boxes are one fill batch.
+                assert_eq!(
+                    whole,
+                    [
+                        (Source::Fill, 0..6),
+                        (Source::Shape, 0..5),
+                        (Source::Fill, 6..18),
+                        (Source::Shape, 5..7),
+                        (Source::Fill, 18..30),
+                    ]
+                );
+            }
             counts.push(fresh.records.len() / RECORD_BYTES);
         }
-        // The later shape's five records and the triangle's one follow five,
-        // four, one or no record of the first command.
-        assert_eq!(counts, [11, 10, 7, 6, 11, 7, 10, 6, 10, 11]);
+        // The small shapes' records and the triangle's surround four, one or
+        // no record of the varying command; the clipped shapes have none.
+        assert_eq!(counts, [7, 7, 4, 3, 7, 4, 7, 3, 7, 7]);
         Ok(())
     }
 
@@ -632,7 +886,7 @@ mod tests {
             Ok(())
         })?;
         let mapping = frame_mapping(&scene, PhysicalExtent::new(64, 64));
-        let exact = 15 * RECORD_BYTES as u64;
+        let exact = 3 * RECORD_BYTES as u64;
         assert!(
             RetainedGeometry::default()
                 .prepare_for(&scene, mapping, exact)

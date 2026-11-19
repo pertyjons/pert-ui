@@ -170,10 +170,10 @@ evidence for any of them.
 | Hand checks at 37a8c9e and 83da271, 2026-10-28 | Passed by the maintainer: partial terminal progress fills (Controls › Progress); rows that shrink and wrap and a narrowed Progress cell; sortable table titles, a partly cut title and its grip, and the Note editor at all three densities; `diagram_editor --window` closing with a moved node and with a refused Height draft (Cancel keeps it, Escape then closes); Revert of a refused draft in the gallery's sign-in form. |
 | Round 3 repairs (0.3.92 to 0.3.94): parked menu ownership, MultiSelect press focus and Escape, empty-raster bounds and the wrapped caret | Selected GPU and CPU gallery interaction checks and the text-mode probe passed 2026-10-29. Runtime-injected input only; no OS-adapter or hand claim. |
 | Hand checks at 9655e56 (0.3.101), 2026-11-05 | Passed by the maintainer, GPU presentation: one centered label after renaming a node in `diagram_editor --window`; a tool window described with `ToolWindowMode::Window` opens in its own native window at start, and disabled `Select` and `MultiSelect` anchors match a disabled `Button` (a temporary program outside the repository, since no shipped application has either); the `diagram_editor`, `log_explorer --lines 10000` and `inventory` windows' main tasks, including double-click and F2 cell editing and Tab between editable cells; `SelectableText` selection copied into another application. IME composition into a cell editor was **not run** ([follow-ups](../plans/follow-ups.md)). |
-| Minimize during a gallery probe (NATIVE-04) | **Failed** 2026-11-05: a window minimized with Super+H is never reported hidden. The GPU interaction check failed on an unrelated step, the CPU one timed out and `workspace_restart` passed unaware. winit 0.30.13 delivers no `WindowEvent::Occluded` on Wayland, and the surface did not report `Frame::Occluded`. |
-| CPU/GPU parity (`pert-ui-wgpu::tests::native_cpu_gpu_parity`) | Passed: the exact tier matched byte for byte and the tolerance tier differed by at most one per channel. No other adapter, and no CI software-driver comparison, has run. |
+| Minimize during a gallery probe (NATIVE-04) | **Failed** 2026-11-05: a window minimized with Super+H is never reported hidden. The GPU interaction check failed on an unrelated step, the CPU one timed out and `workspace_restart` passed unaware. winit 0.30.13 delivers no `WindowEvent::Occluded` on Wayland, and the surface did not report `Frame::Occluded`. Since 0.3.122 the probes' and the runner's documentation state this limit: a Wayland run is evidence only when its windows stayed on screen. |
+| CPU/GPU parity (`pert-ui-wgpu::tests::native_cpu_gpu_parity`) | Passed: the exact tier matched byte for byte and the tolerance tier differed by at most one per channel. No other adapter, and no CI software-driver comparison, has run. Passed again 2026-11-19 on Fedora 45, GNOME/Wayland, Intel UHD Graphics 770, Vulkan, with 0.3.122 and vector fill fixtures whose bounds lie within a GPU's subpixel precision of pixel centers, at scales 1, 1.25 and 2: at most one per channel. With the fill grid anchored at the geometry's bounds, as before 0.3.122, the same fixture differed by 194 at scale 1. |
 | Analytic shape parity (the shape fixtures of the same check) | Passed 2026-11-11, run by itself: over rounded and cut corners, borders, arcs, triangles and clips at sub-pixel phases and scales 1, 1.25 and 2, and geometry up to 65 000 pixels from its span, decided pixels kept their tier and edge pixels differed by at most one per channel, which set the edge tier. The gallery's GPU interaction check passed the same day (39 steps); built-in widgets do not record `DrawShape` yet, so it is evidence that the pipeline's presence disturbs nothing, not for shapes on screen. No other adapter has run. |
-| Stroke parity (the stroke fixtures of the same check) | Passed 2026-11-13 on Fedora 45, GNOME/Wayland, Intel UHD Graphics 770, Mesa 26.2.6, Vulkan: over the three joins and caps, open and closed paths, short segments, a reversal, a point, widths from a quarter pixel to twelve, a miter limit of eight, a translucent stroke, geometry a million pixels away, an ellipse, an open cubic and quadratic path (since 0.3.117) and a clip that cuts segments, at scales 1, 1.25 and 2, decided pixels stayed within one step and edge pixels differed by at most one per channel, two where two strokes' edges overlap. No other adapter has run. |
+| Stroke parity (the stroke fixtures of the same check) | Passed 2026-11-13 on Fedora 45, GNOME/Wayland, Intel UHD Graphics 770, Mesa 26.2.6, Vulkan: over the three joins and caps, open and closed paths, short segments, a reversal, a point, widths from a quarter pixel to twelve, a miter limit of eight, a translucent stroke, geometry a million pixels away, an ellipse, an open cubic and quadratic path (since 0.3.117) and a clip that cuts segments, at scales 1, 1.25 and 2, decided pixels stayed within one step and edge pixels differed by at most one per channel, two where two strokes' edges overlap. Passed again 2026-11-16 on the same system with Rust 1.100.0 and fixtures added for strokes under a view transform at factors 3.5 and 12 and for miters 12 000 to 24 000 pixels long under a miter limit of 8 000: no decided pixel differed, edge pixels by at most one. Passed again later that day with 0.3.121, where the same check also draws each stroke fixture's `DisplayList::rasterized` masks on the GPU against the CPU renderer's own strokes: the largest difference was 0.0095 in linear light, within the masks' eight-bit rounding and placement plus the frames' encoding to bytes. No other adapter has run. |
 
 Run `cargo run --locked -p pert-ui-native-checks` on an unlocked desktop session
 with a hardware GPU to exercise the opt-in native suite. Besides the libtest
@@ -458,18 +458,13 @@ The baseline's rasterization is bimodal, as above. The raw output and the
 CPU renderer's rows are in
 `plans/rendering/stroke-probe/results/after/`.
 
-The opt-in `pert-ui-runtime` test `stroke_phase_profile` splits the CPU cost of
-one stroke into flattening, outlining, scan conversion and direct coverage,
-and reports the mean active outline edges per sub-scanline. Run it with:
-
-```sh
-cargo test --locked --release -p pert-ui-runtime --lib stroke_phase_profile -- --ignored --nocapture
-```
-
-On that device it attributed the earlier cost to scan conversion, which grew
-with the active edges: a steep alternating trace kept about 1600 edges active
-per sub-scanline and took about 50–60 ms, against about 10–13 ms for direct
-coverage.
+An opt-in test, `stroke_phase_profile`, split the CPU cost of one stroke
+into flattening, outlining, scan conversion and direct coverage. It
+attributed the earlier cost to scan conversion, which grew with the active
+edges: a steep alternating trace kept about 1600 edges active per
+sub-scanline and took about 50–60 ms, against about 10–13 ms for direct
+coverage. It was removed with that stroke code in 0.3.121, when the
+fallback's masks began sampling `PreparedStroke`.
 
 ### CPU rendering cost
 

@@ -221,8 +221,18 @@ impl ShapeGeometry {
     /// viewport's scale while its center and the clip map by the frame's
     /// pixels per logical unit, which differ when the logical size is not a
     /// whole number of pixels, so its reach is taken in the frame's terms.
+    /// A triangle's pixel of allowance is a frame pixel of each axis for the
+    /// same reason.
     pub(crate) fn misses(self, clip: Rect, viewport: crate::Viewport) -> bool {
         let ramp = 1.0 / viewport.scale();
+        // Logical units of each axis per logical unit of a length. An axis
+        // without frame pixels gives no finite factor, and then that axis
+        // drops nothing.
+        let extent = viewport.frame_extent();
+        let stretch =
+            |pixels: u32, logical: f32| viewport.scale() * f64::from(logical) / f64::from(pixels);
+        let stretch_x = stretch(extent.width(), viewport.width());
+        let stretch_y = stretch(extent.height(), viewport.height());
         let (x0, y0, x1, y1) = match self {
             Self::Rect { rect, .. } => {
                 let [x, y, w, h] = rect.values().map(f64::from);
@@ -230,26 +240,19 @@ impl ShapeGeometry {
             }
             Self::Arc(arc) => {
                 let reach = f64::from(arc.radius.get()) + f64::from(arc.width.get()) * 0.5 + ramp;
-                // Logical units of each axis per logical unit of a length.
-                // An axis without frame pixels gives no finite factor, and
-                // then that axis drops nothing.
-                let extent = viewport.frame_extent();
-                let stretch = |pixels: u32, logical: f32| {
-                    viewport.scale() * f64::from(logical) / f64::from(pixels)
-                };
-                let reach_x = reach * stretch(extent.width(), viewport.width());
-                let reach_y = reach * stretch(extent.height(), viewport.height());
+                let (reach_x, reach_y) = (reach * stretch_x, reach * stretch_y);
                 let (x, y) = (f64::from(arc.center.x()), f64::from(arc.center.y()));
                 (x - reach_x, y - reach_y, x + reach_x, y + reach_y)
             }
             Self::Triangle(triangle) => {
                 let xs = triangle.0.map(|point| f64::from(point.x()));
                 let ys = triangle.0.map(|point| f64::from(point.y()));
+                let (ramp_x, ramp_y) = (ramp * stretch_x, ramp * stretch_y);
                 (
-                    xs.into_iter().fold(f64::INFINITY, f64::min) - ramp,
-                    ys.into_iter().fold(f64::INFINITY, f64::min) - ramp,
-                    xs.into_iter().fold(f64::NEG_INFINITY, f64::max) + ramp,
-                    ys.into_iter().fold(f64::NEG_INFINITY, f64::max) + ramp,
+                    xs.into_iter().fold(f64::INFINITY, f64::min) - ramp_x,
+                    ys.into_iter().fold(f64::INFINITY, f64::min) - ramp_y,
+                    xs.into_iter().fold(f64::NEG_INFINITY, f64::max) + ramp_x,
+                    ys.into_iter().fold(f64::NEG_INFINITY, f64::max) + ramp_y,
                 )
             }
         };
@@ -564,6 +567,29 @@ impl FrameMapping {
 
     fn snap_y(&self, y: f64) -> f64 {
         (y * self.sy - 0.5).ceil()
+    }
+
+    /// The box `[x0, y0, x1, y1]` of whole pixels a span is cut to: the
+    /// frame intersected with the snapped clip, as [`Span::new`] cuts it.
+    /// Empty boxes are returned as they are.
+    pub(crate) fn cut(&self, clip: Option<Rect>) -> [f64; 4] {
+        let mut cut = [0.0, 0.0, f64::from(self.width), f64::from(self.height)];
+        if let Some(clip) = clip {
+            let [x, y, w, h] = clip.values().map(f64::from);
+            cut = [
+                cut[0].max(self.snap_x(x)),
+                cut[1].max(self.snap_y(y)),
+                cut[2].min(self.snap_x(x + w)),
+                cut[3].min(self.snap_y(y + h)),
+            ];
+        }
+        cut
+    }
+
+    /// The per-axis position factors and the length scale:
+    /// `[sx, sy, scale]`.
+    pub(crate) const fn factors(&self) -> [f64; 3] {
+        [self.sx, self.sy, self.scale]
     }
 }
 

@@ -36,7 +36,7 @@ const fn class(role: ColorRole) -> Class {
         | ScrollbarThumb | ScrollbarThumbHover => Class::Neutral,
         OnPrimary | OnSecondary | Error | OnError | Warning | OnWarning | Info | OnInfo
         | Success | OnSuccess | FocusRingContrast | ErrorContainer | WarningContainer
-        | InfoContainer | SuccessContainer | Highlight => Class::Fixed,
+        | InfoContainer | SuccessContainer | Highlight | Scrim => Class::Fixed,
         OnButton | ButtonPressed | OnButtonPressed | OnTab | PanelBorder | OnSurfaceContainer
         | OnPrimaryContainer | OnSecondaryContainer | OnErrorContainer | OnWarningContainer
         | OnInfoContainer | OnSuccessContainer | OnTextSelection => Class::Follower,

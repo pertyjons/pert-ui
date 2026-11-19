@@ -74,6 +74,7 @@ fn samples() -> Vec<Box<dyn Error>> {
             height: 4,
             bytes: 0,
         })),
+        Box::new(WindowError::Shape(ShapePrepareError::OutOfRange)),
         Box::new(DrawError::CoverageTooLarge),
         Box::new(SinkError::new(SinkErrorKind::Full, "engine queue full")),
         Box::new(WorkspaceError::TooManyEntries),

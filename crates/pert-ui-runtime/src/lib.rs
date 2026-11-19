@@ -818,7 +818,8 @@ pub mod commands {
 /// host's presentation plumbing ([`PresentationRequest`],
 /// [`PresentationAction`], [`PreparedDetach`], [`PresentationRate`]) is in
 /// [`host`], and the error payload of `WindowError::Drawing` is
-/// [`DrawError`] in [`component`].
+/// [`DrawError`] in [`component`]. That of `WindowError::Shape`,
+/// [`ShapePrepareError`], stays at the crate root with the other errors.
 ///
 /// The name is `windowing`, not `windows`: a crate that globs the crate root
 /// and depends on the `windows` crate would otherwise find the name

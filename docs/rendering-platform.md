@@ -59,14 +59,17 @@ shape its clip removes whole, as it drops a rectangle. No shape is rasterized or
 corner, angle or width costs what a repeated one does. Both renderers draw `DrawShape` from the same prepared parameters
 (`PreparedShape`): the CPU renderer evaluates the reference per pixel, and
 the wgpu renderer evaluates the same formulas in its fragment stage from
-records in a storage buffer, which needs core wgpu features only. Neither
-evaluates the part of a rectangle's uniform interior that the preparation
-names: the CPU renderer fills each row's `PreparedShape::solid_run` as a
-run, and the wgpu renderer draws `PreparedShape::solid_box`, where there is
-one, as one area with its own record and evaluates the strips around it.
-Both are conservative, so some uniform pixels are still evaluated, and a
-rectangle whose corners reach every row is evaluated whole by wgpu. A run or
-box where nothing is drawn, as inside a frame without a fill, is skipped.
+records in a storage buffer, which needs core wgpu features only. Both
+skip evaluating much of a rectangle's uniform interior: the CPU renderer
+fills each row's `PreparedShape::solid_run` as a run, and the wgpu renderer
+draws a `PreparedShape::solid_box` of 4096 pixels or more as a quad of one
+color through its fill pipeline and evaluates the strips around it. The
+wgpu renderer evaluates a rectangle with a smaller box, or none, over its
+whole span, interior included, since such a box would cost more as a draw
+of its own. Runs and boxes are conservative, so some uniform pixels are
+still evaluated; a rectangle whose corners reach every row has no box. A
+run or a large box where nothing is drawn, as inside a frame without a
+fill, is skipped.
 A frame whose records exceed the device's storage buffer binding size fails
 with `LimitError::ShapeRecords`.
 
@@ -142,16 +145,27 @@ Its model is the GPU's, written down so that both can be checked against it:
   stroke's segments, times the stroke's width in pixels when that is below
   one. No mask is built, and the view's eight-pixel cap does not apply.
   Fills are prepared into coverage masks by the runtime's
-  `VectorRasterizer::prepare_fills`, with its limits. The wgpu
+  `VectorRasterizer::prepare_fills`, with its limits. A fill at its
+  displayed size is rasterized on the frame's own pixels, whatever its
+  position within one, and its mask lies on whole pixels with one texel
+  each, so both renderers read each texel at its center; a fill that moves
+  by a fraction of a pixel is rasterized again. Coverage that a magnifying
+  view holds below the displayed size, and a mask in a frame whose logical
+  size is not a whole number of pixels, are stretched as before. The wgpu
   renderer covers the same strokes from the same records: one quad per
   segment evaluates the reference's candidates into the stroke's region of
   a half-float coverage page, with a maximum blend, in a pass before the
   scene's, and the scene pass draws the stroke's covered tiles from the
   page. The masks `VectorRasterizer::prepare` and `DisplayList::rasterized`
-  still return for such a stroke cover the same region, for a stroke at
-  least a physical pixel wide in a frame whose axes both map by the
-  viewport's scale, with area coverage instead; a narrower stroke is drawn
-  one pixel wide and faded by the renderers.
+  return for a stroke, for a renderer without that path, hold the same
+  reference coverage rounded to eight bits, one texel per pixel of the
+  frame the viewport maps to. In a frame up to 16 384 pixels per axis the
+  mask's `f32` rectangle lies within 2⁻⁸ of a pixel of the stroke's span
+  and carries no clip, the span being cut to it already; in a larger frame
+  a mask whose rectangle left the pixel edges keeps the command's clip.
+  Drawn by the CPU and wgpu renderers, these masks differ from their own
+  strokes by the eight-bit rounding and the placement, measured in linear
+  light, besides each frame's own encoding to bytes.
 - **Budget.** The frame must fit `FrameImage::MAX_BYTES`, checked before
   allocation; vector preparation keeps its own limits. A refused scene leaves
   the renderer usable.
@@ -198,12 +212,14 @@ an edge pixel otherwise. The stroke corpus (the three joins and caps, open
 and closed paths, short segments, a reversal, a straight continuation, a
 point, widths from a quarter pixel to twelve, a miter limit of eight, a
 translucent stroke, geometry a million pixels away, a clip that cuts
-segments, and the frame cutting them, at scales 1, 1.25 and 2) measured one step for edge pixels and kept
+segments, and the frame cutting them, at scales 1, 1.25 and 2; strokes
+under a view transform at factors below and above eight; miters thousands
+of pixels long at turns close to a reversal under a miter limit in the
+thousands) measured one step for edge pixels and kept
 decided pixels in the tolerance tier. A pixel on the edge of several
 commands may differ by the tier once for each of them, since every command
 stores its result in 8 bits; the corpus measured two steps where two
-strokes' edges overlap. Not in the corpus: a command scale from a view
-transform, and miter limits near the evaluation range.
+strokes' edges overlap.
 
 The edge tier and the margin are measurements, not proofs: they were set on
 Intel UHD Graphics 770 with Mesa on Vulkan, the only adapter available.
@@ -246,11 +262,11 @@ commands and, on the CPU renderer, by captures of one framed tile under a
 tile drawn directly at its displayed size; the wgpu renderer's zoomed
 captures are not compared. Surfaces opened by a
 transformed child are placed at the window's scale. Vector coverage is bounded
-per primitive: besides the flattening budget and the mask size limit, a vector
-whose edges or stroke pieces would cross more than
+per primitive: besides the flattening budget and the mask size limit, a fill
+whose edges would cross more than
 `VectorRasterizer::MAX_COVERAGE_WORK` sub-scanlines is rejected with
-`DrawError::TooComplex` before any coverage work. A stroke, which the
-renderers cover themselves, is bounded instead by
+`DrawError::TooComplex` before any coverage work. A stroke, in the renderers
+and in the fallback's masks alike, is bounded instead by
 `PreparedStroke::MAX_SEGMENTS` kept after its curves are flattened and it is
 clipped, by `PreparedStroke::MAX_TILE_REFERENCES` and
 `PreparedStroke::MAX_TILE_SEGMENTS`, with the same error, by the flattening
@@ -261,7 +277,7 @@ magnification is flattened into more chords; a stroke that misses the frame
 or its clip is skipped before it is flattened.
 
 Vector fallback preparation retains the documented 0.2 physical-pixel chord
-tolerance within its generated-point and outline budgets. If that tolerance
+tolerance within its generated-point budget. If that tolerance
 requires more work, it returns a typed path budget failure instead of reducing
 accuracy. Cropped coverage uses bounded local indices for extreme offsets and
 retains the original grid phase and visible endpoint geometry. Path bounds round

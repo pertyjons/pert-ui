@@ -27,6 +27,13 @@
 //! without having run.
 //! A gallery probe that reports its window was hidden is stopped immediately
 //! and fails with that cause rather than waiting for the process timeout.
+//! A probe can report only what the window system tells it. On Wayland a
+//! minimized window can go unreported: in the recorded run (Fedora 44,
+//! GNOME, winit 0.30.13) no occlusion event arrived and the surface reported
+//! none, and the minimized probes ended with a failure in the step that
+//! needed the next frame, with this runner's timeout and, for the short
+//! restart check, with a pass that never noticed. A run on Wayland is
+//! evidence only when its windows stayed on screen for the whole run.
 //!
 //! The clipboard check takes over the session clipboard; `--skip-clipboard`
 //! leaves it out. Checks left out by name filters or `--skip-clipboard` appear

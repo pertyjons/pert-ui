@@ -179,9 +179,10 @@ impl Shared {
 /// [`pert_ui_runtime::PreparedShape`] into fixed-size records of a storage
 /// buffer, each drawn as an instanced quad whose fragment stage evaluates the
 /// reference coverage formulas: one record over the span for an arc or a
-/// triangle, and for a rectangle up to five, the strips around its
-/// [`pert_ui_runtime::PreparedShape::solid_box`] and the box, which is
-/// painted without evaluation. Consecutive shapes are one draw.
+/// triangle or a small rectangle, and for a rectangle with a large
+/// [`pert_ui_runtime::PreparedShape::solid_box`] the strips around it, while
+/// the box itself has one color and is drawn as a quad of the fill pipeline,
+/// without evaluation. Consecutive shapes without such a box are one draw.
 /// A shape's records are in frame pixels, so they are encoded again when the
 /// surface's extent changes, also for an unchanged scene. Unchanged command slots reuse encoded vertices. Changed byte
 /// ranges upload into a retained buffer, whose capacity grows geometrically.
@@ -1029,9 +1030,9 @@ fn geometry_commands(
             // Without a frame mapping the frame has no extent to draw into.
             let start = u32::try_from(records.len() / shapes::RECORD_BYTES)
                 .map_err(|_| LimitError::VertexCount)?;
-            let count = match mapping {
+            let (count, solid_box) = match mapping {
                 Some(mapping) => shapes::append(geometry, *fill, *border, *clip, mapping, records)?,
-                None => 0,
+                None => (0, None),
             };
             if count > 0 {
                 let end = start.checked_add(count).ok_or(LimitError::VertexCount)?;
@@ -1043,6 +1044,29 @@ fn geometry_commands(
                     batches.push(Batch {
                         range: start..end,
                         source: Source::Shape,
+                    });
+                }
+            }
+            // A rectangle's solid box, one color, through the fill pipeline:
+            // after its strips, which it does not overlap.
+            if let Some(solid_box) = solid_box {
+                let [l, t, r, b] = solid_box.ndc;
+                let straight = solid_box.straight();
+                let start = u32::try_from(bytes.len() / 32).map_err(|_| LimitError::VertexCount)?;
+                let end = start.checked_add(6).ok_or(LimitError::VertexCount)?;
+                for [x, y] in [[l, t], [l, b], [r, t], [r, t], [l, b], [r, b]] {
+                    for value in [x, y].into_iter().chain(straight).chain([0.0, 0.0]) {
+                        bytes.extend_from_slice(&value.to_ne_bytes());
+                    }
+                }
+                if let Some(last) = batches.last_mut()
+                    && last.source == Source::Fill
+                {
+                    last.range.end = end;
+                } else {
+                    batches.push(Batch {
+                        range: start..end,
+                        source: Source::Fill,
                     });
                 }
             }

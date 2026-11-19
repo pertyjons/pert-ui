@@ -184,6 +184,7 @@ fn window_failure(error: &AppError) -> crate::WindowError {
     match error {
         AppError::Runtime(error) => WindowError::Runtime(error.clone()),
         AppError::Drawing(error) => WindowError::from(error.clone()),
+        AppError::Shape(error) => WindowError::Shape(*error),
         AppError::Window(message) => WindowError::Creation(message.clone()),
         AppError::UnsupportedGraphics(message)
         | AppError::Graphics(message)
@@ -417,6 +418,10 @@ mod tests {
         assert_eq!(
             window_failure(&AppError::Drawing(crate::DrawError::InvalidColor)),
             WindowError::Drawing(crate::DrawError::InvalidColor)
+        );
+        assert_eq!(
+            window_failure(&AppError::Shape(crate::ShapePrepareError::OutOfRange)),
+            WindowError::Shape(crate::ShapePrepareError::OutOfRange)
         );
         assert_eq!(
             window_failure(&AppError::Window("no display".into())),

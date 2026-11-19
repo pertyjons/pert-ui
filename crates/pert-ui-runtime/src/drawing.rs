@@ -61,14 +61,16 @@ pub enum DrawError {
     /// A vector path or stroke style was rejected.
     #[error(transparent)]
     Path(#[from] crate::PathError),
-    /// Covering a vector at its raster scale would take more than
+    /// Covering a fill at its raster scale would take more than
     /// [`VectorRasterizer::MAX_COVERAGE_WORK`](crate::VectorRasterizer::MAX_COVERAGE_WORK)
     /// sub-scanline steps, as a long path crossing the mask's height many
     /// times does. Draw fewer points, a shorter vertical extent, or clip it.
-    /// A stroke a renderer covers itself reports this instead when it
-    /// exceeds [`PreparedStroke::MAX_TILE_REFERENCES`](crate::PreparedStroke::MAX_TILE_REFERENCES)
+    /// A stroke reports this instead when it exceeds
+    /// [`PreparedStroke::MAX_SEGMENTS`](crate::PreparedStroke::MAX_SEGMENTS),
+    /// [`PreparedStroke::MAX_TILE_REFERENCES`](crate::PreparedStroke::MAX_TILE_REFERENCES)
     /// or [`PreparedStroke::MAX_TILE_SEGMENTS`](crate::PreparedStroke::MAX_TILE_SEGMENTS),
-    /// as thousands of segments crossing the same few pixels do.
+    /// as thousands of segments crossing the same few pixels do, whether a
+    /// renderer covers it or the fallback samples it into a mask.
     #[error("vector coverage exceeds its work budget")]
     TooComplex,
     /// A stroke could not be prepared for the frame: its geometry lies
@@ -1357,10 +1359,10 @@ impl DisplayList {
     /// in a backend to reuse unchanged geometry.
     /// The input scene remains intact on failure.
     ///
-    /// Every vector becomes a mask, strokes included.
-    /// A renderer that covers those strokes itself
-    /// ([`PreparedStroke`](crate::PreparedStroke)), as the CPU renderer does,
-    /// draws their edge pixels differently from these masks.
+    /// Every vector becomes a mask, strokes included. A stroke's mask holds
+    /// the coverage of [`PreparedStroke`](crate::PreparedStroke), which
+    /// pert-ui's renderers draw, quantized to eight bits, one texel per pixel
+    /// of the frame the viewport maps to.
     ///
     /// # Errors
     /// The errors of [`VectorRasterizer::prepare`](crate::VectorRasterizer::prepare).

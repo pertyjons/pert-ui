@@ -1041,3 +1041,119 @@ fn arcs_and_triangles_scale_with_the_viewport() -> TestResult {
     }
     Ok(())
 }
+
+/// A linear-light value of an sRGB-encoded byte.
+fn linear(code: u8) -> f64 {
+    let c = f64::from(code) / 255.0;
+    if c <= 0.04045 {
+        c / 12.92
+    } else {
+        ((c + 0.055) / 1.055).powf(2.4)
+    }
+}
+
+/// The fallback's stroke masks, drawn by this renderer, give the coverage
+/// it draws strokes with: the frames agree in linear light within the
+/// masks' eight-bit quantization and their placement, for each of up to
+/// two overlapping strokes, plus the frames' own encoding to bytes.
+#[test]
+fn the_fallbacks_stroke_masks_draw_as_the_strokes_do() -> TestResult {
+    let p = |x: f32, y: f32| Point::new(x, y).expect("finite point");
+    let zigzag = move || Path::polyline([p(4.0, 40.0), p(20.0, 8.0), p(30.0, 40.0), p(44.0, 10.0)]);
+    let curve = move || {
+        pert_ui_runtime::PathBuilder::new()
+            .move_to(p(6.0, 30.0))
+            .quad_to(p(20.0, 2.0), p(34.0, 30.0))
+            .cubic_to(p(40.0, 44.0), p(52.0, 4.0), p(58.0, 24.0))
+            .build()
+    };
+    let width = |value: f32| Length::new(value).map(StrokeStyle::new);
+    let white = Color::WHITE;
+    let navy = Color::from_linear(0.02, 0.05, 0.3, 1.0)?;
+    let veil = Color::from_linear(0.9, 0.6, 0.1, 0.4)?;
+    let round = pert_ui_runtime::LineCap::Round;
+    let bevel = pert_ui_runtime::LineJoin::Bevel;
+    let cases = [
+        (
+            "opaque on the dark clear",
+            scene(64.0, 48.0, 1.0, move |painter| {
+                painter.stroke_path(&zigzag()?, width(3.0)?, white)?;
+                painter.stroke_path(&curve()?, width(5.0)?.with_cap(round), white)
+            })?,
+        ),
+        (
+            "hairline",
+            scene(64.0, 48.0, 1.0, move |painter| {
+                painter.stroke_path(&zigzag()?, width(0.4)?, white)
+            })?,
+        ),
+        (
+            "on a light fill",
+            scene(64.0, 48.0, 1.0, move |painter| {
+                painter.fill_rect(Rect::new(0.0, 0.0, 64.0, 48.0)?, white);
+                painter.stroke_path(&curve()?, width(4.0)?.with_join(bevel), navy)
+            })?,
+        ),
+        (
+            "translucent and overlapping",
+            scene(64.0, 48.0, 1.0, move |painter| {
+                painter.stroke_path(&zigzag()?, width(3.0)?, veil)?;
+                painter.stroke_path(&curve()?, width(2.5)?, veil)
+            })?,
+        ),
+        (
+            // The clip's bottom edge, 10.6 + 5.9, lies on pixel centers.
+            "clipped at pixel centers",
+            scene(64.0, 48.0, 1.0, move |painter| {
+                painter.with_clip(Rect::new(10.3, 10.6, 30.0, 5.9)?, |painter| {
+                    painter.stroke_path(&zigzag()?, width(2.5)?, white)
+                })
+            })?,
+        ),
+        (
+            "fractional scale",
+            scene(63.3, 47.7, 1.25, move |painter| {
+                painter.stroke_path(&curve()?, width(1.5)?.with_cap(round), white)
+            })?,
+        ),
+    ];
+    // Per stroke: half an eight-bit step of quantization and 2⁻⁸ of a step
+    // between neighboring texels for the placement.
+    let per_stroke = 0.5 / 255.0 + 2f64.powi(-8);
+    for (name, scene) in cases {
+        let direct = render(&scene)?;
+        let masked = render(&scene.rasterized()?)?;
+        assert!(
+            scene
+                .commands()
+                .iter()
+                .any(|command| matches!(command, pert_ui_runtime::DrawCommand::DrawVector { .. })),
+            "{name}: the scene holds strokes"
+        );
+        let mut largest = 0.0f64;
+        for (index, (a, b)) in direct
+            .pixels()
+            .as_chunks::<4>()
+            .0
+            .iter()
+            .zip(masked.pixels().as_chunks::<4>().0)
+            .enumerate()
+        {
+            for channel in 0..3 {
+                let (a, b) = (a[channel], b[channel]);
+                // Each frame rounds its result to the nearest byte.
+                let step =
+                    |code: u8| linear(code.saturating_add(1)) - linear(code.saturating_sub(1));
+                let difference = (linear(a) - linear(b)).abs();
+                largest = largest.max(difference);
+                assert!(
+                    difference <= 2.0 * per_stroke + step(a).max(step(b)),
+                    "{name}: pixel {index} channel {channel}: {a} and {b}"
+                );
+            }
+            assert!(a[3].abs_diff(b[3]) <= 3, "{name}: pixel {index} alpha");
+        }
+        println!("{name}: largest linear difference {largest:.5}");
+    }
+    Ok(())
+}

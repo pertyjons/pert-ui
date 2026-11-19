@@ -465,10 +465,7 @@ impl Component for DialogPanel {
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
         let size = p.size();
-        p.fill_rect(
-            Rect::from_size(size),
-            Color::from_linear(0.0, 0.0, 0.0, 0.35)?,
-        );
+        p.fill_rect(Rect::from_size(size), p.color(ColorRole::Scrim));
         Ok(())
     }
     fn pointer_input(

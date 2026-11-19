@@ -1,4 +1,9 @@
 //! Two-process native restart check through the same public API as applications.
+//!
+//! A window the platform reports hidden interrupts the check with that cause.
+//! A window minimized on Wayland can go unreported, and this check, which needs
+//! one painted frame and three seconds, can then pass without the window
+//! having stayed on screen: keep it there for the whole run.
 use pert_ui::component::*;
 use pert_ui::prelude::*;
 use pert_ui::{Density, ThemeMode, UiZoom, Workspace, WorkspaceReport, WorkspaceSettings};

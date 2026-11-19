@@ -535,6 +535,14 @@ pub enum ColorRole {
     /// at least 4.5:1 on `Surface`, `SurfaceHover` and `Background` in the
     /// built-in palettes.
     Highlight,
+    /// Veil a modal surface draws over the content it blocks: a modal
+    /// [`Dialog`](crate::Dialog) and a modal quick pick fill the region
+    /// they are laid out over with it, beneath their own panel, which is
+    /// the window for an application-modal surface. Translucent black in both
+    /// built-in modes and unchanged by seed colors; an override's alpha is
+    /// kept, so a transparent color removes the dimming without changing what
+    /// the surface blocks.
+    Scrim,
 }
 
 crate::tables::variant_list! {
@@ -591,6 +599,7 @@ crate::tables::variant_list! {
         ScrollbarThumbHover,
         Link,
         Highlight,
+        Scrim,
     ];
 }
 const COLOR_ROLE_COUNT: usize = COLOR_ROLES.len();
@@ -700,6 +709,7 @@ const COLOR_DEFAULTS: [(ColorRole, Source); COLOR_ROLE_COUNT] = [
     (ColorRole::ScrollbarThumbHover,  own(ca(0.60, 0.68, 0.78, 0.8),  ca(0.16, 0.21, 0.28, 0.8))),
     (ColorRole::Link,                 own(c(0.30, 0.55, 1.0),     c(0.02, 0.12, 0.55))),
     (ColorRole::Highlight,            own(c(0.95, 0.55, 0.08),    c(0.25, 0.08, 0.0))),
+    (ColorRole::Scrim,                own(ca(0.0, 0.0, 0.0, 0.35), ca(0.0, 0.0, 0.0, 0.35))),
 ];
 
 /// [`COLOR_DEFAULTS`] indexed by role.
@@ -822,7 +832,7 @@ impl Palette {
     /// scrollbar thumbs, `Muted` and `OnSurface`) take the seed hue at no more
     /// chroma than they have built in, so they are as tinted as the built-in
     /// neutrals are blue (clearly so in the dark palette), and a gray seed
-    /// makes them gray. Status colors, their containers, `Highlight`, the `On…`
+    /// makes them gray. Status colors, their containers, `Highlight`, `Scrim`, the `On…`
     /// foregrounds with their own values and `FocusRingContrast` keep their
     /// built-in values, and followers follow as on a built-in palette.
     ///

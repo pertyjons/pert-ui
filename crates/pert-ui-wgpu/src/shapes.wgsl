@@ -1,6 +1,7 @@
 // Analytic shapes: records of prepared shapes, read from a storage buffer by
-// instance index; a rectangle's solid box and the strips around it have one
-// record each. The fragment stage evaluates, in f32 and in the same
+// instance index; each strip around a rectangle's large solid box has one
+// record, and the box itself is drawn by the fill pipeline. The fragment
+// stage evaluates, in f32 and in the same
 // order, the formulas of `pert_ui_runtime::PreparedShape::coverage`, which is
 // the reference; `shapes.rs` documents the record.
 struct Shape {
@@ -23,8 +24,7 @@ struct Shape {
     d: vec4<f32>,
     // Kind (0 rectangle, 1 arc, 2 triangle); rectangle: inner (0 no border,
     // 1 all border, 2 inner area), arc: 1 for a full circle; corner kinds,
-    // two bits each from the top left clockwise (1 round, 2 cut); 1 for a
-    // rectangle's solid box, which is painted without a distance.
+    // two bits each from the top left clockwise (1 round, 2 cut); unused.
     flags: vec4<u32>,
 };
 @group(0) @binding(0) var<storage, read> shapes: array<Shape>;
@@ -93,11 +93,6 @@ fn boundary(p: vec2<f32>, edges: vec4<f32>, sizes: vec4<f32>, kinds: u32) -> f32
 
 @fragment fn fragment(input: VertexOutput) -> @location(0) vec4<f32> {
     let shape = shapes[input.record];
-    if shape.flags.w == 1u {
-        // The solid box: an outer coverage of 1, and all border or none.
-        let band = select(0.0, 1.0, shape.flags.y == 1u);
-        return shape.border * band + shape.fill * (1.0 - shape.border.a * band);
-    }
     // The pixel center, relative to the span's origin.
     let p = input.position.xy - shape.origin.xy;
     if shape.flags.x == 0u {

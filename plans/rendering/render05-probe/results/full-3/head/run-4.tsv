@@ -1,0 +1,1830 @@
+page/layout/1	rects	28
+page/layout/1	masks_drawn	43
+page/layout/1	other_commands	23
+page/layout/1	mask_resources	41
+page/layout/1	mask_kib	110.791015625
+page/layout/1	compose_cold_ms	1.4977580000000001
+page/layout/1	compose_warm_ms	0.051493000000000004
+page/layout/1	cpu_median_ms	4.338413
+page/layout/1	present_cold_ms	1.326799
+page/layout/1	present_warm_median_ms	0.5032920000000001
+page/layout/1	gpu_first_ms	5.471849
+page/layout/1	gpu_warm_median_ms	3.173401
+page/layout/1	gpu_warm_p95_ms	4.262054
+page/splits/1	rects	24
+page/splits/1	masks_drawn	38
+page/splits/1	other_commands	26
+page/splits/1	mask_resources	36
+page/splits/1	mask_kib	94.40234375
+page/splits/1	compose_cold_ms	1.379111
+page/splits/1	compose_warm_ms	0.058573
+page/splits/1	cpu_median_ms	3.8755170000000003
+page/splits/1	present_cold_ms	0.576793
+page/splits/1	present_warm_median_ms	0.27169899999999997
+page/splits/1	gpu_first_ms	4.0365
+page/splits/1	gpu_warm_median_ms	4.909862
+page/splits/1	gpu_warm_p95_ms	5.211612
+page/shells/1	rects	28
+page/shells/1	masks_drawn	45
+page/shells/1	other_commands	33
+page/shells/1	mask_resources	40
+page/shells/1	mask_kib	115.98828125
+page/shells/1	compose_cold_ms	1.387709
+page/shells/1	compose_warm_ms	0.049965
+page/shells/1	cpu_median_ms	4.388059
+page/shells/1	present_cold_ms	0.555258
+page/shells/1	present_warm_median_ms	0.48523099999999997
+page/shells/1	gpu_first_ms	7.613483
+page/shells/1	gpu_warm_median_ms	5.179631
+page/shells/1	gpu_warm_p95_ms	5.540597
+page/scroll/1	rects	21
+page/scroll/1	masks_drawn	43
+page/scroll/1	other_commands	32
+page/scroll/1	mask_resources	42
+page/scroll/1	mask_kib	103.408203125
+page/scroll/1	compose_cold_ms	1.30192
+page/scroll/1	compose_warm_ms	0.045787
+page/scroll/1	cpu_median_ms	3.9064099999999997
+page/scroll/1	present_cold_ms	0.553709
+page/scroll/1	present_warm_median_ms	0.464135
+page/scroll/1	gpu_first_ms	6.520551
+page/scroll/1	gpu_warm_median_ms	4.540522
+page/scroll/1	gpu_warm_p95_ms	4.832762
+page/sections/1	rects	22
+page/sections/1	masks_drawn	53
+page/sections/1	other_commands	25
+page/sections/1	mask_resources	41
+page/sections/1	mask_kib	151.703125
+page/sections/1	compose_cold_ms	1.622128
+page/sections/1	compose_warm_ms	0.044314000000000006
+page/sections/1	cpu_median_ms	5.164402
+page/sections/1	present_cold_ms	0.54831
+page/sections/1	present_warm_median_ms	0.47128699999999996
+page/sections/1	gpu_first_ms	6.844201
+page/sections/1	gpu_warm_median_ms	5.285649
+page/sections/1	gpu_warm_p95_ms	5.355246
+page/tool-windows/1	rects	23
+page/tool-windows/1	masks_drawn	50
+page/tool-windows/1	other_commands	26
+page/tool-windows/1	mask_resources	47
+page/tool-windows/1	mask_kib	173.0390625
+page/tool-windows/1	compose_cold_ms	1.891616
+page/tool-windows/1	compose_warm_ms	0.046079999999999996
+page/tool-windows/1	cpu_median_ms	5.577037
+page/tool-windows/1	present_cold_ms	0.587498
+page/tool-windows/1	present_warm_median_ms	0.474106
+page/tool-windows/1	gpu_first_ms	7.258863
+page/tool-windows/1	gpu_warm_median_ms	5.3663419999999995
+page/tool-windows/1	gpu_warm_p95_ms	5.414833
+page/transforms/1	rects	41
+page/transforms/1	masks_drawn	43
+page/transforms/1	other_commands	31
+page/transforms/1	mask_resources	39
+page/transforms/1	mask_kib	187.9697265625
+page/transforms/1	compose_cold_ms	1.9194520000000002
+page/transforms/1	compose_warm_ms	0.043858
+page/transforms/1	cpu_median_ms	6.2676750000000006
+page/transforms/1	present_cold_ms	0.5541600000000001
+page/transforms/1	present_warm_median_ms	0.47300800000000004
+page/transforms/1	gpu_first_ms	7.510588
+page/transforms/1	gpu_warm_median_ms	5.299854
+page/transforms/1	gpu_warm_p95_ms	5.345988
+page/state/1	rects	26
+page/state/1	masks_drawn	46
+page/state/1	other_commands	35
+page/state/1	mask_resources	42
+page/state/1	mask_kib	144.630859375
+page/state/1	compose_cold_ms	1.6404830000000001
+page/state/1	compose_warm_ms	0.043846
+page/state/1	cpu_median_ms	5.045143
+page/state/1	present_cold_ms	0.5582280000000001
+page/state/1	present_warm_median_ms	0.47442300000000004
+page/state/1	gpu_first_ms	6.7148579999999995
+page/state/1	gpu_warm_median_ms	4.13146
+page/state/1	gpu_warm_p95_ms	4.230261
+page/navigation/1	rects	20
+page/navigation/1	masks_drawn	50
+page/navigation/1	other_commands	31
+page/navigation/1	mask_resources	46
+page/navigation/1	mask_kib	215.751953125
+page/navigation/1	compose_cold_ms	2.3418900000000002
+page/navigation/1	compose_warm_ms	0.046785
+page/navigation/1	cpu_median_ms	6.88956
+page/navigation/1	present_cold_ms	0.603379
+page/navigation/1	present_warm_median_ms	0.474319
+page/navigation/1	gpu_first_ms	4.250163000000001
+page/navigation/1	gpu_warm_median_ms	3.9422800000000002
+page/navigation/1	gpu_warm_p95_ms	5.421637
+page/text/1	rects	17
+page/text/1	masks_drawn	58
+page/text/1	other_commands	31
+page/text/1	mask_resources	57
+page/text/1	mask_kib	133.474609375
+page/text/1	compose_cold_ms	1.75436
+page/text/1	compose_warm_ms	0.046217999999999995
+page/text/1	cpu_median_ms	4.8202039999999995
+page/text/1	present_cold_ms	0.917088
+page/text/1	present_warm_median_ms	0.486923
+page/text/1	gpu_first_ms	6.622686
+page/text/1	gpu_warm_median_ms	5.0124189999999995
+page/text/1	gpu_warm_p95_ms	5.039824
+page/controls/1	rects	13
+page/controls/1	masks_drawn	45
+page/controls/1	other_commands	38
+page/controls/1	mask_resources	42
+page/controls/1	mask_kib	77.6396484375
+page/controls/1	compose_cold_ms	1.0404579999999999
+page/controls/1	compose_warm_ms	0.04389
+page/controls/1	cpu_median_ms	3.186542
+page/controls/1	present_cold_ms	0.561202
+page/controls/1	present_warm_median_ms	0.486237
+page/controls/1	gpu_first_ms	5.7272110000000005
+page/controls/1	gpu_warm_median_ms	4.532392
+page/controls/1	gpu_warm_p95_ms	4.581845
+page/input/1	rects	15
+page/input/1	masks_drawn	45
+page/input/1	other_commands	35
+page/input/1	mask_resources	41
+page/input/1	mask_kib	177.1923828125
+page/input/1	compose_cold_ms	1.914169
+page/input/1	compose_warm_ms	0.043537
+page/input/1	cpu_median_ms	6.106714
+page/input/1	present_cold_ms	0.533957
+page/input/1	present_warm_median_ms	0.49047900000000005
+page/input/1	gpu_first_ms	7.361305000000001
+page/input/1	gpu_warm_median_ms	5.519117
+page/input/1	gpu_warm_p95_ms	5.568836
+page/families/1	rects	14
+page/families/1	masks_drawn	48
+page/families/1	other_commands	49
+page/families/1	mask_resources	46
+page/families/1	mask_kib	54.728515625
+page/families/1	compose_cold_ms	0.949253
+page/families/1	compose_warm_ms	0.047778999999999995
+page/families/1	cpu_median_ms	2.640282
+page/families/1	present_cold_ms	0.55035
+page/families/1	present_warm_median_ms	0.493742
+page/families/1	gpu_first_ms	5.57681
+page/families/1	gpu_warm_median_ms	4.446638999999999
+page/families/1	gpu_warm_p95_ms	4.549494999999999
+page/toolbar/1	rects	17
+page/toolbar/1	masks_drawn	89
+page/toolbar/1	other_commands	56
+page/toolbar/1	mask_resources	83
+page/toolbar/1	mask_kib	193.798828125
+page/toolbar/1	compose_cold_ms	2.4330290000000003
+page/toolbar/1	compose_warm_ms	0.054354
+page/toolbar/1	cpu_median_ms	6.481631
+page/toolbar/1	present_cold_ms	0.810609
+page/toolbar/1	present_warm_median_ms	0.537274
+page/toolbar/1	gpu_first_ms	6.638027
+page/toolbar/1	gpu_warm_median_ms	4.926114
+page/toolbar/1	gpu_warm_p95_ms	5.164493
+page/fields/1	rects	13
+page/fields/1	masks_drawn	38
+page/fields/1	other_commands	26
+page/fields/1	mask_resources	37
+page/fields/1	mask_kib	81.97265625
+page/fields/1	compose_cold_ms	1.105872
+page/fields/1	compose_warm_ms	0.041997
+page/fields/1	cpu_median_ms	3.243363
+page/fields/1	present_cold_ms	0.536983
+page/fields/1	present_warm_median_ms	0.463771
+page/fields/1	gpu_first_ms	6.436489
+page/fields/1	gpu_warm_median_ms	4.883733
+page/fields/1	gpu_warm_p95_ms	5.130066
+page/forms/1	rects	15
+page/forms/1	masks_drawn	40
+page/forms/1	other_commands	25
+page/forms/1	mask_resources	39
+page/forms/1	mask_kib	80.5673828125
+page/forms/1	compose_cold_ms	1.147583
+page/forms/1	compose_warm_ms	0.043626
+page/forms/1	cpu_median_ms	3.162398
+page/forms/1	present_cold_ms	0.49629700000000004
+page/forms/1	present_warm_median_ms	0.474551
+page/forms/1	gpu_first_ms	5.366631
+page/forms/1	gpu_warm_median_ms	4.3172109999999995
+page/forms/1	gpu_warm_p95_ms	4.3606549999999995
+page/properties/1	rects	17
+page/properties/1	masks_drawn	60
+page/properties/1	other_commands	34
+page/properties/1	mask_resources	56
+page/properties/1	mask_kib	123.2099609375
+page/properties/1	compose_cold_ms	1.591913
+page/properties/1	compose_warm_ms	0.046329999999999996
+page/properties/1	cpu_median_ms	4.74632
+page/properties/1	present_cold_ms	0.6591490000000001
+page/properties/1	present_warm_median_ms	0.49364099999999994
+page/properties/1	gpu_first_ms	7.76778
+page/properties/1	gpu_warm_median_ms	4.697123
+page/properties/1	gpu_warm_p95_ms	5.664386
+page/progress/1	rects	20
+page/progress/1	masks_drawn	49
+page/progress/1	other_commands	35
+page/progress/1	mask_resources	48
+page/progress/1	mask_kib	171.6298828125
+page/progress/1	compose_cold_ms	1.838997
+page/progress/1	compose_warm_ms	0.050365
+page/progress/1	cpu_median_ms	5.6466
+page/progress/1	present_cold_ms	0.603273
+page/progress/1	present_warm_median_ms	0.488978
+page/progress/1	gpu_first_ms	6.59282
+page/progress/1	gpu_warm_median_ms	5.010012000000001
+page/progress/1	gpu_warm_p95_ms	5.106221000000001
+page/colors/1	rects	119
+page/colors/1	masks_drawn	37
+page/colors/1	other_commands	39
+page/colors/1	mask_resources	36
+page/colors/1	mask_kib	145.921875
+page/colors/1	compose_cold_ms	1.7748620000000002
+page/colors/1	compose_warm_ms	0.048192
+page/colors/1	cpu_median_ms	14.500580000000001
+page/colors/1	present_cold_ms	0.65249
+page/colors/1	present_warm_median_ms	0.485979
+page/colors/1	gpu_first_ms	7.1205799999999995
+page/colors/1	gpu_warm_median_ms	4.791549
+page/colors/1	gpu_warm_p95_ms	5.26708
+page/chips/1	rects	14
+page/chips/1	masks_drawn	63
+page/chips/1	other_commands	37
+page/chips/1	mask_resources	55
+page/chips/1	mask_kib	160.833984375
+page/chips/1	compose_cold_ms	1.894559
+page/chips/1	compose_warm_ms	0.047998
+page/chips/1	cpu_median_ms	5.686622
+page/chips/1	present_cold_ms	0.644556
+page/chips/1	present_warm_median_ms	0.51
+page/chips/1	gpu_first_ms	7.145581
+page/chips/1	gpu_warm_median_ms	5.313014
+page/chips/1	gpu_warm_p95_ms	5.398235000000001
+page/editing/1	rects	16
+page/editing/1	masks_drawn	37
+page/editing/1	other_commands	22
+page/editing/1	mask_resources	35
+page/editing/1	mask_kib	164.9296875
+page/editing/1	compose_cold_ms	1.717847
+page/editing/1	compose_warm_ms	0.046064
+page/editing/1	cpu_median_ms	4.520663
+page/editing/1	present_cold_ms	0.568106
+page/editing/1	present_warm_median_ms	0.459916
+page/editing/1	gpu_first_ms	6.517437
+page/editing/1	gpu_warm_median_ms	4.420317
+page/editing/1	gpu_warm_p95_ms	4.613056
+page/numbers/1	rects	14
+page/numbers/1	masks_drawn	45
+page/numbers/1	other_commands	22
+page/numbers/1	mask_resources	43
+page/numbers/1	mask_kib	154.142578125
+page/numbers/1	compose_cold_ms	1.9883790000000001
+page/numbers/1	compose_warm_ms	0.043129
+page/numbers/1	cpu_median_ms	5.1869689999999995
+page/numbers/1	present_cold_ms	0.5663130000000001
+page/numbers/1	present_warm_median_ms	0.46872
+page/numbers/1	gpu_first_ms	6.838596
+page/numbers/1	gpu_warm_median_ms	5.085589
+page/numbers/1	gpu_warm_p95_ms	5.157162
+page/fonts/1	rects	14
+page/fonts/1	masks_drawn	85
+page/fonts/1	other_commands	34
+page/fonts/1	mask_resources	80
+page/fonts/1	mask_kib	145.078125
+page/fonts/1	compose_cold_ms	1.826289
+page/fonts/1	compose_warm_ms	0.05843
+page/fonts/1	cpu_median_ms	5.186889
+page/fonts/1	present_cold_ms	1.010318
+page/fonts/1	present_warm_median_ms	0.512649
+page/fonts/1	gpu_first_ms	6.624066
+page/fonts/1	gpu_warm_median_ms	4.817916
+page/fonts/1	gpu_warm_p95_ms	5.022880000000001
+page/text-rendering/1	rects	14
+page/text-rendering/1	masks_drawn	35
+page/text-rendering/1	other_commands	19
+page/text-rendering/1	mask_resources	35
+page/text-rendering/1	mask_kib	133.80078125
+page/text-rendering/1	compose_cold_ms	1.396377
+page/text-rendering/1	compose_warm_ms	0.042989
+page/text-rendering/1	cpu_median_ms	4.474706
+page/text-rendering/1	present_cold_ms	0.594372
+page/text-rendering/1	present_warm_median_ms	0.45274200000000003
+page/text-rendering/1	gpu_first_ms	6.330345
+page/text-rendering/1	gpu_warm_median_ms	4.84649
+page/text-rendering/1	gpu_warm_p95_ms	4.965592
+page/surfaces/1	rects	14
+page/surfaces/1	masks_drawn	31
+page/surfaces/1	other_commands	27
+page/surfaces/1	mask_resources	30
+page/surfaces/1	mask_kib	68.076171875
+page/surfaces/1	compose_cold_ms	0.926126
+page/surfaces/1	compose_warm_ms	0.045101
+page/surfaces/1	cpu_median_ms	2.886922
+page/surfaces/1	present_cold_ms	0.4999549999999999
+page/surfaces/1	present_warm_median_ms	0.457204
+page/surfaces/1	gpu_first_ms	5.985075999999999
+page/surfaces/1	gpu_warm_median_ms	4.596703
+page/surfaces/1	gpu_warm_p95_ms	4.641075
+page/windows/1	rects	21
+page/windows/1	masks_drawn	53
+page/windows/1	other_commands	39
+page/windows/1	mask_resources	45
+page/windows/1	mask_kib	68.9833984375
+page/windows/1	compose_cold_ms	1.0967939999999998
+page/windows/1	compose_warm_ms	0.052037
+page/windows/1	cpu_median_ms	3.117443
+page/windows/1	present_cold_ms	0.6265529999999999
+page/windows/1	present_warm_median_ms	0.49094099999999996
+page/windows/1	gpu_first_ms	6.583087
+page/windows/1	gpu_warm_median_ms	4.897781
+page/windows/1	gpu_warm_p95_ms	5.003128
+page/menus/1	rects	15
+page/menus/1	masks_drawn	28
+page/menus/1	other_commands	14
+page/menus/1	mask_resources	27
+page/menus/1	mask_kib	135.7294921875
+page/menus/1	compose_cold_ms	1.391574
+page/menus/1	compose_warm_ms	0.040433
+page/menus/1	cpu_median_ms	4.254324
+page/menus/1	present_cold_ms	0.467144
+page/menus/1	present_warm_median_ms	0.442485
+page/menus/1	gpu_first_ms	5.060527
+page/menus/1	gpu_warm_median_ms	2.761386
+page/menus/1	gpu_warm_p95_ms	4.05101
+page/virtual/1	rects	14
+page/virtual/1	masks_drawn	43
+page/virtual/1	other_commands	30
+page/virtual/1	mask_resources	38
+page/virtual/1	mask_kib	100.75390625
+page/virtual/1	compose_cold_ms	1.210573
+page/virtual/1	compose_warm_ms	0.045689
+page/virtual/1	cpu_median_ms	3.759211
+page/virtual/1	present_cold_ms	0.564856
+page/virtual/1	present_warm_median_ms	0.472231
+page/virtual/1	gpu_first_ms	6.49641
+page/virtual/1	gpu_warm_median_ms	4.856143
+page/virtual/1	gpu_warm_p95_ms	4.966018
+page/collections/1	rects	16
+page/collections/1	masks_drawn	62
+page/collections/1	other_commands	24
+page/collections/1	mask_resources	58
+page/collections/1	mask_kib	180.41015625
+page/collections/1	compose_cold_ms	2.192043
+page/collections/1	compose_warm_ms	0.069621
+page/collections/1	cpu_median_ms	5.973651
+page/collections/1	present_cold_ms	0.655678
+page/collections/1	present_warm_median_ms	0.482476
+page/collections/1	gpu_first_ms	7.277945
+page/collections/1	gpu_warm_median_ms	5.340883
+page/collections/1	gpu_warm_p95_ms	5.40971
+page/files/1	rects	19
+page/files/1	masks_drawn	57
+page/files/1	other_commands	25
+page/files/1	mask_resources	50
+page/files/1	mask_kib	160.43359375
+page/files/1	compose_cold_ms	1.902333
+page/files/1	compose_warm_ms	0.049324
+page/files/1	cpu_median_ms	5.373877
+page/files/1	present_cold_ms	0.616206
+page/files/1	present_warm_median_ms	0.481651
+page/files/1	gpu_first_ms	7.267862
+page/files/1	gpu_warm_median_ms	5.409752
+page/files/1	gpu_warm_p95_ms	5.485463
+page/dragdrop/1	rects	20
+page/dragdrop/1	masks_drawn	48
+page/dragdrop/1	other_commands	26
+page/dragdrop/1	mask_resources	48
+page/dragdrop/1	mask_kib	163.736328125
+page/dragdrop/1	compose_cold_ms	1.710558
+page/dragdrop/1	compose_warm_ms	0.049119
+page/dragdrop/1	cpu_median_ms	5.440453
+page/dragdrop/1	present_cold_ms	0.5994849999999999
+page/dragdrop/1	present_warm_median_ms	0.477211
+page/dragdrop/1	gpu_first_ms	7.467661
+page/dragdrop/1	gpu_warm_median_ms	5.492974
+page/dragdrop/1	gpu_warm_p95_ms	5.526225
+page/live/1	rects	30
+page/live/1	masks_drawn	94
+page/live/1	other_commands	88
+page/live/1	mask_resources	94
+page/live/1	mask_kib	190.84765625
+page/live/1	compose_cold_ms	1.926629
+page/live/1	compose_warm_ms	0.089471
+page/live/1	cpu_median_ms	6.326851
+page/live/1	present_cold_ms	1.486879
+page/live/1	present_warm_median_ms	0.615224
+page/live/1	gpu_first_ms	6.6643680000000005
+page/live/1	gpu_warm_median_ms	5.125526
+page/live/1	gpu_warm_p95_ms	5.194451
+page/meters/1	rects	26
+page/meters/1	masks_drawn	26
+page/meters/1	other_commands	20
+page/meters/1	mask_resources	26
+page/meters/1	mask_kib	78.6328125
+page/meters/1	compose_cold_ms	0.884151
+page/meters/1	compose_warm_ms	0.041596
+page/meters/1	cpu_median_ms	2.830347
+page/meters/1	present_cold_ms	0.498021
+page/meters/1	present_warm_median_ms	0.43588299999999996
+page/meters/1	gpu_first_ms	5.169876
+page/meters/1	gpu_warm_median_ms	4.07812
+page/meters/1	gpu_warm_p95_ms	4.168333
+page/images/1	rects	19
+page/images/1	masks_drawn	36
+page/images/1	other_commands	25
+page/images/1	mask_resources	36
+page/images/1	mask_kib	134.34765625
+page/images/1	compose_cold_ms	1.474258
+page/images/1	compose_warm_ms	0.045003999999999995
+page/images/1	cpu_median_ms	6.693049
+page/images/1	present_cold_ms	0.571765
+page/images/1	present_warm_median_ms	0.464588
+page/images/1	gpu_first_ms	6.694931
+page/images/1	gpu_warm_median_ms	4.97485
+page/images/1	gpu_warm_p95_ms	5.0621659999999995
+page/shapes/1	rects	13
+page/shapes/1	masks_drawn	26
+page/shapes/1	other_commands	20
+page/shapes/1	mask_resources	26
+page/shapes/1	mask_kib	81.072265625
+page/shapes/1	compose_cold_ms	1.010141
+page/shapes/1	compose_warm_ms	0.042223
+page/shapes/1	cpu_median_ms	3.800071
+page/shapes/1	present_cold_ms	0.621057
+page/shapes/1	present_warm_median_ms	0.46895299999999995
+page/shapes/1	gpu_first_ms	5.763779
+page/shapes/1	gpu_warm_median_ms	4.274428
+page/shapes/1	gpu_warm_p95_ms	4.697411000000001
+page/theme/1	rects	31
+page/theme/1	masks_drawn	45
+page/theme/1	other_commands	23
+page/theme/1	mask_resources	45
+page/theme/1	mask_kib	185.919921875
+page/theme/1	compose_cold_ms	1.945567
+page/theme/1	compose_warm_ms	0.046695
+page/theme/1	cpu_median_ms	5.835379
+page/theme/1	present_cold_ms	0.629422
+page/theme/1	present_warm_median_ms	0.479774
+page/theme/1	gpu_first_ms	6.353089
+page/theme/1	gpu_warm_median_ms	4.428267
+page/theme/1	gpu_warm_p95_ms	4.699975
+page/workspace/1	rects	18
+page/workspace/1	masks_drawn	37
+page/workspace/1	other_commands	20
+page/workspace/1	mask_resources	37
+page/workspace/1	mask_kib	78.6533203125
+page/workspace/1	compose_cold_ms	1.104703
+page/workspace/1	compose_warm_ms	0.043453
+page/workspace/1	cpu_median_ms	2.900533
+page/workspace/1	present_cold_ms	0.517665
+page/workspace/1	present_warm_median_ms	0.451265
+page/workspace/1	gpu_first_ms	4.958043
+page/workspace/1	gpu_warm_median_ms	4.1648190000000005
+page/workspace/1	gpu_warm_p95_ms	4.214427
+page/profiling/1	rects	13
+page/profiling/1	masks_drawn	27
+page/profiling/1	other_commands	20
+page/profiling/1	mask_resources	27
+page/profiling/1	mask_kib	92.416015625
+page/profiling/1	compose_cold_ms	1.023712
+page/profiling/1	compose_warm_ms	0.040715
+page/profiling/1	cpu_median_ms	3.260984
+page/profiling/1	present_cold_ms	0.452538
+page/profiling/1	present_warm_median_ms	0.435582
+page/profiling/1	gpu_first_ms	5.686742
+page/profiling/1	gpu_warm_median_ms	4.338042000000001
+page/profiling/1	gpu_warm_p95_ms	4.4189750000000005
+page/overlay/1	rects	13
+page/overlay/1	masks_drawn	27
+page/overlay/1	other_commands	21
+page/overlay/1	mask_resources	27
+page/overlay/1	mask_kib	154.4716796875
+page/overlay/1	compose_cold_ms	1.496308
+page/overlay/1	compose_warm_ms	0.040712
+page/overlay/1	cpu_median_ms	4.873302000000001
+page/overlay/1	present_cold_ms	0.44895599999999997
+page/overlay/1	present_warm_median_ms	0.44488999999999995
+page/overlay/1	gpu_first_ms	5.951037
+page/overlay/1	gpu_warm_median_ms	4.574387
+page/overlay/1	gpu_warm_p95_ms	4.636465
+page/layout/1.25	rects	28
+page/layout/1.25	masks_drawn	43
+page/layout/1.25	other_commands	23
+page/layout/1.25	mask_resources	41
+page/layout/1.25	mask_kib	171.24609375
+page/layout/1.25	compose_cold_ms	1.6090099999999998
+page/layout/1.25	compose_warm_ms	0.045351
+page/layout/1.25	cpu_median_ms	6.499981999999999
+page/layout/1.25	present_cold_ms	0.894844
+page/layout/1.25	present_warm_median_ms	0.45925000000000005
+page/layout/1.25	gpu_first_ms	9.398333
+page/layout/1.25	gpu_warm_median_ms	6.932537
+page/layout/1.25	gpu_warm_p95_ms	7.2264230000000005
+page/splits/1.25	rects	24
+page/splits/1.25	masks_drawn	38
+page/splits/1.25	other_commands	26
+page/splits/1.25	mask_resources	36
+page/splits/1.25	mask_kib	147.1474609375
+page/splits/1.25	compose_cold_ms	1.416415
+page/splits/1.25	compose_warm_ms	0.044393
+page/splits/1.25	cpu_median_ms	5.862812
+page/splits/1.25	present_cold_ms	0.554717
+page/splits/1.25	present_warm_median_ms	0.474338
+page/splits/1.25	gpu_first_ms	5.965561
+page/splits/1.25	gpu_warm_median_ms	6.397807
+page/splits/1.25	gpu_warm_p95_ms	6.857313
+page/shells/1.25	rects	28
+page/shells/1.25	masks_drawn	45
+page/shells/1.25	other_commands	33
+page/shells/1.25	mask_resources	40
+page/shells/1.25	mask_kib	179.3564453125
+page/shells/1.25	compose_cold_ms	1.569283
+page/shells/1.25	compose_warm_ms	0.060246
+page/shells/1.25	cpu_median_ms	7.056982
+page/shells/1.25	present_cold_ms	0.684863
+page/shells/1.25	present_warm_median_ms	0.479794
+page/shells/1.25	gpu_first_ms	6.57855
+page/shells/1.25	gpu_warm_median_ms	5.808395
+page/shells/1.25	gpu_warm_p95_ms	6.287853
+page/scroll/1.25	rects	21
+page/scroll/1.25	masks_drawn	43
+page/scroll/1.25	other_commands	32
+page/scroll/1.25	mask_resources	42
+page/scroll/1.25	mask_kib	161.078125
+page/scroll/1.25	compose_cold_ms	1.46349
+page/scroll/1.25	compose_warm_ms	0.047367
+page/scroll/1.25	cpu_median_ms	6.331336
+page/scroll/1.25	present_cold_ms	0.608792
+page/scroll/1.25	present_warm_median_ms	0.47702900000000004
+page/scroll/1.25	gpu_first_ms	5.861056
+page/scroll/1.25	gpu_warm_median_ms	5.500812
+page/scroll/1.25	gpu_warm_p95_ms	6.420331
+page/sections/1.25	rects	22
+page/sections/1.25	masks_drawn	53
+page/sections/1.25	other_commands	25
+page/sections/1.25	mask_resources	41
+page/sections/1.25	mask_kib	235.5390625
+page/sections/1.25	compose_cold_ms	1.856152
+page/sections/1.25	compose_warm_ms	0.044366
+page/sections/1.25	cpu_median_ms	8.458056000000001
+page/sections/1.25	present_cold_ms	0.609822
+page/sections/1.25	present_warm_median_ms	0.472714
+page/sections/1.25	gpu_first_ms	6.185858
+page/sections/1.25	gpu_warm_median_ms	6.253996000000001
+page/sections/1.25	gpu_warm_p95_ms	7.020532
+page/tool-windows/1.25	rects	23
+page/tool-windows/1.25	masks_drawn	50
+page/tool-windows/1.25	other_commands	26
+page/tool-windows/1.25	mask_resources	47
+page/tool-windows/1.25	mask_kib	271.896484375
+page/tool-windows/1.25	compose_cold_ms	2.226642
+page/tool-windows/1.25	compose_warm_ms	0.047966999999999996
+page/tool-windows/1.25	cpu_median_ms	9.10344
+page/tool-windows/1.25	present_cold_ms	0.6273160000000001
+page/tool-windows/1.25	present_warm_median_ms	0.47948199999999996
+page/tool-windows/1.25	gpu_first_ms	6.30106
+page/tool-windows/1.25	gpu_warm_median_ms	5.870658
+page/tool-windows/1.25	gpu_warm_p95_ms	6.430131
+page/transforms/1.25	rects	41
+page/transforms/1.25	masks_drawn	43
+page/transforms/1.25	other_commands	31
+page/transforms/1.25	mask_resources	39
+page/transforms/1.25	mask_kib	295.03515625
+page/transforms/1.25	compose_cold_ms	2.187018
+page/transforms/1.25	compose_warm_ms	0.045508
+page/transforms/1.25	cpu_median_ms	10.225831
+page/transforms/1.25	present_cold_ms	0.608475
+page/transforms/1.25	present_warm_median_ms	0.478851
+page/transforms/1.25	gpu_first_ms	6.513286
+page/transforms/1.25	gpu_warm_median_ms	5.902826
+page/transforms/1.25	gpu_warm_p95_ms	7.060767
+page/state/1.25	rects	26
+page/state/1.25	masks_drawn	46
+page/state/1.25	other_commands	35
+page/state/1.25	mask_resources	42
+page/state/1.25	mask_kib	224.0380859375
+page/state/1.25	compose_cold_ms	1.8926450000000001
+page/state/1.25	compose_warm_ms	0.045445000000000006
+page/state/1.25	cpu_median_ms	8.288067
+page/state/1.25	present_cold_ms	0.602177
+page/state/1.25	present_warm_median_ms	0.486963
+page/state/1.25	gpu_first_ms	6.025779
+page/state/1.25	gpu_warm_median_ms	5.468906
+page/state/1.25	gpu_warm_p95_ms	6.547396
+page/navigation/1.25	rects	20
+page/navigation/1.25	masks_drawn	50
+page/navigation/1.25	other_commands	31
+page/navigation/1.25	mask_resources	46
+page/navigation/1.25	mask_kib	339.1201171875
+page/navigation/1.25	compose_cold_ms	2.7227050000000004
+page/navigation/1.25	compose_warm_ms	0.048331
+page/navigation/1.25	cpu_median_ms	11.395317
+page/navigation/1.25	present_cold_ms	0.644162
+page/navigation/1.25	present_warm_median_ms	0.481818
+page/navigation/1.25	gpu_first_ms	6.359693
+page/navigation/1.25	gpu_warm_median_ms	6.107096
+page/navigation/1.25	gpu_warm_p95_ms	6.465627
+page/text/1.25	rects	17
+page/text/1.25	masks_drawn	58
+page/text/1.25	other_commands	31
+page/text/1.25	mask_resources	57
+page/text/1.25	mask_kib	209.224609375
+page/text/1.25	compose_cold_ms	1.981243
+page/text/1.25	compose_warm_ms	0.046487
+page/text/1.25	cpu_median_ms	7.794575
+page/text/1.25	present_cold_ms	0.955113
+page/text/1.25	present_warm_median_ms	0.481845
+page/text/1.25	gpu_first_ms	5.647632
+page/text/1.25	gpu_warm_median_ms	6.086361999999999
+page/text/1.25	gpu_warm_p95_ms	6.819248
+page/controls/1.25	rects	13
+page/controls/1.25	masks_drawn	45
+page/controls/1.25	other_commands	38
+page/controls/1.25	mask_resources	42
+page/controls/1.25	mask_kib	123.1240234375
+page/controls/1.25	compose_cold_ms	1.190962
+page/controls/1.25	compose_warm_ms	0.044556
+page/controls/1.25	cpu_median_ms	5.210956
+page/controls/1.25	present_cold_ms	0.6489109999999999
+page/controls/1.25	present_warm_median_ms	0.484369
+page/controls/1.25	gpu_first_ms	4.969023
+page/controls/1.25	gpu_warm_median_ms	6.264168
+page/controls/1.25	gpu_warm_p95_ms	6.588184
+page/input/1.25	rects	15
+page/input/1.25	masks_drawn	45
+page/input/1.25	other_commands	35
+page/input/1.25	mask_resources	41
+page/input/1.25	mask_kib	277.8740234375
+page/input/1.25	compose_cold_ms	2.2126419999999998
+page/input/1.25	compose_warm_ms	0.044112
+page/input/1.25	cpu_median_ms	10.038296
+page/input/1.25	present_cold_ms	0.590474
+page/input/1.25	present_warm_median_ms	0.488824
+page/input/1.25	gpu_first_ms	6.50644
+page/input/1.25	gpu_warm_median_ms	5.684368
+page/input/1.25	gpu_warm_p95_ms	6.159407000000001
+page/families/1.25	rects	14
+page/families/1.25	masks_drawn	48
+page/families/1.25	other_commands	49
+page/families/1.25	mask_resources	46
+page/families/1.25	mask_kib	88.345703125
+page/families/1.25	compose_cold_ms	1.045308
+page/families/1.25	compose_warm_ms	0.050901
+page/families/1.25	cpu_median_ms	4.1163609999999995
+page/families/1.25	present_cold_ms	0.622198
+page/families/1.25	present_warm_median_ms	0.492181
+page/families/1.25	gpu_first_ms	5.045566
+page/families/1.25	gpu_warm_median_ms	5.196568
+page/families/1.25	gpu_warm_p95_ms	6.119199
+page/toolbar/1.25	rects	17
+page/toolbar/1.25	masks_drawn	89
+page/toolbar/1.25	other_commands	56
+page/toolbar/1.25	mask_resources	83
+page/toolbar/1.25	mask_kib	305.9169921875
+page/toolbar/1.25	compose_cold_ms	2.733337
+page/toolbar/1.25	compose_warm_ms	0.052967
+page/toolbar/1.25	cpu_median_ms	10.325572999999999
+page/toolbar/1.25	present_cold_ms	0.8677239999999999
+page/toolbar/1.25	present_warm_median_ms	0.541428
+page/toolbar/1.25	gpu_first_ms	5.809711
+page/toolbar/1.25	gpu_warm_median_ms	6.429355
+page/toolbar/1.25	gpu_warm_p95_ms	6.885188
+page/fields/1.25	rects	13
+page/fields/1.25	masks_drawn	38
+page/fields/1.25	other_commands	26
+page/fields/1.25	mask_resources	37
+page/fields/1.25	mask_kib	129.3759765625
+page/fields/1.25	compose_cold_ms	1.297006
+page/fields/1.25	compose_warm_ms	0.042782
+page/fields/1.25	cpu_median_ms	5.235583999999999
+page/fields/1.25	present_cold_ms	0.629144
+page/fields/1.25	present_warm_median_ms	0.457895
+page/fields/1.25	gpu_first_ms	5.537863
+page/fields/1.25	gpu_warm_median_ms	6.376915
+page/fields/1.25	gpu_warm_p95_ms	6.85683
+page/forms/1.25	rects	15
+page/forms/1.25	masks_drawn	40
+page/forms/1.25	other_commands	25
+page/forms/1.25	mask_resources	39
+page/forms/1.25	mask_kib	127.16796875
+page/forms/1.25	compose_cold_ms	1.2744570000000002
+page/forms/1.25	compose_warm_ms	0.043576
+page/forms/1.25	cpu_median_ms	4.981804
+page/forms/1.25	present_cold_ms	0.538011
+page/forms/1.25	present_warm_median_ms	0.469148
+page/forms/1.25	gpu_first_ms	7.611287
+page/forms/1.25	gpu_warm_median_ms	6.245172
+page/forms/1.25	gpu_warm_p95_ms	6.326121
+page/properties/1.25	rects	17
+page/properties/1.25	masks_drawn	60
+page/properties/1.25	other_commands	34
+page/properties/1.25	mask_resources	56
+page/properties/1.25	mask_kib	195.8173828125
+page/properties/1.25	compose_cold_ms	1.78718
+page/properties/1.25	compose_warm_ms	0.046243
+page/properties/1.25	cpu_median_ms	7.586168
+page/properties/1.25	present_cold_ms	0.742043
+page/properties/1.25	present_warm_median_ms	0.49381200000000003
+page/properties/1.25	gpu_first_ms	6.6900520000000006
+page/properties/1.25	gpu_warm_median_ms	5.957612999999999
+page/properties/1.25	gpu_warm_p95_ms	6.7004969999999995
+page/progress/1.25	rects	20
+page/progress/1.25	masks_drawn	49
+page/progress/1.25	other_commands	35
+page/progress/1.25	mask_resources	48
+page/progress/1.25	mask_kib	265.99609375
+page/progress/1.25	compose_cold_ms	2.072107
+page/progress/1.25	compose_warm_ms	0.045627999999999995
+page/progress/1.25	cpu_median_ms	9.176455
+page/progress/1.25	present_cold_ms	0.681085
+page/progress/1.25	present_warm_median_ms	0.49374
+page/progress/1.25	gpu_first_ms	5.817915
+page/progress/1.25	gpu_warm_median_ms	5.747755000000001
+page/progress/1.25	gpu_warm_p95_ms	6.127892
+page/colors/1.25	rects	119
+page/colors/1.25	masks_drawn	37
+page/colors/1.25	other_commands	39
+page/colors/1.25	mask_resources	36
+page/colors/1.25	mask_kib	227.365234375
+page/colors/1.25	compose_cold_ms	2.0297169999999998
+page/colors/1.25	compose_warm_ms	0.049863
+page/colors/1.25	cpu_median_ms	23.030894
+page/colors/1.25	present_cold_ms	0.727391
+page/colors/1.25	present_warm_median_ms	0.490456
+page/colors/1.25	gpu_first_ms	6.257856
+page/colors/1.25	gpu_warm_median_ms	6.32744
+page/colors/1.25	gpu_warm_p95_ms	7.012334999999999
+page/chips/1.25	rects	14
+page/chips/1.25	masks_drawn	64
+page/chips/1.25	other_commands	37
+page/chips/1.25	mask_resources	56
+page/chips/1.25	mask_kib	255.2421875
+page/chips/1.25	compose_cold_ms	2.210859
+page/chips/1.25	compose_warm_ms	0.048735
+page/chips/1.25	cpu_median_ms	9.287148
+page/chips/1.25	present_cold_ms	0.734485
+page/chips/1.25	present_warm_median_ms	0.5138
+page/chips/1.25	gpu_first_ms	6.271622
+page/chips/1.25	gpu_warm_median_ms	7.007988
+page/chips/1.25	gpu_warm_p95_ms	7.405535
+page/editing/1.25	rects	16
+page/editing/1.25	masks_drawn	37
+page/editing/1.25	other_commands	22
+page/editing/1.25	mask_resources	35
+page/editing/1.25	mask_kib	257.248046875
+page/editing/1.25	compose_cold_ms	1.88424
+page/editing/1.25	compose_warm_ms	0.051078
+page/editing/1.25	cpu_median_ms	7.405106
+page/editing/1.25	present_cold_ms	0.637818
+page/editing/1.25	present_warm_median_ms	0.460609
+page/editing/1.25	gpu_first_ms	5.658798
+page/editing/1.25	gpu_warm_median_ms	5.227278999999999
+page/editing/1.25	gpu_warm_p95_ms	6.247851
+page/numbers/1.25	rects	14
+page/numbers/1.25	masks_drawn	45
+page/numbers/1.25	other_commands	22
+page/numbers/1.25	mask_resources	43
+page/numbers/1.25	mask_kib	242.2099609375
+page/numbers/1.25	compose_cold_ms	2.246614
+page/numbers/1.25	compose_warm_ms	0.043573
+page/numbers/1.25	cpu_median_ms	8.555971000000001
+page/numbers/1.25	present_cold_ms	0.61085
+page/numbers/1.25	present_warm_median_ms	0.468906
+page/numbers/1.25	gpu_first_ms	5.781806
+page/numbers/1.25	gpu_warm_median_ms	5.402797
+page/numbers/1.25	gpu_warm_p95_ms	6.587197000000001
+page/fonts/1.25	rects	14
+page/fonts/1.25	masks_drawn	85
+page/fonts/1.25	other_commands	34
+page/fonts/1.25	mask_resources	80
+page/fonts/1.25	mask_kib	224.154296875
+page/fonts/1.25	compose_cold_ms	2.071284
+page/fonts/1.25	compose_warm_ms	0.063567
+page/fonts/1.25	cpu_median_ms	8.433005
+page/fonts/1.25	present_cold_ms	1.133786
+page/fonts/1.25	present_warm_median_ms	0.508182
+page/fonts/1.25	gpu_first_ms	5.625012000000001
+page/fonts/1.25	gpu_warm_median_ms	5.701244
+page/fonts/1.25	gpu_warm_p95_ms	6.578815
+page/text-rendering/1.25	rects	14
+page/text-rendering/1.25	masks_drawn	35
+page/text-rendering/1.25	other_commands	19
+page/text-rendering/1.25	mask_resources	35
+page/text-rendering/1.25	mask_kib	207.2998046875
+page/text-rendering/1.25	compose_cold_ms	1.545291
+page/text-rendering/1.25	compose_warm_ms	0.043296
+page/text-rendering/1.25	cpu_median_ms	7.187293
+page/text-rendering/1.25	present_cold_ms	0.605356
+page/text-rendering/1.25	present_warm_median_ms	0.465698
+page/text-rendering/1.25	gpu_first_ms	5.673428
+page/text-rendering/1.25	gpu_warm_median_ms	4.892221
+page/text-rendering/1.25	gpu_warm_p95_ms	7.109383
+page/surfaces/1.25	rects	14
+page/surfaces/1.25	masks_drawn	32
+page/surfaces/1.25	other_commands	27
+page/surfaces/1.25	mask_resources	31
+page/surfaces/1.25	mask_kib	119.359375
+page/surfaces/1.25	compose_cold_ms	1.1273030000000002
+page/surfaces/1.25	compose_warm_ms	0.044323999999999995
+page/surfaces/1.25	cpu_median_ms	4.628084
+page/surfaces/1.25	present_cold_ms	0.564438
+page/surfaces/1.25	present_warm_median_ms	0.473283
+page/surfaces/1.25	gpu_first_ms	8.54331
+page/surfaces/1.25	gpu_warm_median_ms	6.537713
+page/surfaces/1.25	gpu_warm_p95_ms	6.798518
+page/windows/1.25	rects	21
+page/windows/1.25	masks_drawn	53
+page/windows/1.25	other_commands	39
+page/windows/1.25	mask_resources	45
+page/windows/1.25	mask_kib	108.5234375
+page/windows/1.25	compose_cold_ms	1.223447
+page/windows/1.25	compose_warm_ms	0.050863
+page/windows/1.25	cpu_median_ms	4.9412400000000005
+page/windows/1.25	present_cold_ms	0.64979
+page/windows/1.25	present_warm_median_ms	0.500239
+page/windows/1.25	gpu_first_ms	5.678265
+page/windows/1.25	gpu_warm_median_ms	5.227051
+page/windows/1.25	gpu_warm_p95_ms	6.590463000000001
+page/menus/1.25	rects	15
+page/menus/1.25	masks_drawn	28
+page/menus/1.25	other_commands	14
+page/menus/1.25	mask_resources	27
+page/menus/1.25	mask_kib	210.857421875
+page/menus/1.25	compose_cold_ms	1.585753
+page/menus/1.25	compose_warm_ms	0.040887
+page/menus/1.25	cpu_median_ms	6.902336
+page/menus/1.25	present_cold_ms	0.5107459999999999
+page/menus/1.25	present_warm_median_ms	0.435494
+page/menus/1.25	gpu_first_ms	4.484000999999999
+page/menus/1.25	gpu_warm_median_ms	5.740507
+page/menus/1.25	gpu_warm_p95_ms	6.03608
+page/virtual/1.25	rects	14
+page/virtual/1.25	masks_drawn	43
+page/virtual/1.25	other_commands	30
+page/virtual/1.25	mask_resources	38
+page/virtual/1.25	mask_kib	155.6328125
+page/virtual/1.25	compose_cold_ms	1.38036
+page/virtual/1.25	compose_warm_ms	0.045420999999999996
+page/virtual/1.25	cpu_median_ms	6.090339999999999
+page/virtual/1.25	present_cold_ms	0.604369
+page/virtual/1.25	present_warm_median_ms	0.47165
+page/virtual/1.25	gpu_first_ms	9.164034
+page/virtual/1.25	gpu_warm_median_ms	6.718079
+page/virtual/1.25	gpu_warm_p95_ms	7.108518999999999
+page/collections/1.25	rects	16
+page/collections/1.25	masks_drawn	67
+page/collections/1.25	other_commands	24
+page/collections/1.25	mask_resources	63
+page/collections/1.25	mask_kib	288.015625
+page/collections/1.25	compose_cold_ms	2.525756
+page/collections/1.25	compose_warm_ms	0.069075
+page/collections/1.25	cpu_median_ms	9.804098000000002
+page/collections/1.25	present_cold_ms	0.735001
+page/collections/1.25	present_warm_median_ms	0.473984
+page/collections/1.25	gpu_first_ms	6.169459000000001
+page/collections/1.25	gpu_warm_median_ms	5.457703
+page/collections/1.25	gpu_warm_p95_ms	6.565006
+page/files/1.25	rects	19
+page/files/1.25	masks_drawn	57
+page/files/1.25	other_commands	25
+page/files/1.25	mask_resources	50
+page/files/1.25	mask_kib	250.78125
+page/files/1.25	compose_cold_ms	2.179121
+page/files/1.25	compose_warm_ms	0.049911
+page/files/1.25	cpu_median_ms	8.733308000000001
+page/files/1.25	present_cold_ms	0.701816
+page/files/1.25	present_warm_median_ms	0.488236
+page/files/1.25	gpu_first_ms	6.29506
+page/files/1.25	gpu_warm_median_ms	5.71427
+page/files/1.25	gpu_warm_p95_ms	6.379176999999999
+page/dragdrop/1.25	rects	20
+page/dragdrop/1.25	masks_drawn	48
+page/dragdrop/1.25	other_commands	26
+page/dragdrop/1.25	mask_resources	48
+page/dragdrop/1.25	mask_kib	252.546875
+page/dragdrop/1.25	compose_cold_ms	1.963308
+page/dragdrop/1.25	compose_warm_ms	0.049781000000000006
+page/dragdrop/1.25	cpu_median_ms	8.744778
+page/dragdrop/1.25	present_cold_ms	0.678321
+page/dragdrop/1.25	present_warm_median_ms	0.485913
+page/dragdrop/1.25	gpu_first_ms	6.284781
+page/dragdrop/1.25	gpu_warm_median_ms	5.539576
+page/dragdrop/1.25	gpu_warm_p95_ms	5.95944
+page/live/1.25	rects	30
+page/live/1.25	masks_drawn	94
+page/live/1.25	other_commands	88
+page/live/1.25	mask_resources	94
+page/live/1.25	mask_kib	297.0888671875
+page/live/1.25	compose_cold_ms	2.134772
+page/live/1.25	compose_warm_ms	0.090078
+page/live/1.25	cpu_median_ms	10.644294
+page/live/1.25	present_cold_ms	1.4381089999999999
+page/live/1.25	present_warm_median_ms	0.6113569999999999
+page/live/1.25	gpu_first_ms	5.862564
+page/live/1.25	gpu_warm_median_ms	6.120189
+page/live/1.25	gpu_warm_p95_ms	6.9404319999999995
+page/meters/1.25	rects	26
+page/meters/1.25	masks_drawn	26
+page/meters/1.25	other_commands	20
+page/meters/1.25	mask_resources	26
+page/meters/1.25	mask_kib	121.2705078125
+page/meters/1.25	compose_cold_ms	0.996769
+page/meters/1.25	compose_warm_ms	0.042005
+page/meters/1.25	cpu_median_ms	4.539032
+page/meters/1.25	present_cold_ms	0.5537110000000001
+page/meters/1.25	present_warm_median_ms	0.442964
+page/meters/1.25	gpu_first_ms	4.519105
+page/meters/1.25	gpu_warm_median_ms	5.590329
+page/meters/1.25	gpu_warm_p95_ms	6.003526
+page/images/1.25	rects	19
+page/images/1.25	masks_drawn	36
+page/images/1.25	other_commands	25
+page/images/1.25	mask_resources	36
+page/images/1.25	mask_kib	207.8095703125
+page/images/1.25	compose_cold_ms	1.667782
+page/images/1.25	compose_warm_ms	0.045675
+page/images/1.25	cpu_median_ms	10.744405
+page/images/1.25	present_cold_ms	0.5678989999999999
+page/images/1.25	present_warm_median_ms	0.460287
+page/images/1.25	gpu_first_ms	9.243609999999999
+page/images/1.25	gpu_warm_median_ms	6.898561
+page/images/1.25	gpu_warm_p95_ms	7.074507
+page/shapes/1.25	rects	13
+page/shapes/1.25	masks_drawn	26
+page/shapes/1.25	other_commands	20
+page/shapes/1.25	mask_resources	26
+page/shapes/1.25	mask_kib	125.0205078125
+page/shapes/1.25	compose_cold_ms	1.1441750000000002
+page/shapes/1.25	compose_warm_ms	0.042194999999999996
+page/shapes/1.25	cpu_median_ms	6.0174199999999995
+page/shapes/1.25	present_cold_ms	0.663681
+page/shapes/1.25	present_warm_median_ms	0.46068200000000004
+page/shapes/1.25	gpu_first_ms	8.715838999999999
+page/shapes/1.25	gpu_warm_median_ms	6.24554
+page/shapes/1.25	gpu_warm_p95_ms	6.90612
+page/theme/1.25	rects	31
+page/theme/1.25	masks_drawn	45
+page/theme/1.25	other_commands	28
+page/theme/1.25	mask_resources	45
+page/theme/1.25	mask_kib	287.111328125
+page/theme/1.25	compose_cold_ms	2.274367
+page/theme/1.25	compose_warm_ms	0.046953
+page/theme/1.25	cpu_median_ms	9.624407
+page/theme/1.25	present_cold_ms	0.66499
+page/theme/1.25	present_warm_median_ms	0.49144
+page/theme/1.25	gpu_first_ms	5.500187
+page/theme/1.25	gpu_warm_median_ms	4.396361
+page/theme/1.25	gpu_warm_p95_ms	6.515960000000001
+page/workspace/1.25	rects	18
+page/workspace/1.25	masks_drawn	37
+page/workspace/1.25	other_commands	20
+page/workspace/1.25	mask_resources	37
+page/workspace/1.25	mask_kib	122.259765625
+page/workspace/1.25	compose_cold_ms	1.246723
+page/workspace/1.25	compose_warm_ms	0.04384
+page/workspace/1.25	cpu_median_ms	4.5924629999999995
+page/workspace/1.25	present_cold_ms	0.5834889999999999
+page/workspace/1.25	present_warm_median_ms	0.457857
+page/workspace/1.25	gpu_first_ms	7.303018
+page/workspace/1.25	gpu_warm_median_ms	6.029945
+page/workspace/1.25	gpu_warm_p95_ms	6.105795
+page/profiling/1.25	rects	13
+page/profiling/1.25	masks_drawn	27
+page/profiling/1.25	other_commands	20
+page/profiling/1.25	mask_resources	27
+page/profiling/1.25	mask_kib	142.6787109375
+page/profiling/1.25	compose_cold_ms	1.148648
+page/profiling/1.25	compose_warm_ms	0.040948
+page/profiling/1.25	cpu_median_ms	5.283432
+page/profiling/1.25	present_cold_ms	0.497181
+page/profiling/1.25	present_warm_median_ms	0.44216099999999997
+page/profiling/1.25	gpu_first_ms	8.04128
+page/profiling/1.25	gpu_warm_median_ms	6.434312
+page/profiling/1.25	gpu_warm_p95_ms	6.584397
+page/overlay/1.25	rects	13
+page/overlay/1.25	masks_drawn	27
+page/overlay/1.25	other_commands	21
+page/overlay/1.25	mask_resources	27
+page/overlay/1.25	mask_kib	239.9169921875
+page/overlay/1.25	compose_cold_ms	1.6950450000000001
+page/overlay/1.25	compose_warm_ms	0.040735999999999994
+page/overlay/1.25	cpu_median_ms	8.063185
+page/overlay/1.25	present_cold_ms	0.49559699999999995
+page/overlay/1.25	present_warm_median_ms	0.42706299999999997
+page/overlay/1.25	gpu_first_ms	8.418776
+page/overlay/1.25	gpu_warm_median_ms	6.222034000000001
+page/overlay/1.25	gpu_warm_p95_ms	6.417044000000001
+page/layout/2	rects	28
+page/layout/2	masks_drawn	43
+page/layout/2	other_commands	23
+page/layout/2	mask_resources	41
+page/layout/2	mask_kib	439.1865234375
+page/layout/2	compose_cold_ms	2.219286
+page/layout/2	compose_warm_ms	0.045313
+page/layout/2	cpu_median_ms	14.656582
+page/layout/2	present_cold_ms	1.018224
+page/layout/2	present_warm_median_ms	0.470775
+page/layout/2	gpu_first_ms	13.072626
+page/layout/2	gpu_warm_median_ms	9.944523
+page/layout/2	gpu_warm_p95_ms	10.588063
+page/splits/2	rects	24
+page/splits/2	masks_drawn	38
+page/splits/2	other_commands	26
+page/splits/2	mask_resources	36
+page/splits/2	mask_kib	376.24609375
+page/splits/2	compose_cold_ms	2.039313
+page/splits/2	compose_warm_ms	0.045436
+page/splits/2	cpu_median_ms	13.113387000000001
+page/splits/2	present_cold_ms	0.653138
+page/splits/2	present_warm_median_ms	0.475599
+page/splits/2	gpu_first_ms	13.261146
+page/splits/2	gpu_warm_median_ms	9.619558999999999
+page/splits/2	gpu_warm_p95_ms	10.409293
+page/shells/2	rects	28
+page/shells/2	masks_drawn	45
+page/shells/2	other_commands	33
+page/shells/2	mask_resources	40
+page/shells/2	mask_kib	460.1005859375
+page/shells/2	compose_cold_ms	2.212012
+page/shells/2	compose_warm_ms	0.045991000000000004
+page/shells/2	cpu_median_ms	15.607731999999999
+page/shells/2	present_cold_ms	0.67237
+page/shells/2	present_warm_median_ms	0.484179
+page/shells/2	gpu_first_ms	14.882324
+page/shells/2	gpu_warm_median_ms	10.649654
+page/shells/2	gpu_warm_p95_ms	11.624646
+page/scroll/2	rects	21
+page/scroll/2	masks_drawn	43
+page/scroll/2	other_commands	32
+page/scroll/2	mask_resources	42
+page/scroll/2	mask_kib	411.8916015625
+page/scroll/2	compose_cold_ms	2.1343069999999997
+page/scroll/2	compose_warm_ms	0.058041999999999996
+page/scroll/2	cpu_median_ms	14.317562
+page/scroll/2	present_cold_ms	0.75296
+page/scroll/2	present_warm_median_ms	0.48450099999999996
+page/scroll/2	gpu_first_ms	12.800226
+page/scroll/2	gpu_warm_median_ms	9.855162
+page/scroll/2	gpu_warm_p95_ms	10.323245
+page/sections/2	rects	22
+page/sections/2	masks_drawn	53
+page/sections/2	other_commands	25
+page/sections/2	mask_resources	41
+page/sections/2	mask_kib	600.6484375
+page/sections/2	compose_cold_ms	2.686454
+page/sections/2	compose_warm_ms	0.044989
+page/sections/2	cpu_median_ms	19.120176
+page/sections/2	present_cold_ms	0.7413679999999999
+page/sections/2	present_warm_median_ms	0.48329599999999995
+page/sections/2	gpu_first_ms	12.967387
+page/sections/2	gpu_warm_median_ms	9.766800000000002
+page/sections/2	gpu_warm_p95_ms	10.239485
+page/tool-windows/2	rects	23
+page/tool-windows/2	masks_drawn	50
+page/tool-windows/2	other_commands	26
+page/tool-windows/2	mask_resources	47
+page/tool-windows/2	mask_kib	685.55078125
+page/tool-windows/2	compose_cold_ms	3.117239
+page/tool-windows/2	compose_warm_ms	0.047754
+page/tool-windows/2	cpu_median_ms	20.373907
+page/tool-windows/2	present_cold_ms	0.7819780000000001
+page/tool-windows/2	present_warm_median_ms	0.47914700000000005
+page/tool-windows/2	gpu_first_ms	14.14495
+page/tool-windows/2	gpu_warm_median_ms	9.947073000000001
+page/tool-windows/2	gpu_warm_p95_ms	10.850152999999999
+page/transforms/2	rects	41
+page/transforms/2	masks_drawn	43
+page/transforms/2	other_commands	31
+page/transforms/2	mask_resources	39
+page/transforms/2	mask_kib	750.4951171875
+page/transforms/2	compose_cold_ms	3.1986250000000003
+page/transforms/2	compose_warm_ms	0.044610000000000004
+page/transforms/2	cpu_median_ms	22.917990999999997
+page/transforms/2	present_cold_ms	0.7520279999999999
+page/transforms/2	present_warm_median_ms	0.477134
+page/transforms/2	gpu_first_ms	14.871642
+page/transforms/2	gpu_warm_median_ms	9.177022
+page/transforms/2	gpu_warm_p95_ms	10.572675
+page/state/2	rects	26
+page/state/2	masks_drawn	46
+page/state/2	other_commands	35
+page/state/2	mask_resources	42
+page/state/2	mask_kib	574.1943359375
+page/state/2	compose_cold_ms	2.752014
+page/state/2	compose_warm_ms	0.045798
+page/state/2	cpu_median_ms	18.509035
+page/state/2	present_cold_ms	0.720416
+page/state/2	present_warm_median_ms	0.48570800000000003
+page/state/2	gpu_first_ms	14.283776999999999
+page/state/2	gpu_warm_median_ms	10.440695999999999
+page/state/2	gpu_warm_p95_ms	11.042928999999999
+page/navigation/2	rects	20
+page/navigation/2	masks_drawn	50
+page/navigation/2	other_commands	31
+page/navigation/2	mask_resources	46
+page/navigation/2	mask_kib	861.255859375
+page/navigation/2	compose_cold_ms	3.941796
+page/navigation/2	compose_warm_ms	0.046513
+page/navigation/2	cpu_median_ms	25.200929000000002
+page/navigation/2	present_cold_ms	0.797207
+page/navigation/2	present_warm_median_ms	0.490426
+page/navigation/2	gpu_first_ms	14.626671
+page/navigation/2	gpu_warm_median_ms	10.220555
+page/navigation/2	gpu_warm_p95_ms	10.48913
+page/text/2	rects	17
+page/text/2	masks_drawn	58
+page/text/2	other_commands	31
+page/text/2	mask_resources	57
+page/text/2	mask_kib	530.2939453125
+page/text/2	compose_cold_ms	2.8264280000000004
+page/text/2	compose_warm_ms	0.046335999999999995
+page/text/2	cpu_median_ms	17.617328
+page/text/2	present_cold_ms	1.11022
+page/text/2	present_warm_median_ms	0.485356
+page/text/2	gpu_first_ms	12.686523
+page/text/2	gpu_warm_median_ms	9.812909999999999
+page/text/2	gpu_warm_p95_ms	10.458171
+page/controls/2	rects	13
+page/controls/2	masks_drawn	45
+page/controls/2	other_commands	38
+page/controls/2	mask_resources	42
+page/controls/2	mask_kib	307.6005859375
+page/controls/2	compose_cold_ms	1.651291
+page/controls/2	compose_warm_ms	0.044641999999999994
+page/controls/2	cpu_median_ms	11.512633
+page/controls/2	present_cold_ms	0.705488
+page/controls/2	present_warm_median_ms	0.48464
+page/controls/2	gpu_first_ms	15.976672
+page/controls/2	gpu_warm_median_ms	9.074184
+page/controls/2	gpu_warm_p95_ms	9.344509
+page/input/2	rects	15
+page/input/2	masks_drawn	45
+page/input/2	other_commands	35
+page/input/2	mask_resources	41
+page/input/2	mask_kib	705.71875
+page/input/2	compose_cold_ms	3.2170419999999997
+page/input/2	compose_warm_ms	0.044744
+page/input/2	cpu_median_ms	22.470967
+page/input/2	present_cold_ms	0.705403
+page/input/2	present_warm_median_ms	0.48398199999999997
+page/input/2	gpu_first_ms	13.607101
+page/input/2	gpu_warm_median_ms	9.907324000000001
+page/input/2	gpu_warm_p95_ms	10.806412
+page/families/2	rects	14
+page/families/2	masks_drawn	48
+page/families/2	other_commands	49
+page/families/2	mask_resources	46
+page/families/2	mask_kib	216.9052734375
+page/families/2	compose_cold_ms	1.39425
+page/families/2	compose_warm_ms	0.045424
+page/families/2	cpu_median_ms	9.496953000000001
+page/families/2	present_cold_ms	0.745799
+page/families/2	present_warm_median_ms	0.489822
+page/families/2	gpu_first_ms	14.271282
+page/families/2	gpu_warm_median_ms	8.817083
+page/families/2	gpu_warm_p95_ms	9.260942
+page/toolbar/2	rects	17
+page/toolbar/2	masks_drawn	89
+page/toolbar/2	other_commands	56
+page/toolbar/2	mask_resources	83
+page/toolbar/2	mask_kib	773.01953125
+page/toolbar/2	compose_cold_ms	3.943805
+page/toolbar/2	compose_warm_ms	0.053899
+page/toolbar/2	cpu_median_ms	23.669027
+page/toolbar/2	present_cold_ms	0.970591
+page/toolbar/2	present_warm_median_ms	0.537
+page/toolbar/2	gpu_first_ms	12.884423
+page/toolbar/2	gpu_warm_median_ms	9.603563000000001
+page/toolbar/2	gpu_warm_p95_ms	10.187408
+page/fields/2	rects	13
+page/fields/2	masks_drawn	38
+page/fields/2	other_commands	26
+page/fields/2	mask_resources	37
+page/fields/2	mask_kib	326.634765625
+page/fields/2	compose_cold_ms	1.857781
+page/fields/2	compose_warm_ms	0.042659
+page/fields/2	cpu_median_ms	11.819396
+page/fields/2	present_cold_ms	0.712698
+page/fields/2	present_warm_median_ms	0.477682
+page/fields/2	gpu_first_ms	11.817174999999999
+page/fields/2	gpu_warm_median_ms	9.903632
+page/fields/2	gpu_warm_p95_ms	10.317188999999999
+page/forms/2	rects	15
+page/forms/2	masks_drawn	40
+page/forms/2	other_commands	25
+page/forms/2	mask_resources	39
+page/forms/2	mask_kib	321.265625
+page/forms/2	compose_cold_ms	1.7800150000000001
+page/forms/2	compose_warm_ms	0.043673000000000003
+page/forms/2	cpu_median_ms	11.466326
+page/forms/2	present_cold_ms	0.666865
+page/forms/2	present_warm_median_ms	0.469327
+page/forms/2	gpu_first_ms	10.730791
+page/forms/2	gpu_warm_median_ms	8.895217
+page/forms/2	gpu_warm_p95_ms	9.288321
+page/properties/2	rects	17
+page/properties/2	masks_drawn	60
+page/properties/2	other_commands	34
+page/properties/2	mask_resources	56
+page/properties/2	mask_kib	488.8388671875
+page/properties/2	compose_cold_ms	2.539965
+page/properties/2	compose_warm_ms	0.046644000000000005
+page/properties/2	cpu_median_ms	17.429476
+page/properties/2	present_cold_ms	0.821158
+page/properties/2	present_warm_median_ms	0.49189800000000006
+page/properties/2	gpu_first_ms	14.334444
+page/properties/2	gpu_warm_median_ms	10.671023
+page/properties/2	gpu_warm_p95_ms	11.38606
+page/progress/2	rects	20
+page/progress/2	masks_drawn	49
+page/progress/2	other_commands	35
+page/progress/2	mask_resources	48
+page/progress/2	mask_kib	679.1044921875
+page/progress/2	compose_cold_ms	2.979689
+page/progress/2	compose_warm_ms	0.045404
+page/progress/2	cpu_median_ms	20.777238999999998
+page/progress/2	present_cold_ms	0.791114
+page/progress/2	present_warm_median_ms	0.512767
+page/progress/2	gpu_first_ms	12.958603
+page/progress/2	gpu_warm_median_ms	9.902987
+page/progress/2	gpu_warm_p95_ms	10.327461
+page/colors/2	rects	119
+page/colors/2	masks_drawn	37
+page/colors/2	other_commands	39
+page/colors/2	mask_resources	36
+page/colors/2	mask_kib	578.158203125
+page/colors/2	compose_cold_ms	2.918225
+page/colors/2	compose_warm_ms	0.049149
+page/colors/2	cpu_median_ms	56.393022
+page/colors/2	present_cold_ms	0.821669
+page/colors/2	present_warm_median_ms	0.502903
+page/colors/2	gpu_first_ms	13.516861
+page/colors/2	gpu_warm_median_ms	10.256143
+page/colors/2	gpu_warm_p95_ms	10.798366
+page/chips/2	rects	14
+page/chips/2	masks_drawn	64
+page/chips/2	other_commands	37
+page/chips/2	mask_resources	56
+page/chips/2	mask_kib	649.7294921875
+page/chips/2	compose_cold_ms	3.181428
+page/chips/2	compose_warm_ms	0.048996000000000005
+page/chips/2	cpu_median_ms	20.834262
+page/chips/2	present_cold_ms	0.8452919999999999
+page/chips/2	present_warm_median_ms	0.505397
+page/chips/2	gpu_first_ms	14.295627999999999
+page/chips/2	gpu_warm_median_ms	10.357942999999999
+page/chips/2	gpu_warm_p95_ms	10.505377
+page/editing/2	rects	16
+page/editing/2	masks_drawn	37
+page/editing/2	other_commands	22
+page/editing/2	mask_resources	35
+page/editing/2	mask_kib	657.8095703125
+page/editing/2	compose_cold_ms	2.8221700000000003
+page/editing/2	compose_warm_ms	0.046059
+page/editing/2	cpu_median_ms	16.668166000000003
+page/editing/2	present_cold_ms	0.773668
+page/editing/2	present_warm_median_ms	0.461671
+page/editing/2	gpu_first_ms	12.714497
+page/editing/2	gpu_warm_median_ms	10.038946
+page/editing/2	gpu_warm_p95_ms	10.468607
+page/numbers/2	rects	14
+page/numbers/2	masks_drawn	45
+page/numbers/2	other_commands	22
+page/numbers/2	mask_resources	43
+page/numbers/2	mask_kib	615.1572265625
+page/numbers/2	compose_cold_ms	3.252838
+page/numbers/2	compose_warm_ms	0.043014
+page/numbers/2	cpu_median_ms	19.059428
+page/numbers/2	present_cold_ms	0.734629
+page/numbers/2	present_warm_median_ms	0.470357
+page/numbers/2	gpu_first_ms	12.71985
+page/numbers/2	gpu_warm_median_ms	10.145245000000001
+page/numbers/2	gpu_warm_p95_ms	10.852611
+page/fonts/2	rects	14
+page/fonts/2	masks_drawn	85
+page/fonts/2	other_commands	34
+page/fonts/2	mask_resources	80
+page/fonts/2	mask_kib	569.4189453125
+page/fonts/2	compose_cold_ms	2.997635
+page/fonts/2	compose_warm_ms	0.060316
+page/fonts/2	cpu_median_ms	18.984047
+page/fonts/2	present_cold_ms	1.2053960000000001
+page/fonts/2	present_warm_median_ms	0.505123
+page/fonts/2	gpu_first_ms	12.663167
+page/fonts/2	gpu_warm_median_ms	9.564075
+page/fonts/2	gpu_warm_p95_ms	9.98465
+page/text-rendering/2	rects	14
+page/text-rendering/2	masks_drawn	35
+page/text-rendering/2	other_commands	19
+page/text-rendering/2	mask_resources	35
+page/text-rendering/2	mask_kib	531.3515625
+page/text-rendering/2	compose_cold_ms	2.3348169999999997
+page/text-rendering/2	compose_warm_ms	0.042603
+page/text-rendering/2	cpu_median_ms	16.197741
+page/text-rendering/2	present_cold_ms	0.732982
+page/text-rendering/2	present_warm_median_ms	0.46560599999999996
+page/text-rendering/2	gpu_first_ms	12.790222
+page/text-rendering/2	gpu_warm_median_ms	9.999129
+page/text-rendering/2	gpu_warm_p95_ms	10.41357
+page/surfaces/2	rects	14
+page/surfaces/2	masks_drawn	32
+page/surfaces/2	other_commands	27
+page/surfaces/2	mask_resources	31
+page/surfaces/2	mask_kib	304.794921875
+page/surfaces/2	compose_cold_ms	1.566796
+page/surfaces/2	compose_warm_ms	0.045337999999999996
+page/surfaces/2	cpu_median_ms	10.615701999999999
+page/surfaces/2	present_cold_ms	0.679611
+page/surfaces/2	present_warm_median_ms	0.466084
+page/surfaces/2	gpu_first_ms	11.221743
+page/surfaces/2	gpu_warm_median_ms	9.392876
+page/surfaces/2	gpu_warm_p95_ms	9.707315
+page/windows/2	rects	21
+page/windows/2	masks_drawn	53
+page/windows/2	other_commands	39
+page/windows/2	mask_resources	45
+page/windows/2	mask_kib	275.328125
+page/windows/2	compose_cold_ms	1.6979339999999998
+page/windows/2	compose_warm_ms	0.050541
+page/windows/2	cpu_median_ms	11.347919999999998
+page/windows/2	present_cold_ms	0.777265
+page/windows/2	present_warm_median_ms	0.490223
+page/windows/2	gpu_first_ms	12.813763
+page/windows/2	gpu_warm_median_ms	9.777376
+page/windows/2	gpu_warm_p95_ms	10.435433
+page/menus/2	rects	15
+page/menus/2	masks_drawn	28
+page/menus/2	other_commands	14
+page/menus/2	mask_resources	27
+page/menus/2	mask_kib	540.158203125
+page/menus/2	compose_cold_ms	2.305368
+page/menus/2	compose_warm_ms	0.041013
+page/menus/2	cpu_median_ms	15.738172000000002
+page/menus/2	present_cold_ms	0.63167
+page/menus/2	present_warm_median_ms	0.43655099999999997
+page/menus/2	gpu_first_ms	10.236974
+page/menus/2	gpu_warm_median_ms	8.591216000000001
+page/menus/2	gpu_warm_p95_ms	8.959398
+page/virtual/2	rects	14
+page/virtual/2	masks_drawn	43
+page/virtual/2	other_commands	30
+page/virtual/2	mask_resources	38
+page/virtual/2	mask_kib	399.453125
+page/virtual/2	compose_cold_ms	2.035061
+page/virtual/2	compose_warm_ms	0.044701
+page/virtual/2	cpu_median_ms	13.717756
+page/virtual/2	present_cold_ms	0.722089
+page/virtual/2	present_warm_median_ms	0.482534
+page/virtual/2	gpu_first_ms	12.470828999999998
+page/virtual/2	gpu_warm_median_ms	9.810633
+page/virtual/2	gpu_warm_p95_ms	10.429401
+page/collections/2	rects	16
+page/collections/2	masks_drawn	62
+page/collections/2	other_commands	24
+page/collections/2	mask_resources	58
+page/collections/2	mask_kib	713.7626953125
+page/collections/2	compose_cold_ms	3.513395
+page/collections/2	compose_warm_ms	0.067724
+page/collections/2	cpu_median_ms	21.899335
+page/collections/2	present_cold_ms	0.8418329999999999
+page/collections/2	present_warm_median_ms	0.48446300000000003
+page/collections/2	gpu_first_ms	14.526121
+page/collections/2	gpu_warm_median_ms	10.342478999999999
+page/collections/2	gpu_warm_p95_ms	11.264418
+page/files/2	rects	19
+page/files/2	masks_drawn	57
+page/files/2	other_commands	25
+page/files/2	mask_resources	50
+page/files/2	mask_kib	635.5751953125
+page/files/2	compose_cold_ms	3.128166
+page/files/2	compose_warm_ms	0.05264
+page/files/2	cpu_median_ms	19.61229
+page/files/2	present_cold_ms	0.811883
+page/files/2	present_warm_median_ms	0.482844
+page/files/2	gpu_first_ms	14.575885
+page/files/2	gpu_warm_median_ms	10.490438
+page/files/2	gpu_warm_p95_ms	11.407336
+page/dragdrop/2	rects	20
+page/dragdrop/2	masks_drawn	48
+page/dragdrop/2	other_commands	26
+page/dragdrop/2	mask_resources	48
+page/dragdrop/2	mask_kib	648.16796875
+page/dragdrop/2	compose_cold_ms	2.836873
+page/dragdrop/2	compose_warm_ms	0.049531
+page/dragdrop/2	cpu_median_ms	20.03432
+page/dragdrop/2	present_cold_ms	0.795351
+page/dragdrop/2	present_warm_median_ms	0.47556600000000004
+page/dragdrop/2	gpu_first_ms	14.254284
+page/dragdrop/2	gpu_warm_median_ms	9.5108
+page/dragdrop/2	gpu_warm_p95_ms	10.776091
+page/live/2	rects	30
+page/live/2	masks_drawn	94
+page/live/2	other_commands	88
+page/live/2	mask_resources	94
+page/live/2	mask_kib	758.052734375
+page/live/2	compose_cold_ms	3.0374090000000002
+page/live/2	compose_warm_ms	0.090159
+page/live/2	cpu_median_ms	24.222099
+page/live/2	present_cold_ms	1.639803
+page/live/2	present_warm_median_ms	0.637257
+page/live/2	gpu_first_ms	12.918313000000001
+page/live/2	gpu_warm_median_ms	9.99649
+page/live/2	gpu_warm_p95_ms	10.666742999999999
+page/meters/2	rects	26
+page/meters/2	masks_drawn	26
+page/meters/2	other_commands	20
+page/meters/2	mask_resources	26
+page/meters/2	mask_kib	311.6123046875
+page/meters/2	compose_cold_ms	1.422077
+page/meters/2	compose_warm_ms	0.041046
+page/meters/2	cpu_median_ms	10.370360999999999
+page/meters/2	present_cold_ms	0.632169
+page/meters/2	present_warm_median_ms	0.445009
+page/meters/2	gpu_first_ms	9.838026999999999
+page/meters/2	gpu_warm_median_ms	8.679054
+page/meters/2	gpu_warm_p95_ms	8.957661
+page/images/2	rects	19
+page/images/2	masks_drawn	36
+page/images/2	other_commands	25
+page/images/2	mask_resources	36
+page/images/2	mask_kib	532.5673828125
+page/images/2	compose_cold_ms	2.427935
+page/images/2	compose_warm_ms	0.04541
+page/images/2	cpu_median_ms	25.268677
+page/images/2	present_cold_ms	0.6803030000000001
+page/images/2	present_warm_median_ms	0.48375
+page/images/2	gpu_first_ms	12.885767
+page/images/2	gpu_warm_median_ms	10.02174
+page/images/2	gpu_warm_p95_ms	10.624619000000001
+page/shapes/2	rects	13
+page/shapes/2	masks_drawn	26
+page/shapes/2	other_commands	20
+page/shapes/2	mask_resources	26
+page/shapes/2	mask_kib	321.05859375
+page/shapes/2	compose_cold_ms	1.636061
+page/shapes/2	compose_warm_ms	0.042554
+page/shapes/2	cpu_median_ms	13.68476
+page/shapes/2	present_cold_ms	0.8871330000000001
+page/shapes/2	present_warm_median_ms	0.45774200000000004
+page/shapes/2	gpu_first_ms	11.95275
+page/shapes/2	gpu_warm_median_ms	9.577259
+page/shapes/2	gpu_warm_p95_ms	9.676910000000001
+page/theme/2	rects	31
+page/theme/2	masks_drawn	45
+page/theme/2	other_commands	28
+page/theme/2	mask_resources	45
+page/theme/2	mask_kib	737.4326171875
+page/theme/2	compose_cold_ms	3.324747
+page/theme/2	compose_warm_ms	0.048182
+page/theme/2	cpu_median_ms	21.61627
+page/theme/2	present_cold_ms	0.801523
+page/theme/2	present_warm_median_ms	0.47505600000000003
+page/theme/2	gpu_first_ms	11.907968
+page/theme/2	gpu_warm_median_ms	9.935684
+page/theme/2	gpu_warm_p95_ms	10.007627
+page/workspace/2	rects	18
+page/workspace/2	masks_drawn	37
+page/workspace/2	other_commands	20
+page/workspace/2	mask_resources	37
+page/workspace/2	mask_kib	313.0087890625
+page/workspace/2	compose_cold_ms	1.734768
+page/workspace/2	compose_warm_ms	0.043893
+page/workspace/2	cpu_median_ms	10.637175000000001
+page/workspace/2	present_cold_ms	0.6924849999999999
+page/workspace/2	present_warm_median_ms	0.459544
+page/workspace/2	gpu_first_ms	10.308714
+page/workspace/2	gpu_warm_median_ms	8.779501
+page/workspace/2	gpu_warm_p95_ms	9.00199
+page/profiling/2	rects	13
+page/profiling/2	masks_drawn	27
+page/profiling/2	other_commands	20
+page/profiling/2	mask_resources	27
+page/profiling/2	mask_kib	366.283203125
+page/profiling/2	compose_cold_ms	1.648519
+page/profiling/2	compose_warm_ms	0.041095
+page/profiling/2	cpu_median_ms	12.053113000000002
+page/profiling/2	present_cold_ms	0.6035889999999999
+page/profiling/2	present_warm_median_ms	0.439118
+page/profiling/2	gpu_first_ms	10.85912
+page/profiling/2	gpu_warm_median_ms	9.197086
+page/profiling/2	gpu_warm_p95_ms	9.247378000000001
+page/overlay/2	rects	13
+page/overlay/2	masks_drawn	27
+page/overlay/2	other_commands	21
+page/overlay/2	mask_resources	27
+page/overlay/2	mask_kib	614.2177734375
+page/overlay/2	compose_cold_ms	2.442952
+page/overlay/2	compose_warm_ms	0.040427
+page/overlay/2	cpu_median_ms	18.058972
+page/overlay/2	present_cold_ms	0.590355
+page/overlay/2	present_warm_median_ms	0.443439
+page/overlay/2	gpu_first_ms	11.544799999999999
+page/overlay/2	gpu_warm_median_ms	9.464445
+page/overlay/2	gpu_warm_p95_ms	9.653043
+mixer: one tick per frame	frames	300
+mixer: one tick per frame	compose_first_ms	0.047042
+mixer: one tick per frame	compose_median_ms	0.075588
+mixer: one tick per frame	compose_p95_ms	0.10621299999999999
+mixer: one tick per frame	cpu_median_ms	1.055407
+mixer: one tick per frame	present_frames	300
+mixer: one tick per frame	present_median_ms	0.422283
+mixer: one tick per frame	present_p95_ms	0.445946
+mixer: one tick per frame	gpu_median_ms	2.222315
+mixer: one tick per frame	gpu_p95_ms	2.294155
+mixer: one tick per frame	mask_resources_median	14
+mixer: one tick per frame	mask_kib_median	18.37890625
+mixer: one tick per frame	new_masks_median	0
+mixer: one tick per frame	new_masks_total	0
+mixer: one tick per frame	new_mask_kib_total	0
+mixer: one tick per frame	other_commands_max	21
+diagram: live zoom steps	frames	30
+diagram: live zoom steps	compose_first_ms	0.24862
+diagram: live zoom steps	compose_median_ms	0.245097
+diagram: live zoom steps	compose_p95_ms	0.27533199999999997
+diagram: live zoom steps	cpu_median_ms	1.650835
+diagram: live zoom steps	present_frames	30
+diagram: live zoom steps	present_median_ms	0.571095
+diagram: live zoom steps	present_p95_ms	0.798038
+diagram: live zoom steps	gpu_median_ms	3.815497
+diagram: live zoom steps	gpu_p95_ms	3.930933
+diagram: live zoom steps	mask_resources_median	27
+diagram: live zoom steps	mask_kib_median	22.576171875
+diagram: live zoom steps	new_masks_median	1
+diagram: live zoom steps	new_masks_total	33
+diagram: live zoom steps	new_mask_kib_total	25.9599609375
+diagram: live zoom steps	other_commands_max	19
+diagram: live zoom settle frame	frames	1
+diagram: live zoom settle frame	compose_first_ms	0.098827
+diagram: live zoom settle frame	compose_median_ms	0.098827
+diagram: live zoom settle frame	compose_p95_ms	0.098827
+diagram: live zoom settle frame	cpu_median_ms	1.4172010000000002
+diagram: live zoom settle frame	present_frames	1
+diagram: live zoom settle frame	present_median_ms	0.40877600000000003
+diagram: live zoom settle frame	present_p95_ms	0.40877600000000003
+diagram: live zoom settle frame	gpu_median_ms	3.7339640000000003
+diagram: live zoom settle frame	gpu_p95_ms	3.7339640000000003
+diagram: live zoom settle frame	mask_resources_median	26
+diagram: live zoom settle frame	mask_kib_median	21.7353515625
+diagram: live zoom settle frame	new_masks_median	0
+diagram: live zoom settle frame	new_masks_total	0
+diagram: live zoom settle frame	new_mask_kib_total	0
+diagram: live zoom settle frame	other_commands_max	15
+diagram: settled zoom in and out	frames	16
+diagram: settled zoom in and out	compose_first_ms	0.239504
+diagram: settled zoom in and out	compose_median_ms	0.214033
+diagram: settled zoom in and out	compose_p95_ms	0.279402
+diagram: settled zoom in and out	cpu_median_ms	1.636456
+diagram: settled zoom in and out	present_frames	16
+diagram: settled zoom in and out	present_median_ms	0.52984
+diagram: settled zoom in and out	present_p95_ms	0.9323089999999999
+diagram: settled zoom in and out	gpu_median_ms	3.8097
+diagram: settled zoom in and out	gpu_p95_ms	3.951182
+diagram: settled zoom in and out	mask_resources_median	27
+diagram: settled zoom in and out	mask_kib_median	24.6298828125
+diagram: settled zoom in and out	new_masks_median	2
+diagram: settled zoom in and out	new_masks_total	30
+diagram: settled zoom in and out	new_mask_kib_total	51.751953125
+diagram: settled zoom in and out	other_commands_max	19
+diagram: pan 7 px per frame	frames	60
+diagram: pan 7 px per frame	compose_first_ms	0.123449
+diagram: pan 7 px per frame	compose_median_ms	0.162982
+diagram: pan 7 px per frame	compose_p95_ms	0.176648
+diagram: pan 7 px per frame	cpu_median_ms	1.934579
+diagram: pan 7 px per frame	present_frames	60
+diagram: pan 7 px per frame	present_median_ms	0.7968040000000001
+diagram: pan 7 px per frame	present_p95_ms	0.880253
+diagram: pan 7 px per frame	gpu_median_ms	3.841383
+diagram: pan 7 px per frame	gpu_p95_ms	3.9420820000000005
+diagram: pan 7 px per frame	mask_resources_median	26
+diagram: pan 7 px per frame	mask_kib_median	21.7353515625
+diagram: pan 7 px per frame	new_masks_median	0
+diagram: pan 7 px per frame	new_masks_total	0
+diagram: pan 7 px per frame	new_mask_kib_total	0
+diagram: pan 7 px per frame	other_commands_max	19
+cards: pan steps	end_scale	1
+cards: pan back steps	end_scale	1
+cards: zoom in steps	end_scale	8
+cards: zoom out steps	end_scale	0.999998152256012
+cards: zoom out further steps	end_scale	0.125
+cards: pan steps	frames	60
+cards: pan steps	compose_first_ms	0.362323
+cards: pan steps	compose_median_ms	0.438897
+cards: pan steps	compose_p95_ms	0.539737
+cards: pan steps	cpu_median_ms	2.464877
+cards: pan steps	present_frames	60
+cards: pan steps	present_median_ms	0.563442
+cards: pan steps	present_p95_ms	0.6097
+cards: pan steps	gpu_median_ms	2.315646
+cards: pan steps	gpu_p95_ms	2.4070609999999997
+cards: pan steps	mask_resources_median	27
+cards: pan steps	mask_kib_median	45.9453125
+cards: pan steps	new_masks_median	0
+cards: pan steps	new_masks_total	36
+cards: pan steps	new_mask_kib_total	65.7421875
+cards: pan steps	other_commands_max	48
+cards: pan rest frame	frames	1
+cards: pan rest frame	compose_first_ms	0.063679
+cards: pan rest frame	compose_median_ms	0.063679
+cards: pan rest frame	compose_p95_ms	0.063679
+cards: pan rest frame	cpu_median_ms	2.557611
+cards: pan rest frame	present_frames	1
+cards: pan rest frame	present_median_ms	0.305298
+cards: pan rest frame	present_p95_ms	0.305298
+cards: pan rest frame	gpu_median_ms	2.256838
+cards: pan rest frame	gpu_p95_ms	2.256838
+cards: pan rest frame	mask_resources_median	27
+cards: pan rest frame	mask_kib_median	45.9453125
+cards: pan rest frame	new_masks_median	0
+cards: pan rest frame	new_masks_total	0
+cards: pan rest frame	new_mask_kib_total	0
+cards: pan rest frame	other_commands_max	36
+cards: pan back steps	frames	60
+cards: pan back steps	compose_first_ms	0.351802
+cards: pan back steps	compose_median_ms	0.435844
+cards: pan back steps	compose_p95_ms	0.460712
+cards: pan back steps	cpu_median_ms	2.446837
+cards: pan back steps	present_frames	60
+cards: pan back steps	present_median_ms	0.5597300000000001
+cards: pan back steps	present_p95_ms	0.6130289999999999
+cards: pan back steps	gpu_median_ms	2.331079
+cards: pan back steps	gpu_p95_ms	2.416538
+cards: pan back steps	mask_resources_median	27
+cards: pan back steps	mask_kib_median	45.9453125
+cards: pan back steps	new_masks_median	0
+cards: pan back steps	new_masks_total	36
+cards: pan back steps	new_mask_kib_total	63.28125
+cards: pan back steps	other_commands_max	48
+cards: pan back rest frame	frames	1
+cards: pan back rest frame	compose_first_ms	0.045764
+cards: pan back rest frame	compose_median_ms	0.045764
+cards: pan back rest frame	compose_p95_ms	0.045764
+cards: pan back rest frame	cpu_median_ms	2.392107
+cards: pan back rest frame	present_frames	1
+cards: pan back rest frame	present_median_ms	0.489056
+cards: pan back rest frame	present_p95_ms	0.489056
+cards: pan back rest frame	gpu_median_ms	2.2607180000000002
+cards: pan back rest frame	gpu_p95_ms	2.2607180000000002
+cards: pan back rest frame	mask_resources_median	27
+cards: pan back rest frame	mask_kib_median	43.484375
+cards: pan back rest frame	new_masks_median	0
+cards: pan back rest frame	new_masks_total	0
+cards: pan back rest frame	new_mask_kib_total	0
+cards: pan back rest frame	other_commands_max	36
+cards: zoom in steps	frames	60
+cards: zoom in steps	compose_first_ms	4.1058010000000005
+cards: zoom in steps	compose_median_ms	0.49977699999999997
+cards: zoom in steps	compose_p95_ms	0.522406
+cards: zoom in steps	cpu_median_ms	2.494835
+cards: zoom in steps	present_frames	60
+cards: zoom in steps	present_median_ms	0.375608
+cards: zoom in steps	present_p95_ms	0.5329389999999999
+cards: zoom in steps	gpu_median_ms	2.3126100000000003
+cards: zoom in steps	gpu_p95_ms	2.467446
+cards: zoom in steps	mask_resources_median	7
+cards: zoom in steps	mask_kib_median	9.669921875
+cards: zoom in steps	new_masks_median	0
+cards: zoom in steps	new_masks_total	26
+cards: zoom in steps	new_mask_kib_total	46.4296875
+cards: zoom in steps	other_commands_max	36
+cards: zoom in rest frame	frames	1
+cards: zoom in rest frame	compose_first_ms	4.539714999999999
+cards: zoom in rest frame	compose_median_ms	4.539714999999999
+cards: zoom in rest frame	compose_p95_ms	4.539714999999999
+cards: zoom in rest frame	cpu_median_ms	1.018575
+cards: zoom in rest frame	present_frames	1
+cards: zoom in rest frame	present_median_ms	0.335997
+cards: zoom in rest frame	present_p95_ms	0.335997
+cards: zoom in rest frame	gpu_median_ms	2.498242
+cards: zoom in rest frame	gpu_p95_ms	2.498242
+cards: zoom in rest frame	mask_resources_median	0
+cards: zoom in rest frame	mask_kib_median	0
+cards: zoom in rest frame	new_masks_median	0
+cards: zoom in rest frame	new_masks_total	0
+cards: zoom in rest frame	new_mask_kib_total	0
+cards: zoom in rest frame	other_commands_max	1
+cards: zoom out steps	frames	60
+cards: zoom out steps	compose_first_ms	4.214434000000001
+cards: zoom out steps	compose_median_ms	0.499779
+cards: zoom out steps	compose_p95_ms	1.0120909999999999
+cards: zoom out steps	cpu_median_ms	2.279348
+cards: zoom out steps	present_frames	60
+cards: zoom out steps	present_median_ms	0.398443
+cards: zoom out steps	present_p95_ms	0.5372349999999999
+cards: zoom out steps	gpu_median_ms	2.3755450000000002
+cards: zoom out steps	gpu_p95_ms	2.5453680000000003
+cards: zoom out steps	mask_resources_median	7
+cards: zoom out steps	mask_kib_median	522.71875
+cards: zoom out steps	new_masks_median	0
+cards: zoom out steps	new_masks_total	27
+cards: zoom out steps	new_mask_kib_total	2516.8984375
+cards: zoom out steps	other_commands_max	36
+cards: zoom out rest frame	frames	1
+cards: zoom out rest frame	compose_first_ms	4.192288
+cards: zoom out rest frame	compose_median_ms	4.192288
+cards: zoom out rest frame	compose_p95_ms	4.192288
+cards: zoom out rest frame	cpu_median_ms	2.659564
+cards: zoom out rest frame	present_frames	1
+cards: zoom out rest frame	present_median_ms	0.761893
+cards: zoom out rest frame	present_p95_ms	0.761893
+cards: zoom out rest frame	gpu_median_ms	2.474717
+cards: zoom out rest frame	gpu_p95_ms	2.474717
+cards: zoom out rest frame	mask_resources_median	27
+cards: zoom out rest frame	mask_kib_median	43.484375
+cards: zoom out rest frame	new_masks_median	27
+cards: zoom out rest frame	new_masks_total	27
+cards: zoom out rest frame	new_mask_kib_total	43.484375
+cards: zoom out rest frame	other_commands_max	36
+cards: zoom out further steps	frames	60
+cards: zoom out further steps	compose_first_ms	4.102934
+cards: zoom out further steps	compose_median_ms	0.574918
+cards: zoom out further steps	compose_p95_ms	0.754881
+cards: zoom out further steps	cpu_median_ms	1.7727210000000002
+cards: zoom out further steps	present_frames	60
+cards: zoom out further steps	present_median_ms	0.9150039999999999
+cards: zoom out further steps	present_p95_ms	1.348224
+cards: zoom out further steps	gpu_median_ms	2.2582549999999997
+cards: zoom out further steps	gpu_p95_ms	2.3800459999999997
+cards: zoom out further steps	mask_resources_median	94
+cards: zoom out further steps	mask_kib_median	155.509765625
+cards: zoom out further steps	new_masks_median	0
+cards: zoom out further steps	new_masks_total	130
+cards: zoom out further steps	new_mask_kib_total	214.3759765625
+cards: zoom out further steps	other_commands_max	192
+cards: zoom out further rest frame	frames	1
+cards: zoom out further rest frame	compose_first_ms	4.773669
+cards: zoom out further rest frame	compose_median_ms	4.773669
+cards: zoom out further rest frame	compose_p95_ms	4.773669
+cards: zoom out further rest frame	cpu_median_ms	0.903824
+cards: zoom out further rest frame	present_frames	1
+cards: zoom out further rest frame	present_median_ms	2.3499839999999996
+cards: zoom out further rest frame	present_p95_ms	2.3499839999999996
+cards: zoom out further rest frame	gpu_median_ms	3.0949
+cards: zoom out further rest frame	gpu_p95_ms	3.0949
+cards: zoom out further rest frame	mask_resources_median	131
+cards: zoom out further rest frame	mask_kib_median	5.185546875
+cards: zoom out further rest frame	new_masks_median	131
+cards: zoom out further rest frame	new_masks_total	131
+cards: zoom out further rest frame	new_mask_kib_total	5.185546875
+cards: zoom out further rest frame	other_commands_max	192
+knob: gallery input page, Shift+Up (whole display list)	frames	200
+knob: gallery input page, Shift+Up (whole display list)	compose_first_ms	0.928694
+knob: gallery input page, Shift+Up (whole display list)	compose_median_ms	1.11611
+knob: gallery input page, Shift+Up (whole display list)	compose_p95_ms	1.1691
+knob: gallery input page, Shift+Up (whole display list)	cpu_median_ms	3.5153480000000004
+knob: gallery input page, Shift+Up (whole display list)	present_frames	200
+knob: gallery input page, Shift+Up (whole display list)	present_median_ms	0.58301
+knob: gallery input page, Shift+Up (whole display list)	present_p95_ms	0.619923
+knob: gallery input page, Shift+Up (whole display list)	gpu_median_ms	4.534019000000001
+knob: gallery input page, Shift+Up (whole display list)	gpu_p95_ms	4.667044000000001
+knob: gallery input page, Shift+Up (whole display list)	mask_resources_median	38
+knob: gallery input page, Shift+Up (whole display list)	mask_kib_median	69.7578125
+knob: gallery input page, Shift+Up (whole display list)	new_masks_median	3
+knob: gallery input page, Shift+Up (whole display list)	new_masks_total	600
+knob: gallery input page, Shift+Up (whole display list)	new_mask_kib_total	1963.28125
+knob: gallery input page, Shift+Up (whole display list)	other_commands_max	45
+knob: isolated, no readout, host writes	frames	200
+knob: isolated, no readout, host writes	compose_first_ms	0.002954
+knob: isolated, no readout, host writes	compose_median_ms	0.028713000000000002
+knob: isolated, no readout, host writes	compose_p95_ms	0.029903000000000002
+knob: isolated, no readout, host writes	cpu_median_ms	0.08881700000000001
+knob: isolated, no readout, host writes	present_frames	200
+knob: isolated, no readout, host writes	present_median_ms	0.370456
+knob: isolated, no readout, host writes	present_p95_ms	0.392124
+knob: isolated, no readout, host writes	gpu_median_ms	0.8996149999999999
+knob: isolated, no readout, host writes	gpu_p95_ms	1.004256
+knob: isolated, no readout, host writes	mask_resources_median	0
+knob: isolated, no readout, host writes	mask_kib_median	0
+knob: isolated, no readout, host writes	new_masks_median	0
+knob: isolated, no readout, host writes	new_masks_total	0
+knob: isolated, no readout, host writes	new_mask_kib_total	0
+knob: isolated, no readout, host writes	other_commands_max	2
+J1 `navigation`: resize +7 px per frame	frames	30
+J1 `navigation`: resize +7 px per frame	compose_first_ms	1.960196
+J1 `navigation`: resize +7 px per frame	compose_median_ms	2.315004
+J1 `navigation`: resize +7 px per frame	compose_p95_ms	3.7129049999999997
+J1 `navigation`: resize +7 px per frame	cpu_median_ms	7.201686
+J1 `navigation`: resize +7 px per frame	present_frames	30
+J1 `navigation`: resize +7 px per frame	present_median_ms	1.623467
+J1 `navigation`: resize +7 px per frame	present_p95_ms	1.7245249999999999
+J1 `navigation`: resize +7 px per frame	gpu_median_ms	7.032071
+J1 `navigation`: resize +7 px per frame	gpu_p95_ms	12.810742
+J1 `navigation`: resize +7 px per frame	mask_resources_median	50
+J1 `navigation`: resize +7 px per frame	mask_kib_median	217.951171875
+J1 `navigation`: resize +7 px per frame	new_masks_median	1
+J1 `navigation`: resize +7 px per frame	new_masks_total	23
+J1 `navigation`: resize +7 px per frame	new_mask_kib_total	1361.65234375
+J1 `navigation`: resize +7 px per frame	other_commands_max	33
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	frames	4
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	compose_first_ms	6.348931
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	compose_median_ms	7.674039
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	compose_p95_ms	8.091944
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	cpu_median_ms	22.722212
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	present_frames	4
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	present_median_ms	4.155691
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	present_p95_ms	5.099041000000001
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	gpu_median_ms	11.656013999999999
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	gpu_p95_ms	15.916733999999998
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	mask_resources_median	46
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	mask_kib_median	659.4619140625
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	new_masks_median	44
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	new_masks_total	178
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	new_mask_kib_total	2338.7919921875
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	other_commands_max	31

@@ -208,9 +208,15 @@ impl CpuRenderer {
             }))?;
         let mapping = FrameMapping::new(width, height, viewport)
             .map_err(|_| CpuRenderError::EmptyViewport)?;
-        // Validate every command before preparing or allocating anything.
+        // Validate every command before allocating the frame. A shape is
+        // validated by preparing it, and the frame draws from that
+        // preparation: one entry per `DrawShape` in command order, which
+        // the rasterizer below keeps.
+        let mut shapes = Vec::new();
         for command in scene.commands() {
-            check(scene, command, &mapping)?;
+            if let Some(shape) = check(scene, command, &mapping)? {
+                shapes.push(shape);
+            }
         }
         let scene = self.vectors.prepare_fills(scene)?;
         // The strokes the rasterizer left, one entry per `DrawVector` in
@@ -259,13 +265,17 @@ impl CpuRenderer {
             scale_x: f64::from(width) / f64::from(viewport.width()),
             scale_y: f64::from(height) / f64::from(viewport.height()),
             logical: (f64::from(viewport.width()), f64::from(viewport.height())),
-            mapping,
         };
         let mut strokes = strokes.into_iter();
+        let mut shapes = shapes.into_iter();
         for command in scene.commands() {
             if matches!(command, DrawCommand::DrawVector { .. }) {
                 if let Some((stroke, color)) = strokes.next().flatten() {
                     frame.draw_stroke(&stroke, color);
+                }
+            } else if matches!(command, DrawCommand::DrawShape { .. }) {
+                if let Some((shape, fill, border)) = shapes.next().flatten() {
+                    frame.draw_shape(&shape, fill, border);
                 }
             } else {
                 frame.draw(&scene, command)?;
@@ -323,12 +333,18 @@ impl CpuRenderer {
     }
 }
 
+/// A shape ready to draw with its premultiplied fill and border paints, or
+/// `None` for one that draws nothing.
+type Shape = Option<(PreparedShape, [f32; 4], [f32; 4])>;
+
 /// Rejects a command this renderer cannot draw or whose resource is missing.
+/// For a `DrawShape` it returns the shape's preparation, which is its
+/// validation, and `None` for every other command.
 fn check(
     scene: &DisplayList,
     command: &DrawCommand,
     mapping: &FrameMapping,
-) -> Result<(), CpuRenderError> {
+) -> Result<Option<Shape>, CpuRenderError> {
     match command {
         DrawCommand::FillRect { .. } => Ok(()),
         DrawCommand::DrawShape {
@@ -338,10 +354,16 @@ fn check(
             clip,
             ..
         } => {
-            fill.map(solid).transpose()?;
-            border.map(|border| solid(border.paint())).transpose()?;
-            PreparedShape::new(geometry, border.as_ref(), *clip, mapping)?;
-            Ok(())
+            let fill = fill.map(solid).transpose()?.unwrap_or([0.0; 4]);
+            let paint = border
+                .map(|border| solid(border.paint()))
+                .transpose()?
+                .unwrap_or([0.0; 4]);
+            let shape = PreparedShape::new(geometry, border.as_ref(), *clip, mapping)?;
+            let visible = fill[3] != 0.0 || paint[3] != 0.0;
+            return Ok(Some(
+                shape.filter(|_| visible).map(|shape| (shape, fill, paint)),
+            ));
         }
         DrawCommand::DrawMask { mask, .. } => scene
             .mask(*mask)
@@ -364,6 +386,7 @@ fn check(
             .ok_or(CpuRenderError::InvalidReference),
         _ => Err(CpuRenderError::Unsupported),
     }
+    .map(|()| None)
 }
 
 /// The premultiplied color of a paint this renderer knows.
@@ -406,7 +429,6 @@ struct Frame {
     scale_x: f64,
     scale_y: f64,
     logical: (f64, f64),
-    mapping: FrameMapping,
 }
 
 impl Frame {
@@ -515,29 +537,6 @@ impl Frame {
     }
 
     fn draw(&mut self, scene: &DisplayList, command: &DrawCommand) -> Result<(), CpuRenderError> {
-        if let DrawCommand::DrawShape {
-            geometry,
-            fill,
-            border,
-            clip,
-            ..
-        } = command
-        {
-            let fill = fill.map(solid).transpose()?.unwrap_or([0.0; 4]);
-            let paint = border
-                .map(|border| solid(border.paint()))
-                .transpose()?
-                .unwrap_or([0.0; 4]);
-            if fill[3] == 0.0 && paint[3] == 0.0 {
-                return Ok(());
-            }
-            if let Some(shape) =
-                PreparedShape::new(geometry, border.as_ref(), *clip, &self.mapping)?
-            {
-                self.draw_shape(&shape, fill, paint);
-            }
-            return Ok(());
-        }
         let (rect, color, clip, source, turn) = match *command {
             DrawCommand::FillRect { rect, color } => {
                 (rect, color, None, Source::Fill, QuarterTurn::None)
@@ -724,7 +723,6 @@ fn sample_image(image: &RasterImage, sampling: ImageSampling, u: f32, v: f32) ->
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pert_ui_runtime::Viewport;
 
     #[test]
     fn a_filled_run_is_the_per_pixel_blend() -> Result<(), Box<dyn std::error::Error>> {
@@ -737,7 +735,6 @@ mod tests {
             })
             .collect();
         let width = stored.len();
-        let viewport = Viewport::new(width as f32, 1.0, 1.0)?;
         let sources = [
             // Nothing, opaque, translucent, and coverage-scaled paints.
             [0.0, 0.0, 0.0, 0.0],
@@ -754,7 +751,6 @@ mod tests {
                 scale_x: 1.0,
                 scale_y: 1.0,
                 logical: (width as f64, 1.0),
-                mapping: FrameMapping::new(width as u32, 1, viewport)?,
             };
             // The run leaves the first and last pixel alone.
             frame.fill_run(0, 1..width - 1, source, &mut None);

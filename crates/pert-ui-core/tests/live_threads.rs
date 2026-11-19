@@ -31,6 +31,7 @@ fn a_real_producer_is_drained_in_bounded_steps_and_a_starved_consumer_sees_its_l
     let config = SeriesConfig::new(Capacity::new(RING)?).with_ring_capacity(Capacity::new(RING)?);
     let (mut endpoint, mut consumer) = series_bridge::<u64>(config);
     let (starved, starved_done) = mpsc::channel();
+    let (drained, drained_done) = mpsc::channel();
     let producer = thread::spawn(move || {
         let (mut accepted, mut overflowed) = (0u64, 0u64);
         for n in 1..=STARVED + RUNNING {
@@ -41,6 +42,12 @@ fn a_real_producer_is_drained_in_bounded_steps_and_a_starved_consumer_sees_its_l
             }
             if n == STARVED {
                 starved.send(()).map_err(|error| error.to_string())?;
+                // Without this wait a fast producer can publish the whole
+                // running phase before the first drain, so every item after
+                // the gap overflows and nothing arrives to carry the break.
+                drained_done
+                    .recv_timeout(DEADLINE)
+                    .map_err(|error| error.to_string())?;
             }
         }
         // Dropping the endpoint here is what the consumer observes as the end.
@@ -51,6 +58,7 @@ fn a_real_producer_is_drained_in_bounded_steps_and_a_starved_consumer_sees_its_l
     // the ring holds; the first drain takes exactly one ring and reports the rest.
     starved_done.recv_timeout(DEADLINE)?;
     let first = *consumer.drain();
+    drained.send(())?;
     assert_eq!(
         first.accepted, RING as u64,
         "one drain takes at most the ring"

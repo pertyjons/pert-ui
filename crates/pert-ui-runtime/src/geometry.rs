@@ -4,7 +4,7 @@
 mod raster;
 use crate::{Color, DrawError, Length, Painter, Point, Rect};
 pub(crate) use raster::{
-    CHORD_TOLERANCE, MAX_EDGES, coverage_bounds, line_x, rasterize_vector, stroke_subpaths,
+    CHORD_TOLERANCE, MAX_EDGES, coverage_bounds, line_x, rasterize_fill, stroke_subpaths,
 };
 use std::sync::Arc;
 
@@ -696,39 +696,29 @@ impl Painter {
     /// Joins apply between consecutive segments, including between the flattened
     /// pieces of a curve, where the turn is small. Zero-length subpaths draw a
     /// dot or square for round and square caps and nothing for butt caps. A zero
-    /// width draws nothing. The outline is filled as one union, so self-overlap
-    /// and joins are covered once. Clipping, caching and errors are those of
-    /// [`Self::fill_path`].
+    /// width draws nothing. The stroke is covered as one region, so self-overlap
+    /// and joins are covered once.
     ///
-    /// A renderer may cover a stroke itself, per pixel from its distance to
+    /// Coverage is evaluated per physical pixel center from the distance to
     /// the stroke's edge, as [`PreparedStroke`](crate::PreparedStroke)
-    /// defines and both of pert-ui's renderers do: no mask is built, curves
-    /// are flattened to chords within 0.2 physical pixels at the displayed
-    /// size, the edge is antialiased over one pixel, a stroke narrower than
-    /// a physical pixel is drawn one pixel wide and faded by its width, and
-    /// a magnifying view keeps it sharp. The region of a stroke at least a
-    /// pixel wide is the one described above, with joins inside a
-    /// flattened curve round and caps and joins at a curve's end along its
-    /// tangent, as in the mask coverage below; the two differ at edge
-    /// pixels and by the flattening. A renderer without that path draws
-    /// the mask coverage, which
-    /// [`DisplayList::rasterized`](crate::DisplayList::rasterized) returns.
-    ///
-    /// As a mask, coverage is sampled as [`Self::fill_path`] samples it. A path of
-    /// straight segments, with any join and cap, is covered directly from its
-    /// segment bodies, joins and caps, with exact round joins and caps, without
-    /// building an outline. Its cost grows with the number of pixel rows each
-    /// segment, join and cap spans rather than with how many outline edges
-    /// cross each row, which suits a trace that changes on every frame; a trace
-    /// whose segments each span many rows still costs in proportion. A path
-    /// with curves is outlined, with curves and round parts flattened within
-    /// 0.2 physical pixels, and filled.
+    /// defines: curves are flattened to chords within 0.2 physical pixels at
+    /// the displayed size, joins inside a flattened curve are round and caps
+    /// and joins at a curve's end follow its tangent, the edge is antialiased
+    /// over one pixel, a stroke narrower than a physical pixel is drawn one
+    /// pixel wide and faded by its width, and a magnifying view keeps it
+    /// sharp. Both of pert-ui's renderers draw strokes this way without a
+    /// mask; [`VectorRasterizer`](crate::VectorRasterizer) and
+    /// [`DisplayList::rasterized`](crate::DisplayList::rasterized) sample the
+    /// same coverage into a mask on the frame's pixels for a renderer without
+    /// that path.
     ///
     /// # Errors
-    /// As [`Self::fill_path`]: recording cannot fail, and backend preparation can fail for
-    /// the coverage or flattening budget. A renderer that covers the stroke
-    /// itself reports the errors of
-    /// [`PreparedStroke::new`](crate::PreparedStroke::new) instead.
+    /// Recording cannot fail. Preparing the stroke for a frame reports the
+    /// errors of [`PreparedStroke::new`](crate::PreparedStroke::new): its
+    /// segment and tile budgets, the range it is evaluated in and the
+    /// flattening budget. As a mask it can also fail with `CoverageTooLarge`
+    /// when its span on the frame exceeds
+    /// [`MaskImage::MAX_PIXELS`](crate::MaskImage::MAX_PIXELS).
     pub fn stroke_path(
         &mut self,
         path: &Path,

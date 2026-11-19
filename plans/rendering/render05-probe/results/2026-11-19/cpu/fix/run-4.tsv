@@ -1,0 +1,1150 @@
+page/layout/1	rects	28
+page/layout/1	masks_drawn	43
+page/layout/1	other_commands	23
+page/layout/1	mask_resources	41
+page/layout/1	mask_kib	110.791015625
+page/layout/1	compose_cold_ms	1.390169
+page/layout/1	compose_warm_ms	0.051400999999999995
+page/layout/1	cpu_median_ms	4.022888
+page/splits/1	rects	24
+page/splits/1	masks_drawn	38
+page/splits/1	other_commands	26
+page/splits/1	mask_resources	36
+page/splits/1	mask_kib	94.40234375
+page/splits/1	compose_cold_ms	1.25254
+page/splits/1	compose_warm_ms	0.04251
+page/splits/1	cpu_median_ms	3.6409010000000004
+page/shells/1	rects	28
+page/shells/1	masks_drawn	45
+page/shells/1	other_commands	33
+page/shells/1	mask_resources	40
+page/shells/1	mask_kib	115.98828125
+page/shells/1	compose_cold_ms	1.347787
+page/shells/1	compose_warm_ms	0.045191
+page/shells/1	cpu_median_ms	4.278545
+page/scroll/1	rects	21
+page/scroll/1	masks_drawn	43
+page/scroll/1	other_commands	32
+page/scroll/1	mask_resources	42
+page/scroll/1	mask_kib	103.408203125
+page/scroll/1	compose_cold_ms	1.2876070000000002
+page/scroll/1	compose_warm_ms	0.045613
+page/scroll/1	cpu_median_ms	3.907615
+page/sections/1	rects	22
+page/sections/1	masks_drawn	53
+page/sections/1	other_commands	25
+page/sections/1	mask_resources	41
+page/sections/1	mask_kib	151.703125
+page/sections/1	compose_cold_ms	1.614938
+page/sections/1	compose_warm_ms	0.04518
+page/sections/1	cpu_median_ms	5.165346
+page/tool-windows/1	rects	23
+page/tool-windows/1	masks_drawn	50
+page/tool-windows/1	other_commands	26
+page/tool-windows/1	mask_resources	47
+page/tool-windows/1	mask_kib	173.0390625
+page/tool-windows/1	compose_cold_ms	1.870806
+page/tool-windows/1	compose_warm_ms	0.046289
+page/tool-windows/1	cpu_median_ms	5.589982
+page/transforms/1	rects	41
+page/transforms/1	masks_drawn	43
+page/transforms/1	other_commands	31
+page/transforms/1	mask_resources	39
+page/transforms/1	mask_kib	187.9697265625
+page/transforms/1	compose_cold_ms	1.9221279999999998
+page/transforms/1	compose_warm_ms	0.044932
+page/transforms/1	cpu_median_ms	6.272728
+page/state/1	rects	26
+page/state/1	masks_drawn	46
+page/state/1	other_commands	35
+page/state/1	mask_resources	42
+page/state/1	mask_kib	144.630859375
+page/state/1	compose_cold_ms	1.6646239999999999
+page/state/1	compose_warm_ms	0.044793
+page/state/1	cpu_median_ms	5.043299
+page/navigation/1	rects	20
+page/navigation/1	masks_drawn	50
+page/navigation/1	other_commands	31
+page/navigation/1	mask_resources	46
+page/navigation/1	mask_kib	215.751953125
+page/navigation/1	compose_cold_ms	2.343311
+page/navigation/1	compose_warm_ms	0.047398
+page/navigation/1	cpu_median_ms	6.895553
+page/text/1	rects	17
+page/text/1	masks_drawn	58
+page/text/1	other_commands	31
+page/text/1	mask_resources	57
+page/text/1	mask_kib	133.474609375
+page/text/1	compose_cold_ms	1.724507
+page/text/1	compose_warm_ms	0.046324
+page/text/1	cpu_median_ms	4.841556000000001
+page/controls/1	rects	13
+page/controls/1	masks_drawn	45
+page/controls/1	other_commands	38
+page/controls/1	mask_resources	42
+page/controls/1	mask_kib	77.6396484375
+page/controls/1	compose_cold_ms	1.038946
+page/controls/1	compose_warm_ms	0.044356
+page/controls/1	cpu_median_ms	3.2224570000000003
+page/input/1	rects	15
+page/input/1	masks_drawn	45
+page/input/1	other_commands	35
+page/input/1	mask_resources	41
+page/input/1	mask_kib	177.1923828125
+page/input/1	compose_cold_ms	1.9284860000000001
+page/input/1	compose_warm_ms	0.044224
+page/input/1	cpu_median_ms	6.116322
+page/families/1	rects	14
+page/families/1	masks_drawn	48
+page/families/1	other_commands	49
+page/families/1	mask_resources	46
+page/families/1	mask_kib	54.728515625
+page/families/1	compose_cold_ms	0.931038
+page/families/1	compose_warm_ms	0.046017999999999996
+page/families/1	cpu_median_ms	2.633534
+page/toolbar/1	rects	17
+page/toolbar/1	masks_drawn	89
+page/toolbar/1	other_commands	56
+page/toolbar/1	mask_resources	83
+page/toolbar/1	mask_kib	193.798828125
+page/toolbar/1	compose_cold_ms	2.4737600000000004
+page/toolbar/1	compose_warm_ms	0.057101
+page/toolbar/1	cpu_median_ms	6.485546
+page/fields/1	rects	13
+page/fields/1	masks_drawn	38
+page/fields/1	other_commands	26
+page/fields/1	mask_resources	37
+page/fields/1	mask_kib	81.97265625
+page/fields/1	compose_cold_ms	1.141167
+page/fields/1	compose_warm_ms	0.042849000000000005
+page/fields/1	cpu_median_ms	3.249413
+page/forms/1	rects	15
+page/forms/1	masks_drawn	40
+page/forms/1	other_commands	25
+page/forms/1	mask_resources	39
+page/forms/1	mask_kib	80.5673828125
+page/forms/1	compose_cold_ms	1.13004
+page/forms/1	compose_warm_ms	0.042811
+page/forms/1	cpu_median_ms	3.166669
+page/properties/1	rects	17
+page/properties/1	masks_drawn	60
+page/properties/1	other_commands	34
+page/properties/1	mask_resources	56
+page/properties/1	mask_kib	123.2099609375
+page/properties/1	compose_cold_ms	1.601492
+page/properties/1	compose_warm_ms	0.04611899999999999
+page/properties/1	cpu_median_ms	4.755755000000001
+page/progress/1	rects	20
+page/progress/1	masks_drawn	49
+page/progress/1	other_commands	35
+page/progress/1	mask_resources	48
+page/progress/1	mask_kib	171.6298828125
+page/progress/1	compose_cold_ms	1.843108
+page/progress/1	compose_warm_ms	0.04498
+page/progress/1	cpu_median_ms	5.641373
+page/colors/1	rects	119
+page/colors/1	masks_drawn	37
+page/colors/1	other_commands	39
+page/colors/1	mask_resources	36
+page/colors/1	mask_kib	145.921875
+page/colors/1	compose_cold_ms	1.774927
+page/colors/1	compose_warm_ms	0.048581
+page/colors/1	cpu_median_ms	14.515251999999998
+page/chips/1	rects	14
+page/chips/1	masks_drawn	63
+page/chips/1	other_commands	37
+page/chips/1	mask_resources	55
+page/chips/1	mask_kib	160.833984375
+page/chips/1	compose_cold_ms	1.921899
+page/chips/1	compose_warm_ms	0.049146
+page/chips/1	cpu_median_ms	5.682724
+page/editing/1	rects	16
+page/editing/1	masks_drawn	37
+page/editing/1	other_commands	22
+page/editing/1	mask_resources	35
+page/editing/1	mask_kib	164.9296875
+page/editing/1	compose_cold_ms	1.706599
+page/editing/1	compose_warm_ms	0.046102
+page/editing/1	cpu_median_ms	4.561056
+page/numbers/1	rects	14
+page/numbers/1	masks_drawn	45
+page/numbers/1	other_commands	22
+page/numbers/1	mask_resources	43
+page/numbers/1	mask_kib	154.142578125
+page/numbers/1	compose_cold_ms	2.021714
+page/numbers/1	compose_warm_ms	0.046985
+page/numbers/1	cpu_median_ms	5.1925419999999995
+page/fonts/1	rects	14
+page/fonts/1	masks_drawn	85
+page/fonts/1	other_commands	34
+page/fonts/1	mask_resources	80
+page/fonts/1	mask_kib	145.078125
+page/fonts/1	compose_cold_ms	1.841199
+page/fonts/1	compose_warm_ms	0.065642
+page/fonts/1	cpu_median_ms	5.191033
+page/text-rendering/1	rects	14
+page/text-rendering/1	masks_drawn	35
+page/text-rendering/1	other_commands	19
+page/text-rendering/1	mask_resources	35
+page/text-rendering/1	mask_kib	133.80078125
+page/text-rendering/1	compose_cold_ms	1.3983240000000001
+page/text-rendering/1	compose_warm_ms	0.048106
+page/text-rendering/1	cpu_median_ms	4.367418
+page/surfaces/1	rects	14
+page/surfaces/1	masks_drawn	31
+page/surfaces/1	other_commands	27
+page/surfaces/1	mask_resources	30
+page/surfaces/1	mask_kib	68.076171875
+page/surfaces/1	compose_cold_ms	0.944794
+page/surfaces/1	compose_warm_ms	0.045187
+page/surfaces/1	cpu_median_ms	2.885394
+page/windows/1	rects	21
+page/windows/1	masks_drawn	53
+page/windows/1	other_commands	39
+page/windows/1	mask_resources	45
+page/windows/1	mask_kib	68.9833984375
+page/windows/1	compose_cold_ms	1.11272
+page/windows/1	compose_warm_ms	0.050613
+page/windows/1	cpu_median_ms	3.117391
+page/menus/1	rects	15
+page/menus/1	masks_drawn	28
+page/menus/1	other_commands	14
+page/menus/1	mask_resources	27
+page/menus/1	mask_kib	135.7294921875
+page/menus/1	compose_cold_ms	1.3781130000000001
+page/menus/1	compose_warm_ms	0.040788000000000005
+page/menus/1	cpu_median_ms	4.265976
+page/virtual/1	rects	14
+page/virtual/1	masks_drawn	43
+page/virtual/1	other_commands	30
+page/virtual/1	mask_resources	38
+page/virtual/1	mask_kib	100.75390625
+page/virtual/1	compose_cold_ms	1.2206249999999998
+page/virtual/1	compose_warm_ms	0.045289
+page/virtual/1	cpu_median_ms	3.763792
+page/collections/1	rects	16
+page/collections/1	masks_drawn	62
+page/collections/1	other_commands	24
+page/collections/1	mask_resources	58
+page/collections/1	mask_kib	180.41015625
+page/collections/1	compose_cold_ms	2.2081660000000003
+page/collections/1	compose_warm_ms	0.070245
+page/collections/1	cpu_median_ms	5.953944
+page/files/1	rects	19
+page/files/1	masks_drawn	57
+page/files/1	other_commands	25
+page/files/1	mask_resources	50
+page/files/1	mask_kib	160.43359375
+page/files/1	compose_cold_ms	1.885437
+page/files/1	compose_warm_ms	0.050048
+page/files/1	cpu_median_ms	5.378597
+page/dragdrop/1	rects	20
+page/dragdrop/1	masks_drawn	48
+page/dragdrop/1	other_commands	26
+page/dragdrop/1	mask_resources	48
+page/dragdrop/1	mask_kib	163.736328125
+page/dragdrop/1	compose_cold_ms	1.728124
+page/dragdrop/1	compose_warm_ms	0.050563
+page/dragdrop/1	cpu_median_ms	5.482489
+page/live/1	rects	30
+page/live/1	masks_drawn	94
+page/live/1	other_commands	88
+page/live/1	mask_resources	94
+page/live/1	mask_kib	190.84765625
+page/live/1	compose_cold_ms	2.039329
+page/live/1	compose_warm_ms	0.103385
+page/live/1	cpu_median_ms	6.3277849999999995
+page/meters/1	rects	26
+page/meters/1	masks_drawn	26
+page/meters/1	other_commands	20
+page/meters/1	mask_resources	26
+page/meters/1	mask_kib	78.6328125
+page/meters/1	compose_cold_ms	0.902659
+page/meters/1	compose_warm_ms	0.047806999999999995
+page/meters/1	cpu_median_ms	2.845088
+page/images/1	rects	19
+page/images/1	masks_drawn	36
+page/images/1	other_commands	25
+page/images/1	mask_resources	36
+page/images/1	mask_kib	134.34765625
+page/images/1	compose_cold_ms	1.471835
+page/images/1	compose_warm_ms	0.046900000000000004
+page/images/1	cpu_median_ms	6.704741
+page/shapes/1	rects	13
+page/shapes/1	masks_drawn	26
+page/shapes/1	other_commands	20
+page/shapes/1	mask_resources	26
+page/shapes/1	mask_kib	81.072265625
+page/shapes/1	compose_cold_ms	0.9971069999999999
+page/shapes/1	compose_warm_ms	0.042354
+page/shapes/1	cpu_median_ms	3.7914749999999997
+page/theme/1	rects	31
+page/theme/1	masks_drawn	45
+page/theme/1	other_commands	23
+page/theme/1	mask_resources	45
+page/theme/1	mask_kib	185.919921875
+page/theme/1	compose_cold_ms	2.051487
+page/theme/1	compose_warm_ms	0.047624
+page/theme/1	cpu_median_ms	5.834792
+page/workspace/1	rects	18
+page/workspace/1	masks_drawn	37
+page/workspace/1	other_commands	20
+page/workspace/1	mask_resources	37
+page/workspace/1	mask_kib	78.6533203125
+page/workspace/1	compose_cold_ms	1.159114
+page/workspace/1	compose_warm_ms	0.043266
+page/workspace/1	cpu_median_ms	2.901268
+page/profiling/1	rects	13
+page/profiling/1	masks_drawn	27
+page/profiling/1	other_commands	20
+page/profiling/1	mask_resources	27
+page/profiling/1	mask_kib	92.416015625
+page/profiling/1	compose_cold_ms	1.0111729999999999
+page/profiling/1	compose_warm_ms	0.046757
+page/profiling/1	cpu_median_ms	3.252076
+page/overlay/1	rects	13
+page/overlay/1	masks_drawn	27
+page/overlay/1	other_commands	21
+page/overlay/1	mask_resources	27
+page/overlay/1	mask_kib	154.4716796875
+page/overlay/1	compose_cold_ms	1.456558
+page/overlay/1	compose_warm_ms	0.041013999999999995
+page/overlay/1	cpu_median_ms	4.879761
+page/layout/1.25	rects	28
+page/layout/1.25	masks_drawn	43
+page/layout/1.25	other_commands	23
+page/layout/1.25	mask_resources	41
+page/layout/1.25	mask_kib	171.24609375
+page/layout/1.25	compose_cold_ms	1.5381369999999999
+page/layout/1.25	compose_warm_ms	0.046112
+page/layout/1.25	cpu_median_ms	6.50278
+page/splits/1.25	rects	24
+page/splits/1.25	masks_drawn	38
+page/splits/1.25	other_commands	26
+page/splits/1.25	mask_resources	36
+page/splits/1.25	mask_kib	147.1474609375
+page/splits/1.25	compose_cold_ms	1.41775
+page/splits/1.25	compose_warm_ms	0.044088
+page/splits/1.25	cpu_median_ms	5.868799
+page/shells/1.25	rects	28
+page/shells/1.25	masks_drawn	45
+page/shells/1.25	other_commands	33
+page/shells/1.25	mask_resources	40
+page/shells/1.25	mask_kib	179.3564453125
+page/shells/1.25	compose_cold_ms	1.545447
+page/shells/1.25	compose_warm_ms	0.048204000000000004
+page/shells/1.25	cpu_median_ms	7.029327
+page/scroll/1.25	rects	21
+page/scroll/1.25	masks_drawn	43
+page/scroll/1.25	other_commands	32
+page/scroll/1.25	mask_resources	42
+page/scroll/1.25	mask_kib	161.078125
+page/scroll/1.25	compose_cold_ms	1.477541
+page/scroll/1.25	compose_warm_ms	0.047215
+page/scroll/1.25	cpu_median_ms	6.345058
+page/sections/1.25	rects	22
+page/sections/1.25	masks_drawn	53
+page/sections/1.25	other_commands	25
+page/sections/1.25	mask_resources	41
+page/sections/1.25	mask_kib	235.5390625
+page/sections/1.25	compose_cold_ms	1.842349
+page/sections/1.25	compose_warm_ms	0.044270000000000004
+page/sections/1.25	cpu_median_ms	8.461387
+page/tool-windows/1.25	rects	23
+page/tool-windows/1.25	masks_drawn	50
+page/tool-windows/1.25	other_commands	26
+page/tool-windows/1.25	mask_resources	47
+page/tool-windows/1.25	mask_kib	271.896484375
+page/tool-windows/1.25	compose_cold_ms	2.1968579999999998
+page/tool-windows/1.25	compose_warm_ms	0.047375
+page/tool-windows/1.25	cpu_median_ms	9.104865
+page/transforms/1.25	rects	41
+page/transforms/1.25	masks_drawn	43
+page/transforms/1.25	other_commands	31
+page/transforms/1.25	mask_resources	39
+page/transforms/1.25	mask_kib	295.03515625
+page/transforms/1.25	compose_cold_ms	2.216812
+page/transforms/1.25	compose_warm_ms	0.053069000000000005
+page/transforms/1.25	cpu_median_ms	10.237119
+page/state/1.25	rects	26
+page/state/1.25	masks_drawn	46
+page/state/1.25	other_commands	35
+page/state/1.25	mask_resources	42
+page/state/1.25	mask_kib	224.0380859375
+page/state/1.25	compose_cold_ms	1.915633
+page/state/1.25	compose_warm_ms	0.045677
+page/state/1.25	cpu_median_ms	8.309245
+page/navigation/1.25	rects	20
+page/navigation/1.25	masks_drawn	50
+page/navigation/1.25	other_commands	31
+page/navigation/1.25	mask_resources	46
+page/navigation/1.25	mask_kib	339.1201171875
+page/navigation/1.25	compose_cold_ms	2.686258
+page/navigation/1.25	compose_warm_ms	0.047648
+page/navigation/1.25	cpu_median_ms	11.422037
+page/text/1.25	rects	17
+page/text/1.25	masks_drawn	58
+page/text/1.25	other_commands	31
+page/text/1.25	mask_resources	57
+page/text/1.25	mask_kib	209.224609375
+page/text/1.25	compose_cold_ms	1.9901820000000001
+page/text/1.25	compose_warm_ms	0.046718
+page/text/1.25	cpu_median_ms	7.7949910000000004
+page/controls/1.25	rects	13
+page/controls/1.25	masks_drawn	45
+page/controls/1.25	other_commands	38
+page/controls/1.25	mask_resources	42
+page/controls/1.25	mask_kib	123.1240234375
+page/controls/1.25	compose_cold_ms	1.179201
+page/controls/1.25	compose_warm_ms	0.045802
+page/controls/1.25	cpu_median_ms	5.099041000000001
+page/input/1.25	rects	15
+page/input/1.25	masks_drawn	45
+page/input/1.25	other_commands	35
+page/input/1.25	mask_resources	41
+page/input/1.25	mask_kib	277.8740234375
+page/input/1.25	compose_cold_ms	2.24857
+page/input/1.25	compose_warm_ms	0.04481
+page/input/1.25	cpu_median_ms	10.477171
+page/families/1.25	rects	14
+page/families/1.25	masks_drawn	48
+page/families/1.25	other_commands	49
+page/families/1.25	mask_resources	46
+page/families/1.25	mask_kib	88.345703125
+page/families/1.25	compose_cold_ms	1.035113
+page/families/1.25	compose_warm_ms	0.051241
+page/families/1.25	cpu_median_ms	4.134998
+page/toolbar/1.25	rects	17
+page/toolbar/1.25	masks_drawn	89
+page/toolbar/1.25	other_commands	56
+page/toolbar/1.25	mask_resources	83
+page/toolbar/1.25	mask_kib	305.9169921875
+page/toolbar/1.25	compose_cold_ms	2.748992
+page/toolbar/1.25	compose_warm_ms	0.053678
+page/toolbar/1.25	cpu_median_ms	10.349952
+page/fields/1.25	rects	13
+page/fields/1.25	masks_drawn	38
+page/fields/1.25	other_commands	26
+page/fields/1.25	mask_resources	37
+page/fields/1.25	mask_kib	129.3759765625
+page/fields/1.25	compose_cold_ms	1.301874
+page/fields/1.25	compose_warm_ms	0.043365
+page/fields/1.25	cpu_median_ms	5.224628
+page/forms/1.25	rects	15
+page/forms/1.25	masks_drawn	40
+page/forms/1.25	other_commands	25
+page/forms/1.25	mask_resources	39
+page/forms/1.25	mask_kib	127.16796875
+page/forms/1.25	compose_cold_ms	1.282765
+page/forms/1.25	compose_warm_ms	0.043206
+page/forms/1.25	cpu_median_ms	5.181769
+page/properties/1.25	rects	17
+page/properties/1.25	masks_drawn	60
+page/properties/1.25	other_commands	34
+page/properties/1.25	mask_resources	56
+page/properties/1.25	mask_kib	195.8173828125
+page/properties/1.25	compose_cold_ms	1.826168
+page/properties/1.25	compose_warm_ms	0.04672
+page/properties/1.25	cpu_median_ms	7.569994
+page/progress/1.25	rects	20
+page/progress/1.25	masks_drawn	49
+page/progress/1.25	other_commands	35
+page/progress/1.25	mask_resources	48
+page/progress/1.25	mask_kib	265.99609375
+page/progress/1.25	compose_cold_ms	2.089858
+page/progress/1.25	compose_warm_ms	0.046329999999999996
+page/progress/1.25	cpu_median_ms	9.205058000000001
+page/colors/1.25	rects	119
+page/colors/1.25	masks_drawn	37
+page/colors/1.25	other_commands	39
+page/colors/1.25	mask_resources	36
+page/colors/1.25	mask_kib	227.365234375
+page/colors/1.25	compose_cold_ms	2.079843
+page/colors/1.25	compose_warm_ms	0.055276
+page/colors/1.25	cpu_median_ms	23.977312
+page/chips/1.25	rects	14
+page/chips/1.25	masks_drawn	64
+page/chips/1.25	other_commands	37
+page/chips/1.25	mask_resources	56
+page/chips/1.25	mask_kib	255.2421875
+page/chips/1.25	compose_cold_ms	2.2612579999999998
+page/chips/1.25	compose_warm_ms	0.055208
+page/chips/1.25	cpu_median_ms	9.708256
+page/editing/1.25	rects	16
+page/editing/1.25	masks_drawn	37
+page/editing/1.25	other_commands	22
+page/editing/1.25	mask_resources	35
+page/editing/1.25	mask_kib	257.248046875
+page/editing/1.25	compose_cold_ms	1.9958250000000002
+page/editing/1.25	compose_warm_ms	0.047276
+page/editing/1.25	cpu_median_ms	7.417737
+page/numbers/1.25	rects	14
+page/numbers/1.25	masks_drawn	45
+page/numbers/1.25	other_commands	22
+page/numbers/1.25	mask_resources	43
+page/numbers/1.25	mask_kib	242.2099609375
+page/numbers/1.25	compose_cold_ms	2.278372
+page/numbers/1.25	compose_warm_ms	0.043658
+page/numbers/1.25	cpu_median_ms	8.581394
+page/fonts/1.25	rects	14
+page/fonts/1.25	masks_drawn	85
+page/fonts/1.25	other_commands	34
+page/fonts/1.25	mask_resources	80
+page/fonts/1.25	mask_kib	224.154296875
+page/fonts/1.25	compose_cold_ms	2.056843
+page/fonts/1.25	compose_warm_ms	0.062357
+page/fonts/1.25	cpu_median_ms	8.468879000000001
+page/text-rendering/1.25	rects	14
+page/text-rendering/1.25	masks_drawn	35
+page/text-rendering/1.25	other_commands	19
+page/text-rendering/1.25	mask_resources	35
+page/text-rendering/1.25	mask_kib	207.2998046875
+page/text-rendering/1.25	compose_cold_ms	1.531028
+page/text-rendering/1.25	compose_warm_ms	0.043025
+page/text-rendering/1.25	cpu_median_ms	7.184379
+page/surfaces/1.25	rects	14
+page/surfaces/1.25	masks_drawn	32
+page/surfaces/1.25	other_commands	27
+page/surfaces/1.25	mask_resources	31
+page/surfaces/1.25	mask_kib	119.359375
+page/surfaces/1.25	compose_cold_ms	1.106962
+page/surfaces/1.25	compose_warm_ms	0.045542
+page/surfaces/1.25	cpu_median_ms	4.640557
+page/windows/1.25	rects	21
+page/windows/1.25	masks_drawn	53
+page/windows/1.25	other_commands	39
+page/windows/1.25	mask_resources	45
+page/windows/1.25	mask_kib	108.5234375
+page/windows/1.25	compose_cold_ms	1.241459
+page/windows/1.25	compose_warm_ms	0.051215
+page/windows/1.25	cpu_median_ms	4.939076
+page/menus/1.25	rects	15
+page/menus/1.25	masks_drawn	28
+page/menus/1.25	other_commands	14
+page/menus/1.25	mask_resources	27
+page/menus/1.25	mask_kib	210.857421875
+page/menus/1.25	compose_cold_ms	1.566178
+page/menus/1.25	compose_warm_ms	0.047237
+page/menus/1.25	cpu_median_ms	6.930874
+page/virtual/1.25	rects	14
+page/virtual/1.25	masks_drawn	43
+page/virtual/1.25	other_commands	30
+page/virtual/1.25	mask_resources	38
+page/virtual/1.25	mask_kib	155.6328125
+page/virtual/1.25	compose_cold_ms	1.367292
+page/virtual/1.25	compose_warm_ms	0.044603
+page/virtual/1.25	cpu_median_ms	6.097089
+page/collections/1.25	rects	16
+page/collections/1.25	masks_drawn	67
+page/collections/1.25	other_commands	24
+page/collections/1.25	mask_resources	63
+page/collections/1.25	mask_kib	288.015625
+page/collections/1.25	compose_cold_ms	2.5727010000000003
+page/collections/1.25	compose_warm_ms	0.080139
+page/collections/1.25	cpu_median_ms	9.822679
+page/files/1.25	rects	19
+page/files/1.25	masks_drawn	57
+page/files/1.25	other_commands	25
+page/files/1.25	mask_resources	50
+page/files/1.25	mask_kib	250.78125
+page/files/1.25	compose_cold_ms	2.167422
+page/files/1.25	compose_warm_ms	0.050759
+page/files/1.25	cpu_median_ms	8.801509000000001
+page/dragdrop/1.25	rects	20
+page/dragdrop/1.25	masks_drawn	48
+page/dragdrop/1.25	other_commands	26
+page/dragdrop/1.25	mask_resources	48
+page/dragdrop/1.25	mask_kib	252.546875
+page/dragdrop/1.25	compose_cold_ms	1.977543
+page/dragdrop/1.25	compose_warm_ms	0.051493000000000004
+page/dragdrop/1.25	cpu_median_ms	8.762535999999999
+page/live/1.25	rects	30
+page/live/1.25	masks_drawn	94
+page/live/1.25	other_commands	88
+page/live/1.25	mask_resources	94
+page/live/1.25	mask_kib	297.0888671875
+page/live/1.25	compose_cold_ms	2.14014
+page/live/1.25	compose_warm_ms	0.090835
+page/live/1.25	cpu_median_ms	10.651146
+page/meters/1.25	rects	26
+page/meters/1.25	masks_drawn	26
+page/meters/1.25	other_commands	20
+page/meters/1.25	mask_resources	26
+page/meters/1.25	mask_kib	121.2705078125
+page/meters/1.25	compose_cold_ms	0.9954219999999999
+page/meters/1.25	compose_warm_ms	0.041751
+page/meters/1.25	cpu_median_ms	4.546114
+page/images/1.25	rects	19
+page/images/1.25	masks_drawn	36
+page/images/1.25	other_commands	25
+page/images/1.25	mask_resources	36
+page/images/1.25	mask_kib	207.8095703125
+page/images/1.25	compose_cold_ms	1.67452
+page/images/1.25	compose_warm_ms	0.047154
+page/images/1.25	cpu_median_ms	10.766147
+page/shapes/1.25	rects	13
+page/shapes/1.25	masks_drawn	26
+page/shapes/1.25	other_commands	20
+page/shapes/1.25	mask_resources	26
+page/shapes/1.25	mask_kib	125.0205078125
+page/shapes/1.25	compose_cold_ms	1.149895
+page/shapes/1.25	compose_warm_ms	0.042137
+page/shapes/1.25	cpu_median_ms	6.038031999999999
+page/theme/1.25	rects	31
+page/theme/1.25	masks_drawn	45
+page/theme/1.25	other_commands	28
+page/theme/1.25	mask_resources	45
+page/theme/1.25	mask_kib	287.111328125
+page/theme/1.25	compose_cold_ms	2.319021
+page/theme/1.25	compose_warm_ms	0.052875
+page/theme/1.25	cpu_median_ms	9.638687
+page/workspace/1.25	rects	18
+page/workspace/1.25	masks_drawn	37
+page/workspace/1.25	other_commands	20
+page/workspace/1.25	mask_resources	37
+page/workspace/1.25	mask_kib	122.259765625
+page/workspace/1.25	compose_cold_ms	1.253936
+page/workspace/1.25	compose_warm_ms	0.043686
+page/workspace/1.25	cpu_median_ms	4.602124
+page/profiling/1.25	rects	13
+page/profiling/1.25	masks_drawn	27
+page/profiling/1.25	other_commands	20
+page/profiling/1.25	mask_resources	27
+page/profiling/1.25	mask_kib	142.6787109375
+page/profiling/1.25	compose_cold_ms	1.158255
+page/profiling/1.25	compose_warm_ms	0.04094
+page/profiling/1.25	cpu_median_ms	5.282371
+page/overlay/1.25	rects	13
+page/overlay/1.25	masks_drawn	27
+page/overlay/1.25	other_commands	21
+page/overlay/1.25	mask_resources	27
+page/overlay/1.25	mask_kib	239.9169921875
+page/overlay/1.25	compose_cold_ms	1.758741
+page/overlay/1.25	compose_warm_ms	0.045972
+page/overlay/1.25	cpu_median_ms	8.287218000000001
+page/layout/2	rects	28
+page/layout/2	masks_drawn	43
+page/layout/2	other_commands	23
+page/layout/2	mask_resources	41
+page/layout/2	mask_kib	439.1865234375
+page/layout/2	compose_cold_ms	2.236561
+page/layout/2	compose_warm_ms	0.046872000000000004
+page/layout/2	cpu_median_ms	15.301148000000001
+page/splits/2	rects	24
+page/splits/2	masks_drawn	38
+page/splits/2	other_commands	26
+page/splits/2	mask_resources	36
+page/splits/2	mask_kib	376.24609375
+page/splits/2	compose_cold_ms	2.128237
+page/splits/2	compose_warm_ms	0.045154
+page/splits/2	cpu_median_ms	13.191444
+page/shells/2	rects	28
+page/shells/2	masks_drawn	45
+page/shells/2	other_commands	33
+page/shells/2	mask_resources	40
+page/shells/2	mask_kib	460.1005859375
+page/shells/2	compose_cold_ms	2.204127
+page/shells/2	compose_warm_ms	0.048931
+page/shells/2	cpu_median_ms	15.599827
+page/scroll/2	rects	21
+page/scroll/2	masks_drawn	43
+page/scroll/2	other_commands	32
+page/scroll/2	mask_resources	42
+page/scroll/2	mask_kib	411.8916015625
+page/scroll/2	compose_cold_ms	2.0993660000000003
+page/scroll/2	compose_warm_ms	0.046906
+page/scroll/2	cpu_median_ms	14.351285
+page/sections/2	rects	22
+page/sections/2	masks_drawn	53
+page/sections/2	other_commands	25
+page/sections/2	mask_resources	41
+page/sections/2	mask_kib	600.6484375
+page/sections/2	compose_cold_ms	2.692175
+page/sections/2	compose_warm_ms	0.044702
+page/sections/2	cpu_median_ms	19.154788999999997
+page/tool-windows/2	rects	23
+page/tool-windows/2	masks_drawn	50
+page/tool-windows/2	other_commands	26
+page/tool-windows/2	mask_resources	47
+page/tool-windows/2	mask_kib	685.55078125
+page/tool-windows/2	compose_cold_ms	3.21478
+page/tool-windows/2	compose_warm_ms	0.048233
+page/tool-windows/2	cpu_median_ms	20.415112999999998
+page/transforms/2	rects	41
+page/transforms/2	masks_drawn	43
+page/transforms/2	other_commands	31
+page/transforms/2	mask_resources	39
+page/transforms/2	mask_kib	750.4951171875
+page/transforms/2	compose_cold_ms	3.212332
+page/transforms/2	compose_warm_ms	0.045213
+page/transforms/2	cpu_median_ms	22.938506
+page/state/2	rects	26
+page/state/2	masks_drawn	46
+page/state/2	other_commands	35
+page/state/2	mask_resources	42
+page/state/2	mask_kib	574.1943359375
+page/state/2	compose_cold_ms	2.759685
+page/state/2	compose_warm_ms	0.045212
+page/state/2	cpu_median_ms	18.784746000000002
+page/navigation/2	rects	20
+page/navigation/2	masks_drawn	50
+page/navigation/2	other_commands	31
+page/navigation/2	mask_resources	46
+page/navigation/2	mask_kib	861.255859375
+page/navigation/2	compose_cold_ms	4.0783879999999995
+page/navigation/2	compose_warm_ms	0.048498
+page/navigation/2	cpu_median_ms	25.230430000000002
+page/text/2	rects	17
+page/text/2	masks_drawn	58
+page/text/2	other_commands	31
+page/text/2	mask_resources	57
+page/text/2	mask_kib	530.2939453125
+page/text/2	compose_cold_ms	2.823852
+page/text/2	compose_warm_ms	0.047327
+page/text/2	cpu_median_ms	17.612787
+page/controls/2	rects	13
+page/controls/2	masks_drawn	45
+page/controls/2	other_commands	38
+page/controls/2	mask_resources	42
+page/controls/2	mask_kib	307.6005859375
+page/controls/2	compose_cold_ms	1.658036
+page/controls/2	compose_warm_ms	0.050229
+page/controls/2	cpu_median_ms	11.575711
+page/input/2	rects	15
+page/input/2	masks_drawn	45
+page/input/2	other_commands	35
+page/input/2	mask_resources	41
+page/input/2	mask_kib	705.71875
+page/input/2	compose_cold_ms	3.209953
+page/input/2	compose_warm_ms	0.044718
+page/input/2	cpu_median_ms	22.635608
+page/families/2	rects	14
+page/families/2	masks_drawn	48
+page/families/2	other_commands	49
+page/families/2	mask_resources	46
+page/families/2	mask_kib	216.9052734375
+page/families/2	compose_cold_ms	1.3858290000000002
+page/families/2	compose_warm_ms	0.046755000000000005
+page/families/2	cpu_median_ms	9.456937
+page/toolbar/2	rects	17
+page/toolbar/2	masks_drawn	89
+page/toolbar/2	other_commands	56
+page/toolbar/2	mask_resources	83
+page/toolbar/2	mask_kib	773.01953125
+page/toolbar/2	compose_cold_ms	3.9907939999999997
+page/toolbar/2	compose_warm_ms	0.054710999999999996
+page/toolbar/2	cpu_median_ms	23.655177
+page/fields/2	rects	13
+page/fields/2	masks_drawn	38
+page/fields/2	other_commands	26
+page/fields/2	mask_resources	37
+page/fields/2	mask_kib	326.634765625
+page/fields/2	compose_cold_ms	1.807583
+page/fields/2	compose_warm_ms	0.042846999999999996
+page/fields/2	cpu_median_ms	11.793419
+page/forms/2	rects	15
+page/forms/2	masks_drawn	40
+page/forms/2	other_commands	25
+page/forms/2	mask_resources	39
+page/forms/2	mask_kib	321.265625
+page/forms/2	compose_cold_ms	1.808747
+page/forms/2	compose_warm_ms	0.04838
+page/forms/2	cpu_median_ms	11.473673999999999
+page/properties/2	rects	17
+page/properties/2	masks_drawn	60
+page/properties/2	other_commands	34
+page/properties/2	mask_resources	56
+page/properties/2	mask_kib	488.8388671875
+page/properties/2	compose_cold_ms	2.619383
+page/properties/2	compose_warm_ms	0.047851
+page/properties/2	cpu_median_ms	17.455107
+page/progress/2	rects	20
+page/progress/2	masks_drawn	49
+page/progress/2	other_commands	35
+page/progress/2	mask_resources	48
+page/progress/2	mask_kib	679.1044921875
+page/progress/2	compose_cold_ms	3.027054
+page/progress/2	compose_warm_ms	0.051559
+page/progress/2	cpu_median_ms	20.841621
+page/colors/2	rects	119
+page/colors/2	masks_drawn	37
+page/colors/2	other_commands	39
+page/colors/2	mask_resources	36
+page/colors/2	mask_kib	578.158203125
+page/colors/2	compose_cold_ms	2.904424
+page/colors/2	compose_warm_ms	0.048759
+page/colors/2	cpu_median_ms	56.773857
+page/chips/2	rects	14
+page/chips/2	masks_drawn	64
+page/chips/2	other_commands	37
+page/chips/2	mask_resources	56
+page/chips/2	mask_kib	649.7294921875
+page/chips/2	compose_cold_ms	3.165276
+page/chips/2	compose_warm_ms	0.050179
+page/chips/2	cpu_median_ms	21.262844
+page/editing/2	rects	16
+page/editing/2	masks_drawn	37
+page/editing/2	other_commands	22
+page/editing/2	mask_resources	35
+page/editing/2	mask_kib	657.8095703125
+page/editing/2	compose_cold_ms	2.8461879999999997
+page/editing/2	compose_warm_ms	0.050911
+page/editing/2	cpu_median_ms	16.745535
+page/numbers/2	rects	14
+page/numbers/2	masks_drawn	45
+page/numbers/2	other_commands	22
+page/numbers/2	mask_resources	43
+page/numbers/2	mask_kib	615.1572265625
+page/numbers/2	compose_cold_ms	3.25465
+page/numbers/2	compose_warm_ms	0.049508
+page/numbers/2	cpu_median_ms	19.094524
+page/fonts/2	rects	14
+page/fonts/2	masks_drawn	85
+page/fonts/2	other_commands	34
+page/fonts/2	mask_resources	80
+page/fonts/2	mask_kib	569.4189453125
+page/fonts/2	compose_cold_ms	3.0322449999999996
+page/fonts/2	compose_warm_ms	0.06849899999999999
+page/fonts/2	cpu_median_ms	19.060207
+page/text-rendering/2	rects	14
+page/text-rendering/2	masks_drawn	35
+page/text-rendering/2	other_commands	19
+page/text-rendering/2	mask_resources	35
+page/text-rendering/2	mask_kib	531.3515625
+page/text-rendering/2	compose_cold_ms	2.3094740000000002
+page/text-rendering/2	compose_warm_ms	0.043262
+page/text-rendering/2	cpu_median_ms	16.221618
+page/surfaces/2	rects	14
+page/surfaces/2	masks_drawn	32
+page/surfaces/2	other_commands	27
+page/surfaces/2	mask_resources	31
+page/surfaces/2	mask_kib	304.794921875
+page/surfaces/2	compose_cold_ms	1.6164420000000002
+page/surfaces/2	compose_warm_ms	0.050557
+page/surfaces/2	cpu_median_ms	10.892017000000001
+page/windows/2	rects	21
+page/windows/2	masks_drawn	53
+page/windows/2	other_commands	39
+page/windows/2	mask_resources	45
+page/windows/2	mask_kib	275.328125
+page/windows/2	compose_cold_ms	1.732255
+page/windows/2	compose_warm_ms	0.051282999999999995
+page/windows/2	cpu_median_ms	11.474026
+page/menus/2	rects	15
+page/menus/2	masks_drawn	28
+page/menus/2	other_commands	14
+page/menus/2	mask_resources	27
+page/menus/2	mask_kib	540.158203125
+page/menus/2	compose_cold_ms	2.334502
+page/menus/2	compose_warm_ms	0.04139
+page/menus/2	cpu_median_ms	15.821727000000001
+page/virtual/2	rects	14
+page/virtual/2	masks_drawn	43
+page/virtual/2	other_commands	30
+page/virtual/2	mask_resources	38
+page/virtual/2	mask_kib	399.453125
+page/virtual/2	compose_cold_ms	1.98549
+page/virtual/2	compose_warm_ms	0.045376
+page/virtual/2	cpu_median_ms	13.960894
+page/collections/2	rects	16
+page/collections/2	masks_drawn	62
+page/collections/2	other_commands	24
+page/collections/2	mask_resources	58
+page/collections/2	mask_kib	713.7626953125
+page/collections/2	compose_cold_ms	3.684185
+page/collections/2	compose_warm_ms	0.070558
+page/collections/2	cpu_median_ms	22.006087
+page/files/2	rects	19
+page/files/2	masks_drawn	57
+page/files/2	other_commands	25
+page/files/2	mask_resources	50
+page/files/2	mask_kib	635.5751953125
+page/files/2	compose_cold_ms	3.134095
+page/files/2	compose_warm_ms	0.049808
+page/files/2	cpu_median_ms	19.651266
+page/dragdrop/2	rects	20
+page/dragdrop/2	masks_drawn	48
+page/dragdrop/2	other_commands	26
+page/dragdrop/2	mask_resources	48
+page/dragdrop/2	mask_kib	648.16796875
+page/dragdrop/2	compose_cold_ms	2.860775
+page/dragdrop/2	compose_warm_ms	0.050145
+page/dragdrop/2	cpu_median_ms	20.173086
+page/live/2	rects	30
+page/live/2	masks_drawn	94
+page/live/2	other_commands	88
+page/live/2	mask_resources	94
+page/live/2	mask_kib	758.052734375
+page/live/2	compose_cold_ms	3.0210369999999998
+page/live/2	compose_warm_ms	0.09147000000000001
+page/live/2	cpu_median_ms	24.264714
+page/meters/2	rects	26
+page/meters/2	masks_drawn	26
+page/meters/2	other_commands	20
+page/meters/2	mask_resources	26
+page/meters/2	mask_kib	311.6123046875
+page/meters/2	compose_cold_ms	1.41843
+page/meters/2	compose_warm_ms	0.040995000000000004
+page/meters/2	cpu_median_ms	10.369392999999999
+page/images/2	rects	19
+page/images/2	masks_drawn	36
+page/images/2	other_commands	25
+page/images/2	mask_resources	36
+page/images/2	mask_kib	532.5673828125
+page/images/2	compose_cold_ms	2.438959
+page/images/2	compose_warm_ms	0.045884
+page/images/2	cpu_median_ms	25.336133
+page/shapes/2	rects	13
+page/shapes/2	masks_drawn	26
+page/shapes/2	other_commands	20
+page/shapes/2	mask_resources	26
+page/shapes/2	mask_kib	321.05859375
+page/shapes/2	compose_cold_ms	1.634463
+page/shapes/2	compose_warm_ms	0.042532
+page/shapes/2	cpu_median_ms	13.702834000000001
+page/theme/2	rects	31
+page/theme/2	masks_drawn	45
+page/theme/2	other_commands	28
+page/theme/2	mask_resources	45
+page/theme/2	mask_kib	737.4326171875
+page/theme/2	compose_cold_ms	3.326651
+page/theme/2	compose_warm_ms	0.047179
+page/theme/2	cpu_median_ms	21.590989
+page/workspace/2	rects	18
+page/workspace/2	masks_drawn	37
+page/workspace/2	other_commands	20
+page/workspace/2	mask_resources	37
+page/workspace/2	mask_kib	313.0087890625
+page/workspace/2	compose_cold_ms	1.7472290000000001
+page/workspace/2	compose_warm_ms	0.043699999999999996
+page/workspace/2	cpu_median_ms	10.624193
+page/profiling/2	rects	13
+page/profiling/2	masks_drawn	27
+page/profiling/2	other_commands	20
+page/profiling/2	mask_resources	27
+page/profiling/2	mask_kib	366.283203125
+page/profiling/2	compose_cold_ms	1.651924
+page/profiling/2	compose_warm_ms	0.040599
+page/profiling/2	cpu_median_ms	12.276383000000001
+page/overlay/2	rects	13
+page/overlay/2	masks_drawn	27
+page/overlay/2	other_commands	21
+page/overlay/2	mask_resources	27
+page/overlay/2	mask_kib	614.2177734375
+page/overlay/2	compose_cold_ms	2.479154
+page/overlay/2	compose_warm_ms	0.04097
+page/overlay/2	cpu_median_ms	18.184245
+mixer: one tick per frame	frames	300
+mixer: one tick per frame	compose_first_ms	0.090585
+mixer: one tick per frame	compose_median_ms	0.021211
+mixer: one tick per frame	compose_p95_ms	0.097529
+mixer: one tick per frame	cpu_median_ms	1.025181
+mixer: one tick per frame	mask_resources_median	14
+mixer: one tick per frame	mask_kib_median	18.37890625
+mixer: one tick per frame	new_masks_median	0
+mixer: one tick per frame	new_masks_total	0
+mixer: one tick per frame	new_mask_kib_total	0
+mixer: one tick per frame	other_commands_max	21
+diagram: live zoom steps	frames	30
+diagram: live zoom steps	compose_first_ms	0.22975299999999999
+diagram: live zoom steps	compose_median_ms	0.109399
+diagram: live zoom steps	compose_p95_ms	0.18343600000000002
+diagram: live zoom steps	cpu_median_ms	1.623785
+diagram: live zoom steps	mask_resources_median	27
+diagram: live zoom steps	mask_kib_median	22.576171875
+diagram: live zoom steps	new_masks_median	1
+diagram: live zoom steps	new_masks_total	33
+diagram: live zoom steps	new_mask_kib_total	25.9599609375
+diagram: live zoom steps	other_commands_max	19
+diagram: live zoom settle frame	frames	1
+diagram: live zoom settle frame	compose_first_ms	0.051389
+diagram: live zoom settle frame	compose_median_ms	0.051389
+diagram: live zoom settle frame	compose_p95_ms	0.051389
+diagram: live zoom settle frame	cpu_median_ms	1.393799
+diagram: live zoom settle frame	mask_resources_median	26
+diagram: live zoom settle frame	mask_kib_median	21.7353515625
+diagram: live zoom settle frame	new_masks_median	0
+diagram: live zoom settle frame	new_masks_total	0
+diagram: live zoom settle frame	new_mask_kib_total	0
+diagram: live zoom settle frame	other_commands_max	15
+diagram: settled zoom in and out	frames	16
+diagram: settled zoom in and out	compose_first_ms	0.230573
+diagram: settled zoom in and out	compose_median_ms	0.102037
+diagram: settled zoom in and out	compose_p95_ms	0.168855
+diagram: settled zoom in and out	cpu_median_ms	1.611026
+diagram: settled zoom in and out	mask_resources_median	27
+diagram: settled zoom in and out	mask_kib_median	24.6298828125
+diagram: settled zoom in and out	new_masks_median	2
+diagram: settled zoom in and out	new_masks_total	30
+diagram: settled zoom in and out	new_mask_kib_total	51.751953125
+diagram: settled zoom in and out	other_commands_max	19
+diagram: pan 7 px per frame	frames	60
+diagram: pan 7 px per frame	compose_first_ms	0.114098
+diagram: pan 7 px per frame	compose_median_ms	0.085089
+diagram: pan 7 px per frame	compose_p95_ms	0.095865
+diagram: pan 7 px per frame	cpu_median_ms	1.865698
+diagram: pan 7 px per frame	mask_resources_median	26
+diagram: pan 7 px per frame	mask_kib_median	21.7353515625
+diagram: pan 7 px per frame	new_masks_median	0
+diagram: pan 7 px per frame	new_masks_total	0
+diagram: pan 7 px per frame	new_mask_kib_total	0
+diagram: pan 7 px per frame	other_commands_max	19
+cards: pan steps	end_scale	1
+cards: pan back steps	end_scale	1
+cards: zoom in steps	end_scale	8
+cards: zoom out steps	end_scale	0.999998152256012
+cards: zoom out further steps	end_scale	0.125
+cards: pan steps	frames	60
+cards: pan steps	compose_first_ms	0.35330399999999995
+cards: pan steps	compose_median_ms	0.330253
+cards: pan steps	compose_p95_ms	0.422262
+cards: pan steps	cpu_median_ms	2.43239
+cards: pan steps	mask_resources_median	27
+cards: pan steps	mask_kib_median	45.9453125
+cards: pan steps	new_masks_median	0
+cards: pan steps	new_masks_total	36
+cards: pan steps	new_mask_kib_total	65.7421875
+cards: pan steps	other_commands_max	48
+cards: pan rest frame	frames	1
+cards: pan rest frame	compose_first_ms	0.0314
+cards: pan rest frame	compose_median_ms	0.0314
+cards: pan rest frame	compose_p95_ms	0.0314
+cards: pan rest frame	cpu_median_ms	2.507751
+cards: pan rest frame	mask_resources_median	27
+cards: pan rest frame	mask_kib_median	45.9453125
+cards: pan rest frame	new_masks_median	0
+cards: pan rest frame	new_masks_total	0
+cards: pan rest frame	new_mask_kib_total	0
+cards: pan rest frame	other_commands_max	36
+cards: pan back steps	frames	60
+cards: pan back steps	compose_first_ms	0.322079
+cards: pan back steps	compose_median_ms	0.32715700000000003
+cards: pan back steps	compose_p95_ms	0.338843
+cards: pan back steps	cpu_median_ms	2.423372
+cards: pan back steps	mask_resources_median	27
+cards: pan back steps	mask_kib_median	45.9453125
+cards: pan back steps	new_masks_median	0
+cards: pan back steps	new_masks_total	36
+cards: pan back steps	new_mask_kib_total	63.28125
+cards: pan back steps	other_commands_max	48
+cards: pan back rest frame	frames	1
+cards: pan back rest frame	compose_first_ms	0.034075
+cards: pan back rest frame	compose_median_ms	0.034075
+cards: pan back rest frame	compose_p95_ms	0.034075
+cards: pan back rest frame	cpu_median_ms	2.333909
+cards: pan back rest frame	mask_resources_median	27
+cards: pan back rest frame	mask_kib_median	43.484375
+cards: pan back rest frame	new_masks_median	0
+cards: pan back rest frame	new_masks_total	0
+cards: pan back rest frame	new_mask_kib_total	0
+cards: pan back rest frame	other_commands_max	36
+cards: zoom in steps	frames	60
+cards: zoom in steps	compose_first_ms	3.9795869999999995
+cards: zoom in steps	compose_median_ms	0.398356
+cards: zoom in steps	compose_p95_ms	0.408686
+cards: zoom in steps	cpu_median_ms	2.4669280000000002
+cards: zoom in steps	mask_resources_median	7
+cards: zoom in steps	mask_kib_median	9.669921875
+cards: zoom in steps	new_masks_median	0
+cards: zoom in steps	new_masks_total	26
+cards: zoom in steps	new_mask_kib_total	46.4296875
+cards: zoom in steps	other_commands_max	36
+cards: zoom in rest frame	frames	1
+cards: zoom in rest frame	compose_first_ms	4.228072
+cards: zoom in rest frame	compose_median_ms	4.228072
+cards: zoom in rest frame	compose_p95_ms	4.228072
+cards: zoom in rest frame	cpu_median_ms	1.020609
+cards: zoom in rest frame	mask_resources_median	0
+cards: zoom in rest frame	mask_kib_median	0
+cards: zoom in rest frame	new_masks_median	0
+cards: zoom in rest frame	new_masks_total	0
+cards: zoom in rest frame	new_mask_kib_total	0
+cards: zoom in rest frame	other_commands_max	1
+cards: zoom out steps	frames	60
+cards: zoom out steps	compose_first_ms	4.0471129999999995
+cards: zoom out steps	compose_median_ms	0.406076
+cards: zoom out steps	compose_p95_ms	0.8522080000000001
+cards: zoom out steps	cpu_median_ms	2.2193579999999997
+cards: zoom out steps	mask_resources_median	7
+cards: zoom out steps	mask_kib_median	522.71875
+cards: zoom out steps	new_masks_median	0
+cards: zoom out steps	new_masks_total	27
+cards: zoom out steps	new_mask_kib_total	2516.8984375
+cards: zoom out steps	other_commands_max	36
+cards: zoom out rest frame	frames	1
+cards: zoom out rest frame	compose_first_ms	3.891667
+cards: zoom out rest frame	compose_median_ms	3.891667
+cards: zoom out rest frame	compose_p95_ms	3.891667
+cards: zoom out rest frame	cpu_median_ms	2.6458079999999997
+cards: zoom out rest frame	mask_resources_median	27
+cards: zoom out rest frame	mask_kib_median	43.484375
+cards: zoom out rest frame	new_masks_median	27
+cards: zoom out rest frame	new_masks_total	27
+cards: zoom out rest frame	new_mask_kib_total	43.484375
+cards: zoom out rest frame	other_commands_max	36
+cards: zoom out further steps	frames	60
+cards: zoom out further steps	compose_first_ms	3.945578
+cards: zoom out further steps	compose_median_ms	0.457864
+cards: zoom out further steps	compose_p95_ms	0.616852
+cards: zoom out further steps	cpu_median_ms	1.717873
+cards: zoom out further steps	mask_resources_median	94
+cards: zoom out further steps	mask_kib_median	155.509765625
+cards: zoom out further steps	new_masks_median	0
+cards: zoom out further steps	new_masks_total	130
+cards: zoom out further steps	new_mask_kib_total	214.3759765625
+cards: zoom out further steps	other_commands_max	192
+cards: zoom out further rest frame	frames	1
+cards: zoom out further rest frame	compose_first_ms	4.545995
+cards: zoom out further rest frame	compose_median_ms	4.545995
+cards: zoom out further rest frame	compose_p95_ms	4.545995
+cards: zoom out further rest frame	cpu_median_ms	0.890053
+cards: zoom out further rest frame	mask_resources_median	131
+cards: zoom out further rest frame	mask_kib_median	5.185546875
+cards: zoom out further rest frame	new_masks_median	131
+cards: zoom out further rest frame	new_masks_total	131
+cards: zoom out further rest frame	new_mask_kib_total	5.185546875
+cards: zoom out further rest frame	other_commands_max	192
+knob: gallery input page, Shift+Up (whole display list)	frames	200
+knob: gallery input page, Shift+Up (whole display list)	compose_first_ms	0.867746
+knob: gallery input page, Shift+Up (whole display list)	compose_median_ms	0.822172
+knob: gallery input page, Shift+Up (whole display list)	compose_p95_ms	0.87895
+knob: gallery input page, Shift+Up (whole display list)	cpu_median_ms	3.4754349999999996
+knob: gallery input page, Shift+Up (whole display list)	mask_resources_median	38
+knob: gallery input page, Shift+Up (whole display list)	mask_kib_median	69.7578125
+knob: gallery input page, Shift+Up (whole display list)	new_masks_median	3
+knob: gallery input page, Shift+Up (whole display list)	new_masks_total	600
+knob: gallery input page, Shift+Up (whole display list)	new_mask_kib_total	1963.28125
+knob: gallery input page, Shift+Up (whole display list)	other_commands_max	45
+knob: isolated, no readout, host writes	frames	200
+knob: isolated, no readout, host writes	compose_first_ms	0.002742
+knob: isolated, no readout, host writes	compose_median_ms	0.001238
+knob: isolated, no readout, host writes	compose_p95_ms	0.0013289999999999999
+knob: isolated, no readout, host writes	cpu_median_ms	0.080693
+knob: isolated, no readout, host writes	mask_resources_median	0
+knob: isolated, no readout, host writes	mask_kib_median	0
+knob: isolated, no readout, host writes	new_masks_median	0
+knob: isolated, no readout, host writes	new_masks_total	0
+knob: isolated, no readout, host writes	new_mask_kib_total	0
+knob: isolated, no readout, host writes	other_commands_max	2
+J1 `navigation`: resize +7 px per frame	frames	30
+J1 `navigation`: resize +7 px per frame	compose_first_ms	1.978858
+J1 `navigation`: resize +7 px per frame	compose_median_ms	1.977666
+J1 `navigation`: resize +7 px per frame	compose_p95_ms	3.235218
+J1 `navigation`: resize +7 px per frame	cpu_median_ms	7.086136
+J1 `navigation`: resize +7 px per frame	mask_resources_median	50
+J1 `navigation`: resize +7 px per frame	mask_kib_median	217.951171875
+J1 `navigation`: resize +7 px per frame	new_masks_median	1
+J1 `navigation`: resize +7 px per frame	new_masks_total	23
+J1 `navigation`: resize +7 px per frame	new_mask_kib_total	1361.65234375
+J1 `navigation`: resize +7 px per frame	other_commands_max	33
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	frames	4
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	compose_first_ms	6.198843
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	compose_median_ms	7.07651
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	compose_p95_ms	7.54706
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	cpu_median_ms	21.991775
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	mask_resources_median	46
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	mask_kib_median	659.4619140625
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	new_masks_median	44
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	new_masks_total	178
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	new_mask_kib_total	2338.7919921875
+J1 `navigation`: scale 1 → 1.25 → 1.5 → 1.75 → 2	other_commands_max	31

@@ -795,6 +795,14 @@ pub enum WindowError {
     /// [`DrawError::Runtime`](crate::DrawError::Runtime); that is [`Self::Runtime`].
     #[error(transparent)]
     Drawing(crate::DrawError),
+    /// The moved content held an analytic shape the renderer could not
+    /// prepare: its geometry lies outside the range a renderer evaluates, or
+    /// the command is malformed. A host that draws the content before
+    /// completing the request reports it here. `App` completes a detach
+    /// before drawing it, so a shape it then cannot prepare is the
+    /// component's failure (`AppError::Shape`), not this request's.
+    #[error(transparent)]
+    Shape(crate::ShapePrepareError),
     /// The host discarded the request or shut down before completing it,
     /// including after a failure of its own unrelated to windows.
     #[error("native window request cancelled")]

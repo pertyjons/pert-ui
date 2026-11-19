@@ -5,6 +5,78 @@ needs: additions, behavior changes, breaking changes with their replacement,
 and notable fixes. The detailed per-version entries up to 0.3.101 are in Git
 history (this file at commit f5fde76).
 
+## 0.3.122 (2026-11-19): Scrim role, fills on the frame's pixels, editor limits
+
+- Added: `ColorRole::Scrim`, the veil a modal `Dialog` and a modal quick
+  pick draw over the content they block. It is translucent black in both
+  built-in modes, as the literal it replaces was, keeps its value under seed
+  colors and can be overridden per mode.
+- Changed: `VectorRasterizer` rasterizes a fill at its displayed size on the
+  frame's own pixels, whatever its position within one, and places the mask
+  on whole pixels with one texel each. A fill edge near a pixel center no
+  longer gives a pixel that one renderer covers and the other leaves. A fill
+  that moves by a fraction of a pixel is rasterized again; a move by whole
+  pixels, and coverage a magnifying view holds below the displayed size,
+  keep their reuse.
+- Changed: text a user types, pastes or composes into `TextField`,
+  `TextArea` and the editors built on them is refused without an error when
+  the result would exceed a `TextLimit` preparation limit, as an edit past
+  the byte limit is. `Runtime::text_input` returned `TextError::TooLarge`
+  for it before. A replacement the application makes still reports the
+  error.
+- The editors' documentation now states that their text must fit one text
+  preparation at the editor's width and scale, that `check` cannot see
+  those limits, and that a bound value beyond them fails the next flush or
+  paint that prepares it with `TextError::TooLarge` instead of being
+  refused by the field.
+- `CpuRenderer` prepares each shape once per frame instead of twice.
+- Fixed: a triangle whose edge covers the first pixel of its clip was
+  dropped in a viewport whose frame extent saturates.
+
+## 0.3.121 (2026-11-16): Fallback stroke masks from the reference
+
+`VectorRasterizer::prepare` and `DisplayList::rasterized` sample a stroke's
+mask from `PreparedStroke`, the coverage pert-ui's renderers draw, rounded
+to eight bits with one texel per pixel of the frame the viewport maps to.
+A renderer that draws these masks now matches the built-in renderers'
+strokes instead of drawing area-sampled edges. The outlining stroker and
+the direct union coverage are removed.
+
+- Breaking: `VectorRasterizer::MAX_STROKE_EDGES` is removed. A stroke has
+  the budgets of `PreparedStroke::new` instead (`MAX_SEGMENTS`,
+  `MAX_TILE_REFERENCES`, `MAX_TILE_SEGMENTS`); `MAX_COVERAGE_WORK` bounds
+  fills only.
+- A stroke mask covers the stroke's span on the frame, transparent margins
+  included, and carries no clip of its own, the span being cut to it
+  already, except in a frame beyond 16 384 pixels per axis, where it keeps
+  the command's clip.
+  It is prepared at the displayed size without the eight-pixel cap of a
+  magnifying view, and it is prepared again when the stroke moves or the
+  window is resized; fills keep their reuse.
+- A stroke whose span exceeds 65 536 pixels, which needs a frame that
+  large, is refused with `StrokePrepareError::OutOfRange`, as the renderers
+  refuse it. A long trace that exceeded the coverage budget but fits the
+  stroke budgets is now accepted. A stroke in a viewport whose frame has no
+  pixels is skipped.
+
+## 0.3.120 (2026-11-16): Shape interiors through the fill pipeline
+
+The wgpu renderer draws a rectangle's uniform interior of 4096 pixels or
+more as a quad of one color through its fill pipeline instead of the shape
+shader, and a smaller rectangle as one shape over its span, which removes
+most of the GPU time phase 1 added to pages with large panels.
+
+## 0.3.119 (2026-11-16): Shape failures keep their typed cause in `App`
+
+A shape the renderer cannot prepare, because its geometry lies beyond the
+range a renderer evaluates, is now `AppError::Shape` holding the
+`ShapePrepareError`, a component failure that goes through `App::on_error`
+like `AppError::Drawing`. It was `AppError::Graphics` text, which ended the
+application. `WindowError::Shape` lets a host that draws moved content
+before completing a presentation request report the same cause.
+
+Added: `AppError::Shape`, `WindowError::Shape`.
+
 ## 0.3.118 (2026-11-13): Faster stroke coverage in the CPU renderer
 
 `PreparedStroke::for_each_covered` visits the pixels a stroke covers with

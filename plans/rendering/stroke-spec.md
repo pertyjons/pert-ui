@@ -14,7 +14,11 @@ Written on branch `rendering-polyline`. [All five slices](#slices-after-a-go)
 are done (0.3.118): the preparation and its reference coverage are public
 in the runtime, both renderers draw every stroke from them, curves
 flattened, and the after-measurement and the final review are recorded. The
-decision on the fallback's stroke code is the maintainer's and open. The maintainer approved the five [decisions](#decisions) as
+maintainer decided on 2026-11-16 to replace the fallback's stroke code
+([decision 4](#decisions)). This spec is a record of the phase: what it
+says of the fallback's masks, `union.rs` and the outlining stroker
+describes them before 0.3.121, which removed that code and made the masks
+sample `PreparedStroke` ([spec](fallback-strokes.md)). The maintainer approved the five [decisions](#decisions) as
 recommended. Names of new public items are still proposals, approved with
 the slice that introduces them. The [review record](#review-record) lists
 what the Codex reviews changed; the spec's last revision has not been
@@ -74,6 +78,8 @@ Approved by the maintainer on 2026-11-12, each as recommended.
    Its stroke code (`geometry/raster/union.rs` and the outlining stroker) is
    then no longer what pert-ui's renderers draw. Decided: keep it in this
    phase and decide its retirement at the end, when the numbers are in.
+   Decided 2026-11-16: replaced in 0.3.121, the masks sampled from
+   `PreparedStroke` ([spec](fallback-strokes.md)).
 5. **The gate** of slice 0, below. Decided: as proposed there; revised by
    the maintainer on 2026-11-13 after the measurements, as recorded there.
 

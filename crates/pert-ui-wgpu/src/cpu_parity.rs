@@ -45,7 +45,8 @@ use pert_ui_runtime::{
     UpdateContext, Viewport,
 };
 use pert_ui_runtime::{
-    Corner, CornerPosition, FrameMapping, PreparedShape, PreparedStroke, ShapeStyle,
+    Constraints, Corner, CornerPosition, FrameMapping, MeasureContext, PreparedShape,
+    PreparedStroke, ShapeStyle, Size, ViewScale, ViewTransform, ZoomController, ZoomView,
 };
 use winit::{
     application::ApplicationHandler,
@@ -327,6 +328,195 @@ fn stroke_corpus() -> Result<Vec<Case>, Box<dyn std::error::Error>> {
                 })?);
             }
         }
+    }
+    cases.extend(viewed_strokes()?);
+    cases.extend(long_miters()?);
+    Ok(cases)
+}
+
+/// The view factors of [`viewed_strokes`]: below and above the eight-fold
+/// cap that limits a mask's raster scale, which strokes the renderers cover
+/// themselves are not held to.
+const VIEW_FACTORS: [f32; 2] = [3.5, 12.0];
+
+// One factor on each side of the cap.
+const _: () = assert!(VIEW_FACTORS[0] < 8.0 && VIEW_FACTORS[1] > 8.0);
+
+/// Paints a fixture of a given logical size, as a view's content.
+struct Content(f32, Paint);
+impl Component for Content {
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+    fn measure(&self, _: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+        Ok(Size::new(self.0, self.0)?)
+    }
+    fn paint(&self, painter: &mut Painter) -> Result<(), DrawError> {
+        (self.1)(painter)
+    }
+}
+
+/// Strokes under a view transform: each command's scale is the view's
+/// factor, at scales 1 and 2. The content is laid out on a grid of four
+/// units sized to fill the frame at either factor, and its widths, sub-pixel
+/// ones included, are set in displayed pixels.
+fn viewed_strokes() -> Result<Vec<Case>, Box<dyn std::error::Error>> {
+    use pert_ui_runtime::{LineCap, LineJoin, PathBuilder, StrokeStyle};
+    let red = Color::from_srgb8(230, 40, 20, 255);
+    let green = Color::from_srgb8(30, 180, 60, 255);
+    let translucent = Color::from_linear(0.2, 0.4, 1.0, 0.45)?;
+    let mut cases = Vec::new();
+    for (scale, scale_name) in [(1.0, "100%"), (2.0, "200%")] {
+        for factor in VIEW_FACTORS {
+            let name: &'static str = format!("strokes viewed at {factor}x {scale_name}").leak();
+            // One grid unit in local units: the content fills the frame
+            // less a margin. One displayed physical pixel in local units.
+            let unit = (SIZE as f32 / scale as f32 - 6.0) / (4.0 * factor);
+            let pixel = 1.0 / (factor * scale as f32);
+            let paint = move |p: &mut Painter| -> Result<(), DrawError> {
+                let style = |pixels: f32, cap: LineCap, join: LineJoin| {
+                    Ok::<_, DrawError>(
+                        StrokeStyle::new(Length::new(pixels * pixel)?)
+                            .with_cap(cap)
+                            .with_join(join),
+                    )
+                };
+                let points = |values: &[(f32, f32)]| -> Result<Vec<Point>, DrawError> {
+                    Ok(values
+                        .iter()
+                        .map(|&(x, y)| Point::new(x * unit, y * unit))
+                        .collect::<Result<_, _>>()?)
+                };
+                let at = |x: f32, y: f32| Point::new(x * unit, y * unit);
+                // Sharp turns, a reversal and a straight continuation.
+                p.stroke_polyline(
+                    &points(&[
+                        (0.21, 0.37),
+                        (1.43, 0.18),
+                        (0.35, 0.81),
+                        (1.62, 0.93),
+                        (0.9, 0.93),
+                        (0.9, 1.47),
+                    ])?,
+                    style(3.0, LineCap::Square, LineJoin::Miter)?,
+                    green,
+                )?;
+                // A curve with round caps, and a point.
+                let curve = PathBuilder::new()
+                    .move_to(at(2.03, 0.31)?)
+                    .quad_to(at(3.9, 0.4)?, at(2.6, 1.77)?)
+                    .move_to(at(3.41, 1.63)?)
+                    .close()
+                    .build()?;
+                p.stroke_path(&curve, style(2.5, LineCap::Round, LineJoin::Round)?, red)?;
+                // A closed path with bevels, translucent.
+                let closed = PathBuilder::new()
+                    .move_to(at(0.3, 2.1)?)
+                    .line_to(at(1.9, 2.4)?)
+                    .line_to(at(0.8, 3.7)?)
+                    .close()
+                    .build()?;
+                p.stroke_path(
+                    &closed,
+                    style(4.0, LineCap::Butt, LineJoin::Bevel)?,
+                    translucent,
+                )?;
+                // Widths below a displayed pixel.
+                p.stroke_polyline(
+                    &points(&[(2.2, 2.33), (3.9, 2.61)])?,
+                    style(0.6, LineCap::Butt, LineJoin::Miter)?,
+                    green,
+                )?;
+                p.stroke_polyline(
+                    &points(&[(2.2, 3.07), (3.9, 2.88)])?,
+                    style(0.25, LineCap::Butt, LineJoin::Miter)?,
+                    red,
+                )
+            };
+            let mut ui = Runtime::new();
+            ui.set_viewport(Viewport::from_physical(
+                PhysicalExtent::new(SIZE, SIZE),
+                scale,
+            )?)?;
+            let zoom = ZoomController::new(&ui);
+            ui.mount_tree(Element::new(
+                "view",
+                ZoomView::new([(
+                    Point::ZERO,
+                    Element::new("content", Content(4.0 * unit, Box::new(paint))),
+                )])
+                .controller(&zoom),
+            ))?;
+            // At a sub-pixel phase.
+            zoom.set(ViewTransform::new(
+                ViewScale::new(factor)?,
+                Point::new(2.3, 1.7)?,
+            ))?;
+            ui.flush(std::time::Duration::ZERO)?;
+            cases.push(Case {
+                name,
+                exact: false,
+                scene: ui.paint()?,
+            });
+        }
+    }
+    Ok(cases)
+}
+
+/// The ratio of miter length to half width of [`long_miters`]' joins: the
+/// tip lies this many half widths from the vertex. With the largest half
+/// width and scale 2 the miter is 24 000 physical pixels long, within the
+/// 65 536-pixel evaluation domain.
+const MITER_RATIO: f32 = 4000.0;
+
+/// Miters thousands of pixels long at turns close to a reversal, under a
+/// miter limit in the thousands: one with its vertex in the frame and the
+/// miter running out of it, one with only its tip's wedge in it, at scales 1
+/// and 2.
+fn long_miters() -> Result<Vec<Case>, Box<dyn std::error::Error>> {
+    use pert_ui_runtime::{LineCap, LineJoin, StrokeStyle};
+    let red = Color::from_srgb8(230, 40, 20, 255);
+    let translucent = Color::from_linear(0.2, 0.4, 1.0, 0.45)?;
+    let mut cases = Vec::new();
+    for (scale, name) in [
+        (1.0, "strokes: long miters 100%"),
+        (2.0, "strokes: long miters 200%"),
+    ] {
+        cases.push(shapes(name, false, scale, move |p| {
+            let style = |width: f32| -> Result<StrokeStyle, DrawError> {
+                Ok(StrokeStyle::new(Length::new(width)?)
+                    .with_cap(LineCap::Butt)
+                    .with_join(LineJoin::Miter)
+                    .with_miter_limit(2.0 * MITER_RATIO)?)
+            };
+            // Into the vertex along `toward` x and almost straight back:
+            // 1 / cos of half the turn is the ratio for a turn of
+            // pi - 2 / ratio, and the miter points on along `toward`.
+            let reversal = |vertex: (f32, f32), toward: f32, length: f32| {
+                let back = 2.0 / MITER_RATIO;
+                [
+                    (vertex.0 - toward * length, vertex.1),
+                    vertex,
+                    (
+                        vertex.0 - toward * length * back.cos(),
+                        vertex.1 + length * back.sin(),
+                    ),
+                ]
+                .into_iter()
+                .map(|(x, y)| Point::new(x, y))
+                .collect::<Result<Vec<_>, _>>()
+            };
+            // The vertex in the frame, the miter running out to the right.
+            p.stroke_polyline(&reversal((24.3, 18.6), 1.0, 20.0)?, style(5.0)?, red)?;
+            // The vertex 12 000 pixels to the right and only the tip's
+            // wedge, narrower than a pixel, in the frame.
+            let half = 3.0;
+            p.stroke_polyline(
+                &reversal((12.4 + half * MITER_RATIO, 44.2), -1.0, 300.0)?,
+                style(2.0 * half)?,
+                translucent,
+            )
+        })?);
     }
     Ok(cases)
 }
@@ -614,6 +804,77 @@ fn domain_edge_case() -> Result<Case, Box<dyn std::error::Error>> {
 }
 
 #[test]
+fn the_stroke_fixtures_reach_view_scales_and_long_miters() -> Result<(), Box<dyn std::error::Error>>
+{
+    /// Each stroke command's scale and prepared stroke.
+    fn strokes(case: &Case) -> Result<Vec<(f32, PreparedStroke)>, Box<dyn std::error::Error>> {
+        let mapping = FrameMapping::new(SIZE, SIZE, case.scene.viewport())?;
+        let mut strokes = Vec::new();
+        for command in case.scene.commands() {
+            if let DrawCommand::DrawVector {
+                vector,
+                origin,
+                scale,
+                clip,
+                ..
+            } = *command
+            {
+                let vector = case.scene.vector(vector).ok_or("missing vector")?;
+                let stroke = PreparedStroke::new(vector, origin, scale, clip, &mapping)?
+                    .ok_or_else(|| format!("{}: a stroke draws nothing", case.name))?;
+                strokes.push((scale, stroke));
+            }
+        }
+        Ok(strokes)
+    }
+    // Every stroke of a viewed case is scaled by its view, below and above
+    // eight, and the sub-pixel ones are thinner than a pixel as displayed.
+    let viewed = viewed_strokes()?;
+    assert_eq!(viewed.len(), 2 * VIEW_FACTORS.len());
+    for (case, factor) in viewed.iter().zip(VIEW_FACTORS.iter().cycle()) {
+        let strokes = strokes(case)?;
+        assert_eq!(strokes.len(), 5, "{}", case.name);
+        assert!(
+            strokes.iter().all(|(scale, _)| scale == factor),
+            "{}",
+            case.name
+        );
+        let thin = strokes
+            .iter()
+            .filter(|(_, stroke)| stroke.thin() < 1.0)
+            .count();
+        assert_eq!(thin, 2, "{}", case.name);
+    }
+    // Each long miter is a miter join whose wedge reaches thousands of
+    // pixels from the vertex: the one in the frame through its join's
+    // reach, the far one through its vertex.
+    const MITER: u32 = 3 << 6;
+    for case in long_miters()? {
+        let strokes = strokes(&case)?;
+        let [(_, near), (_, far)] = &strokes[..] else {
+            return Err(format!("{}: not two strokes", case.name).into());
+        };
+        let miter = |stroke: &PreparedStroke| {
+            stroke
+                .segments()
+                .iter()
+                .find(|segment| segment.flags & (3 << 6) == MITER)
+                .copied()
+        };
+        let near = miter(near).ok_or("the near stroke has no miter")?;
+        assert!(near.end_k > 8_000.0, "{}: {near:?}", case.name);
+        let far = miter(far).ok_or("the far stroke has no miter")?;
+        assert!(far.b[0] > 10_000.0, "{}: {far:?}", case.name);
+        assert!(
+            far.b[0] < MITER_RATIO * 3.0 * 2.0 + SIZE as f32,
+            "{}: {far:?}",
+            case.name
+        );
+    }
+    Ok(())
+}
+
+#[test]
 fn the_domain_fixture_evaluates_far_from_its_span() -> Result<(), Box<dyn std::error::Error>> {
     use pert_ui_runtime::ShapeParameters;
     let case = domain_edge_case()?;
@@ -825,6 +1086,87 @@ fn corpus() -> Result<Vec<Case>, Box<dyn std::error::Error>> {
     ])
 }
 
+/// Vector fills whose edges lie anywhere within a pixel, pixel centers and
+/// their nearest neighborhood included, at three scales. Their coverage is
+/// rasterized on the frame's pixels, so both renderers read each texel at
+/// its center.
+fn fill_corpus() -> Result<Vec<Case>, Box<dyn std::error::Error>> {
+    let red = Color::from_srgb8(230, 40, 20, 255);
+    let green = Color::from_srgb8(30, 180, 60, 255);
+    let translucent = Color::from_linear(0.2, 0.4, 1.0, 0.45)?;
+    [
+        ("vector fills at any phase", 1.0),
+        ("vector fills at any phase 125%", 1.25),
+        ("vector fills at any phase 200%", 2.0),
+    ]
+    .into_iter()
+    .map(|(name, scale)| {
+        shapes(name, false, scale, move |p| {
+            let at = |x: f32, y: f32| Point::new(x, y);
+            // Bounds just past pixel centers, within a GPU's subpixel
+            // precision of them at scale 1: where coverage anchored at the
+            // geometry's bounds put a mask's edge on one side of a center
+            // for one renderer and on the other side for the other.
+            let centered = Path::polygon([
+                at(10.501_22, 6.501_22)?,
+                at(22.5, 6.501_22)?,
+                at(22.5, 12.25)?,
+                at(10.501_22, 12.25)?,
+            ])?;
+            p.fill_path(&centered, FillRule::NonZero, red)?;
+            let slanted = Path::polygon([
+                at(3.37, 20.11)?,
+                at(27.9, 16.3)?,
+                at(21.4, 29.6)?,
+                at(8.8, 27.2)?,
+            ])?;
+            p.fill_path(&slanted, FillRule::NonZero, green)?;
+            let circle = Path::circle(at(17.31, 11.77)?, Length::new(6.6)?)?;
+            p.fill_path(&circle, FillRule::NonZero, translucent)?;
+            Ok(())
+        })
+    })
+    .collect()
+}
+
+#[test]
+fn the_fill_fixtures_are_rasterized_on_the_frames_pixels() -> Result<(), Box<dyn std::error::Error>>
+{
+    for case in fill_corpus()? {
+        let prepared = case.scene.rasterized()?;
+        let scale = case.scene.viewport().scale();
+        let mut masks = 0;
+        for command in prepared.commands() {
+            let DrawCommand::DrawMask { mask, rect, .. } = command else {
+                continue;
+            };
+            masks += 1;
+            let mask = prepared.mask(*mask).ok_or("no mask")?;
+            let [x, y, w, h] = rect.values().map(|v| f64::from(v) * scale);
+            for (value, whole) in [
+                (x, x.round()),
+                (y, y.round()),
+                (w, f64::from(mask.width())),
+                (h, f64::from(mask.height())),
+            ] {
+                assert!((value - whole).abs() < 1e-3, "{}: {rect:?}", case.name);
+            }
+        }
+        assert_eq!(masks, 3, "{}", case.name);
+    }
+    Ok(())
+}
+
+/// A linear-light value of an sRGB-encoded byte.
+fn linear(code: u8) -> f64 {
+    let c = f64::from(code) / 255.0;
+    if c <= 0.04045 {
+        c / 12.92
+    } else {
+        ((c + 0.055) / 1.055).powf(2.4)
+    }
+}
+
 struct Parity {
     error: Option<Box<dyn std::error::Error>>,
 }
@@ -847,6 +1189,7 @@ impl ApplicationHandler<Notice> for Parity {
             let mut edge_tier = 0;
             for case in corpus()?
                 .into_iter()
+                .chain(fill_corpus()?)
                 .chain(shape_corpus()?)
                 .chain(stroke_corpus()?)
             {
@@ -917,6 +1260,57 @@ impl ApplicationHandler<Notice> for Parity {
             }
             println!(
                 "Parity edge tier: largest difference {edge_tier} over the shape and stroke fixtures (bound {EDGE_TIER})"
+            );
+            // The fallback's stroke masks, drawn by this renderer, against
+            // the CPU renderer's own strokes, in linear light: within the
+            // masks' quantization and placement for each of up to two
+            // overlapping strokes, and the frames' encoding to bytes.
+            let per_stroke = 0.5 / 255.0 + 2f64.powi(-8);
+            let step = |code: u8| linear(code.saturating_add(1)) - linear(code.saturating_sub(1));
+            let mut fallback_largest = 0.0f64;
+            for case in stroke_corpus()? {
+                let gpu = renderer.render_offscreen(case.scene.rasterized()?)?;
+                let software = cpu.render(&case.scene)?;
+                let mut beyond = None;
+                for (index, (a, b)) in gpu
+                    .pixels()
+                    .as_chunks::<4>()
+                    .0
+                    .iter()
+                    .zip(software.pixels().as_chunks::<4>().0.iter())
+                    .enumerate()
+                {
+                    for channel in 0..3 {
+                        let (a, b) = (a[channel], b[channel]);
+                        let difference = (linear(a) - linear(b)).abs();
+                        fallback_largest = fallback_largest.max(difference);
+                        if difference > 2.0 * per_stroke + step(a).max(step(b)) {
+                            beyond.get_or_insert((index, channel, a, b));
+                        }
+                    }
+                    if a[3].abs_diff(b[3]) > 3 {
+                        beyond.get_or_insert((index, 3, a[3], b[3]));
+                    }
+                }
+                if let Some((index, channel, a, b)) = beyond {
+                    let stem = std::env::temp_dir().join(format!(
+                        "pert-ui-parity-fallback-{}",
+                        case.name.replace(' ', "-")
+                    ));
+                    let gpu_path = stem.with_extension("gpu.png");
+                    let cpu_path = stem.with_extension("cpu.png");
+                    std::fs::write(&gpu_path, gpu.encode_png())?;
+                    std::fs::write(&cpu_path, software.encode_png())?;
+                    failures.push(format!(
+                        "{} through the fallback: pixel {index} channel {channel}: {a} and {b}; see {} and {}",
+                        case.name,
+                        gpu_path.display(),
+                        cpu_path.display()
+                    ));
+                }
+            }
+            println!(
+                "Parity fallback strokes: largest linear difference {fallback_largest:.5} against the CPU renderer's strokes"
             );
             if failures.is_empty() {
                 Ok(())

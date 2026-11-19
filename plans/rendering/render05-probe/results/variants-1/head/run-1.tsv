@@ -1,0 +1,348 @@
+page/layout/1	rects	28
+page/layout/1	masks_drawn	43
+page/layout/1	other_commands	23
+page/layout/1	mask_resources	41
+page/layout/1	mask_kib	110.791015625
+page/layout/1	compose_cold_ms	1.373027
+page/layout/1	compose_warm_ms	0.057018
+page/layout/1	cpu_median_ms	4.712868
+page/layout/1	present_cold_ms	1.2127640000000002
+page/layout/1	present_warm_median_ms	0.757251
+page/layout/1	gpu_first_ms	4.649609
+page/layout/1	gpu_warm_median_ms	3.28322
+page/layout/1	gpu_warm_p95_ms	3.367728
+page/splits/1	rects	24
+page/splits/1	masks_drawn	38
+page/splits/1	other_commands	26
+page/splits/1	mask_resources	36
+page/splits/1	mask_kib	94.40234375
+page/splits/1	compose_cold_ms	1.412257
+page/splits/1	compose_warm_ms	0.072084
+page/splits/1	cpu_median_ms	4.860401
+page/splits/1	present_cold_ms	0.647639
+page/splits/1	present_warm_median_ms	0.532546
+page/splits/1	gpu_first_ms	5.8727
+page/splits/1	gpu_warm_median_ms	3.215925
+page/splits/1	gpu_warm_p95_ms	4.5989
+page/shells/1	rects	28
+page/shells/1	masks_drawn	45
+page/shells/1	other_commands	33
+page/shells/1	mask_resources	40
+page/shells/1	mask_kib	115.98828125
+page/shells/1	compose_cold_ms	1.3972310000000001
+page/shells/1	compose_warm_ms	0.069708
+page/shells/1	cpu_median_ms	5.129435
+page/shells/1	present_cold_ms	0.628378
+page/shells/1	present_warm_median_ms	0.439944
+page/shells/1	gpu_first_ms	4.16205
+page/shells/1	gpu_warm_median_ms	3.279943
+page/shells/1	gpu_warm_p95_ms	3.569476
+mixer: one tick per frame	frames	20
+mixer: one tick per frame	compose_first_ms	0.016411000000000002
+mixer: one tick per frame	compose_median_ms	0.067581
+mixer: one tick per frame	compose_p95_ms	0.099529
+mixer: one tick per frame	cpu_median_ms	1.06433
+mixer: one tick per frame	present_frames	20
+mixer: one tick per frame	present_median_ms	0.406386
+mixer: one tick per frame	present_p95_ms	0.415157
+mixer: one tick per frame	gpu_median_ms	2.194573
+mixer: one tick per frame	gpu_p95_ms	2.273279
+mixer: one tick per frame	mask_resources_median	14
+mixer: one tick per frame	mask_kib_median	18.37890625
+mixer: one tick per frame	new_masks_median	0
+mixer: one tick per frame	new_masks_total	0
+mixer: one tick per frame	new_mask_kib_total	0
+mixer: one tick per frame	other_commands_max	21
+diagram: live zoom steps	frames	6
+diagram: live zoom steps	compose_first_ms	0.24569000000000002
+diagram: live zoom steps	compose_median_ms	0.24425199999999997
+diagram: live zoom steps	compose_p95_ms	0.255492
+diagram: live zoom steps	cpu_median_ms	2.096591
+diagram: live zoom steps	present_frames	6
+diagram: live zoom steps	present_median_ms	0.7390260000000001
+diagram: live zoom steps	present_p95_ms	1.865321
+diagram: live zoom steps	gpu_median_ms	3.869244
+diagram: live zoom steps	gpu_p95_ms	3.988249
+diagram: live zoom steps	mask_resources_median	29
+diagram: live zoom steps	mask_kib_median	24.2578125
+diagram: live zoom steps	new_masks_median	1
+diagram: live zoom steps	new_masks_total	9
+diagram: live zoom steps	new_mask_kib_total	7.2099609375
+diagram: live zoom steps	other_commands_max	19
+diagram: live zoom settle frame	frames	1
+diagram: live zoom settle frame	compose_first_ms	0.257842
+diagram: live zoom settle frame	compose_median_ms	0.257842
+diagram: live zoom settle frame	compose_p95_ms	0.257842
+diagram: live zoom settle frame	cpu_median_ms	1.79677
+diagram: live zoom settle frame	present_frames	1
+diagram: live zoom settle frame	present_median_ms	0.520404
+diagram: live zoom settle frame	present_p95_ms	0.520404
+diagram: live zoom settle frame	gpu_median_ms	3.734832
+diagram: live zoom settle frame	gpu_p95_ms	3.734832
+diagram: live zoom settle frame	mask_resources_median	28
+diagram: live zoom settle frame	mask_kib_median	24.9892578125
+diagram: live zoom settle frame	new_masks_median	2
+diagram: live zoom settle frame	new_masks_total	2
+diagram: live zoom settle frame	new_mask_kib_total	3.25390625
+diagram: live zoom settle frame	other_commands_max	18
+diagram: settled zoom in and out	frames	6
+diagram: settled zoom in and out	compose_first_ms	0.24074
+diagram: settled zoom in and out	compose_median_ms	0.229376
+diagram: settled zoom in and out	compose_p95_ms	0.268647
+diagram: settled zoom in and out	cpu_median_ms	1.987702
+diagram: settled zoom in and out	present_frames	6
+diagram: settled zoom in and out	present_median_ms	0.784016
+diagram: settled zoom in and out	present_p95_ms	1.7471999999999999
+diagram: settled zoom in and out	gpu_median_ms	3.907028
+diagram: settled zoom in and out	gpu_p95_ms	3.997034
+diagram: settled zoom in and out	mask_resources_median	27
+diagram: settled zoom in and out	mask_kib_median	24.6298828125
+diagram: settled zoom in and out	new_masks_median	2
+diagram: settled zoom in and out	new_masks_total	15
+diagram: settled zoom in and out	new_mask_kib_total	18.404296875
+diagram: settled zoom in and out	other_commands_max	19
+diagram: pan 7 px per frame	frames	10
+diagram: pan 7 px per frame	compose_first_ms	0.11297900000000001
+diagram: pan 7 px per frame	compose_median_ms	0.159956
+diagram: pan 7 px per frame	compose_p95_ms	0.164599
+diagram: pan 7 px per frame	cpu_median_ms	1.9748740000000002
+diagram: pan 7 px per frame	present_frames	10
+diagram: pan 7 px per frame	present_median_ms	0.778511
+diagram: pan 7 px per frame	present_p95_ms	1.7473180000000001
+diagram: pan 7 px per frame	gpu_median_ms	3.866131
+diagram: pan 7 px per frame	gpu_p95_ms	3.9050130000000003
+diagram: pan 7 px per frame	mask_resources_median	26
+diagram: pan 7 px per frame	mask_kib_median	21.7353515625
+diagram: pan 7 px per frame	new_masks_median	0
+diagram: pan 7 px per frame	new_masks_total	0
+diagram: pan 7 px per frame	new_mask_kib_total	0
+diagram: pan 7 px per frame	other_commands_max	19
+cards: pan steps	end_scale	1
+cards: pan back steps	end_scale	1
+cards: zoom in steps	end_scale	1.231144666671753
+cards: zoom out steps	end_scale	1.0000001192092896
+cards: zoom out further steps	end_scale	0.812252402305603
+cards: pan steps	frames	6
+cards: pan steps	compose_first_ms	0.35534299999999996
+cards: pan steps	compose_median_ms	0.448469
+cards: pan steps	compose_p95_ms	0.46977599999999997
+cards: pan steps	cpu_median_ms	2.705221
+cards: pan steps	present_frames	6
+cards: pan steps	present_median_ms	0.5596359999999999
+cards: pan steps	present_p95_ms	1.3085289999999998
+cards: pan steps	gpu_median_ms	2.296823
+cards: pan steps	gpu_p95_ms	2.320631
+cards: pan steps	mask_resources_median	31
+cards: pan steps	mask_kib_median	52.625
+cards: pan steps	new_masks_median	0
+cards: pan steps	new_masks_total	4
+cards: pan steps	new_mask_kib_total	9.140625
+cards: pan steps	other_commands_max	40
+cards: pan rest frame	frames	1
+cards: pan rest frame	compose_first_ms	0.048568
+cards: pan rest frame	compose_median_ms	0.048568
+cards: pan rest frame	compose_p95_ms	0.048568
+cards: pan rest frame	cpu_median_ms	2.700596
+cards: pan rest frame	present_frames	1
+cards: pan rest frame	present_median_ms	0.455038
+cards: pan rest frame	present_p95_ms	0.455038
+cards: pan rest frame	gpu_median_ms	2.355055
+cards: pan rest frame	gpu_p95_ms	2.355055
+cards: pan rest frame	mask_resources_median	31
+cards: pan rest frame	mask_kib_median	52.625
+cards: pan rest frame	new_masks_median	0
+cards: pan rest frame	new_masks_total	0
+cards: pan rest frame	new_mask_kib_total	0
+cards: pan rest frame	other_commands_max	40
+cards: pan back steps	frames	6
+cards: pan back steps	compose_first_ms	0.371826
+cards: pan back steps	compose_median_ms	0.444151
+cards: pan back steps	compose_p95_ms	0.484939
+cards: pan back steps	cpu_median_ms	2.7495000000000003
+cards: pan back steps	present_frames	6
+cards: pan back steps	present_median_ms	0.531809
+cards: pan back steps	present_p95_ms	0.546057
+cards: pan back steps	gpu_median_ms	2.335223
+cards: pan back steps	gpu_p95_ms	2.407345
+cards: pan back steps	mask_resources_median	31
+cards: pan back steps	mask_kib_median	52.625
+cards: pan back steps	new_masks_median	0
+cards: pan back steps	new_masks_total	0
+cards: pan back steps	new_mask_kib_total	0
+cards: pan back steps	other_commands_max	36
+cards: pan back rest frame	frames	1
+cards: pan back rest frame	compose_first_ms	0.045457000000000004
+cards: pan back rest frame	compose_median_ms	0.045457000000000004
+cards: pan back rest frame	compose_p95_ms	0.045457000000000004
+cards: pan back rest frame	cpu_median_ms	2.399696
+cards: pan back rest frame	present_frames	1
+cards: pan back rest frame	present_median_ms	0.459882
+cards: pan back rest frame	present_p95_ms	0.459882
+cards: pan back rest frame	gpu_median_ms	2.198259
+cards: pan back rest frame	gpu_p95_ms	2.198259
+cards: pan back rest frame	mask_resources_median	27
+cards: pan back rest frame	mask_kib_median	43.484375
+cards: pan back rest frame	new_masks_median	0
+cards: pan back rest frame	new_masks_total	0
+cards: pan back rest frame	new_mask_kib_total	0
+cards: pan back rest frame	other_commands_max	36
+cards: zoom in steps	frames	6
+cards: zoom in steps	compose_first_ms	4.123706
+cards: zoom in steps	compose_median_ms	0.51263
+cards: zoom in steps	compose_p95_ms	4.123706
+cards: zoom in steps	cpu_median_ms	2.7465390000000003
+cards: zoom in steps	present_frames	6
+cards: zoom in steps	present_median_ms	0.546102
+cards: zoom in steps	present_p95_ms	0.7345200000000001
+cards: zoom in steps	gpu_median_ms	2.40078
+cards: zoom in steps	gpu_p95_ms	2.441679
+cards: zoom in steps	mask_resources_median	27
+cards: zoom in steps	mask_kib_median	46.7890625
+cards: zoom in steps	new_masks_median	0
+cards: zoom in steps	new_masks_total	26
+cards: zoom in steps	new_mask_kib_total	46.4296875
+cards: zoom in steps	other_commands_max	36
+cards: zoom in rest frame	frames	1
+cards: zoom in rest frame	compose_first_ms	3.991094
+cards: zoom in rest frame	compose_median_ms	3.991094
+cards: zoom in rest frame	compose_p95_ms	3.991094
+cards: zoom in rest frame	cpu_median_ms	2.5638430000000003
+cards: zoom in rest frame	present_frames	1
+cards: zoom in rest frame	present_median_ms	0.674225
+cards: zoom in rest frame	present_p95_ms	0.674225
+cards: zoom in rest frame	gpu_median_ms	2.452442
+cards: zoom in rest frame	gpu_p95_ms	2.452442
+cards: zoom in rest frame	mask_resources_median	21
+cards: zoom in rest frame	mask_kib_median	50.955078125
+cards: zoom in rest frame	new_masks_median	21
+cards: zoom in rest frame	new_masks_total	21
+cards: zoom in rest frame	new_mask_kib_total	50.955078125
+cards: zoom in rest frame	other_commands_max	24
+cards: zoom out steps	frames	6
+cards: zoom out steps	compose_first_ms	4.039224
+cards: zoom out steps	compose_median_ms	0.50829
+cards: zoom out steps	compose_p95_ms	4.039224
+cards: zoom out steps	cpu_median_ms	2.693604
+cards: zoom out steps	present_frames	6
+cards: zoom out steps	present_median_ms	0.5292180000000001
+cards: zoom out steps	present_p95_ms	0.54692
+cards: zoom out steps	gpu_median_ms	2.3588099999999996
+cards: zoom out steps	gpu_p95_ms	2.4344
+cards: zoom out steps	mask_resources_median	27
+cards: zoom out steps	mask_kib_median	61.4765625
+cards: zoom out steps	new_masks_median	3
+cards: zoom out steps	new_masks_total	26
+cards: zoom out steps	new_mask_kib_total	60.0703125
+cards: zoom out steps	other_commands_max	36
+cards: zoom out rest frame	frames	1
+cards: zoom out rest frame	compose_first_ms	3.9901850000000003
+cards: zoom out rest frame	compose_median_ms	3.9901850000000003
+cards: zoom out rest frame	compose_p95_ms	3.9901850000000003
+cards: zoom out rest frame	cpu_median_ms	2.581061
+cards: zoom out rest frame	present_frames	1
+cards: zoom out rest frame	present_median_ms	0.736491
+cards: zoom out rest frame	present_p95_ms	0.736491
+cards: zoom out rest frame	gpu_median_ms	2.590597
+cards: zoom out rest frame	gpu_p95_ms	2.590597
+cards: zoom out rest frame	mask_resources_median	27
+cards: zoom out rest frame	mask_kib_median	43.484375
+cards: zoom out rest frame	new_masks_median	27
+cards: zoom out rest frame	new_masks_total	27
+cards: zoom out rest frame	new_mask_kib_total	43.484375
+cards: zoom out rest frame	other_commands_max	36
+cards: zoom out further steps	frames	6
+cards: zoom out further steps	compose_first_ms	4.078976
+cards: zoom out further steps	compose_median_ms	0.478912
+cards: zoom out further steps	compose_p95_ms	4.078976
+cards: zoom out further steps	cpu_median_ms	2.594814
+cards: zoom out further steps	present_frames	6
+cards: zoom out further steps	present_median_ms	0.42629
+cards: zoom out further steps	present_p95_ms	0.7201609999999999
+cards: zoom out further steps	gpu_median_ms	2.253108
+cards: zoom out further steps	gpu_p95_ms	2.466429
+cards: zoom out further steps	mask_resources_median	31
+cards: zoom out further steps	mask_kib_median	48.7431640625
+cards: zoom out further steps	new_masks_median	0
+cards: zoom out further steps	new_masks_total	30
+cards: zoom out further steps	new_mask_kib_total	48.3837890625
+cards: zoom out further steps	other_commands_max	40
+cards: zoom out further rest frame	frames	1
+cards: zoom out further rest frame	compose_first_ms	4.091526
+cards: zoom out further rest frame	compose_median_ms	4.091526
+cards: zoom out further rest frame	compose_p95_ms	4.091526
+cards: zoom out further rest frame	cpu_median_ms	2.360977
+cards: zoom out further rest frame	present_frames	1
+cards: zoom out further rest frame	present_median_ms	0.6256649999999999
+cards: zoom out further rest frame	present_p95_ms	0.6256649999999999
+cards: zoom out further rest frame	gpu_median_ms	2.356382
+cards: zoom out further rest frame	gpu_p95_ms	2.356382
+cards: zoom out further rest frame	mask_resources_median	31
+cards: zoom out further rest frame	mask_kib_median	34.59375
+cards: zoom out further rest frame	new_masks_median	30
+cards: zoom out further rest frame	new_masks_total	30
+cards: zoom out further rest frame	new_mask_kib_total	34.234375
+cards: zoom out further rest frame	other_commands_max	40
+knob: gallery input page, Shift+Up (whole display list)	frames	20
+knob: gallery input page, Shift+Up (whole display list)	compose_first_ms	0.913435
+knob: gallery input page, Shift+Up (whole display list)	compose_median_ms	1.094922
+knob: gallery input page, Shift+Up (whole display list)	compose_p95_ms	1.137073
+knob: gallery input page, Shift+Up (whole display list)	cpu_median_ms	3.512217
+knob: gallery input page, Shift+Up (whole display list)	present_frames	20
+knob: gallery input page, Shift+Up (whole display list)	present_median_ms	0.571963
+knob: gallery input page, Shift+Up (whole display list)	present_p95_ms	0.587659
+knob: gallery input page, Shift+Up (whole display list)	gpu_median_ms	4.46446
+knob: gallery input page, Shift+Up (whole display list)	gpu_p95_ms	4.598813
+knob: gallery input page, Shift+Up (whole display list)	mask_resources_median	38
+knob: gallery input page, Shift+Up (whole display list)	mask_kib_median	69.7578125
+knob: gallery input page, Shift+Up (whole display list)	new_masks_median	3
+knob: gallery input page, Shift+Up (whole display list)	new_masks_total	60
+knob: gallery input page, Shift+Up (whole display list)	new_mask_kib_total	196.328125
+knob: gallery input page, Shift+Up (whole display list)	other_commands_max	45
+knob: isolated, no readout, host writes	frames	20
+knob: isolated, no readout, host writes	compose_first_ms	0.002833
+knob: isolated, no readout, host writes	compose_median_ms	0.011143
+knob: isolated, no readout, host writes	compose_p95_ms	0.028926999999999998
+knob: isolated, no readout, host writes	cpu_median_ms	0.08826
+knob: isolated, no readout, host writes	present_frames	20
+knob: isolated, no readout, host writes	present_median_ms	0.249229
+knob: isolated, no readout, host writes	present_p95_ms	0.401867
+knob: isolated, no readout, host writes	gpu_median_ms	1.124955
+knob: isolated, no readout, host writes	gpu_p95_ms	1.235867
+knob: isolated, no readout, host writes	mask_resources_median	0
+knob: isolated, no readout, host writes	mask_kib_median	0
+knob: isolated, no readout, host writes	new_masks_median	0
+knob: isolated, no readout, host writes	new_masks_total	0
+knob: isolated, no readout, host writes	new_mask_kib_total	0
+knob: isolated, no readout, host writes	other_commands_max	2
+J1 `shells`: resize +7 px per frame	frames	5
+J1 `shells`: resize +7 px per frame	compose_first_ms	0.767612
+J1 `shells`: resize +7 px per frame	compose_median_ms	0.955573
+J1 `shells`: resize +7 px per frame	compose_p95_ms	1.862854
+J1 `shells`: resize +7 px per frame	cpu_median_ms	4.4439969999999995
+J1 `shells`: resize +7 px per frame	present_frames	5
+J1 `shells`: resize +7 px per frame	present_median_ms	1.615478
+J1 `shells`: resize +7 px per frame	present_p95_ms	2.0424420000000003
+J1 `shells`: resize +7 px per frame	gpu_median_ms	11.662312
+J1 `shells`: resize +7 px per frame	gpu_p95_ms	32.472734
+J1 `shells`: resize +7 px per frame	mask_resources_median	40
+J1 `shells`: resize +7 px per frame	mask_kib_median	117.90234375
+J1 `shells`: resize +7 px per frame	new_masks_median	0
+J1 `shells`: resize +7 px per frame	new_masks_total	1
+J1 `shells`: resize +7 px per frame	new_mask_kib_total	48.59375
+J1 `shells`: resize +7 px per frame	other_commands_max	33
+J1 `shells`: scale 1 → 1.25 → 1.5 → 1.75 → 2	frames	4
+J1 `shells`: scale 1 → 1.25 → 1.5 → 1.75 → 2	compose_first_ms	3.297467
+J1 `shells`: scale 1 → 1.25 → 1.5 → 1.75 → 2	compose_median_ms	4.286749
+J1 `shells`: scale 1 → 1.25 → 1.5 → 1.75 → 2	compose_p95_ms	4.474017
+J1 `shells`: scale 1 → 1.25 → 1.5 → 1.75 → 2	cpu_median_ms	17.212566
+J1 `shells`: scale 1 → 1.25 → 1.5 → 1.75 → 2	present_frames	4
+J1 `shells`: scale 1 → 1.25 → 1.5 → 1.75 → 2	present_median_ms	4.372615
+J1 `shells`: scale 1 → 1.25 → 1.5 → 1.75 → 2	present_p95_ms	5.258188
+J1 `shells`: scale 1 → 1.25 → 1.5 → 1.75 → 2	gpu_median_ms	12.480461
+J1 `shells`: scale 1 → 1.25 → 1.5 → 1.75 → 2	gpu_p95_ms	16.395277999999998
+J1 `shells`: scale 1 → 1.25 → 1.5 → 1.75 → 2	mask_resources_median	40
+J1 `shells`: scale 1 → 1.25 → 1.5 → 1.75 → 2	mask_kib_median	352.2890625
+J1 `shells`: scale 1 → 1.25 → 1.5 → 1.75 → 2	new_masks_median	40
+J1 `shells`: scale 1 → 1.25 → 1.5 → 1.75 → 2	new_masks_total	160
+J1 `shells`: scale 1 → 1.25 → 1.5 → 1.75 → 2	new_mask_kib_total	1250.0869140625
+J1 `shells`: scale 1 → 1.25 → 1.5 → 1.75 → 2	other_commands_max	33

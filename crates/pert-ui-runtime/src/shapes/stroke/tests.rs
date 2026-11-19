@@ -1239,3 +1239,69 @@ fn too_many_tile_references_are_refused() -> Outcome {
     );
     Ok(())
 }
+
+#[test]
+fn the_segment_budget_admits_its_last_segment_and_refuses_the_next() -> Outcome {
+    // A straight path keeps at most one segment per point, so the budget
+    // is reached with curves: each flattens into several chords from three
+    // points. They lie one per 64-pixel cell across a large frame, so no
+    // tile list or reference budget is reached first.
+    const CELL: f32 = 64.0;
+    const ROW: usize = 128;
+    let mapping = FrameMapping::new(8192, 8192, Viewport::new(8192.0, 8192.0, 1.0)?)?;
+    let corner = |index: usize| ((index % ROW) as f32 * CELL, (index / ROW) as f32 * CELL);
+    let curves = |count: usize| -> Result<PathBuilder, GeometryError> {
+        let mut builder = PathBuilder::new();
+        for index in 0..count {
+            let (x, y) = corner(index);
+            builder = builder.move_to(Point::new(x + 4.0, y + 4.0)?).quad_to(
+                Point::new(x + 32.0, y + 60.0)?,
+                Point::new(x + 60.0, y + 4.0)?,
+            );
+        }
+        Ok(builder)
+    };
+    // Single-point subpaths, each one round dot and one segment, placed in
+    // the cells after the curves' and clear of them.
+    let dots = |mut builder: PathBuilder, from: usize, count: usize| {
+        for index in from..from + count {
+            let (x, y) = corner(index / 4);
+            let offset = 8.0 + 12.0 * (index % 4) as f32;
+            builder = builder.move_to(Point::new(x + offset, y + 56.0)?).close();
+        }
+        Ok::<_, GeometryError>(builder)
+    };
+    let stroke = |builder: PathBuilder| -> Result<VectorGeometry, Box<dyn std::error::Error>> {
+        Ok(VectorGeometry::new(
+            builder.build()?,
+            VectorStyle::Stroke(style(1.0, LineCap::Round, LineJoin::Round)?),
+        ))
+    };
+    let new =
+        |vector: &VectorGeometry| PreparedStroke::new(vector, Point::ZERO, 1.0, None, &mapping);
+
+    // As many curves as fit with room to spare; points fill the rest.
+    let one = prepared(&stroke(curves(1)?)?, &mapping)?.segments.len();
+    assert!(one > 3, "a curve keeps {one} segments from three points");
+    let count = PreparedStroke::MAX_SEGMENTS / one - 1;
+    let kept = prepared(&stroke(curves(count)?)?, &mapping)?.segments.len();
+    let missing = PreparedStroke::MAX_SEGMENTS
+        .checked_sub(kept)
+        .ok_or("the curves alone exceed the segment budget")?;
+    assert!(
+        3 * count + missing < Path::MAX_POINTS,
+        "{kept} segments leave no room for one more point"
+    );
+    let full = dots(curves(count)?, 4 * count, missing)?;
+    let at_budget = prepared(&stroke(full.clone())?, &mapping)?;
+    assert_eq!(at_budget.segments.len(), PreparedStroke::MAX_SEGMENTS);
+
+    // One more point subpath, or one more straight segment, is refused.
+    let one_dot = dots(full.clone(), 4 * count + missing, 1)?;
+    assert_eq!(new(&stroke(one_dot)?), Err(DrawError::TooComplex));
+    let one_line = full
+        .move_to(Point::new(8100.0, 8100.0)?)
+        .line_to(Point::new(8120.0, 8100.0)?);
+    assert_eq!(new(&stroke(one_line)?), Err(DrawError::TooComplex));
+    Ok(())
+}

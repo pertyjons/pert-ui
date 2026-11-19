@@ -47,6 +47,60 @@ fn at(image: &MaskImage, x: u32, y: u32) -> u8 {
     image.pixels()[(y * image.width() + x) as usize]
 }
 
+/// The coverage the scene's only mask gives the frame pixel `(x, y)`, read
+/// at the pixel's center; 0 outside the mask. A stroke's mask holds one
+/// texel per frame pixel, so this is the stroke's coverage there.
+fn cover(list: &DisplayList, x: u32, y: u32) -> u8 {
+    let (rect, _, image) = mask(list);
+    texel(list, rect, &image, x, y)
+}
+
+/// The coverage the mask `image` drawn at `rect` gives the frame pixel
+/// `(x, y)`, as [`cover`] reads it.
+fn texel(list: &DisplayList, rect: Rect, image: &MaskImage, x: u32, y: u32) -> u8 {
+    let scale = list.viewport().scale();
+    let [rx, ry, rw, rh] = rect.values().map(f64::from);
+    let u = ((f64::from(x) + 0.5) / scale - rx) / rw * f64::from(image.width());
+    let v = ((f64::from(y) + 0.5) / scale - ry) / rh * f64::from(image.height());
+    if u < 0.0 || v < 0.0 || u >= f64::from(image.width()) || v >= f64::from(image.height()) {
+        return 0;
+    }
+    at(image, u as u32, v as u32)
+}
+
+/// Asserts that the scene's only mask covers every frame pixel of the
+/// half-open box `[x0, y0, x1, y1]` fully and no other pixel at all.
+fn assert_solid(list: &DisplayList, [x0, y0, x1, y1]: [u32; 4]) {
+    let extent = list.viewport().frame_extent();
+    for y in 0..extent.height() {
+        for x in 0..extent.width() {
+            let inside = (x0..x1).contains(&x) && (y0..y1).contains(&y);
+            let expected = if inside { 255 } else { 0 };
+            assert_eq!(cover(list, x, y), expected, "pixel ({x}, {y})");
+        }
+    }
+}
+
+/// The frame pixels the scene's only mask covers with at least `level`, as
+/// the half-open box `[x0, y0, x1, y1]`.
+fn covered(list: &DisplayList, level: u8) -> [u32; 4] {
+    let extent = list.viewport().frame_extent();
+    let mut bounds = [u32::MAX, u32::MAX, 0, 0];
+    for y in 0..extent.height() {
+        for x in 0..extent.width() {
+            if cover(list, x, y) >= level {
+                bounds = [
+                    bounds[0].min(x),
+                    bounds[1].min(y),
+                    bounds[2].max(x + 1),
+                    bounds[3].max(y + 1),
+                ];
+            }
+        }
+    }
+    bounds
+}
+
 fn pt(x: f32, y: f32) -> Point {
     Point::new(x, y).expect("finite test point")
 }
@@ -97,10 +151,11 @@ fn a_fill_covers_whole_pixels_fully_and_split_pixels_by_area() -> TestResult {
         )
     })?;
     let (rect, _, image) = mask(&list);
-    assert_eq!(rect.values(), [0.5, 0.0, 4.0, 4.0]);
-    // The grid is anchored at the path's bounds, so the half pixel is the last one.
-    assert_eq!(at(&image, 0, 0), 255);
-    assert_eq!(at(&image, 3, 0), 128);
+    assert_eq!(rect.values(), [0.0, 0.0, 4.0, 4.0]);
+    // The grid is the frame's pixels, so the half pixel is the one the edge
+    // crosses.
+    assert_eq!(at(&image, 0, 0), 128);
+    assert_eq!(at(&image, 3, 0), 255);
     Ok(())
 }
 
@@ -137,57 +192,52 @@ fn fill_rules_decide_nested_and_opposite_subpaths() -> TestResult {
 #[test]
 fn caps_end_at_extend_past_or_round_the_endpoints() -> TestResult {
     let line = || Path::polyline([pt(8.0, 16.0), pt(24.0, 16.0)]);
-    let stroked = |cap: LineCap| -> Result<(Rect, MaskImage), Box<dyn std::error::Error>> {
+    let stroked = |cap: LineCap| {
         let path = line()?;
-        let (rect, _, image) = mask(&scene(1.0, move |p| {
+        scene(1.0, move |p| {
             p.stroke_path(&path, StrokeStyle::new(width(4.0)).with_cap(cap), color())
-        })?);
-        Ok((rect, image))
+        })
     };
-    let (butt, image) = stroked(LineCap::Butt)?;
-    assert_eq!(butt.values(), [8.0, 14.0, 16.0, 4.0]);
-    assert!(image.pixels().iter().all(|&alpha| alpha == 255));
+    // Every pixel the stroke touches it covers fully.
+    assert_solid(&stroked(LineCap::Butt)?, [8, 14, 24, 18]);
+    assert_solid(&stroked(LineCap::Square)?, [6, 14, 26, 18]);
 
-    let (square_cap, image) = stroked(LineCap::Square)?;
-    assert_eq!(square_cap.values(), [6.0, 14.0, 20.0, 4.0]);
-    assert!(image.pixels().iter().all(|&alpha| alpha == 255));
-
-    let (round, image) = stroked(LineCap::Round)?;
-    assert!(round.x() > 5.9 && round.x() < 6.1);
+    let round = stroked(LineCap::Round)?;
+    assert_eq!(covered(&round, 1), [6, 14, 26, 18]);
     // The cap rounds off the square cap's corner pixel; its middle is covered.
-    let corner = at(&image, 0, 0);
+    let corner = cover(&round, 6, 14);
     assert!(
         corner > 0 && corner < 128,
         "rounded corner coverage {corner}"
     );
-    assert_eq!(at(&image, 1, 2), 255);
+    assert_eq!(cover(&round, 7, 16), 255);
     Ok(())
 }
 
 #[test]
 fn joins_miter_bevel_or_round_the_outer_corner() -> TestResult {
     // A right angle turning down at (24, 8); the outer corner is (26, 6).
-    let corner = |join: LineJoin, limit: f32| -> Result<MaskImage, Box<dyn std::error::Error>> {
+    let corner = |join: LineJoin, limit: f32| -> Result<u8, Box<dyn std::error::Error>> {
         let style = StrokeStyle::new(width(4.0))
             .with_join(join)
             .with_miter_limit(limit)?;
-        let (rect, _, image) = mask(&scene(1.0, move |p| {
+        let list = scene(1.0, move |p| {
             p.stroke_polyline(
                 &[pt(8.0, 8.0), pt(24.0, 8.0), pt(24.0, 24.0)],
                 style,
                 color(),
             )
-        })?);
+        })?;
         // Every join shares the segments' bounds except where the miter adds a corner.
-        assert_eq!((rect.x(), rect.y()), (8.0, 6.0));
-        Ok(image)
+        assert_eq!(covered(&list, 1)[..2], [8, 6]);
+        // Pixel (25, 6) is the one inside the outer corner.
+        Ok(cover(&list, 25, 6))
     };
-    // Pixel (17, 0) is the one inside the outer corner, x 25..26 and y 6..7.
-    assert_eq!(at(&corner(LineJoin::Miter, 4.0)?, 17, 0), 255);
-    assert_eq!(at(&corner(LineJoin::Bevel, 4.0)?, 17, 0), 0);
+    assert_eq!(corner(LineJoin::Miter, 4.0)?, 255);
+    assert_eq!(corner(LineJoin::Bevel, 4.0)?, 0);
     // A right angle's miter is sqrt(2) widths long, beyond a limit of 1.2.
-    assert_eq!(at(&corner(LineJoin::Miter, 1.2)?, 17, 0), 0);
-    let round = at(&corner(LineJoin::Round, 4.0)?, 17, 0);
+    assert_eq!(corner(LineJoin::Miter, 1.2)?, 0);
+    let round = corner(LineJoin::Round, 4.0)?;
     assert!(round > 0 && round < 255, "round join covers part: {round}");
     Ok(())
 }
@@ -204,15 +254,13 @@ fn zero_length_subpaths_draw_a_dot_or_square_only_with_those_caps() -> TestResul
         })
     };
     assert!(dot(LineCap::Butt)?.commands().is_empty());
-    let (rect, _, image) = mask(&dot(LineCap::Square)?);
-    assert_eq!(rect.values(), [13.0, 13.0, 6.0, 6.0]);
-    assert!(image.pixels().iter().all(|&alpha| alpha == 255));
-    let (_, _, image) = mask(&dot(LineCap::Round)?);
+    assert_solid(&dot(LineCap::Square)?, [13, 13, 19, 19]);
+    let round_dot = dot(LineCap::Round)?;
     assert!(
-        at(&image, 0, 0) < 32,
+        cover(&round_dot, 13, 13) < 32,
         "the disc leaves its square's corner almost empty"
     );
-    assert_eq!(at(&image, 3, 3), 255);
+    assert_eq!(cover(&round_dot, 16, 16), 255);
 
     // A closed subpath of one point is zero-length too.
     let path = PathBuilder::new().move_to(pt(10.0, 10.0)).close().build()?;
@@ -271,7 +319,7 @@ fn empty_zero_width_and_degenerate_geometry_record_nothing() -> TestResult {
             color(),
         )
     })?;
-    assert_eq!(mask(&list).0.values(), [4.0, 3.0, 16.0, 2.0]);
+    assert_eq!(covered(&list, 1), [4, 3, 20, 5]);
     Ok(())
 }
 
@@ -429,18 +477,17 @@ fn curves_and_ellipses_approximate_their_exact_area() -> TestResult {
     assert_eq!(at(&image, 40, 40), 255);
     assert_eq!(at(&image, 1, 1), 0);
 
-    // A centered stroke extends half its width outside the ellipse's rectangle.
-    let (rect, _, _) = mask(&scene(1.0, |p| {
+    // A centered stroke extends half its width outside the ellipse's
+    // rectangle: the pixels whose centers lie inside, the 0.2-pixel
+    // flattening tolerance notwithstanding.
+    let stroked = scene(1.0, |p| {
         p.stroke_ellipse(
             Rect::new(10.0, 10.0, 20.0, 10.0)?,
             StrokeStyle::new(width(4.0)),
             color(),
         )
-    })?);
-    // Within the 0.2-pixel flattening tolerance of the exact outline.
-    for (actual, exact) in rect.values().into_iter().zip([8.0, 8.0, 24.0, 14.0]) {
-        assert!((actual - exact).abs() < 0.2, "{:?}", rect.values());
-    }
+    })?;
+    assert_eq!(covered(&stroked, 1), [8, 8, 32, 22]);
 
     // An arc built into a path ends where its sweep says.
     let path = PathBuilder::new()
@@ -459,12 +506,35 @@ fn equal_geometry_shares_one_mask_and_polylines_match_paths() -> TestResult {
     let list = scene(1.0, move |p| {
         p.stroke_polyline(&points, style, color())?;
         p.stroke_path(&Path::polyline(points)?, style, color())?;
-        // The same outline shifted by whole pixels rasterizes identically.
+        // The same outline shifted by whole pixels.
         let shifted = points.map(|q| Point::new(q.x() + 30.0, q.y() + 30.0).expect("finite"));
         p.stroke_polyline(&shifted, style, color())
     })?;
     assert_eq!(list.len(), 3);
-    assert_eq!(list.masks().len(), 1);
+    let masks: Vec<_> = list
+        .commands()
+        .iter()
+        .map(|command| match command {
+            DrawCommand::DrawMask { mask, rect, .. } => list
+                .mask(*mask)
+                .map(|image| (*mask, *rect, image))
+                .ok_or("the scene holds its masks"),
+            _ => Err("every stroke lowers to a mask"),
+        })
+        .collect::<Result<_, _>>()?;
+    assert_eq!(masks[0].0, masks[1].0, "equal geometry shares one mask");
+    // The shifted stroke covers the shifted pixels alike, up to the rounding
+    // of mapping its points: one coverage level.
+    let ((_, first, near), (_, moved, far)) = (masks[0], masks[2]);
+    for y in 0..32 {
+        for x in 0..32 {
+            let (a, b) = (
+                texel(&list, first, near, x, y),
+                texel(&list, moved, far, x + 30, y + 30),
+            );
+            assert!(a.abs_diff(b) <= 1, "pixel ({x}, {y}): {a} and {b}");
+        }
+    }
     Ok(())
 }
 
@@ -480,9 +550,7 @@ fn a_self_overlapping_stroke_is_one_mask_so_translucency_never_doubles() -> Test
         )
     })?;
     assert_eq!(list.len(), 1);
-    let (rect, _, image) = mask(&list);
-    let crossing = ((8.0 - rect.x()) as u32, (8.0 - rect.y()) as u32);
-    assert_eq!(at(&image, crossing.0, crossing.1), 255);
+    assert_eq!(cover(&list, 8, 8), 255);
     Ok(())
 }
 
@@ -495,19 +563,20 @@ fn joins_follow_the_exact_tangents_not_the_flattened_segments() -> TestResult {
         .line_to(pt(24.0, 8.0))
         .quad_to(pt(24.0, 24.0), pt(40.0, 24.0))
         .build()?;
-    let (rect, _, image) = mask(&scene(1.0, move |p| p.stroke_path(&path, style, color()))?);
-    assert_eq!((rect.x(), rect.y()), (8.0, 6.0));
-    assert_eq!(at(&image, 17, 0), 255);
+    let list = scene(1.0, move |p| p.stroke_path(&path, style, color()))?;
+    assert_eq!(covered(&list, 1)[..2], [8, 6]);
+    assert_eq!(cover(&list, 25, 6), 255);
     // Where lines continue into corner arcs tangentially, nothing overshoots the
-    // stroke's exact outline by more than the flattening tolerance.
-    let (rect, _, _) = mask(&scene(1.0, move |p| {
+    // stroke's exact outline, whose edge is at 8, by more than the flattening
+    // tolerance: no pixel left of or above it reaches 0.2 coverage.
+    let list = scene(1.0, move |p| {
         p.stroke_path(
             &Path::rounded_rect(Rect::new(10.0, 10.0, 30.0, 20.0)?, width(6.0))?,
             style,
             color(),
         )
-    })?);
-    assert!(rect.x() > 7.8 && rect.y() > 7.8, "{:?}", rect.values());
+    })?;
+    assert_eq!(covered(&list, 52)[..2], [8, 8]);
     Ok(())
 }
 
@@ -558,21 +627,25 @@ fn empty_nested_clips_omit_vector_commands_and_resources_before_rasterization() 
 
 #[test]
 fn huge_uncropped_strokes_render_all_visible_rows_without_index_overflow() -> TestResult {
-    for height in [100.0, 100000.0] {
-        let mut ui = Runtime::new();
-        ui.set_viewport(Viewport::new(10.0, height, 1.0)?)?;
-        ui.mount_tree(Element::new(
-            "draw",
-            Draw(|painter: &mut Painter| {
-                painter.stroke_polyline(
-                    &[pt(1.0, -1e20), pt(1.0, 100000.0)],
-                    StrokeStyle::new(Length::new(1.0)?),
-                    painter.color(ColorRole::Primary),
-                )
-            }),
-        ))?;
-        ui.flush(Duration::ZERO)?;
-        let list = ui.paint()?.rasterized()?;
+    let lowered =
+        |height: f32| -> Result<Result<DisplayList, DrawError>, Box<dyn std::error::Error>> {
+            let mut ui = Runtime::new();
+            ui.set_viewport(Viewport::new(10.0, height, 1.0)?)?;
+            ui.mount_tree(Element::new(
+                "draw",
+                Draw(|painter: &mut Painter| {
+                    painter.stroke_polyline(
+                        &[pt(1.0, -1e20), pt(1.0, 100000.0)],
+                        StrokeStyle::new(Length::new(1.0)?),
+                        painter.color(ColorRole::Primary),
+                    )
+                }),
+            ))?;
+            ui.flush(Duration::ZERO)?;
+            Ok(ui.paint()?.rasterized())
+        };
+    for height in [100.0, 60000.0] {
+        let list = lowered(height)??;
         let (rect, _, image) = mask(&list);
         assert_eq!(rect.y(), 0.0);
         assert_eq!(image.height(), height as u32);
@@ -582,6 +655,12 @@ fn huge_uncropped_strokes_render_all_visible_rows_without_index_overflow() -> Te
                 .any(|p| *p > 0)
         );
     }
+    // A frame taller than the range strokes are evaluated in refuses the
+    // stroke, as the renderers do.
+    assert_eq!(
+        lowered(100000.0)?.err(),
+        Some(DrawError::Stroke(StrokePrepareError::OutOfRange))
+    );
     Ok(())
 }
 

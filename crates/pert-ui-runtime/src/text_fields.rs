@@ -70,7 +70,8 @@ type RefusalReport =
 /// Local undo keeps 32 edits.
 ///
 /// Bound strings must be at most [`TextEditError::MAX_TEXT_BYTES`] bytes of UTF-8 and contain no control characters
-/// or line separators; [`Self::check`] tells whether a string qualifies. Typed
+/// or line separators; [`Self::check`] tells whether a string meets these
+/// rules. Typed
 /// text with a control character the field does not accept is rejected with
 /// [`RuntimeError::TextEdit`]. An edit that would take the text past
 /// [`TextEditError::MAX_TEXT_BYTES`] (typing, an IME commit or a paste into a full field) is
@@ -79,10 +80,31 @@ type RefusalReport =
 /// is not shown until one that fits or the commit arrives.
 /// Pasted line breaks (CR, LF, NEL, vertical tab, form feed and the Unicode line
 /// and paragraph separators) and tabs become spaces, and other pasted control
-/// characters are dropped. Preparation also obeys
-/// `TextError` raster limits; an edit is prepared before writing the binding.
+/// characters are dropped.
 ///
-/// A bound value that does not qualify, written by the application, is refused
+/// The whole text is prepared as one layout, so it must also fit the
+/// [`TextLimit`] preparation limits at the editor's width and the effective
+/// scale: a single-line field's text may be at most
+/// [`TextLimit::MAX_RASTER_SIDE`] physical pixels wide and a text area's
+/// wrapped lines that tall, about 400 lines of body text at scale 1 and half
+/// as many at scale 2. An edit is prepared before the binding is written, and
+/// one whose result would exceed such a limit is refused without an error
+/// like an edit past the byte limit. A bound value is different: these limits
+/// depend on the width, the scale and the fonts, which only layout knows, so
+/// [`Self::check`] cannot see them and the field does not refuse such a
+/// value. The next preparation of the text returns [`TextError::TooLarge`]
+/// for it: [`Runtime::flush`](crate::Runtime::flush) when the editor is laid
+/// out, as at mounting or after a change of width or scale, and otherwise
+/// [`Runtime::paint`](crate::Runtime::paint), also when a narrower width or
+/// a larger scale makes text that fitted too tall, until the value, the
+/// width or the scale changes. An application that binds text of unknown
+/// length keeps it well below these limits;
+/// [`EventContext::text`](crate::EventContext::text) and
+/// [`MeasureContext::text`](crate::MeasureContext::text) prepare a candidate
+/// at a width, `None` for a single-line field, and return the same error.
+///
+/// A bound value that breaks the byte or character rules, written by the
+/// application, is refused
 /// by the field rather than failing the runtime: the field keeps showing its
 /// previous text, draws the error outline, reports `binding_error` in
 /// inspection and to [`TextField::on_binding_refusal`], marks its semantics
@@ -337,10 +359,13 @@ macro_rules! editor_api {
                 let value: Signal<String> = value.into();
                 Self(Editor::new(Some(value), $multi))
             }
-            /// Checks whether `text` is acceptable as this editor's bound value,
-            /// so an application can reject or convert text, such as a document
-            /// read from a file, before writing it to the binding. This performs
-            /// no text preparation and needs no runtime.
+            /// Checks whether `text` meets the byte and character rules of
+            /// this editor's bound value, so an application can reject or
+            /// convert text, such as a document read from a file, before
+            /// writing it to the binding. This performs no text preparation
+            /// and needs no runtime, so it cannot tell whether the text fits
+            /// the [`TextLimit`] preparation limits at the editor's width and
+            /// scale; the type's documentation describes those.
             ///
             /// # Errors
             /// Returns [`TextEditError::TooLarge`] above [`TextEditError::MAX_TEXT_BYTES`] bytes
@@ -1594,6 +1619,18 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
     fn layout_of(&self, cx: &EventContext, text: &str) -> Result<TextLayout, RuntimeError> {
         cx.text(&self.shown(text), self.width(), self.style)
     }
+    /// What preparing the text a user's edit would leave gave, or `None`
+    /// when it would exceed a [`TextLimit`](crate::TextLimit): typed, pasted
+    /// or composed text is then refused like an edit past the byte limit,
+    /// since valid input into an editor at a limit is not a component
+    /// failure. A replacement the application makes reports the error.
+    fn fitting<T>(prepared: Result<T, RuntimeError>) -> Result<Option<T>, RuntimeError> {
+        match prepared {
+            Ok(prepared) => Ok(Some(prepared)),
+            Err(RuntimeError::Text(crate::TextError::TooLarge(_))) => Ok(None),
+            Err(error) => Err(error),
+        }
+    }
     /// Whether a length limit is set.
     fn limited(&self) -> bool {
         self.min_length.is_some() || self.max_length.is_some()
@@ -2425,6 +2462,8 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
                         Ok(if self.insert(cx, &text)? {
                             R::Handled
                         } else {
+                            // The cancelled composition leaves the picture.
+                            self.changed(cx);
                             R::Unavailable
                         })
                     }
@@ -2448,7 +2487,9 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
                     return Ok(R::Unavailable);
                 };
                 self.cancel_composition();
-                if !self.replace(cx, at..at, &insert, true)? {
+                if !Self::fitting(self.replace(cx, at..at, &insert, true))?.unwrap_or(false) {
+                    // The cancelled composition leaves the picture.
+                    self.changed(cx);
                     return Ok(R::Unavailable);
                 }
                 // `replace` leaves a collapsed caret after the insertion; a spaced
@@ -3228,7 +3269,8 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
         queue.push_back(snapshot);
     }
     /// Inserts at the composition or selection; `false` when nothing changed,
-    /// including an edit refused at the byte limit without an error.
+    /// including an edit refused at the byte limit or a preparation limit
+    /// without an error.
     fn insert(&mut self, cx: &mut EventContext, text: &str) -> Result<bool, RuntimeError> {
         if !self.enabled || self.locked() || text.is_empty() {
             return Ok(false);
@@ -3238,7 +3280,14 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             .preedit
             .as_ref()
             .map_or_else(|| self.real_range(), |(_, r)| r.clone());
-        self.replace(cx, range, &normalized, true)
+        // The preparation precedes every change, so a refusal leaves the
+        // text, selection and history as they were.
+        let inserted = Self::fitting(self.replace(cx, range, &normalized, true))?.unwrap_or(false);
+        if !inserted && self.preedit.take().is_some() {
+            // A refused commit still ends the composition it came from.
+            self.changed(cx);
+        }
+        Ok(inserted)
     }
     fn compose(&mut self, cx: &mut EventContext, text: &TextPreedit) -> Result<(), RuntimeError> {
         if !self.enabled || self.locked() || self.concealed {
@@ -3255,17 +3304,20 @@ impl<M: Copy + Default + PartialEq> Editor<M> {
             .map_or_else(|| self.selection.get().byte_range(), |(_, r)| r.clone());
         let mut candidate = self.text.clone();
         candidate.replace_range(range.clone(), text.text());
-        if candidate.len() > crate::TextEditError::MAX_TEXT_BYTES {
-            // A composition that would not fit is not shown, like a refused
-            // edit, until one that fits or the commit arrives.
+        // A composition that would not fit, in bytes or in what one text
+        // preparation holds, is not shown, like a refused edit, until one
+        // that fits or the commit arrives.
+        let fits = candidate.len() <= crate::TextEditError::MAX_TEXT_BYTES && {
+            self.validate(text.text())?;
+            self.validate(&candidate)?;
+            Self::fitting(cx.text(&candidate, self.width(), self.style))?.is_some()
+        };
+        if !fits {
             if self.preedit.take().is_some() {
                 self.changed(cx);
             }
             return Ok(());
         }
-        self.validate(text.text())?;
-        self.validate(&candidate)?;
-        cx.text(&candidate, self.width(), self.style)?;
         self.preedit = Some((text.clone(), range));
         self.changed(cx);
         Ok(())

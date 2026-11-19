@@ -54,8 +54,9 @@
 //! (fewer repetitions, scale 1 and three pages, for a smoke run only),
 //! `PROBE_J1_PAGE` (the J1 page key; by default the page with the most mask
 //! bytes at scale 1, printed as `j1-page: <key>`), `PROBE_CAPTURES` (a
-//! directory for CPU captures of every page at every scale) and `PROBE_TMP`
-//! (a directory for the diagram editor's files).
+//! directory for CPU captures of every page at every scale), `PROBE_TMP`
+//! (a directory for the diagram editor's files) and `PROBE_ONLY=cards` (only
+//! the gallery's zoom workload, to isolate it).
 use pert_ui::cpu::CpuRenderer;
 use pert_ui::parameter::*;
 use pert_ui::{
@@ -908,6 +909,11 @@ impl Probe {
 
     fn run(&mut self) -> Result<()> {
         self.out.md += "# Phase 1 probe\n\nDefinitions are in the probe's module documentation (`plans/rendering/phase1-probe/probe.rs`).\n";
+        if std::env::var("PROBE_ONLY").as_deref() == Ok("cards") {
+            let cards = self.cards()?;
+            self.series_table("Gallery zoom workload (64 cards)", &cards);
+            return Ok(());
+        }
         let mut heaviest = String::new();
         for &scale in self.sizes.scales {
             let page = self.page_table(scale)?;

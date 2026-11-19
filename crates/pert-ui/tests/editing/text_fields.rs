@@ -1427,3 +1427,125 @@ fn a_single_line_field_leaves_alt_and_super_up_and_down_to_commands_off_macos() 
         }
     }
 }
+
+/// A text area keyed `field` holding `lines` empty lines, at `width` and
+/// `scale`.
+fn area(lines: usize, width: f32, scale: f64) -> (Runtime, Signal<String>) {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(width, 160.0, scale).unwrap())
+        .unwrap();
+    let value = ui.signal("\n".repeat(lines));
+    let id = ui
+        .mount_tree(Element::new("field", TextArea::new(value.clone())))
+        .unwrap();
+    ui.focus(&id).unwrap();
+    (ui, value)
+}
+
+#[test]
+fn an_edit_past_a_preparation_limit_is_refused_without_failing() {
+    // Body lines are 19.6 logical pixels tall, so one prepared text holds
+    // about 417 of them at scale 1 and 208 at scale 2, far below the byte
+    // limit. A narrow width does not change what empty lines need.
+    for (start, width, scale) in [(400, 320.0, 1.0), (400, 60.0, 1.0), (190, 320.0, 2.0)] {
+        let (mut ui, value) = area(start, width, scale);
+        frame(&mut ui);
+        key(&mut ui, KeyCode::End);
+        let mut accepted = start;
+        for _ in 0..40 {
+            assert_eq!(ui.text_input("\n"), Ok(()), "{width} {scale}");
+            frame(&mut ui);
+            let now = value.get().unwrap().len();
+            if now == accepted {
+                break;
+            }
+            accepted = now;
+        }
+        assert!(accepted > start && accepted < start + 40, "{accepted}");
+        // The refused edit left the binding alone, and the editor still
+        // takes a composition that does not fit and an edit that does.
+        assert_eq!(value.get().unwrap(), "\n".repeat(accepted));
+        assert_eq!(
+            ui.text_preedit(&TextPreedit::new("\n\n", None).unwrap()),
+            Ok(())
+        );
+        assert_eq!(ui.text_input("x"), Ok(()));
+        frame(&mut ui);
+        assert_eq!(value.get().unwrap().len(), accepted + 1);
+        assert_eq!(ui.text_input("\n"), Ok(()));
+        frame(&mut ui);
+        assert_eq!(value.get().unwrap().len(), accepted + 1);
+    }
+}
+
+#[test]
+fn a_bound_value_past_a_preparation_limit_fails_the_flush_until_it_fits() {
+    let too_tall = RuntimeError::Text(TextError::TooLarge(TextLimit::RasterSide));
+    // `check` sees bytes and characters only.
+    let long = "\n".repeat(600);
+    assert_eq!(TextArea::check(&long), Ok(()));
+    let (mut ui, value) = area(600, 320.0, 1.0);
+    assert_eq!(ui.flush(Duration::ZERO).err(), Some(too_tall.clone()));
+    value.set("\n".repeat(300)).unwrap();
+    frame(&mut ui);
+    // Text that fits at scale 1 is too tall at scale 2, and fits again.
+    ui.set_viewport(Viewport::new(320.0, 160.0, 2.0).unwrap())
+        .unwrap();
+    assert_eq!(ui.flush(Duration::ZERO).err(), Some(too_tall));
+    assert_eq!(value.get().unwrap().len(), 300);
+    ui.set_viewport(Viewport::new(320.0, 160.0, 1.0).unwrap())
+        .unwrap();
+    frame(&mut ui);
+}
+
+#[test]
+fn a_refused_commit_or_paste_ends_the_composition_it_interrupts() {
+    let too_tall = "\n".repeat(600);
+    // A commit that does not fit, arriving after a composition that did.
+    let (mut ui, value) = area(3, 320.0, 1.0);
+    frame(&mut ui);
+    ui.text_preedit(&TextPreedit::new("a", None).unwrap())
+        .unwrap();
+    frame(&mut ui);
+    assert_eq!(property(&ui, "composing"), InspectValue::Bool(true));
+    assert_eq!(ui.text_input(&too_tall), Ok(()));
+    assert!(ui.needs_paint(), "the composition leaves the picture");
+    frame(&mut ui);
+    assert_eq!(property(&ui, "composing"), InspectValue::Bool(false));
+    assert_eq!(value.get().unwrap(), "\n".repeat(3));
+
+    // A paste that does not fit cancels the composition and repaints.
+    let clipboard = MemoryClipboard::default();
+    ui.set_clipboard(clipboard.clone()).unwrap();
+    *clipboard.0.borrow_mut() = too_tall;
+    let id = ui.focused().unwrap();
+    ui.text_preedit(&TextPreedit::new("a", None).unwrap())
+        .unwrap();
+    frame(&mut ui);
+    assert_eq!(
+        ui.text_command(&id, TextCommand::Paste),
+        Ok(TextCommandOutcome::Unavailable)
+    );
+    assert!(ui.needs_paint());
+    frame(&mut ui);
+    assert_eq!(property(&ui, "composing"), InspectValue::Bool(false));
+    assert_eq!(value.get().unwrap(), "\n".repeat(3));
+}
+
+#[test]
+fn a_written_value_past_a_preparation_limit_fails_the_next_preparation() {
+    // Layout has settled, so the write is first prepared by painting.
+    let (mut ui, value) = area(3, 320.0, 1.0);
+    frame(&mut ui);
+    value.set("\n".repeat(600)).unwrap();
+    let too_tall = TextError::TooLarge(TextLimit::RasterSide);
+    let flushed = ui.flush(Duration::ZERO).err();
+    let painted = ui.paint().err();
+    assert!(
+        flushed == Some(RuntimeError::Text(too_tall))
+            || painted == Some(DrawError::Runtime(RuntimeError::Text(too_tall))),
+        "{flushed:?} {painted:?}"
+    );
+    value.set("\n".repeat(3)).unwrap();
+    frame(&mut ui);
+}

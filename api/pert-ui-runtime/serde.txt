@@ -679,6 +679,7 @@ pub pert_ui_runtime::component::ColorRole::Primary
 pub pert_ui_runtime::component::ColorRole::PrimaryContainer
 pub pert_ui_runtime::component::ColorRole::ResizeHandle
 pub pert_ui_runtime::component::ColorRole::ResizeHandleHover
+pub pert_ui_runtime::component::ColorRole::Scrim
 pub pert_ui_runtime::component::ColorRole::ScrollbarThumb
 pub pert_ui_runtime::component::ColorRole::ScrollbarThumbHover
 pub pert_ui_runtime::component::ColorRole::Secondary
@@ -10210,6 +10211,7 @@ pub pert_ui_runtime::host::WindowError::Cancelled
 pub pert_ui_runtime::host::WindowError::Creation(alloc::string::String)
 pub pert_ui_runtime::host::WindowError::Drawing(pert_ui_runtime::DrawError)
 pub pert_ui_runtime::host::WindowError::Runtime(pert_ui_runtime::RuntimeError)
+pub pert_ui_runtime::host::WindowError::Shape(pert_ui_runtime::ShapePrepareError)
 pub pert_ui_runtime::host::WindowError::Surface(alloc::string::String)
 impl core::clone::Clone for pert_ui_runtime::WindowError
 pub fn pert_ui_runtime::WindowError::clone(&self) -> Self
@@ -14174,6 +14176,7 @@ pub pert_ui_runtime::prelude::ColorRole::Primary
 pub pert_ui_runtime::prelude::ColorRole::PrimaryContainer
 pub pert_ui_runtime::prelude::ColorRole::ResizeHandle
 pub pert_ui_runtime::prelude::ColorRole::ResizeHandleHover
+pub pert_ui_runtime::prelude::ColorRole::Scrim
 pub pert_ui_runtime::prelude::ColorRole::ScrollbarThumb
 pub pert_ui_runtime::prelude::ColorRole::ScrollbarThumbHover
 pub pert_ui_runtime::prelude::ColorRole::Secondary
@@ -24891,6 +24894,7 @@ pub pert_ui_runtime::windowing::WindowError::Cancelled
 pub pert_ui_runtime::windowing::WindowError::Creation(alloc::string::String)
 pub pert_ui_runtime::windowing::WindowError::Drawing(pert_ui_runtime::DrawError)
 pub pert_ui_runtime::windowing::WindowError::Runtime(pert_ui_runtime::RuntimeError)
+pub pert_ui_runtime::windowing::WindowError::Shape(pert_ui_runtime::ShapePrepareError)
 pub pert_ui_runtime::windowing::WindowError::Surface(alloc::string::String)
 impl core::clone::Clone for pert_ui_runtime::WindowError
 pub fn pert_ui_runtime::WindowError::clone(&self) -> Self
@@ -26058,6 +26062,7 @@ pub pert_ui_runtime::ColorRole::Primary
 pub pert_ui_runtime::ColorRole::PrimaryContainer
 pub pert_ui_runtime::ColorRole::ResizeHandle
 pub pert_ui_runtime::ColorRole::ResizeHandleHover
+pub pert_ui_runtime::ColorRole::Scrim
 pub pert_ui_runtime::ColorRole::ScrollbarThumb
 pub pert_ui_runtime::ColorRole::ScrollbarThumbHover
 pub pert_ui_runtime::ColorRole::Secondary
@@ -30686,6 +30691,7 @@ pub pert_ui_runtime::WindowError::Cancelled
 pub pert_ui_runtime::WindowError::Creation(alloc::string::String)
 pub pert_ui_runtime::WindowError::Drawing(pert_ui_runtime::DrawError)
 pub pert_ui_runtime::WindowError::Runtime(pert_ui_runtime::RuntimeError)
+pub pert_ui_runtime::WindowError::Shape(pert_ui_runtime::ShapePrepareError)
 pub pert_ui_runtime::WindowError::Surface(alloc::string::String)
 impl core::clone::Clone for pert_ui_runtime::WindowError
 pub fn pert_ui_runtime::WindowError::clone(&self) -> Self
@@ -42140,7 +42146,6 @@ pub struct pert_ui_runtime::VectorRasterizer
 impl pert_ui_runtime::VectorRasterizer
 pub const pert_ui_runtime::VectorRasterizer::MAX_COVERAGE_WORK: usize
 pub const pert_ui_runtime::VectorRasterizer::MAX_FLATTENED_POINTS: usize
-pub const pert_ui_runtime::VectorRasterizer::MAX_STROKE_EDGES: usize
 pub fn pert_ui_runtime::VectorRasterizer::prepare(&mut self, &pert_ui_runtime::DisplayList) -> core::result::Result<pert_ui_runtime::DisplayList, pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::VectorRasterizer::prepare_fills(&mut self, &pert_ui_runtime::DisplayList) -> core::result::Result<pert_ui_runtime::DisplayList, pert_ui_runtime::DrawError>
 impl core::default::Default for pert_ui_runtime::VectorRasterizer

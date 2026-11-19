@@ -236,12 +236,10 @@ impl StrokeCoverage {
 ///
 /// [`Self::new`] prepares in `f64` and narrows to `f32`;
 /// [`Self::coverage`] evaluates. The two together define what a stroke
-/// covers in a renderer that draws strokes itself. Where both axes map by
-/// the viewport's scale, as in every frame of a window, the masks of
-/// [`VectorRasterizer::prepare`](crate::VectorRasterizer::prepare) cover
-/// the same region for a stroke at least a pixel wide, with area coverage
-/// instead, so their edge pixels differ. A mapping that stretches one axis
-/// stretches a mask with it, while this keeps the stroke's width.
+/// covers in a renderer that draws strokes itself. The masks of
+/// [`VectorRasterizer::prepare`](crate::VectorRasterizer::prepare) hold
+/// this coverage too, quantized to eight bits, on the pixels of the frame
+/// the scene's viewport maps to.
 ///
 /// ```
 /// # use pert_ui_runtime as pert_ui;

@@ -18,21 +18,20 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   session or the tab drag-out: run `platform::drag_smoke` and the hand check on
   the gallery's Drag & drop page there and record the results in the evidence record.
 - [ ] **NATIVE-03** 2026-10-05 `docs/verification.md` native evidence — Verification and review: floating tool-window frames and own native windows now have Linux evidence (Fedora 44 GNOME/Wayland, 2026-10-05) through the native gallery interaction check, but Windows and macOS have none. Run `cargo run --locked -p pert-ui-native-checks -- interaction` and the hand check listed in the evidence table there and record the results.
-- [ ] **NATIVE-04** 2026-10-08 `apps/gallery/src/interaction_check.rs` and
+- [ ] **NATIVE-04** 2026-10-08, narrowed 2026-11-19
+  `apps/gallery/src/interaction_check.rs` and
   `apps/gallery/src/workspace_check.rs` — Verification and review: the probes
   report a hidden window immediately and the native runner ends that process
-  with the reported cause, but on Fedora 44 GNOME/Wayland a minimize is never
-  reported (2026-11-05, 0.3.101, `docs/verification.md`): winit 0.30.13
-  delivers no `WindowEvent::Occluded` on Wayland and the surface did not
-  report `Frame::Occluded`, so the GPU interaction probe failed on an
-  unrelated step, the CPU one timed out and the workspace check passed
-  unaware. Fix: document in the probes' and the runner's rustdoc that a
-  Wayland minimize is not observable and ends a probe by an unrelated
-  failure or the timeout, or give the probes a separate interruption cause
-  for a window that presents no frame within a bound after an action. On
-  macOS 26.7, activating Finder during `--interaction-check` previously
-  stalled for an unidentified cause; that platform still needs its own
-  interruption check.
+  with the reported cause. A Wayland minimize can go unreported (winit
+  0.30.13 delivers no `WindowEvent::Occluded` there and the surface did not
+  report `Frame::Occluded`, Fedora 44 GNOME, 2026-11-05); the probes' and the
+  runner's module documentation say so since 0.3.122, and that such a run
+  ends by an unrelated failure, the timeout or an unaware pass. Still open:
+  on macOS 26.7, activating Finder during `--interaction-check` previously
+  stalled for an unidentified cause; that platform needs its own
+  interruption check. A separate interruption cause for a window that
+  presents no frame within a bound after an action would also cover Wayland,
+  and needs a minimize by hand to verify.
 - [ ] **TEXT-01** 2026-10-18 `crates/pert-ui-runtime/src/text_fields.rs`
   `TextArea` — Improvement (plan slice 6, large-buffer editing): an editor's
   text is limited to `TextEditError::MAX_TEXT_BYTES` (16 KiB) and is prepared
@@ -68,94 +67,17 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   `arboard`) was updated to 5.4.3 on 2026-11-04 (0.3.100), and the Linux
   dependency gate passed. The Windows native clipboard check of the update is
   still missing; run it on Windows and record the result.
-- [ ] 2026-11-04 `crates/pert-ui-runtime/src/text_fields.rs` `TextField`/
-  `TextArea` binding refusal and raster limits — State and interaction
-  contracts: the editors' rustdoc says a bound value that does not qualify
-  "is refused by the field rather than failing the runtime", but
-  `TextArea::check` and the binding refusal test only the byte limit and the
-  characters. A value within `TextEditError::MAX_TEXT_BYTES` can still exceed
-  `TextLimit::MAX_RASTER_SIDE` (8192 px). With 16,380 bytes of prose in a
-  320 px `TextArea` at scale 1, the first `Runtime::flush` returns
-  `Err(Text(TooLarge(RasterSide)))` (author probe, 2026-11-04, found by the
-  TEXT-01 design work). An edit that crosses the raster limit also differs from
-  one at the byte limit. The byte-limit edit is refused silently, but the
-  raster-limit edit makes `Runtime::text_input` return the same error. In the
-  author's probe this happened at step 165 of typing into 8 KiB at 320 px, and
-  the binding was not overwritten. Fix: either refuse a bound value whose
-  preparation exceeds a raster limit through the same binding refusal (keep
-  the previous text, report `binding_error`), or document the raster limit as
-  part of the editor's acceptance and make `check` say it cannot see it. Make
-  the edit path refuse silently like the byte limit, or document the error.
-  Add tests at narrow width and scale 2. `plans/document-editor.md` slice 6
-  removes the cause for values within capacity; this entry covers the
-  current contract until then.
-- [ ] **RENDER-02** 2026-11-05 `crates/pert-ui-runtime/src/dialog.rs:470`,
-  `crates/pert-ui-runtime/src/quick_pick.rs:1371` — Improvement: the modal
-  scrim is the literal `Color::from_linear(0.0, 0.0, 0.0, 0.35)` in two
-  places, so no theme or palette can change it and the two can drift apart.
-  Give it a `ColorRole` with a default in the role table and use it in both,
-  documenting the role in the appearance guide.
-- [ ] **RENDER-04** 2026-11-05 `crates/pert-ui-runtime/src/geometry/raster.rs`
-  `RasterGrid::new` — Improvement (since 0.3.117 for fills and for the
-  masks `VectorRasterizer::prepare` returns only: both renderers cover
-  strokes on whole frame pixels without a mask, so the polyline example
-  below no longer occurs in them): vector coverage is rasterized on a grid
-  anchored at the geometry's own bounds, so a prepared `DrawMask` rectangle
-  has an arbitrary fractional physical position. A vector at a fractional
-  phase, nearly every one, is then resampled bilinearly, and its first column and row straddle a pixel: the
-  pixel-center rule drops or keeps that half-covered pixel whole. When the
-  edge falls within the GPU's subpixel precision of a pixel center, the
-  documented exception in `docs/rendering-platform.md` (rendering tiers)
-  occurs on ordinary content. In the phase 0 polyline (800 points, scale 2,
-  frame 219) the mask's left edge lies at physical 478.50122. The CPU
-  renderer leaves pixel (478, 610) as background, and wgpu draws edge texel
-  coverage 249 there: a 220/255 difference. Rasterize so that the final
-  `DrawMask` rectangle lies on physical pixels: the grid phase must include
-  the command's origin and scale, which `VectorRasterizer::prepare` applies
-  after rasterizing (`vector_scene.rs`), so the phase joins the cache key.
-  A raster scale capped below the view's (`raster_scale`) still stretches.
-  Then add CPU/GPU parity fixtures with vector edges at arbitrary phase.
-  Reproduction:
-  `plans/rendering/vello-spike/src/bin/capdiag.rs`.
-- [ ] 2026-11-11 `crates/pert-ui/src/app.rs` `AppError::from_renderer` —
-  typed errors (Rust and data invariants): a presentation failure with
-  `RenderError::Shape` becomes `AppError::Graphics` text, although captures
-  keep the typed `ShapePrepareError`. The phase 1 spec named only the capture
-  and renderer conversions. Decide whether `AppError` gets a typed cause for
-  it (it is the component's failure, like `Drawing`), and add it with a test.
-- [ ] **RENDER-05** 2026-11-12 `crates/pert-ui-wgpu/src/shapes.wgsl`,
-  `crates/pert-ui-wgpu/src/shapes.rs` — Improvement (performance): after
-  phase 1 the offscreen wgpu render with read-back, the capture path, is
-  slower than at 0.3.103 on Intel UHD Graphics 770: a median of 7 % on a
-  repeated page render and at most 22 %
-  (`plans/rendering/phase1-probe/results/summary.md`, `gpu_*` rows).
-  Presenting to a window is not slower by its medians; one tail is, the
-  diagram pan's 95th percentile (0.88 → 0.94 ms). The cause is not found; the
-  fragment stage reading its 144-byte record from the storage buffer for
-  every pixel is a candidate. Measure with the phase 1 probe whether passing
-  the parameters as instance vertex attributes, or evaluating the edge
-  strips with a smaller record, removes it. The CPU renderer's mixer frame
-  is likewise 0.11 ms slower (0.94 → 1.06 ms): many small shapes are
-  prepared one by one.
-- [ ] 2026-11-12 `crates/pert-ui-runtime/src/shapes/prepare.rs`
-  `ShapeGeometry::misses` — Rust and data invariants (a total rule): a
-  triangle's allowance is one pixel by the viewport's scale, while its
-  vertices and the clip map by the frame's pixels per logical unit. They
-  agree for any practical frame, but not when `Viewport::frame_extent`
-  saturates at `u32::MAX` (found by the phase 1 final review with a viewport
-  of `(64, 1e-10)` at scale `1e10`): a triangle covering a pixel inside its
-  clip is then dropped. Take the allowance per axis in the frame's terms, as
-  the arc's reach is, and add the case to the tests.
-- [ ] 2026-11-13 `crates/pert-ui-runtime/src/shapes/stroke/tests.rs` —
-  Verification and review (tests tied to contracts): no test reaches
-  `PreparedStroke::MAX_SEGMENTS`. Reaching it needs more kept segments than
-  a path of straight segments holds points, so it takes curves: for example
-  16 384 short quadratic subpaths across a large frame, four chords each,
-  with one segment or one point subpath more refused as
-  `DrawError::TooComplex` and one fewer prepared. Add both boundary cases.
-- [ ] 2026-11-13 `crates/pert-ui-wgpu/src/cpu_parity.rs` `stroke_corpus` —
-  Verification and review (GPU evidence): the stroke parity corpus has no
-  stroke under a command scale from a view transform, below and above eight,
-  and no miter near the evaluation range (a miter limit in the thousands at
-  a turn close to a reversal), both of which the spec's parity section
-  lists. Add fixtures for both and run `native_cpu_gpu_parity`.
+- [ ] **RENDER-05** 2026-11-12, narrowed 2026-11-19
+  `crates/pert-ui-cpu`, `crates/pert-ui-wgpu/src/shapes.rs` — Improvement
+  (performance): 0.3.120 removed most of phase 1's offscreen wgpu
+  slowdown (`plans/rendering/render05-probe/README.md`). What remains,
+  measured again on 2026-11-19 on Intel UHD Graphics 770: the CPU
+  renderer's mixer frame is 0.11 ms slower than at 0.3.103 (0.92 → 1.03
+  ms); the gallery's card workload pans and zooms about 5 % slower on the
+  GPU; and the diagram pan's present median is 0.82 to 0.84 ms (0.72 at
+  0.3.103). Ruled out for the CPU: preparing each shape twice, removed in
+  0.3.122 with a gain of 0.3 %, inside the noise, so the per-pixel
+  evaluation of many small shapes is what is left there. Not yet measured:
+  a cheaper evaluation of strips without corners (CPU and GPU), and
+  retaining encoded geometry across a pure translation, for the fill quads
+  of the diagram's boxes that are encoded again when every node moves.

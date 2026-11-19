@@ -1,6 +1,6 @@
 # Rendering capabilities and performance
 
-Status: **phases 0 and 1 done; candidate F runs next, before phase 2.** Created
+Status: **phases 0 and 1 and candidate F done; phase 2 is next and has no spec.** Created
 2026-10-26 at the maintainer's request as an open exploratory plan. The
 [roadmap](#roadmap) below says what is decided, what is in progress and what
 is still open. A candidate without a decision is not a commitment.
@@ -11,12 +11,13 @@ is still open. A candidate without a decision is not a commitment.
 |---|---|---|
 | Phase 0 | Investigation: needs, gradients, other libraries, baseline, peniko and a vello spike | Done 2026-11-05. [Report](rendering/phase0-report.md), Codex-reviewed; decisions 2026-11-06 |
 | J1 | UI work on resize and scale change, found by the baseline | Done in 0.3.103: 18–94 ms per frame became 0.8–3 ms ([j1-resize.md](rendering/j1-resize.md)) |
-| Phase 1 | B + C: analytic shapes as one `DrawShape` command, with a paint slot | Done 2026-11-12 (0.3.104–0.3.111). The specification's rules are in rustdoc and [docs/rendering-platform.md](../docs/rendering-platform.md); the [plan](rendering/phase1-plan.md) records the slices, measurements and reviews; RENDER-05 in TODO.md is the open follow-up |
+| Phase 1 | B + C: analytic shapes as one `DrawShape` command, with a paint slot | Done 2026-11-12 (0.3.104–0.3.111). The specification's rules are in rustdoc and [docs/rendering-platform.md](../docs/rendering-platform.md); the [plan](rendering/phase1-plan.md) records the slices, measurements and reviews; RENDER-05 in TODO.md is the open follow-up; most of its offscreen slowdown was removed in 0.3.120 ([record](rendering/render05-probe/README.md)) |
 | Phase 2 | A: `Paint` with gradients, Oklab by default | Decided as next; no spec yet |
 | Phase 3 | D: analytic box shadows | Decided to follow A; no spec yet |
 | Phase 4 | G1: rounded clips and group opacity | Decided to follow D; no spec yet |
-| F | Strokes covered by the renderers (GPU polyline) | Chosen 2026-11-12 to run before phase 2. [Spec](rendering/stroke-spec.md) with its decisions approved; slice 0 measured 2026-11-12 and 2026-11-13. The tile lists are too slow on the GPU; the spec's alternative (per-segment quads into a coverage atlas) is below today's path in every changing workload and meets the gate the maintainer revised on 2026-11-13: go. All five slices are done (0.3.118): the preparation and its reference are public and both renderers draw every stroke from them, curves flattened, the wgpu renderer on the GPU. Measured after: a frame with a changing polyline takes about a third of the mask path's time in the wgpu renderer, and the CPU renderer draws strokes 3 to 37 times faster. Open: the maintainer's decision on the fallback's stroke code, and the merge. The mask path's span sort was repaired first (0.3.112) |
+| F | Strokes covered by the renderers (GPU polyline) | Chosen 2026-11-12 to run before phase 2. [Spec](rendering/stroke-spec.md) with its decisions approved; slice 0 measured 2026-11-12 and 2026-11-13. The tile lists are too slow on the GPU; the spec's alternative (per-segment quads into a coverage atlas) is below today's path in every changing workload and meets the gate the maintainer revised on 2026-11-13: go. All five slices are done (0.3.118): the preparation and its reference are public and both renderers draw every stroke from them, curves flattened, the wgpu renderer on the GPU. Measured after: a frame with a changing polyline takes about a third of the mask path's time in the wgpu renderer, and the CPU renderer draws strokes 3 to 37 times faster. The fallback's masks sample the same reference since 0.3.121 ([spec](rendering/fallback-strokes.md)), and its own stroke code is removed. The mask path's span sort was repaired first (0.3.112) |
 | Open | J2 (CPU renderer speed), I (latency) | Ranked 5–6 in the report, each with a measured cost; not scheduled |
+| Deferred | K (fills covered by the renderers) | Proposed 2026-11-16 so that all geometry is drawn by the GPU; the maintainer deferred it the same day. Estimated at F's size or up to twice it, with the same shape: a spec, a slice 0 comparing methods, both renderers, parity and an after-measurement. RENDER-04, the placement error of the fill masks, was repaired in the masks themselves in 0.3.122 |
 | Deferred | E (glyph atlas), G2 (affine transforms) | No measured need, or not prioritized |
 | Dropped | H (layers and partial redraw), vello as a backend | No measured gain; vello breaks the linear-light blend contract |
 
@@ -212,6 +213,22 @@ the report ranks them and gives each one's measured case.
   relative to vsync, for input-to-photon time, which matters more than
   drawing cost for playing and recording music.
 - **J. Anything phase 0 finds** with comparable value.
+- **K. Fills covered by the renderers.** Filled paths (nonzero and
+  even-odd, curves, holes, self-intersection) covered by the wgpu renderer
+  on the GPU, as F did for strokes, so no fill becomes a CPU mask, with
+  the CPU renderer's scanline coverage as the reference. Unlike a stroke,
+  whose coverage depends only on the nearest segment, a fill's coverage
+  depends on every edge to one side of a pixel, so F's per-segment quads do
+  not carry over. Methods for slice 0 to compare: stencil-and-cover with
+  multisampling (simple, but coarser edges than the reference and outside
+  the parity tiers), CPU tessellation into triangles with an antialiased
+  fringe, and signed-area coverage accumulated per row with a compute
+  prefix sum (exact edges; overlapping subpaths under nonzero need care).
+  A full compute rasterizer such as vello's is out of scope. It lets
+  gradients reach vector fills without masks (the masks' placement error,
+  RENDER-04, was repaired in 0.3.122); SVG icons drawn as paths instead of resvg images
+  would be a natural follow-up. Text stays a glyph raster (E) and images
+  stay decoded on the CPU.
 
 ## The original open questions, answered
 

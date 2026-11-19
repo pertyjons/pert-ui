@@ -1395,3 +1395,38 @@ fn an_arc_is_not_dropped_where_the_frame_maps_positions_and_lengths_apart() -> O
     assert!(!arc(-998.0)?.misses(clip, whole));
     Ok(())
 }
+
+#[test]
+fn a_triangle_is_not_dropped_where_the_frame_extent_saturates() -> Outcome {
+    // 64 logical pixels at a scale of 1e10 saturate the frame at u32::MAX
+    // pixels, so one frame pixel is about 1.5e-8 logical units while one
+    // pixel by the scale is 1e-10. A triangle ending a third of a frame
+    // pixel left of the clip is a hundred scale pixels away from it, and its
+    // edge still covers the clip's first pixel.
+    let viewport = Viewport::new(64.0, 1e-10, 1e10)?;
+    let extent = viewport.frame_extent();
+    assert_eq!((extent.width(), extent.height()), (u32::MAX, 1));
+    let mapping = FrameMapping::new(extent.width(), extent.height(), viewport)?;
+    let pixel = 64.0 / f64::from(u32::MAX);
+    let at = |pixels: f64| (pixels * pixel) as f32;
+    let clip = Rect::new(at(3.4), 0.0, at(10.0), 1e-10)?;
+    let triangle = |right: f64| -> Result<ShapeGeometry, Box<dyn std::error::Error>> {
+        Ok(ShapeGeometry::Triangle(
+            TriangleGeometry::new([
+                Point::new(at(right - 3.0), 0.0)?,
+                Point::new(at(right), 0.0)?,
+                Point::new(at(right), 1e-10)?,
+            ])
+            .ok_or("collinear")?,
+        ))
+    };
+    let near = triangle(3.3)?;
+    let shape = PreparedShape::new(&near, None, Some(clip), &mapping)?.ok_or("nothing")?;
+    assert!(shape.coverage(3, 0).outer() > 0.0);
+    assert!(!near.misses(clip, viewport));
+    // Beyond a frame pixel nothing is left, and the triangle is dropped.
+    let far = triangle(1.5)?;
+    assert!(PreparedShape::new(&far, None, Some(clip), &mapping)?.is_none());
+    assert!(far.misses(clip, viewport));
+    Ok(())
+}

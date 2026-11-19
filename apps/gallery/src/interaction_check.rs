@@ -17,6 +17,12 @@
 //! the adapter's translation of them are not exercised here; the drag smoke
 //! and the input probe cover that path. The run is evidence for exactly the
 //! steps in [`steps`], on the platform where it ran.
+//!
+//! A window the platform reports hidden interrupts the native run with that
+//! cause. Not every platform reports it: a window minimized on Wayland can
+//! stay visible as far as the probe can tell, and the run then fails on the
+//! step that waited for a frame or stops advancing until the caller's
+//! timeout. Keep the window on screen for the whole run.
 #[cfg(test)]
 use pert_ui::PresentationAction;
 use pert_ui::component::*;

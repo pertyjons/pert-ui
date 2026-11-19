@@ -650,7 +650,12 @@ fn every_seeded_palette_keeps_the_built_in_readability() -> Result {
                             ThemeMode::Dark => Palette::dark(),
                             ThemeMode::Light => Palette::light(),
                         };
-                        for role in [ColorRole::Error, ColorRole::OnPrimary, ColorRole::Highlight] {
+                        for role in [
+                            ColorRole::Error,
+                            ColorRole::OnPrimary,
+                            ColorRole::Highlight,
+                            ColorRole::Scrim,
+                        ] {
                             assert_eq!(
                                 palette.color(role),
                                 built_in.color(role),
@@ -750,5 +755,69 @@ fn seeded_palettes_in_both_modes_survive_switches_and_reset_repaints() -> Result
     assert!(
         matches!(scene.commands()[0], DrawCommand::FillRect { color, .. } if color == dark.color(Primary))
     );
+    Ok(())
+}
+
+/// The veils of the scene that fill the 400 by 300 window: a window-modal
+/// surface's scrim.
+fn veils(scene: &DisplayList, color: Color) -> usize {
+    scene
+        .commands()
+        .iter()
+        .filter(|cmd| {
+            matches!(cmd, DrawCommand::FillRect { color: c, rect }
+                if *c == color && rect.values() == [0.0, 0.0, 400.0, 300.0])
+        })
+        .count()
+}
+
+#[test]
+fn modal_surfaces_draw_the_scrim_role_and_follow_its_override() -> Result {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(400.0, 300.0, 1.0)?)?;
+    let dialog = DialogController::new(&ui);
+    let picker = QuickPickController::new(&ui);
+    ui.mount_tree(Element::new(
+        "app",
+        Column::new([
+            Element::new(
+                "dialog",
+                Dialog::new(
+                    dialog.clone(),
+                    Element::new("opener", Label::new("Opener")),
+                    Element::new("message", Label::new("Message")),
+                ),
+            ),
+            Element::new(
+                "picker",
+                QuickPick::new(
+                    picker.clone(),
+                    Element::new("doc", Label::new("Document")),
+                    |_, _| Ok(PickChoice::Done),
+                ),
+            ),
+        ]),
+    ))?;
+    let scrim = Palette::dark().color(ColorRole::Scrim);
+    assert!(scrim.alpha() > 0.0 && scrim.alpha() < 1.0);
+    assert_eq!(scrim, Palette::light().color(ColorRole::Scrim));
+    assert_eq!(veils(&draw(&mut ui), scrim), 0);
+
+    let veil = Color::from_linear(0.2, 0.0, 0.1, 0.5)?;
+    dialog.open()?;
+    assert_eq!(veils(&draw(&mut ui), scrim), 1);
+    ui.theme()
+        .set_color(ThemeMode::Dark, ColorRole::Scrim, veil)?;
+    let scene = draw(&mut ui);
+    assert_eq!((veils(&scene, scrim), veils(&scene, veil)), (0, 1));
+    dialog.cancel()?;
+    assert_eq!(veils(&draw(&mut ui), veil), 0);
+
+    picker.open(vec![PickItem::new("one", "One")])?;
+    assert_eq!(veils(&draw(&mut ui), veil), 1);
+    ui.theme()
+        .set_color(ThemeMode::Dark, ColorRole::Scrim, scrim)?;
+    let scene = draw(&mut ui);
+    assert_eq!((veils(&scene, scrim), veils(&scene, veil)), (1, 0));
     Ok(())
 }

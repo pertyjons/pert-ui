@@ -88,6 +88,14 @@ pub enum AppError {
     /// Never holds [`DrawError::Runtime`]; that is [`Self::Runtime`].
     #[error(transparent)]
     Drawing(DrawError),
+    /// The renderer could not prepare an analytic shape a component drew
+    /// with [`Painter::draw_shape`](crate::Painter::draw_shape) or another
+    /// shape method: its geometry lies outside the range a renderer
+    /// evaluates, or the command is malformed. Like [`AppError::Drawing`], this is the component's failure
+    /// and goes through [`App::on_error`]; a capture reports the same cause as
+    /// [`CaptureError::Shape`](crate::CaptureError::Shape).
+    #[error(transparent)]
+    Shape(crate::ShapePrepareError),
     /// Runtime cleanup failed while the application was closing. Terminal
     /// cleanup bypasses [`App::on_error`]: the runtime is already closed and
     /// cannot retry. The aggregate retains all typed causes and the preceding
@@ -994,6 +1002,7 @@ impl AppError {
             // Content the vector rasterizer refuses, such as geometry over its
             // limits, is the component's failure, not the GPU's.
             crate::platform::presenter::RenderError::Drawing(error) => Self::from(error),
+            crate::platform::presenter::RenderError::Shape(error) => Self::Shape(error),
             crate::platform::presenter::RenderError::Limit(limit) => Self::Limit(limit),
             crate::platform::presenter::RenderError::Graphics(message) => Self::Graphics(message),
             crate::platform::presenter::RenderError::Surface(message) => Self::Surface(message),
@@ -1004,7 +1013,7 @@ impl AppError {
     /// Whether this failure goes through component recovery, [`App::on_error`]
     /// and its bounded retries, rather than ending the application.
     pub(crate) const fn is_component_failure(&self) -> bool {
-        matches!(self, Self::Runtime(_) | Self::Drawing(_))
+        matches!(self, Self::Runtime(_) | Self::Drawing(_) | Self::Shape(_))
     }
 }
 
@@ -1066,6 +1075,18 @@ mod tests {
         ));
         assert!(matches!(error, AppError::Drawing(DrawError::InvalidColor)));
         assert!(error.is_component_failure());
+        // A shape the renderer cannot prepare keeps its typed cause and is
+        // recovered the same way.
+        for cause in [
+            crate::ShapePrepareError::OutOfRange,
+            crate::ShapePrepareError::BorderNotAllowed,
+        ] {
+            let error =
+                AppError::from_renderer(crate::platform::presenter::RenderError::Shape(cause));
+            assert!(matches!(error, AppError::Shape(inner) if inner == cause));
+            assert!(error.is_component_failure());
+            assert_eq!(error.to_string(), cause.to_string());
+        }
         for fatal in [
             crate::platform::presenter::RenderError::Graphics("device".into()),
             crate::platform::presenter::RenderError::UnsupportedGraphics("adapter".into()),

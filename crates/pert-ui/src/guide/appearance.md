@@ -23,6 +23,10 @@ pressed controls without changing the focus ring. The focus ring is drawn
 inward as one `FocusRing` band at `FocusWidth`. A custom component draws the
 same ring with `Painter::stroke_shape` and the focused element's bounds and shape.
 
+A modal `Dialog` or quick pick dims the content it blocks with `Scrim`, a
+translucent black in both built-in modes. Override it per mode to tint or
+strengthen the veil; its alpha is kept as given.
+
 Disabled framed `Button`s share the neutral inactive field frame: `Surface`,
 `Muted` and an inward `Outline` at `BorderWidth`; enabled buttons retain
 `Button`/`ButtonHover`/`ButtonPressed`. These shared roles do not provide an
