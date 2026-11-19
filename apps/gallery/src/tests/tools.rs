@@ -185,11 +185,14 @@ fn the_gallery_captures_and_restores_its_own_arrangement() {
 /// container, and the chain of anchors, panels and viewports around a deeply
 /// nested view pushes paths toward their byte limit. A page that legitimately
 /// wants one of these words as its key removes it from this list.
-const INTERNAL_KEYS: [&str; 16] = [
+///
+/// `dialog` is not among them: a `Dialog` documents that segment as the
+/// address of its content, so content with workspace state, such as the file
+/// dialog's browser, carries it.
+const INTERNAL_KEYS: [&str; 15] = [
     "anchor",
     "popup",
     "surface",
-    "dialog",
     "panel",
     "toasts",
     "branch",

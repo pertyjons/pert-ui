@@ -2072,6 +2072,8 @@ impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::Dra
 pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::RuntimeError) -> Self
 impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::FileBrowserError
 pub fn pert_ui_runtime::FileBrowserError::from(pert_ui_runtime::RuntimeError) -> Self
+impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::FileDialogError
+pub fn pert_ui_runtime::FileDialogError::from(pert_ui_runtime::RuntimeError) -> Self
 impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::RedescriptionError
 pub fn pert_ui_runtime::RedescriptionError::from(pert_ui_runtime::RuntimeError) -> Self
 impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::WindowError
@@ -5796,6 +5798,70 @@ pub fn pert_ui_runtime::FileBrowser::update(&mut self, &mut pert_ui_runtime::Upd
 pub fn pert_ui_runtime::FileBrowser::visibility_changed(&mut self, bool)
 pub fn pert_ui_runtime::FileBrowser::workspace_state(&self) -> core::result::Result<core::option::Option<pert_ui_runtime::ViewState>, pert_ui_runtime::WorkspaceError>
 pub fn pert_ui_runtime::FileBrowser::workspace_state_with_children(&self, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<core::option::Option<pert_ui_runtime::ViewState>, pert_ui_runtime::WorkspaceError>
+impl pert_ui_runtime::Component for pert_ui_runtime::FileDialog
+pub fn pert_ui_runtime::FileDialog::arrange(&self, &mut pert_ui_runtime::ArrangeContext<'_>, pert_ui_runtime::Size) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::can_reveal(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::cancel_input(&mut self, &mut pert_ui_runtime::EventContext)
+pub fn pert_ui_runtime::FileDialog::check_description(&self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::child_redocked(&mut self, &mut pert_ui_runtime::EventContext, &pert_ui_runtime::WidgetId)
+pub fn pert_ui_runtime::FileDialog::child_stacking_priority(&self, &str) -> i32
+pub fn pert_ui_runtime::FileDialog::child_surface(&self, &str) -> core::option::Option<pert_ui_runtime::SurfaceKind>
+pub fn pert_ui_runtime::FileDialog::child_transform(&self) -> pert_ui_runtime::ViewTransform
+pub fn pert_ui_runtime::FileDialog::child_visible(&self, &str) -> bool
+pub fn pert_ui_runtime::FileDialog::clips_children(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::command_target(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::conceals_input(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::content_rows(&self) -> core::option::Option<alloc::rc::Rc<dyn pert_ui_runtime::ContentRows>>
+pub fn pert_ui_runtime::FileDialog::cursor(&self, pert_ui_runtime::Point) -> core::option::Option<pert_ui_runtime::CursorIcon>
+pub fn pert_ui_runtime::FileDialog::deliver_notifications(&mut self, &mut pert_ui_runtime::EventContext) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::descendant_tab_stops(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::dismiss_surface(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::SurfaceDismissal) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::drag_event(&mut self, &mut pert_ui_runtime::EventContext, &pert_ui_runtime::DragEvent<'_>) -> core::result::Result<pert_ui_runtime::DropResponse, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::drag_finished(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::DragOutcome) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::fills_row_height(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::focus_gained(&mut self, &mut pert_ui_runtime::EventContext)
+pub fn pert_ui_runtime::FileDialog::focus_lost(&mut self, &mut pert_ui_runtime::EventContext) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::focus_siblings_on_removal(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::focus_within_changed(&mut self, &mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::focusable(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::hit_test(&self, pert_ui_runtime::Point) -> bool
+pub fn pert_ui_runtime::FileDialog::hit_test_foreground(&self, pert_ui_runtime::Point) -> bool
+pub fn pert_ui_runtime::FileDialog::hover_changed(&mut self, &mut pert_ui_runtime::EventContext, bool)
+pub fn pert_ui_runtime::FileDialog::input_reset(&mut self)
+pub fn pert_ui_runtime::FileDialog::inspect(&self) -> pert_ui_runtime::ComponentDetails
+pub fn pert_ui_runtime::FileDialog::key_input(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::KeyEvent, &pert_ui_runtime::KeyboardState) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::keyboard_event(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::KeyEvent, &pert_ui_runtime::KeyboardState) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::layout_position(&self) -> pert_ui_runtime::Point
+pub fn pert_ui_runtime::FileDialog::measure(&self, &pert_ui_runtime::MeasureContext<'_>, pert_ui_runtime::Constraints) -> core::result::Result<pert_ui_runtime::Size, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::measure_limits(&self, &pert_ui_runtime::MeasureContext<'_>) -> core::result::Result<pert_ui_runtime::SizeLimits, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::mounted(&mut self)
+pub fn pert_ui_runtime::FileDialog::paint(&self, &mut pert_ui_runtime::Painter) -> core::result::Result<(), pert_ui_runtime::DrawError>
+pub fn pert_ui_runtime::FileDialog::paint_foreground(&self, &mut pert_ui_runtime::Painter) -> core::result::Result<(), pert_ui_runtime::DrawError>
+pub fn pert_ui_runtime::FileDialog::pointer_input(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::PointerEvent) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::receives_unfocused_keys(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation>
+pub fn pert_ui_runtime::FileDialog::restore_workspace_state(&mut self, &pert_ui_runtime::ViewState) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
+pub fn pert_ui_runtime::FileDialog::restore_workspace_state_with_children(&mut self, &pert_ui_runtime::ViewState, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
+pub fn pert_ui_runtime::FileDialog::retain_initial_children(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::reveal(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::Rect) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::reveal_child(&mut self, &mut pert_ui_runtime::EventContext, &str) -> core::result::Result<pert_ui_runtime::ChildReveal, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::size_limits(&self) -> pert_ui_runtime::SizeLimits
+pub fn pert_ui_runtime::FileDialog::stacks_children(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::tab_navigation(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::FocusDirection, pert_ui_runtime::KeyTransition) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::tab_stop(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::take_children(&mut self) -> alloc::vec::Vec<pert_ui_runtime::Element>
+pub fn pert_ui_runtime::FileDialog::text_command(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::TextCommand) -> core::result::Result<pert_ui_runtime::TextCommandOutcome, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::text_input(&mut self, &mut pert_ui_runtime::EventContext, &str) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::text_input_state(&self) -> core::option::Option<pert_ui_runtime::TextInputState>
+pub fn pert_ui_runtime::FileDialog::text_key_event(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::CommandKeyInput, pert_ui_runtime::KeyTransition, &pert_ui_runtime::KeyboardState) -> core::result::Result<pert_ui_runtime::TextKeyOutcome, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::text_preedit(&mut self, &mut pert_ui_runtime::EventContext, &pert_ui_runtime::TextPreedit) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::timer_elapsed(&mut self, &mut pert_ui_runtime::EventContext) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::try_content_rows(&self) -> core::result::Result<core::option::Option<alloc::rc::Rc<dyn pert_ui_runtime::ContentRows>>, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::unmounted(&mut self)
+pub fn pert_ui_runtime::FileDialog::update(&mut self, &mut pert_ui_runtime::UpdateContext) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::visibility_changed(&mut self, bool)
+pub fn pert_ui_runtime::FileDialog::workspace_state(&self) -> core::result::Result<core::option::Option<pert_ui_runtime::ViewState>, pert_ui_runtime::WorkspaceError>
+pub fn pert_ui_runtime::FileDialog::workspace_state_with_children(&self, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<core::option::Option<pert_ui_runtime::ViewState>, pert_ui_runtime::WorkspaceError>
 impl pert_ui_runtime::Component for pert_ui_runtime::Form
 pub fn pert_ui_runtime::Form::arrange(&self, &mut pert_ui_runtime::ArrangeContext<'_>, pert_ui_runtime::Size) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Form::can_reveal(&self) -> bool
@@ -10056,6 +10122,8 @@ impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::Dra
 pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::RuntimeError) -> Self
 impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::FileBrowserError
 pub fn pert_ui_runtime::FileBrowserError::from(pert_ui_runtime::RuntimeError) -> Self
+impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::FileDialogError
+pub fn pert_ui_runtime::FileDialogError::from(pert_ui_runtime::RuntimeError) -> Self
 impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::RedescriptionError
 pub fn pert_ui_runtime::RedescriptionError::from(pert_ui_runtime::RuntimeError) -> Self
 impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::WindowError
@@ -13904,6 +13972,24 @@ impl core::marker::Unpin for pert_ui_runtime::CommandScope
 impl core::marker::UnsafeUnpin for pert_ui_runtime::CommandScope
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CommandScope
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CommandScope
+#[non_exhaustive] pub enum pert_ui_runtime::prelude::CurrentListing
+pub pert_ui_runtime::prelude::CurrentListing::Failed(pert_ui_runtime::ListingError)
+pub pert_ui_runtime::prelude::CurrentListing::Loaded(pert_ui_runtime::EntryList)
+pub pert_ui_runtime::prelude::CurrentListing::Loading
+impl core::clone::Clone for pert_ui_runtime::CurrentListing
+pub fn pert_ui_runtime::CurrentListing::clone(&self) -> Self
+impl core::cmp::PartialEq for pert_ui_runtime::CurrentListing
+pub fn pert_ui_runtime::CurrentListing::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::CurrentListing
+pub fn pert_ui_runtime::CurrentListing::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::CurrentListing
+impl core::marker::Freeze for pert_ui_runtime::CurrentListing
+impl !core::marker::Send for pert_ui_runtime::CurrentListing
+impl !core::marker::Sync for pert_ui_runtime::CurrentListing
+impl core::marker::Unpin for pert_ui_runtime::CurrentListing
+impl core::marker::UnsafeUnpin for pert_ui_runtime::CurrentListing
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CurrentListing
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CurrentListing
 #[non_exhaustive] pub enum pert_ui_runtime::prelude::CursorIcon
 pub pert_ui_runtime::prelude::CursorIcon::Alias
 pub pert_ui_runtime::prelude::CursorIcon::Copy
@@ -14119,6 +14205,103 @@ impl core::marker::Unpin for pert_ui_runtime::FieldStatus
 impl core::marker::UnsafeUnpin for pert_ui_runtime::FieldStatus
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FieldStatus
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FieldStatus
+#[non_exhaustive] pub enum pert_ui_runtime::prelude::FileDialogError
+pub pert_ui_runtime::prelude::FileDialogError::Busy
+pub pert_ui_runtime::prelude::FileDialogError::DuplicateFilter(alloc::string::String)
+pub pert_ui_runtime::prelude::FileDialogError::DuplicateRoot(std::path::PathBuf)
+pub pert_ui_runtime::prelude::FileDialogError::Geometry(pert_ui_runtime::GeometryError)
+pub pert_ui_runtime::prelude::FileDialogError::InvalidContext
+pub pert_ui_runtime::prelude::FileDialogError::InvalidFilter
+pub pert_ui_runtime::prelude::FileDialogError::InvalidName
+pub pert_ui_runtime::prelude::FileDialogError::NoRoots
+pub pert_ui_runtime::prelude::FileDialogError::Runtime(pert_ui_runtime::RuntimeError)
+pub pert_ui_runtime::prelude::FileDialogError::TooSmall
+impl core::clone::Clone for pert_ui_runtime::FileDialogError
+pub fn pert_ui_runtime::FileDialogError::clone(&self) -> Self
+impl core::cmp::PartialEq for pert_ui_runtime::FileDialogError
+pub fn pert_ui_runtime::FileDialogError::eq(&self, &Self) -> bool
+impl core::convert::From<pert_ui_runtime::FileBrowserError> for pert_ui_runtime::FileDialogError
+pub fn pert_ui_runtime::FileDialogError::from(pert_ui_runtime::FileBrowserError) -> Self
+impl core::convert::From<pert_ui_runtime::GeometryError> for pert_ui_runtime::FileDialogError
+pub fn pert_ui_runtime::FileDialogError::from(pert_ui_runtime::GeometryError) -> Self
+impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::FileDialogError
+pub fn pert_ui_runtime::FileDialogError::from(pert_ui_runtime::RuntimeError) -> Self
+impl core::error::Error for pert_ui_runtime::FileDialogError
+pub fn pert_ui_runtime::FileDialogError::source(&self) -> core::option::Option<&(dyn core::error::Error + 'static)>
+impl core::fmt::Debug for pert_ui_runtime::FileDialogError
+pub fn pert_ui_runtime::FileDialogError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui_runtime::FileDialogError
+pub fn pert_ui_runtime::FileDialogError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FileDialogError
+impl core::marker::Freeze for pert_ui_runtime::FileDialogError
+impl core::marker::Send for pert_ui_runtime::FileDialogError
+impl core::marker::Sync for pert_ui_runtime::FileDialogError
+impl core::marker::Unpin for pert_ui_runtime::FileDialogError
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileDialogError
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileDialogError
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileDialogError
+#[non_exhaustive] pub enum pert_ui_runtime::prelude::FileDialogMode
+pub pert_ui_runtime::prelude::FileDialogMode::ChooseFolder
+pub pert_ui_runtime::prelude::FileDialogMode::OpenFile
+pub pert_ui_runtime::prelude::FileDialogMode::OpenFiles
+pub pert_ui_runtime::prelude::FileDialogMode::SaveFile
+impl core::clone::Clone for pert_ui_runtime::FileDialogMode
+pub fn pert_ui_runtime::FileDialogMode::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::FileDialogMode
+impl core::cmp::PartialEq for pert_ui_runtime::FileDialogMode
+pub fn pert_ui_runtime::FileDialogMode::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FileDialogMode
+pub fn pert_ui_runtime::FileDialogMode::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::FileDialogMode
+pub fn pert_ui_runtime::FileDialogMode::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for pert_ui_runtime::FileDialogMode
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FileDialogMode
+impl core::marker::Freeze for pert_ui_runtime::FileDialogMode
+impl core::marker::Send for pert_ui_runtime::FileDialogMode
+impl core::marker::Sync for pert_ui_runtime::FileDialogMode
+impl core::marker::Unpin for pert_ui_runtime::FileDialogMode
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileDialogMode
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileDialogMode
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileDialogMode
+#[non_exhaustive] pub enum pert_ui_runtime::prelude::FileDialogOutcome
+pub pert_ui_runtime::prelude::FileDialogOutcome::Accepted(pert_ui_runtime::FileDialogSelection)
+pub pert_ui_runtime::prelude::FileDialogOutcome::Cancelled
+pub pert_ui_runtime::prelude::FileDialogOutcome::Dismissed(pert_ui_runtime::SurfaceDismissal)
+pub pert_ui_runtime::prelude::FileDialogOutcome::Failed(pert_ui_runtime::FileDialogFailure)
+impl core::clone::Clone for pert_ui_runtime::FileDialogOutcome
+pub fn pert_ui_runtime::FileDialogOutcome::clone(&self) -> Self
+impl core::cmp::PartialEq for pert_ui_runtime::FileDialogOutcome
+pub fn pert_ui_runtime::FileDialogOutcome::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FileDialogOutcome
+pub fn pert_ui_runtime::FileDialogOutcome::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FileDialogOutcome
+impl core::marker::Freeze for pert_ui_runtime::FileDialogOutcome
+impl core::marker::Send for pert_ui_runtime::FileDialogOutcome
+impl core::marker::Sync for pert_ui_runtime::FileDialogOutcome
+impl core::marker::Unpin for pert_ui_runtime::FileDialogOutcome
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileDialogOutcome
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileDialogOutcome
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileDialogOutcome
+pub enum pert_ui_runtime::prelude::FileDialogStatus
+pub pert_ui_runtime::prelude::FileDialogStatus::Finished
+pub pert_ui_runtime::prelude::FileDialogStatus::Idle
+pub pert_ui_runtime::prelude::FileDialogStatus::Open
+impl core::clone::Clone for pert_ui_runtime::FileDialogStatus
+pub fn pert_ui_runtime::FileDialogStatus::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::FileDialogStatus
+impl core::cmp::PartialEq for pert_ui_runtime::FileDialogStatus
+pub fn pert_ui_runtime::FileDialogStatus::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FileDialogStatus
+pub fn pert_ui_runtime::FileDialogStatus::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::FileDialogStatus
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FileDialogStatus
+impl core::marker::Freeze for pert_ui_runtime::FileDialogStatus
+impl core::marker::Send for pert_ui_runtime::FileDialogStatus
+impl core::marker::Sync for pert_ui_runtime::FileDialogStatus
+impl core::marker::Unpin for pert_ui_runtime::FileDialogStatus
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileDialogStatus
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileDialogStatus
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileDialogStatus
 #[non_exhaustive] pub enum pert_ui_runtime::prelude::FilterTarget
 pub pert_ui_runtime::prelude::FilterTarget::List(pert_ui_runtime::ListFilter)
 pub pert_ui_runtime::prelude::FilterTarget::Table(pert_ui_runtime::TableController)
@@ -14928,6 +15111,8 @@ impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::Dra
 pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::RuntimeError) -> Self
 impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::FileBrowserError
 pub fn pert_ui_runtime::FileBrowserError::from(pert_ui_runtime::RuntimeError) -> Self
+impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::FileDialogError
+pub fn pert_ui_runtime::FileDialogError::from(pert_ui_runtime::RuntimeError) -> Self
 impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::RedescriptionError
 pub fn pert_ui_runtime::RedescriptionError::from(pert_ui_runtime::RuntimeError) -> Self
 impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::WindowError
@@ -17491,18 +17676,23 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileBrowser
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileBrowser
 pub struct pert_ui_runtime::prelude::FileBrowserController(_)
 impl pert_ui_runtime::FileBrowserController
+pub fn pert_ui_runtime::FileBrowserController::clear_entry_predicate(&self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileBrowserController::current(&self) -> pert_ui_runtime::ReadSignal<std::path::PathBuf>
 pub fn pert_ui_runtime::FileBrowserController::deliver(&self, pert_ui_runtime::DirectoryResponse) -> core::result::Result<pert_ui_runtime::ListingDelivery, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileBrowserController::filter(&self) -> pert_ui_runtime::Signal<alloc::string::String>
 pub fn pert_ui_runtime::FileBrowserController::folder_filter(&self) -> pert_ui_runtime::Signal<alloc::string::String>
+pub fn pert_ui_runtime::FileBrowserController::listing(&self) -> pert_ui_runtime::ReadSignal<pert_ui_runtime::CurrentListing>
 pub fn pert_ui_runtime::FileBrowserController::navigate(&self, impl core::convert::AsRef<std::path::Path>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileBrowserController::navigate_up(&self) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileBrowserController::new(&impl pert_ui_runtime::StateOwner, pert_ui_runtime::ListSelection, impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::Into<std::path::PathBuf>>, impl core::ops::function::FnMut(pert_ui_runtime::DirectoryRequest) + 'static) -> core::result::Result<Self, pert_ui_runtime::FileBrowserError>
+pub fn pert_ui_runtime::FileBrowserController::new_idle(&impl pert_ui_runtime::StateOwner, pert_ui_runtime::ListSelection, impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::Into<std::path::PathBuf>>, impl core::ops::function::FnMut(pert_ui_runtime::DirectoryRequest) + 'static) -> core::result::Result<Self, pert_ui_runtime::FileBrowserError>
 pub fn pert_ui_runtime::FileBrowserController::on_open(&self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &pert_ui_runtime::DirectoryEntry) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static)
 pub fn pert_ui_runtime::FileBrowserController::path_of(&self, &str) -> core::option::Option<std::path::PathBuf>
 pub fn pert_ui_runtime::FileBrowserController::refresh(&self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileBrowserController::selected_paths(&self) -> core::result::Result<alloc::vec::Vec<std::path::PathBuf>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileBrowserController::selection(&self) -> pert_ui_runtime::ListSelection
+pub fn pert_ui_runtime::FileBrowserController::set_entry_predicate(&self, impl core::ops::function::Fn(&pert_ui_runtime::DirectoryEntry) -> bool + 'static) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileBrowserController::shown_entries(&self) -> pert_ui_runtime::ReadSignal<pert_ui_runtime::EntryList>
 impl core::clone::Clone for pert_ui_runtime::FileBrowserController
 pub fn pert_ui_runtime::FileBrowserController::clone(&self) -> Self
 impl core::fmt::Debug for pert_ui_runtime::FileBrowserController
@@ -17514,6 +17704,166 @@ impl core::marker::Unpin for pert_ui_runtime::FileBrowserController
 impl core::marker::UnsafeUnpin for pert_ui_runtime::FileBrowserController
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileBrowserController
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileBrowserController
+pub struct pert_ui_runtime::prelude::FileDialog
+impl pert_ui_runtime::FileDialog
+pub const pert_ui_runtime::FileDialog::DEFAULT_ROW_HEIGHT: f32
+pub const pert_ui_runtime::FileDialog::DEFAULT_SIZE: [u16; 2]
+pub const pert_ui_runtime::FileDialog::MINIMUM_SIZE: [u16; 2]
+pub fn pert_ui_runtime::FileDialog::in_view(&impl pert_ui_runtime::StateOwner, &pert_ui_runtime::FileDialogController, pert_ui_runtime::Element) -> Self
+pub fn pert_ui_runtime::FileDialog::in_window(&impl pert_ui_runtime::StateOwner, &pert_ui_runtime::FileDialogController, pert_ui_runtime::Element) -> Self
+pub fn pert_ui_runtime::FileDialog::on_outcome(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, pert_ui_runtime::FileDialogOutcome) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
+pub fn pert_ui_runtime::FileDialog::row_height(self, f32) -> core::result::Result<Self, pert_ui_runtime::FileDialogError>
+pub fn pert_ui_runtime::FileDialog::size(self, pert_ui_runtime::Size) -> core::result::Result<Self, pert_ui_runtime::FileDialogError>
+impl core::fmt::Debug for pert_ui_runtime::FileDialog
+pub fn pert_ui_runtime::FileDialog::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl pert_ui_runtime::Component for pert_ui_runtime::FileDialog
+pub fn pert_ui_runtime::FileDialog::arrange(&self, &mut pert_ui_runtime::ArrangeContext<'_>, pert_ui_runtime::Size) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::can_reveal(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::cancel_input(&mut self, &mut pert_ui_runtime::EventContext)
+pub fn pert_ui_runtime::FileDialog::check_description(&self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::child_redocked(&mut self, &mut pert_ui_runtime::EventContext, &pert_ui_runtime::WidgetId)
+pub fn pert_ui_runtime::FileDialog::child_stacking_priority(&self, &str) -> i32
+pub fn pert_ui_runtime::FileDialog::child_surface(&self, &str) -> core::option::Option<pert_ui_runtime::SurfaceKind>
+pub fn pert_ui_runtime::FileDialog::child_transform(&self) -> pert_ui_runtime::ViewTransform
+pub fn pert_ui_runtime::FileDialog::child_visible(&self, &str) -> bool
+pub fn pert_ui_runtime::FileDialog::clips_children(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::command_target(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::conceals_input(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::content_rows(&self) -> core::option::Option<alloc::rc::Rc<dyn pert_ui_runtime::ContentRows>>
+pub fn pert_ui_runtime::FileDialog::cursor(&self, pert_ui_runtime::Point) -> core::option::Option<pert_ui_runtime::CursorIcon>
+pub fn pert_ui_runtime::FileDialog::deliver_notifications(&mut self, &mut pert_ui_runtime::EventContext) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::descendant_tab_stops(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::dismiss_surface(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::SurfaceDismissal) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::drag_event(&mut self, &mut pert_ui_runtime::EventContext, &pert_ui_runtime::DragEvent<'_>) -> core::result::Result<pert_ui_runtime::DropResponse, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::drag_finished(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::DragOutcome) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::fills_row_height(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::focus_gained(&mut self, &mut pert_ui_runtime::EventContext)
+pub fn pert_ui_runtime::FileDialog::focus_lost(&mut self, &mut pert_ui_runtime::EventContext) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::focus_siblings_on_removal(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::focus_within_changed(&mut self, &mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::focusable(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::hit_test(&self, pert_ui_runtime::Point) -> bool
+pub fn pert_ui_runtime::FileDialog::hit_test_foreground(&self, pert_ui_runtime::Point) -> bool
+pub fn pert_ui_runtime::FileDialog::hover_changed(&mut self, &mut pert_ui_runtime::EventContext, bool)
+pub fn pert_ui_runtime::FileDialog::input_reset(&mut self)
+pub fn pert_ui_runtime::FileDialog::inspect(&self) -> pert_ui_runtime::ComponentDetails
+pub fn pert_ui_runtime::FileDialog::key_input(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::KeyEvent, &pert_ui_runtime::KeyboardState) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::keyboard_event(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::KeyEvent, &pert_ui_runtime::KeyboardState) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::layout_position(&self) -> pert_ui_runtime::Point
+pub fn pert_ui_runtime::FileDialog::measure(&self, &pert_ui_runtime::MeasureContext<'_>, pert_ui_runtime::Constraints) -> core::result::Result<pert_ui_runtime::Size, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::measure_limits(&self, &pert_ui_runtime::MeasureContext<'_>) -> core::result::Result<pert_ui_runtime::SizeLimits, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::mounted(&mut self)
+pub fn pert_ui_runtime::FileDialog::paint(&self, &mut pert_ui_runtime::Painter) -> core::result::Result<(), pert_ui_runtime::DrawError>
+pub fn pert_ui_runtime::FileDialog::paint_foreground(&self, &mut pert_ui_runtime::Painter) -> core::result::Result<(), pert_ui_runtime::DrawError>
+pub fn pert_ui_runtime::FileDialog::pointer_input(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::PointerEvent) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::receives_unfocused_keys(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation>
+pub fn pert_ui_runtime::FileDialog::restore_workspace_state(&mut self, &pert_ui_runtime::ViewState) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
+pub fn pert_ui_runtime::FileDialog::restore_workspace_state_with_children(&mut self, &pert_ui_runtime::ViewState, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
+pub fn pert_ui_runtime::FileDialog::retain_initial_children(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::reveal(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::Rect) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::reveal_child(&mut self, &mut pert_ui_runtime::EventContext, &str) -> core::result::Result<pert_ui_runtime::ChildReveal, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::size_limits(&self) -> pert_ui_runtime::SizeLimits
+pub fn pert_ui_runtime::FileDialog::stacks_children(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::tab_navigation(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::FocusDirection, pert_ui_runtime::KeyTransition) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::tab_stop(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::take_children(&mut self) -> alloc::vec::Vec<pert_ui_runtime::Element>
+pub fn pert_ui_runtime::FileDialog::text_command(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::TextCommand) -> core::result::Result<pert_ui_runtime::TextCommandOutcome, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::text_input(&mut self, &mut pert_ui_runtime::EventContext, &str) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::text_input_state(&self) -> core::option::Option<pert_ui_runtime::TextInputState>
+pub fn pert_ui_runtime::FileDialog::text_key_event(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::CommandKeyInput, pert_ui_runtime::KeyTransition, &pert_ui_runtime::KeyboardState) -> core::result::Result<pert_ui_runtime::TextKeyOutcome, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::text_preedit(&mut self, &mut pert_ui_runtime::EventContext, &pert_ui_runtime::TextPreedit) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::timer_elapsed(&mut self, &mut pert_ui_runtime::EventContext) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::try_content_rows(&self) -> core::result::Result<core::option::Option<alloc::rc::Rc<dyn pert_ui_runtime::ContentRows>>, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::unmounted(&mut self)
+pub fn pert_ui_runtime::FileDialog::update(&mut self, &mut pert_ui_runtime::UpdateContext) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::visibility_changed(&mut self, bool)
+pub fn pert_ui_runtime::FileDialog::workspace_state(&self) -> core::result::Result<core::option::Option<pert_ui_runtime::ViewState>, pert_ui_runtime::WorkspaceError>
+pub fn pert_ui_runtime::FileDialog::workspace_state_with_children(&self, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<core::option::Option<pert_ui_runtime::ViewState>, pert_ui_runtime::WorkspaceError>
+impl !core::marker::Freeze for pert_ui_runtime::FileDialog
+impl !core::marker::Send for pert_ui_runtime::FileDialog
+impl !core::marker::Sync for pert_ui_runtime::FileDialog
+impl core::marker::Unpin for pert_ui_runtime::FileDialog
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileDialog
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileDialog
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileDialog
+pub struct pert_ui_runtime::prelude::FileDialogController(_)
+impl pert_ui_runtime::FileDialogController
+pub fn pert_ui_runtime::FileDialogController::accept(&self) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialogController::cancel(&self) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialogController::current(&self) -> pert_ui_runtime::ReadSignal<std::path::PathBuf>
+pub fn pert_ui_runtime::FileDialogController::deliver(&self, pert_ui_runtime::DirectoryResponse) -> core::result::Result<pert_ui_runtime::ListingDelivery, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialogController::new(&impl pert_ui_runtime::StateOwner, impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::Into<std::path::PathBuf>>, impl core::ops::function::FnMut(pert_ui_runtime::DirectoryRequest) + 'static) -> core::result::Result<Self, pert_ui_runtime::FileDialogError>
+pub fn pert_ui_runtime::FileDialogController::open(&self, pert_ui_runtime::FileDialogRequest) -> core::result::Result<(), pert_ui_runtime::FileDialogError>
+pub fn pert_ui_runtime::FileDialogController::status(&self) -> pert_ui_runtime::ReadSignal<pert_ui_runtime::FileDialogStatus>
+pub fn pert_ui_runtime::FileDialogController::take_outcome(&self) -> core::result::Result<core::option::Option<pert_ui_runtime::FileDialogOutcome>, pert_ui_runtime::RuntimeError>
+impl core::clone::Clone for pert_ui_runtime::FileDialogController
+pub fn pert_ui_runtime::FileDialogController::clone(&self) -> Self
+impl core::fmt::Debug for pert_ui_runtime::FileDialogController
+pub fn pert_ui_runtime::FileDialogController::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for pert_ui_runtime::FileDialogController
+impl !core::marker::Send for pert_ui_runtime::FileDialogController
+impl !core::marker::Sync for pert_ui_runtime::FileDialogController
+impl core::marker::Unpin for pert_ui_runtime::FileDialogController
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileDialogController
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileDialogController
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileDialogController
+pub struct pert_ui_runtime::prelude::FileDialogRequest
+impl pert_ui_runtime::FileDialogRequest
+pub const pert_ui_runtime::FileDialogRequest::MAX_KEY_CHARS: usize
+pub fn pert_ui_runtime::FileDialogRequest::accept_label(self, impl core::convert::Into<alloc::string::String>) -> Self
+pub fn pert_ui_runtime::FileDialogRequest::accept_text(&self) -> core::option::Option<&str>
+pub fn pert_ui_runtime::FileDialogRequest::append_extension(self, bool) -> Self
+pub fn pert_ui_runtime::FileDialogRequest::appends_extension(&self) -> bool
+pub fn pert_ui_runtime::FileDialogRequest::context(self, impl core::convert::Into<alloc::string::String>) -> core::result::Result<Self, pert_ui_runtime::FileDialogError>
+pub fn pert_ui_runtime::FileDialogRequest::context_key(&self) -> core::option::Option<&str>
+pub fn pert_ui_runtime::FileDialogRequest::filter_list(&self) -> &[pert_ui_runtime::FileFilter]
+pub fn pert_ui_runtime::FileDialogRequest::filters(self, impl core::iter::traits::collect::IntoIterator<Item = pert_ui_runtime::FileFilter>) -> core::result::Result<Self, pert_ui_runtime::FileDialogError>
+pub fn pert_ui_runtime::FileDialogRequest::mode(&self) -> pert_ui_runtime::FileDialogMode
+pub fn pert_ui_runtime::FileDialogRequest::name(&self) -> &str
+pub fn pert_ui_runtime::FileDialogRequest::new(pert_ui_runtime::FileDialogMode) -> Self
+pub fn pert_ui_runtime::FileDialogRequest::start(&self) -> core::option::Option<&std::path::Path>
+pub fn pert_ui_runtime::FileDialogRequest::start_folder(self, impl core::convert::Into<std::path::PathBuf>) -> Self
+pub fn pert_ui_runtime::FileDialogRequest::suggested_name(self, impl core::convert::Into<alloc::string::String>) -> core::result::Result<Self, pert_ui_runtime::FileDialogError>
+pub fn pert_ui_runtime::FileDialogRequest::title(self, impl core::convert::Into<alloc::string::String>) -> Self
+pub fn pert_ui_runtime::FileDialogRequest::title_text(&self) -> core::option::Option<&str>
+impl core::clone::Clone for pert_ui_runtime::FileDialogRequest
+pub fn pert_ui_runtime::FileDialogRequest::clone(&self) -> Self
+impl core::cmp::PartialEq for pert_ui_runtime::FileDialogRequest
+pub fn pert_ui_runtime::FileDialogRequest::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FileDialogRequest
+pub fn pert_ui_runtime::FileDialogRequest::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FileDialogRequest
+impl core::marker::Freeze for pert_ui_runtime::FileDialogRequest
+impl core::marker::Send for pert_ui_runtime::FileDialogRequest
+impl core::marker::Sync for pert_ui_runtime::FileDialogRequest
+impl core::marker::Unpin for pert_ui_runtime::FileDialogRequest
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileDialogRequest
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileDialogRequest
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileDialogRequest
+pub struct pert_ui_runtime::prelude::FileFilter
+impl pert_ui_runtime::FileFilter
+pub fn pert_ui_runtime::FileFilter::all(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<alloc::string::String>) -> core::result::Result<Self, pert_ui_runtime::FileDialogError>
+pub fn pert_ui_runtime::FileFilter::extensions(&self) -> &[alloc::string::String]
+pub fn pert_ui_runtime::FileFilter::id(&self) -> &str
+pub fn pert_ui_runtime::FileFilter::label(&self) -> &str
+pub fn pert_ui_runtime::FileFilter::matches(&self, &std::ffi::os_str::OsStr) -> bool
+pub fn pert_ui_runtime::FileFilter::new(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<alloc::string::String>, impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::Into<alloc::string::String>>) -> core::result::Result<Self, pert_ui_runtime::FileDialogError>
+impl core::clone::Clone for pert_ui_runtime::FileFilter
+pub fn pert_ui_runtime::FileFilter::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::FileFilter
+impl core::cmp::PartialEq for pert_ui_runtime::FileFilter
+pub fn pert_ui_runtime::FileFilter::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FileFilter
+pub fn pert_ui_runtime::FileFilter::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FileFilter
+impl core::marker::Freeze for pert_ui_runtime::FileFilter
+impl core::marker::Send for pert_ui_runtime::FileFilter
+impl core::marker::Sync for pert_ui_runtime::FileFilter
+impl core::marker::Unpin for pert_ui_runtime::FileFilter
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileFilter
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileFilter
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileFilter
 pub struct pert_ui_runtime::prelude::FilterCounts
 pub pert_ui_runtime::prelude::FilterCounts::shown: usize
 pub pert_ui_runtime::prelude::FilterCounts::total: usize
@@ -19220,11 +19570,12 @@ impl pert_ui_runtime::ListSelection
 pub fn pert_ui_runtime::ListSelection::active(&self) -> pert_ui_runtime::ReadSignal<core::option::Option<alloc::string::String>>
 pub fn pert_ui_runtime::ListSelection::clear(&self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::ListSelection::is_selected(&self, &str) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
-pub const fn pert_ui_runtime::ListSelection::mode(&self) -> pert_ui_runtime::SelectionMode
+pub fn pert_ui_runtime::ListSelection::mode(&self) -> pert_ui_runtime::SelectionMode
 pub fn pert_ui_runtime::ListSelection::new(&impl pert_ui_runtime::StateOwner, pert_ui_runtime::SelectionMode) -> Self
 pub fn pert_ui_runtime::ListSelection::select(&self, impl core::iter::traits::collect::IntoIterator<Item = alloc::string::String>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::ListSelection::selected(&self) -> pert_ui_runtime::ReadSignal<alloc::rc::Rc<alloc::collections::btree::set::BTreeSet<alloc::string::String>>>
 pub fn pert_ui_runtime::ListSelection::set_active(&self, core::option::Option<alloc::string::String>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::ListSelection::set_mode(&self, pert_ui_runtime::SelectionMode) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 impl core::clone::Clone for pert_ui_runtime::ListSelection
 pub fn pert_ui_runtime::ListSelection::clone(&self) -> Self
 impl core::fmt::Debug for pert_ui_runtime::ListSelection
@@ -25874,6 +26225,24 @@ impl core::marker::Unpin for pert_ui_runtime::CornerPosition
 impl core::marker::UnsafeUnpin for pert_ui_runtime::CornerPosition
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CornerPosition
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CornerPosition
+#[non_exhaustive] pub enum pert_ui_runtime::CurrentListing
+pub pert_ui_runtime::CurrentListing::Failed(pert_ui_runtime::ListingError)
+pub pert_ui_runtime::CurrentListing::Loaded(pert_ui_runtime::EntryList)
+pub pert_ui_runtime::CurrentListing::Loading
+impl core::clone::Clone for pert_ui_runtime::CurrentListing
+pub fn pert_ui_runtime::CurrentListing::clone(&self) -> Self
+impl core::cmp::PartialEq for pert_ui_runtime::CurrentListing
+pub fn pert_ui_runtime::CurrentListing::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::CurrentListing
+pub fn pert_ui_runtime::CurrentListing::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::CurrentListing
+impl core::marker::Freeze for pert_ui_runtime::CurrentListing
+impl !core::marker::Send for pert_ui_runtime::CurrentListing
+impl !core::marker::Sync for pert_ui_runtime::CurrentListing
+impl core::marker::Unpin for pert_ui_runtime::CurrentListing
+impl core::marker::UnsafeUnpin for pert_ui_runtime::CurrentListing
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CurrentListing
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CurrentListing
 #[non_exhaustive] pub enum pert_ui_runtime::CursorIcon
 pub pert_ui_runtime::CursorIcon::Alias
 pub pert_ui_runtime::CursorIcon::Copy
@@ -26768,6 +27137,8 @@ pub fn pert_ui_runtime::FileBrowserError::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_runtime::FileBrowserError
 impl core::cmp::PartialEq for pert_ui_runtime::FileBrowserError
 pub fn pert_ui_runtime::FileBrowserError::eq(&self, &Self) -> bool
+impl core::convert::From<pert_ui_runtime::FileBrowserError> for pert_ui_runtime::FileDialogError
+pub fn pert_ui_runtime::FileDialogError::from(pert_ui_runtime::FileBrowserError) -> Self
 impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::FileBrowserError
 pub fn pert_ui_runtime::FileBrowserError::from(pert_ui_runtime::RuntimeError) -> Self
 impl core::error::Error for pert_ui_runtime::FileBrowserError
@@ -26784,6 +27155,120 @@ impl core::marker::Unpin for pert_ui_runtime::FileBrowserError
 impl core::marker::UnsafeUnpin for pert_ui_runtime::FileBrowserError
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileBrowserError
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileBrowserError
+#[non_exhaustive] pub enum pert_ui_runtime::FileDialogError
+pub pert_ui_runtime::FileDialogError::Busy
+pub pert_ui_runtime::FileDialogError::DuplicateFilter(alloc::string::String)
+pub pert_ui_runtime::FileDialogError::DuplicateRoot(std::path::PathBuf)
+pub pert_ui_runtime::FileDialogError::Geometry(pert_ui_runtime::GeometryError)
+pub pert_ui_runtime::FileDialogError::InvalidContext
+pub pert_ui_runtime::FileDialogError::InvalidFilter
+pub pert_ui_runtime::FileDialogError::InvalidName
+pub pert_ui_runtime::FileDialogError::NoRoots
+pub pert_ui_runtime::FileDialogError::Runtime(pert_ui_runtime::RuntimeError)
+pub pert_ui_runtime::FileDialogError::TooSmall
+impl core::clone::Clone for pert_ui_runtime::FileDialogError
+pub fn pert_ui_runtime::FileDialogError::clone(&self) -> Self
+impl core::cmp::PartialEq for pert_ui_runtime::FileDialogError
+pub fn pert_ui_runtime::FileDialogError::eq(&self, &Self) -> bool
+impl core::convert::From<pert_ui_runtime::FileBrowserError> for pert_ui_runtime::FileDialogError
+pub fn pert_ui_runtime::FileDialogError::from(pert_ui_runtime::FileBrowserError) -> Self
+impl core::convert::From<pert_ui_runtime::GeometryError> for pert_ui_runtime::FileDialogError
+pub fn pert_ui_runtime::FileDialogError::from(pert_ui_runtime::GeometryError) -> Self
+impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::FileDialogError
+pub fn pert_ui_runtime::FileDialogError::from(pert_ui_runtime::RuntimeError) -> Self
+impl core::error::Error for pert_ui_runtime::FileDialogError
+pub fn pert_ui_runtime::FileDialogError::source(&self) -> core::option::Option<&(dyn core::error::Error + 'static)>
+impl core::fmt::Debug for pert_ui_runtime::FileDialogError
+pub fn pert_ui_runtime::FileDialogError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui_runtime::FileDialogError
+pub fn pert_ui_runtime::FileDialogError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FileDialogError
+impl core::marker::Freeze for pert_ui_runtime::FileDialogError
+impl core::marker::Send for pert_ui_runtime::FileDialogError
+impl core::marker::Sync for pert_ui_runtime::FileDialogError
+impl core::marker::Unpin for pert_ui_runtime::FileDialogError
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileDialogError
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileDialogError
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileDialogError
+#[non_exhaustive] pub enum pert_ui_runtime::FileDialogFailure
+pub pert_ui_runtime::FileDialogFailure::Start(pert_ui_runtime::RuntimeError)
+pub pert_ui_runtime::FileDialogFailure::Surface(pert_ui_runtime::SurfaceDismissal)
+impl core::clone::Clone for pert_ui_runtime::FileDialogFailure
+pub fn pert_ui_runtime::FileDialogFailure::clone(&self) -> Self
+impl core::cmp::PartialEq for pert_ui_runtime::FileDialogFailure
+pub fn pert_ui_runtime::FileDialogFailure::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FileDialogFailure
+pub fn pert_ui_runtime::FileDialogFailure::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FileDialogFailure
+impl core::marker::Freeze for pert_ui_runtime::FileDialogFailure
+impl core::marker::Send for pert_ui_runtime::FileDialogFailure
+impl core::marker::Sync for pert_ui_runtime::FileDialogFailure
+impl core::marker::Unpin for pert_ui_runtime::FileDialogFailure
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileDialogFailure
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileDialogFailure
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileDialogFailure
+#[non_exhaustive] pub enum pert_ui_runtime::FileDialogMode
+pub pert_ui_runtime::FileDialogMode::ChooseFolder
+pub pert_ui_runtime::FileDialogMode::OpenFile
+pub pert_ui_runtime::FileDialogMode::OpenFiles
+pub pert_ui_runtime::FileDialogMode::SaveFile
+impl core::clone::Clone for pert_ui_runtime::FileDialogMode
+pub fn pert_ui_runtime::FileDialogMode::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::FileDialogMode
+impl core::cmp::PartialEq for pert_ui_runtime::FileDialogMode
+pub fn pert_ui_runtime::FileDialogMode::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FileDialogMode
+pub fn pert_ui_runtime::FileDialogMode::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::FileDialogMode
+pub fn pert_ui_runtime::FileDialogMode::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for pert_ui_runtime::FileDialogMode
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FileDialogMode
+impl core::marker::Freeze for pert_ui_runtime::FileDialogMode
+impl core::marker::Send for pert_ui_runtime::FileDialogMode
+impl core::marker::Sync for pert_ui_runtime::FileDialogMode
+impl core::marker::Unpin for pert_ui_runtime::FileDialogMode
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileDialogMode
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileDialogMode
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileDialogMode
+#[non_exhaustive] pub enum pert_ui_runtime::FileDialogOutcome
+pub pert_ui_runtime::FileDialogOutcome::Accepted(pert_ui_runtime::FileDialogSelection)
+pub pert_ui_runtime::FileDialogOutcome::Cancelled
+pub pert_ui_runtime::FileDialogOutcome::Dismissed(pert_ui_runtime::SurfaceDismissal)
+pub pert_ui_runtime::FileDialogOutcome::Failed(pert_ui_runtime::FileDialogFailure)
+impl core::clone::Clone for pert_ui_runtime::FileDialogOutcome
+pub fn pert_ui_runtime::FileDialogOutcome::clone(&self) -> Self
+impl core::cmp::PartialEq for pert_ui_runtime::FileDialogOutcome
+pub fn pert_ui_runtime::FileDialogOutcome::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FileDialogOutcome
+pub fn pert_ui_runtime::FileDialogOutcome::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FileDialogOutcome
+impl core::marker::Freeze for pert_ui_runtime::FileDialogOutcome
+impl core::marker::Send for pert_ui_runtime::FileDialogOutcome
+impl core::marker::Sync for pert_ui_runtime::FileDialogOutcome
+impl core::marker::Unpin for pert_ui_runtime::FileDialogOutcome
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileDialogOutcome
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileDialogOutcome
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileDialogOutcome
+pub enum pert_ui_runtime::FileDialogStatus
+pub pert_ui_runtime::FileDialogStatus::Finished
+pub pert_ui_runtime::FileDialogStatus::Idle
+pub pert_ui_runtime::FileDialogStatus::Open
+impl core::clone::Clone for pert_ui_runtime::FileDialogStatus
+pub fn pert_ui_runtime::FileDialogStatus::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::FileDialogStatus
+impl core::cmp::PartialEq for pert_ui_runtime::FileDialogStatus
+pub fn pert_ui_runtime::FileDialogStatus::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FileDialogStatus
+pub fn pert_ui_runtime::FileDialogStatus::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::FileDialogStatus
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FileDialogStatus
+impl core::marker::Freeze for pert_ui_runtime::FileDialogStatus
+impl core::marker::Send for pert_ui_runtime::FileDialogStatus
+impl core::marker::Sync for pert_ui_runtime::FileDialogStatus
+impl core::marker::Unpin for pert_ui_runtime::FileDialogStatus
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileDialogStatus
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileDialogStatus
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileDialogStatus
 pub enum pert_ui_runtime::FillRule
 pub pert_ui_runtime::FillRule::EvenOdd
 pub pert_ui_runtime::FillRule::NonZero
@@ -26980,6 +27465,8 @@ impl core::cmp::PartialEq for pert_ui_runtime::GeometryError
 pub fn pert_ui_runtime::GeometryError::eq(&self, &Self) -> bool
 impl core::convert::From<pert_ui_runtime::GeometryError> for pert_ui_runtime::DrawError
 pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::GeometryError) -> Self
+impl core::convert::From<pert_ui_runtime::GeometryError> for pert_ui_runtime::FileDialogError
+pub fn pert_ui_runtime::FileDialogError::from(pert_ui_runtime::GeometryError) -> Self
 impl core::convert::From<pert_ui_runtime::GeometryError> for pert_ui_runtime::RuntimeError
 pub fn pert_ui_runtime::RuntimeError::from(pert_ui_runtime::GeometryError) -> Self
 impl core::convert::From<pert_ui_runtime::GeometryError> for pert_ui_runtime::WindowError
@@ -28661,6 +29148,8 @@ impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::Dra
 pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::RuntimeError) -> Self
 impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::FileBrowserError
 pub fn pert_ui_runtime::FileBrowserError::from(pert_ui_runtime::RuntimeError) -> Self
+impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::FileDialogError
+pub fn pert_ui_runtime::FileDialogError::from(pert_ui_runtime::RuntimeError) -> Self
 impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::RedescriptionError
 pub fn pert_ui_runtime::RedescriptionError::from(pert_ui_runtime::RuntimeError) -> Self
 impl core::convert::From<pert_ui_runtime::RuntimeError> for pert_ui_runtime::WindowError
@@ -29194,6 +29683,19 @@ pub pert_ui_runtime::StringRole::FileBrowserFolders
 pub pert_ui_runtime::StringRole::FileBrowserLoading
 pub pert_ui_runtime::StringRole::FileBrowserName
 pub pert_ui_runtime::StringRole::FileBrowserNoMatches
+pub pert_ui_runtime::StringRole::FileDialogAmbiguousName
+pub pert_ui_runtime::StringRole::FileDialogBack
+pub pert_ui_runtime::StringRole::FileDialogChoose
+pub pert_ui_runtime::StringRole::FileDialogChooseFolder
+pub pert_ui_runtime::StringRole::FileDialogInvalidName
+pub pert_ui_runtime::StringRole::FileDialogName
+pub pert_ui_runtime::StringRole::FileDialogNotAllFiles
+pub pert_ui_runtime::StringRole::FileDialogOpen
+pub pert_ui_runtime::StringRole::FileDialogReplace
+pub pert_ui_runtime::StringRole::FileDialogReplaceQuestion
+pub pert_ui_runtime::StringRole::FileDialogSave
+pub pert_ui_runtime::StringRole::FileDialogType
+pub pert_ui_runtime::StringRole::FileDialogUnusable
 pub pert_ui_runtime::StringRole::FilterName
 pub pert_ui_runtime::StringRole::ForwardTo
 pub pert_ui_runtime::StringRole::HistoryBack
@@ -29891,6 +30393,10 @@ pub pert_ui_runtime::UiMessage::CommandRan::command: &'a str
 pub pert_ui_runtime::UiMessage::EntryFailed
 pub pert_ui_runtime::UiMessage::EntryFailed::name: &'a str
 pub pert_ui_runtime::UiMessage::EntryFailed::reason: &'a str
+pub pert_ui_runtime::UiMessage::FileDialogChoose
+pub pert_ui_runtime::UiMessage::FileDialogChoose::name: &'a str
+pub pert_ui_runtime::UiMessage::FileDialogReplaceQuestion
+pub pert_ui_runtime::UiMessage::FileDialogReplaceQuestion::name: &'a str
 pub pert_ui_runtime::UiMessage::ForwardTo
 pub pert_ui_runtime::UiMessage::ForwardTo::place: &'a str
 pub pert_ui_runtime::UiMessage::NotHexColor
@@ -33187,6 +33693,25 @@ impl core::marker::Unpin for pert_ui_runtime::Element
 impl core::marker::UnsafeUnpin for pert_ui_runtime::Element
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Element
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Element
+pub struct pert_ui_runtime::EntryList(_)
+impl core::clone::Clone for pert_ui_runtime::EntryList
+pub fn pert_ui_runtime::EntryList::clone(&self) -> Self
+impl core::cmp::PartialEq for pert_ui_runtime::EntryList
+pub fn pert_ui_runtime::EntryList::eq(&self, &Self) -> bool
+impl core::default::Default for pert_ui_runtime::EntryList
+pub fn pert_ui_runtime::EntryList::default() -> Self
+impl core::fmt::Debug for pert_ui_runtime::EntryList
+pub fn pert_ui_runtime::EntryList::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::ops::deref::Deref for pert_ui_runtime::EntryList
+pub type pert_ui_runtime::EntryList::Target = [pert_ui_runtime::DirectoryEntry]
+pub fn pert_ui_runtime::EntryList::deref(&self) -> &[pert_ui_runtime::DirectoryEntry]
+impl core::marker::Freeze for pert_ui_runtime::EntryList
+impl !core::marker::Send for pert_ui_runtime::EntryList
+impl !core::marker::Sync for pert_ui_runtime::EntryList
+impl core::marker::Unpin for pert_ui_runtime::EntryList
+impl core::marker::UnsafeUnpin for pert_ui_runtime::EntryList
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::EntryList
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::EntryList
 pub struct pert_ui_runtime::EventContext
 impl pert_ui_runtime::EventContext
 pub fn pert_ui_runtime::EventContext::activate_window(&self, &pert_ui_runtime::NativeWindowId) -> core::result::Result<pert_ui_runtime::PresentationReceipt, pert_ui_runtime::RuntimeError>
@@ -33519,18 +34044,23 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileBrowser
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileBrowser
 pub struct pert_ui_runtime::FileBrowserController(_)
 impl pert_ui_runtime::FileBrowserController
+pub fn pert_ui_runtime::FileBrowserController::clear_entry_predicate(&self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileBrowserController::current(&self) -> pert_ui_runtime::ReadSignal<std::path::PathBuf>
 pub fn pert_ui_runtime::FileBrowserController::deliver(&self, pert_ui_runtime::DirectoryResponse) -> core::result::Result<pert_ui_runtime::ListingDelivery, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileBrowserController::filter(&self) -> pert_ui_runtime::Signal<alloc::string::String>
 pub fn pert_ui_runtime::FileBrowserController::folder_filter(&self) -> pert_ui_runtime::Signal<alloc::string::String>
+pub fn pert_ui_runtime::FileBrowserController::listing(&self) -> pert_ui_runtime::ReadSignal<pert_ui_runtime::CurrentListing>
 pub fn pert_ui_runtime::FileBrowserController::navigate(&self, impl core::convert::AsRef<std::path::Path>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileBrowserController::navigate_up(&self) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileBrowserController::new(&impl pert_ui_runtime::StateOwner, pert_ui_runtime::ListSelection, impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::Into<std::path::PathBuf>>, impl core::ops::function::FnMut(pert_ui_runtime::DirectoryRequest) + 'static) -> core::result::Result<Self, pert_ui_runtime::FileBrowserError>
+pub fn pert_ui_runtime::FileBrowserController::new_idle(&impl pert_ui_runtime::StateOwner, pert_ui_runtime::ListSelection, impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::Into<std::path::PathBuf>>, impl core::ops::function::FnMut(pert_ui_runtime::DirectoryRequest) + 'static) -> core::result::Result<Self, pert_ui_runtime::FileBrowserError>
 pub fn pert_ui_runtime::FileBrowserController::on_open(&self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &pert_ui_runtime::DirectoryEntry) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static)
 pub fn pert_ui_runtime::FileBrowserController::path_of(&self, &str) -> core::option::Option<std::path::PathBuf>
 pub fn pert_ui_runtime::FileBrowserController::refresh(&self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileBrowserController::selected_paths(&self) -> core::result::Result<alloc::vec::Vec<std::path::PathBuf>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileBrowserController::selection(&self) -> pert_ui_runtime::ListSelection
+pub fn pert_ui_runtime::FileBrowserController::set_entry_predicate(&self, impl core::ops::function::Fn(&pert_ui_runtime::DirectoryEntry) -> bool + 'static) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileBrowserController::shown_entries(&self) -> pert_ui_runtime::ReadSignal<pert_ui_runtime::EntryList>
 impl core::clone::Clone for pert_ui_runtime::FileBrowserController
 pub fn pert_ui_runtime::FileBrowserController::clone(&self) -> Self
 impl core::fmt::Debug for pert_ui_runtime::FileBrowserController
@@ -33542,6 +34072,186 @@ impl core::marker::Unpin for pert_ui_runtime::FileBrowserController
 impl core::marker::UnsafeUnpin for pert_ui_runtime::FileBrowserController
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileBrowserController
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileBrowserController
+pub struct pert_ui_runtime::FileDialog
+impl pert_ui_runtime::FileDialog
+pub const pert_ui_runtime::FileDialog::DEFAULT_ROW_HEIGHT: f32
+pub const pert_ui_runtime::FileDialog::DEFAULT_SIZE: [u16; 2]
+pub const pert_ui_runtime::FileDialog::MINIMUM_SIZE: [u16; 2]
+pub fn pert_ui_runtime::FileDialog::in_view(&impl pert_ui_runtime::StateOwner, &pert_ui_runtime::FileDialogController, pert_ui_runtime::Element) -> Self
+pub fn pert_ui_runtime::FileDialog::in_window(&impl pert_ui_runtime::StateOwner, &pert_ui_runtime::FileDialogController, pert_ui_runtime::Element) -> Self
+pub fn pert_ui_runtime::FileDialog::on_outcome(self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, pert_ui_runtime::FileDialogOutcome) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static) -> Self
+pub fn pert_ui_runtime::FileDialog::row_height(self, f32) -> core::result::Result<Self, pert_ui_runtime::FileDialogError>
+pub fn pert_ui_runtime::FileDialog::size(self, pert_ui_runtime::Size) -> core::result::Result<Self, pert_ui_runtime::FileDialogError>
+impl core::fmt::Debug for pert_ui_runtime::FileDialog
+pub fn pert_ui_runtime::FileDialog::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl pert_ui_runtime::Component for pert_ui_runtime::FileDialog
+pub fn pert_ui_runtime::FileDialog::arrange(&self, &mut pert_ui_runtime::ArrangeContext<'_>, pert_ui_runtime::Size) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::can_reveal(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::cancel_input(&mut self, &mut pert_ui_runtime::EventContext)
+pub fn pert_ui_runtime::FileDialog::check_description(&self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::child_redocked(&mut self, &mut pert_ui_runtime::EventContext, &pert_ui_runtime::WidgetId)
+pub fn pert_ui_runtime::FileDialog::child_stacking_priority(&self, &str) -> i32
+pub fn pert_ui_runtime::FileDialog::child_surface(&self, &str) -> core::option::Option<pert_ui_runtime::SurfaceKind>
+pub fn pert_ui_runtime::FileDialog::child_transform(&self) -> pert_ui_runtime::ViewTransform
+pub fn pert_ui_runtime::FileDialog::child_visible(&self, &str) -> bool
+pub fn pert_ui_runtime::FileDialog::clips_children(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::command_target(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::conceals_input(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::content_rows(&self) -> core::option::Option<alloc::rc::Rc<dyn pert_ui_runtime::ContentRows>>
+pub fn pert_ui_runtime::FileDialog::cursor(&self, pert_ui_runtime::Point) -> core::option::Option<pert_ui_runtime::CursorIcon>
+pub fn pert_ui_runtime::FileDialog::deliver_notifications(&mut self, &mut pert_ui_runtime::EventContext) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::descendant_tab_stops(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::dismiss_surface(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::SurfaceDismissal) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::drag_event(&mut self, &mut pert_ui_runtime::EventContext, &pert_ui_runtime::DragEvent<'_>) -> core::result::Result<pert_ui_runtime::DropResponse, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::drag_finished(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::DragOutcome) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::fills_row_height(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::focus_gained(&mut self, &mut pert_ui_runtime::EventContext)
+pub fn pert_ui_runtime::FileDialog::focus_lost(&mut self, &mut pert_ui_runtime::EventContext) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::focus_siblings_on_removal(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::focus_within_changed(&mut self, &mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::focusable(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::hit_test(&self, pert_ui_runtime::Point) -> bool
+pub fn pert_ui_runtime::FileDialog::hit_test_foreground(&self, pert_ui_runtime::Point) -> bool
+pub fn pert_ui_runtime::FileDialog::hover_changed(&mut self, &mut pert_ui_runtime::EventContext, bool)
+pub fn pert_ui_runtime::FileDialog::input_reset(&mut self)
+pub fn pert_ui_runtime::FileDialog::inspect(&self) -> pert_ui_runtime::ComponentDetails
+pub fn pert_ui_runtime::FileDialog::key_input(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::KeyEvent, &pert_ui_runtime::KeyboardState) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::keyboard_event(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::KeyEvent, &pert_ui_runtime::KeyboardState) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::layout_position(&self) -> pert_ui_runtime::Point
+pub fn pert_ui_runtime::FileDialog::measure(&self, &pert_ui_runtime::MeasureContext<'_>, pert_ui_runtime::Constraints) -> core::result::Result<pert_ui_runtime::Size, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::measure_limits(&self, &pert_ui_runtime::MeasureContext<'_>) -> core::result::Result<pert_ui_runtime::SizeLimits, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::mounted(&mut self)
+pub fn pert_ui_runtime::FileDialog::paint(&self, &mut pert_ui_runtime::Painter) -> core::result::Result<(), pert_ui_runtime::DrawError>
+pub fn pert_ui_runtime::FileDialog::paint_foreground(&self, &mut pert_ui_runtime::Painter) -> core::result::Result<(), pert_ui_runtime::DrawError>
+pub fn pert_ui_runtime::FileDialog::pointer_input(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::PointerEvent) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::receives_unfocused_keys(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation>
+pub fn pert_ui_runtime::FileDialog::restore_workspace_state(&mut self, &pert_ui_runtime::ViewState) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
+pub fn pert_ui_runtime::FileDialog::restore_workspace_state_with_children(&mut self, &pert_ui_runtime::ViewState, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
+pub fn pert_ui_runtime::FileDialog::retain_initial_children(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::reveal(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::Rect) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::reveal_child(&mut self, &mut pert_ui_runtime::EventContext, &str) -> core::result::Result<pert_ui_runtime::ChildReveal, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::size_limits(&self) -> pert_ui_runtime::SizeLimits
+pub fn pert_ui_runtime::FileDialog::stacks_children(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::tab_navigation(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::FocusDirection, pert_ui_runtime::KeyTransition) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::tab_stop(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::take_children(&mut self) -> alloc::vec::Vec<pert_ui_runtime::Element>
+pub fn pert_ui_runtime::FileDialog::text_command(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::TextCommand) -> core::result::Result<pert_ui_runtime::TextCommandOutcome, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::text_input(&mut self, &mut pert_ui_runtime::EventContext, &str) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::text_input_state(&self) -> core::option::Option<pert_ui_runtime::TextInputState>
+pub fn pert_ui_runtime::FileDialog::text_key_event(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::CommandKeyInput, pert_ui_runtime::KeyTransition, &pert_ui_runtime::KeyboardState) -> core::result::Result<pert_ui_runtime::TextKeyOutcome, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::text_preedit(&mut self, &mut pert_ui_runtime::EventContext, &pert_ui_runtime::TextPreedit) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::timer_elapsed(&mut self, &mut pert_ui_runtime::EventContext) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::try_content_rows(&self) -> core::result::Result<core::option::Option<alloc::rc::Rc<dyn pert_ui_runtime::ContentRows>>, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::unmounted(&mut self)
+pub fn pert_ui_runtime::FileDialog::update(&mut self, &mut pert_ui_runtime::UpdateContext) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::visibility_changed(&mut self, bool)
+pub fn pert_ui_runtime::FileDialog::workspace_state(&self) -> core::result::Result<core::option::Option<pert_ui_runtime::ViewState>, pert_ui_runtime::WorkspaceError>
+pub fn pert_ui_runtime::FileDialog::workspace_state_with_children(&self, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<core::option::Option<pert_ui_runtime::ViewState>, pert_ui_runtime::WorkspaceError>
+impl !core::marker::Freeze for pert_ui_runtime::FileDialog
+impl !core::marker::Send for pert_ui_runtime::FileDialog
+impl !core::marker::Sync for pert_ui_runtime::FileDialog
+impl core::marker::Unpin for pert_ui_runtime::FileDialog
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileDialog
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileDialog
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileDialog
+pub struct pert_ui_runtime::FileDialogController(_)
+impl pert_ui_runtime::FileDialogController
+pub fn pert_ui_runtime::FileDialogController::accept(&self) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialogController::cancel(&self) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialogController::current(&self) -> pert_ui_runtime::ReadSignal<std::path::PathBuf>
+pub fn pert_ui_runtime::FileDialogController::deliver(&self, pert_ui_runtime::DirectoryResponse) -> core::result::Result<pert_ui_runtime::ListingDelivery, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialogController::new(&impl pert_ui_runtime::StateOwner, impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::Into<std::path::PathBuf>>, impl core::ops::function::FnMut(pert_ui_runtime::DirectoryRequest) + 'static) -> core::result::Result<Self, pert_ui_runtime::FileDialogError>
+pub fn pert_ui_runtime::FileDialogController::open(&self, pert_ui_runtime::FileDialogRequest) -> core::result::Result<(), pert_ui_runtime::FileDialogError>
+pub fn pert_ui_runtime::FileDialogController::status(&self) -> pert_ui_runtime::ReadSignal<pert_ui_runtime::FileDialogStatus>
+pub fn pert_ui_runtime::FileDialogController::take_outcome(&self) -> core::result::Result<core::option::Option<pert_ui_runtime::FileDialogOutcome>, pert_ui_runtime::RuntimeError>
+impl core::clone::Clone for pert_ui_runtime::FileDialogController
+pub fn pert_ui_runtime::FileDialogController::clone(&self) -> Self
+impl core::fmt::Debug for pert_ui_runtime::FileDialogController
+pub fn pert_ui_runtime::FileDialogController::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for pert_ui_runtime::FileDialogController
+impl !core::marker::Send for pert_ui_runtime::FileDialogController
+impl !core::marker::Sync for pert_ui_runtime::FileDialogController
+impl core::marker::Unpin for pert_ui_runtime::FileDialogController
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileDialogController
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileDialogController
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileDialogController
+pub struct pert_ui_runtime::FileDialogRequest
+impl pert_ui_runtime::FileDialogRequest
+pub const pert_ui_runtime::FileDialogRequest::MAX_KEY_CHARS: usize
+pub fn pert_ui_runtime::FileDialogRequest::accept_label(self, impl core::convert::Into<alloc::string::String>) -> Self
+pub fn pert_ui_runtime::FileDialogRequest::accept_text(&self) -> core::option::Option<&str>
+pub fn pert_ui_runtime::FileDialogRequest::append_extension(self, bool) -> Self
+pub fn pert_ui_runtime::FileDialogRequest::appends_extension(&self) -> bool
+pub fn pert_ui_runtime::FileDialogRequest::context(self, impl core::convert::Into<alloc::string::String>) -> core::result::Result<Self, pert_ui_runtime::FileDialogError>
+pub fn pert_ui_runtime::FileDialogRequest::context_key(&self) -> core::option::Option<&str>
+pub fn pert_ui_runtime::FileDialogRequest::filter_list(&self) -> &[pert_ui_runtime::FileFilter]
+pub fn pert_ui_runtime::FileDialogRequest::filters(self, impl core::iter::traits::collect::IntoIterator<Item = pert_ui_runtime::FileFilter>) -> core::result::Result<Self, pert_ui_runtime::FileDialogError>
+pub fn pert_ui_runtime::FileDialogRequest::mode(&self) -> pert_ui_runtime::FileDialogMode
+pub fn pert_ui_runtime::FileDialogRequest::name(&self) -> &str
+pub fn pert_ui_runtime::FileDialogRequest::new(pert_ui_runtime::FileDialogMode) -> Self
+pub fn pert_ui_runtime::FileDialogRequest::start(&self) -> core::option::Option<&std::path::Path>
+pub fn pert_ui_runtime::FileDialogRequest::start_folder(self, impl core::convert::Into<std::path::PathBuf>) -> Self
+pub fn pert_ui_runtime::FileDialogRequest::suggested_name(self, impl core::convert::Into<alloc::string::String>) -> core::result::Result<Self, pert_ui_runtime::FileDialogError>
+pub fn pert_ui_runtime::FileDialogRequest::title(self, impl core::convert::Into<alloc::string::String>) -> Self
+pub fn pert_ui_runtime::FileDialogRequest::title_text(&self) -> core::option::Option<&str>
+impl core::clone::Clone for pert_ui_runtime::FileDialogRequest
+pub fn pert_ui_runtime::FileDialogRequest::clone(&self) -> Self
+impl core::cmp::PartialEq for pert_ui_runtime::FileDialogRequest
+pub fn pert_ui_runtime::FileDialogRequest::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FileDialogRequest
+pub fn pert_ui_runtime::FileDialogRequest::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FileDialogRequest
+impl core::marker::Freeze for pert_ui_runtime::FileDialogRequest
+impl core::marker::Send for pert_ui_runtime::FileDialogRequest
+impl core::marker::Sync for pert_ui_runtime::FileDialogRequest
+impl core::marker::Unpin for pert_ui_runtime::FileDialogRequest
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileDialogRequest
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileDialogRequest
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileDialogRequest
+pub struct pert_ui_runtime::FileDialogSelection
+impl pert_ui_runtime::FileDialogSelection
+pub fn pert_ui_runtime::FileDialogSelection::filter(&self) -> core::option::Option<&str>
+pub fn pert_ui_runtime::FileDialogSelection::into_paths(self) -> alloc::vec::Vec<std::path::PathBuf>
+pub fn pert_ui_runtime::FileDialogSelection::paths(&self) -> &[std::path::PathBuf]
+impl core::clone::Clone for pert_ui_runtime::FileDialogSelection
+pub fn pert_ui_runtime::FileDialogSelection::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::FileDialogSelection
+impl core::cmp::PartialEq for pert_ui_runtime::FileDialogSelection
+pub fn pert_ui_runtime::FileDialogSelection::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FileDialogSelection
+pub fn pert_ui_runtime::FileDialogSelection::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FileDialogSelection
+impl core::marker::Freeze for pert_ui_runtime::FileDialogSelection
+impl core::marker::Send for pert_ui_runtime::FileDialogSelection
+impl core::marker::Sync for pert_ui_runtime::FileDialogSelection
+impl core::marker::Unpin for pert_ui_runtime::FileDialogSelection
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileDialogSelection
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileDialogSelection
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileDialogSelection
+pub struct pert_ui_runtime::FileFilter
+impl pert_ui_runtime::FileFilter
+pub fn pert_ui_runtime::FileFilter::all(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<alloc::string::String>) -> core::result::Result<Self, pert_ui_runtime::FileDialogError>
+pub fn pert_ui_runtime::FileFilter::extensions(&self) -> &[alloc::string::String]
+pub fn pert_ui_runtime::FileFilter::id(&self) -> &str
+pub fn pert_ui_runtime::FileFilter::label(&self) -> &str
+pub fn pert_ui_runtime::FileFilter::matches(&self, &std::ffi::os_str::OsStr) -> bool
+pub fn pert_ui_runtime::FileFilter::new(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<alloc::string::String>, impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::Into<alloc::string::String>>) -> core::result::Result<Self, pert_ui_runtime::FileDialogError>
+impl core::clone::Clone for pert_ui_runtime::FileFilter
+pub fn pert_ui_runtime::FileFilter::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::FileFilter
+impl core::cmp::PartialEq for pert_ui_runtime::FileFilter
+pub fn pert_ui_runtime::FileFilter::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FileFilter
+pub fn pert_ui_runtime::FileFilter::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FileFilter
+impl core::marker::Freeze for pert_ui_runtime::FileFilter
+impl core::marker::Send for pert_ui_runtime::FileFilter
+impl core::marker::Sync for pert_ui_runtime::FileFilter
+impl core::marker::Unpin for pert_ui_runtime::FileFilter
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileFilter
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileFilter
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileFilter
 pub struct pert_ui_runtime::FilterCounts
 pub pert_ui_runtime::FilterCounts::shown: usize
 pub pert_ui_runtime::FilterCounts::total: usize
@@ -35969,11 +36679,12 @@ impl pert_ui_runtime::ListSelection
 pub fn pert_ui_runtime::ListSelection::active(&self) -> pert_ui_runtime::ReadSignal<core::option::Option<alloc::string::String>>
 pub fn pert_ui_runtime::ListSelection::clear(&self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::ListSelection::is_selected(&self, &str) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
-pub const fn pert_ui_runtime::ListSelection::mode(&self) -> pert_ui_runtime::SelectionMode
+pub fn pert_ui_runtime::ListSelection::mode(&self) -> pert_ui_runtime::SelectionMode
 pub fn pert_ui_runtime::ListSelection::new(&impl pert_ui_runtime::StateOwner, pert_ui_runtime::SelectionMode) -> Self
 pub fn pert_ui_runtime::ListSelection::select(&self, impl core::iter::traits::collect::IntoIterator<Item = alloc::string::String>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::ListSelection::selected(&self) -> pert_ui_runtime::ReadSignal<alloc::rc::Rc<alloc::collections::btree::set::BTreeSet<alloc::string::String>>>
 pub fn pert_ui_runtime::ListSelection::set_active(&self, core::option::Option<alloc::string::String>) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::ListSelection::set_mode(&self, pert_ui_runtime::SelectionMode) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 impl core::clone::Clone for pert_ui_runtime::ListSelection
 pub fn pert_ui_runtime::ListSelection::clone(&self) -> Self
 impl core::fmt::Debug for pert_ui_runtime::ListSelection
@@ -43609,6 +44320,70 @@ pub fn pert_ui_runtime::FileBrowser::update(&mut self, &mut pert_ui_runtime::Upd
 pub fn pert_ui_runtime::FileBrowser::visibility_changed(&mut self, bool)
 pub fn pert_ui_runtime::FileBrowser::workspace_state(&self) -> core::result::Result<core::option::Option<pert_ui_runtime::ViewState>, pert_ui_runtime::WorkspaceError>
 pub fn pert_ui_runtime::FileBrowser::workspace_state_with_children(&self, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<core::option::Option<pert_ui_runtime::ViewState>, pert_ui_runtime::WorkspaceError>
+impl pert_ui_runtime::Component for pert_ui_runtime::FileDialog
+pub fn pert_ui_runtime::FileDialog::arrange(&self, &mut pert_ui_runtime::ArrangeContext<'_>, pert_ui_runtime::Size) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::can_reveal(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::cancel_input(&mut self, &mut pert_ui_runtime::EventContext)
+pub fn pert_ui_runtime::FileDialog::check_description(&self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::child_redocked(&mut self, &mut pert_ui_runtime::EventContext, &pert_ui_runtime::WidgetId)
+pub fn pert_ui_runtime::FileDialog::child_stacking_priority(&self, &str) -> i32
+pub fn pert_ui_runtime::FileDialog::child_surface(&self, &str) -> core::option::Option<pert_ui_runtime::SurfaceKind>
+pub fn pert_ui_runtime::FileDialog::child_transform(&self) -> pert_ui_runtime::ViewTransform
+pub fn pert_ui_runtime::FileDialog::child_visible(&self, &str) -> bool
+pub fn pert_ui_runtime::FileDialog::clips_children(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::command_target(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::conceals_input(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::content_rows(&self) -> core::option::Option<alloc::rc::Rc<dyn pert_ui_runtime::ContentRows>>
+pub fn pert_ui_runtime::FileDialog::cursor(&self, pert_ui_runtime::Point) -> core::option::Option<pert_ui_runtime::CursorIcon>
+pub fn pert_ui_runtime::FileDialog::deliver_notifications(&mut self, &mut pert_ui_runtime::EventContext) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::descendant_tab_stops(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::dismiss_surface(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::SurfaceDismissal) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::drag_event(&mut self, &mut pert_ui_runtime::EventContext, &pert_ui_runtime::DragEvent<'_>) -> core::result::Result<pert_ui_runtime::DropResponse, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::drag_finished(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::DragOutcome) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::fills_row_height(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::focus_gained(&mut self, &mut pert_ui_runtime::EventContext)
+pub fn pert_ui_runtime::FileDialog::focus_lost(&mut self, &mut pert_ui_runtime::EventContext) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::focus_siblings_on_removal(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::focus_within_changed(&mut self, &mut pert_ui_runtime::EventContext, bool) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::focusable(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::hit_test(&self, pert_ui_runtime::Point) -> bool
+pub fn pert_ui_runtime::FileDialog::hit_test_foreground(&self, pert_ui_runtime::Point) -> bool
+pub fn pert_ui_runtime::FileDialog::hover_changed(&mut self, &mut pert_ui_runtime::EventContext, bool)
+pub fn pert_ui_runtime::FileDialog::input_reset(&mut self)
+pub fn pert_ui_runtime::FileDialog::inspect(&self) -> pert_ui_runtime::ComponentDetails
+pub fn pert_ui_runtime::FileDialog::key_input(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::KeyEvent, &pert_ui_runtime::KeyboardState) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::keyboard_event(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::KeyEvent, &pert_ui_runtime::KeyboardState) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::layout_position(&self) -> pert_ui_runtime::Point
+pub fn pert_ui_runtime::FileDialog::measure(&self, &pert_ui_runtime::MeasureContext<'_>, pert_ui_runtime::Constraints) -> core::result::Result<pert_ui_runtime::Size, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::measure_limits(&self, &pert_ui_runtime::MeasureContext<'_>) -> core::result::Result<pert_ui_runtime::SizeLimits, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::mounted(&mut self)
+pub fn pert_ui_runtime::FileDialog::paint(&self, &mut pert_ui_runtime::Painter) -> core::result::Result<(), pert_ui_runtime::DrawError>
+pub fn pert_ui_runtime::FileDialog::paint_foreground(&self, &mut pert_ui_runtime::Painter) -> core::result::Result<(), pert_ui_runtime::DrawError>
+pub fn pert_ui_runtime::FileDialog::pointer_input(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::PointerEvent) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::receives_unfocused_keys(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::reconcile(&mut self, Self) -> core::option::Option<pert_ui_runtime::Invalidation>
+pub fn pert_ui_runtime::FileDialog::restore_workspace_state(&mut self, &pert_ui_runtime::ViewState) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
+pub fn pert_ui_runtime::FileDialog::restore_workspace_state_with_children(&mut self, &pert_ui_runtime::ViewState, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<pert_ui_runtime::Invalidation, pert_ui_runtime::RestoreRejection>
+pub fn pert_ui_runtime::FileDialog::retain_initial_children(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::reveal(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::Rect) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::reveal_child(&mut self, &mut pert_ui_runtime::EventContext, &str) -> core::result::Result<pert_ui_runtime::ChildReveal, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::size_limits(&self) -> pert_ui_runtime::SizeLimits
+pub fn pert_ui_runtime::FileDialog::stacks_children(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::tab_navigation(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::FocusDirection, pert_ui_runtime::KeyTransition) -> core::result::Result<pert_ui_runtime::InputOutcome, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::tab_stop(&self) -> bool
+pub fn pert_ui_runtime::FileDialog::take_children(&mut self) -> alloc::vec::Vec<pert_ui_runtime::Element>
+pub fn pert_ui_runtime::FileDialog::text_command(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::TextCommand) -> core::result::Result<pert_ui_runtime::TextCommandOutcome, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::text_input(&mut self, &mut pert_ui_runtime::EventContext, &str) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::text_input_state(&self) -> core::option::Option<pert_ui_runtime::TextInputState>
+pub fn pert_ui_runtime::FileDialog::text_key_event(&mut self, &mut pert_ui_runtime::EventContext, pert_ui_runtime::CommandKeyInput, pert_ui_runtime::KeyTransition, &pert_ui_runtime::KeyboardState) -> core::result::Result<pert_ui_runtime::TextKeyOutcome, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::text_preedit(&mut self, &mut pert_ui_runtime::EventContext, &pert_ui_runtime::TextPreedit) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::timer_elapsed(&mut self, &mut pert_ui_runtime::EventContext) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::try_content_rows(&self) -> core::result::Result<core::option::Option<alloc::rc::Rc<dyn pert_ui_runtime::ContentRows>>, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::unmounted(&mut self)
+pub fn pert_ui_runtime::FileDialog::update(&mut self, &mut pert_ui_runtime::UpdateContext) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialog::visibility_changed(&mut self, bool)
+pub fn pert_ui_runtime::FileDialog::workspace_state(&self) -> core::result::Result<core::option::Option<pert_ui_runtime::ViewState>, pert_ui_runtime::WorkspaceError>
+pub fn pert_ui_runtime::FileDialog::workspace_state_with_children(&self, &[pert_ui_runtime::ChildInfo]) -> core::result::Result<core::option::Option<pert_ui_runtime::ViewState>, pert_ui_runtime::WorkspaceError>
 impl pert_ui_runtime::Component for pert_ui_runtime::Form
 pub fn pert_ui_runtime::Form::arrange(&self, &mut pert_ui_runtime::ArrangeContext<'_>, pert_ui_runtime::Size) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::Form::can_reveal(&self) -> bool

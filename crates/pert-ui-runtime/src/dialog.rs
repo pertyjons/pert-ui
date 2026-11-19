@@ -185,6 +185,10 @@ impl DialogController {
 /// `name`, use `Driver::find(&owner, &["dialog", "form", "name"])`.
 /// Finding hidden content does not open the controller. See [`DialogController`]
 /// for starting a session and consuming its outcome.
+///
+/// The `dialog` segment is stable: content that has workspace state, such as
+/// a split position, is captured and restored under it, whether or not the
+/// dialog is open.
 #[must_use]
 pub struct Dialog {
     state: DialogController,
@@ -291,6 +295,10 @@ impl Component for Dialog {
             // dropping it releases nothing.
             std::mem::swap(&mut self.state, &mut next.state);
             self.claim();
+            // The adopted controller's session is a new one here: it is
+            // admitted with this description's modality, not the old one's.
+            self.shown = false;
+            self.kind = next.described;
             invalidation = Some(Invalidation::Layout);
         }
         if self.described != next.described {
@@ -383,6 +391,10 @@ impl Component for Dialog {
         _: &mut EventContext,
         reason: SurfaceDismissal,
     ) -> Result<(), RuntimeError> {
+        // A mount that another live owner keeps out has no session to end.
+        if !self.owns() {
+            return Ok(());
+        }
         if matches!(
             reason,
             SurfaceDismissal::OutsidePress

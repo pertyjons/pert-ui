@@ -5,6 +5,37 @@ needs: additions, behavior changes, breaking changes with their replacement,
 and notable fixes. The detailed per-version entries up to 0.3.101 are in Git
 history (this file at commit f5fde76).
 
+## 0.3.123 (2026-11-19): File dialog in the window
+
+- Added: `FileDialog`, a file dialog the library draws over `FileBrowser`,
+  with `FileDialogController`, `FileDialogRequest`, `FileDialogMode`,
+  `FileFilter`, `FileDialogOutcome`, `FileDialogSelection`,
+  `FileDialogFailure`, `FileDialogStatus` and `FileDialogError`. One
+  controller opens sessions for one file, several files, a folder or a name
+  to save under; `FileDialog::in_window` and `FileDialog::in_view` present it
+  inside the owner's window. The outcome stays with the controller until
+  `take_outcome`, or `FileDialog::on_outcome` hands it to the application
+  when the session ends. A save over a listed file asks first. The host still does
+  all file I/O. It makes composing `Dialog` and `FileBrowser` by hand the
+  advanced path; nothing is retired.
+- Added: `FileBrowserController::new_idle`, which requests nothing until it
+  is navigated; `set_entry_predicate` and `clear_entry_predicate`, which hide
+  entries of the entry list; `listing` and `shown_entries`, with
+  `CurrentListing` and `EntryList`, for the shown folder's state and the
+  entries the list shows in display order.
+- Added: `ListSelection::set_mode`, which changes the mode for every clone.
+- Breaking: `ListSelection::mode` is no longer `const`; call it at run time.
+- Added: `StringRole` and `UiMessage` entries for the file dialog's texts.
+- Fixed: a second `Dialog` mounted on a `DialogController` another mount
+  owns no longer ends that owner's open session when it is hidden or removed.
+- Fixed: a `Dialog` described with another controller whose session is
+  already open admits that session with the new description's modality
+  instead of keeping the replaced session's.
+- `Dialog` documents that its `dialog` segment is part of the workspace path
+  of content with workspace state.
+- `FileBrowserController::selected_paths` documents that its order is the
+  row keys', not display order.
+
 ## 0.3.122 (2026-11-19): Scrim role, fills on the frame's pixels, editor limits
 
 - Added: `ColorRole::Scrim`, the veil a modal `Dialog` and a modal quick

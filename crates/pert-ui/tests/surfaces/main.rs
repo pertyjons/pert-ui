@@ -11,6 +11,7 @@ mod support;
 mod deferral;
 mod detach_permissions;
 mod drag_and_drop;
+mod file_dialog;
 mod geometry_callbacks;
 mod menu_changes;
 mod menus;

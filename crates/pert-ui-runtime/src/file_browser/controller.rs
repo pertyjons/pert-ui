@@ -1,8 +1,8 @@
 //! The browser's state: navigation, listings, requests and keys.
 use super::view::{EntryRow, FolderRow, PlaceholderText, placeholder};
 use super::{
-    DirectoryEntry, DirectoryRequest, DirectoryResponse, FileBrowserError, ListingDelivery,
-    ListingError,
+    CurrentListing, DirectoryEntry, DirectoryRequest, DirectoryResponse, EntryList,
+    FileBrowserError, ListingDelivery, ListingError,
 };
 use crate::{
     EventContext, ListItems, ListSelection, ListSource, ReadSignal, RequestTracker, RuntimeError,
@@ -15,6 +15,16 @@ use std::rc::Rc;
 
 type RequestFn = Box<dyn FnMut(DirectoryRequest)>;
 type OpenFn = Box<dyn FnMut(&mut EventContext, &DirectoryEntry) -> Result<(), RuntimeError>>;
+type PredicateFn = Rc<dyn Fn(&DirectoryEntry) -> bool>;
+/// The installed entry predicate, shared with the entry derivation.
+type SharedPredicate = Rc<RefCell<Option<PredicateFn>>>;
+
+/// The entry list's rows and the entries they show, from one evaluation.
+#[derive(Clone, PartialEq)]
+struct EntryView {
+    source: ListSource,
+    shown: EntryList,
+}
 
 /// Row keys for paths: each path the browser has met gets a number once, and
 /// its key is `p` and that number. A key therefore never depends on how a
@@ -107,12 +117,21 @@ struct EntryCache {
     directory: PathBuf,
     listing: Option<Listing>,
     query: String,
-    source: ListSource,
+    /// The predicate revision the rows were filtered under.
+    revision: u64,
+    view: EntryView,
 }
 impl EntryCache {
-    fn matches(&self, directory: &Path, listing: Option<&Listing>, query: &str) -> bool {
+    fn matches(
+        &self,
+        directory: &Path,
+        listing: Option<&Listing>,
+        query: &str,
+        revision: u64,
+    ) -> bool {
         self.directory == directory
             && self.query == query
+            && self.revision == revision
             && match (&self.listing, listing) {
                 (None, None) => true,
                 (Some(Listing::Failed(a)), Some(Listing::Failed(b))) => a == b,
@@ -269,10 +288,11 @@ fn entries(
     directory: &Path,
     listings: &Listings,
     query: &str,
+    predicate: Option<&PredicateFn>,
     paths: &SharedPaths,
     activate: &Rc<Hooks>,
     texts: &Texts,
-) -> ListSource {
+) -> EntryView {
     let placeholder =
         |key, text: PlaceholderText, error: Option<&ListingError>| EntryLine::Placeholder {
             key,
@@ -280,6 +300,7 @@ fn entries(
             error: error.cloned(),
         };
     let bound = |text: &ReadSignal<String>| PlaceholderText::Bound(text.clone());
+    let mut shown = EntryList::default();
     let lines = match listings.0.get(directory) {
         None => vec![placeholder("loading", bound(&texts.loading), None)],
         Some(Listing::Failed(error)) => vec![placeholder(
@@ -289,20 +310,32 @@ fn entries(
         )],
         Some(Listing::Loaded { entries, .. }) => {
             let needle = query.trim().to_lowercase();
-            let mut paths = paths.borrow_mut();
-            let lines: Vec<_> = entries
+            // The predicate is the application's code, so it runs before the
+            // path table is borrowed.
+            let passing: Vec<DirectoryEntry> = entries
                 .iter()
                 .filter(|entry| {
-                    needle.is_empty()
-                        || entry
-                            .name
-                            .to_string_lossy()
-                            .to_lowercase()
-                            .contains(&needle)
+                    predicate.is_none_or(|passes| passes(entry))
+                        && (needle.is_empty()
+                            || entry
+                                .name
+                                .to_string_lossy()
+                                .to_lowercase()
+                                .contains(&needle))
                 })
+                .cloned()
+                .collect();
+            shown = if passing.len() == entries.len() {
+                EntryList(entries.clone())
+            } else {
+                EntryList(passing.iter().cloned().collect())
+            };
+            let mut paths = paths.borrow_mut();
+            let lines: Vec<_> = passing
+                .into_iter()
                 .map(|entry| EntryLine::Entry {
                     key: paths.key(&entry.path),
-                    entry: entry.clone(),
+                    entry,
                 })
                 .collect();
             if lines.is_empty() && entries.is_empty() {
@@ -325,11 +358,14 @@ fn entries(
             (key, index)
         })
         .collect();
-    ListSource::new(Entries {
-        lines,
-        index,
-        activate: activate.clone(),
-    })
+    EntryView {
+        source: ListSource::new(Entries {
+            lines,
+            index,
+            activate: activate.clone(),
+        }),
+        shown,
+    }
 }
 
 /// What a row calls back into when it is activated. The rows of both lists
@@ -391,6 +427,11 @@ pub(super) struct Inner {
     tree: TreeController,
     selection: ListSelection,
     entries: ReadSignal<ListSource>,
+    shown: ReadSignal<EntryList>,
+    listing: ReadSignal<CurrentListing>,
+    predicate: SharedPredicate,
+    /// Advances when a predicate is installed or cleared.
+    predicate_revision: Signal<u64>,
     hooks: Rc<Hooks>,
     wanted: Rc<RefCell<BTreeSet<PathBuf>>>,
     /// The latest request for each directory still wanted, its generation and
@@ -515,6 +556,27 @@ impl FileBrowserController {
         roots: impl IntoIterator<Item = impl Into<PathBuf>>,
         request: impl FnMut(DirectoryRequest) + 'static,
     ) -> Result<Self, FileBrowserError> {
+        let controller = Self::new_idle(ui, selection, roots, request)?;
+        controller.refresh()?;
+        Ok(controller)
+    }
+
+    /// Creates a controller as [`Self::new`] does, but asks the host for
+    /// nothing yet: for a browser that is built before it is shown, such as
+    /// one inside a dialog. It shows the first root as loading
+    /// ([`Self::listing`] reports [`CurrentListing::Loading`]) until the
+    /// first [`Self::navigate`] or [`Self::refresh`] requests a listing; a
+    /// mounted browser also requests a folder its tree shows expanded, which
+    /// no folder is at first.
+    ///
+    /// # Errors
+    /// Same as [`Self::new`].
+    pub fn new_idle(
+        ui: &impl crate::StateOwner,
+        selection: ListSelection,
+        roots: impl IntoIterator<Item = impl Into<PathBuf>>,
+        request: impl FnMut(DirectoryRequest) + 'static,
+    ) -> Result<Self, FileBrowserError> {
         let roots: Vec<PathBuf> = roots.into_iter().map(Into::into).collect();
         let first = roots.first().cloned().ok_or(FileBrowserError::NoRoots)?;
         for (index, root) in roots.iter().enumerate() {
@@ -560,25 +622,51 @@ impl FileBrowserController {
         )?;
         let (row_paths, row_hooks, row_texts) = (paths.clone(), hooks.clone(), texts.clone());
         let entry_cache: RefCell<Option<EntryCache>> = RefCell::new(None);
-        let entries = ReadSignal::combine(
-            (&current, &listings, &filter),
-            move |(path, listings, query)| {
+        let predicate = SharedPredicate::default();
+        let predicate_revision = ui.signal(0_u64);
+        let row_predicate = predicate.clone();
+        let view = ReadSignal::combine(
+            (&current, &listings, &filter, &predicate_revision),
+            move |(path, listings, query, revision)| {
                 let listing = listings.0.get(path);
                 if let Some(previous) = entry_cache.borrow().as_ref()
-                    && previous.matches(path, listing, query)
+                    && previous.matches(path, listing, query, *revision)
                 {
-                    return previous.source.clone();
+                    return previous.view.clone();
                 }
-                let source = entries(path, listings, query, &row_paths, &row_hooks, &row_texts);
+                // Cloned out, so the predicate runs without the cell borrowed.
+                let passes = row_predicate.borrow().clone();
+                let view = entries(
+                    path,
+                    listings,
+                    query,
+                    passes.as_ref(),
+                    &row_paths,
+                    &row_hooks,
+                    &row_texts,
+                );
                 *entry_cache.borrow_mut() = Some(EntryCache {
                     directory: path.clone(),
                     listing: listing.cloned(),
                     query: query.clone(),
-                    source: source.clone(),
+                    revision: *revision,
+                    view: view.clone(),
                 });
-                source
+                view
             },
         )?;
+        let entries = view.map(|view| view.source.clone())?;
+        let shown = view.map(|view| view.shown.clone())?;
+        let listing =
+            ReadSignal::combine((&current, &listings), |(path, listings)| {
+                match listings.0.get(path) {
+                    None => CurrentListing::Loading,
+                    Some(Listing::Loaded { entries, .. }) => {
+                        CurrentListing::Loaded(EntryList(entries.clone()))
+                    }
+                    Some(Listing::Failed(error)) => CurrentListing::Failed(error.clone()),
+                }
+            })?;
         let controller = Self(Rc::new(Inner {
             settings: ui.ui_settings(),
             texts,
@@ -591,6 +679,10 @@ impl FileBrowserController {
             tree,
             selection,
             entries,
+            shown,
+            listing,
+            predicate,
+            predicate_revision,
             hooks,
             wanted,
             requests: RequestTracker::new(),
@@ -600,8 +692,6 @@ impl FileBrowserController {
         }));
         *controller.0.hooks.controller.borrow_mut() = Rc::downgrade(&controller.0);
         controller.select_in_tree(&first)?;
-        controller.request(first)?;
-        controller.dispatch()?;
         Ok(controller)
     }
 
@@ -647,12 +737,73 @@ impl FileBrowserController {
         self.0.folder_filter.clone()
     }
 
+    /// The state of the current folder's listing: loading, loaded with every
+    /// entry in display order, whatever the filters hide, or failed.
+    ///
+    /// A listing the browser already holds stays `Loaded` or `Failed` while a
+    /// newer request for the folder is pending. The loaded entries compare by
+    /// allocation, so a response for another folder changes nothing here.
+    #[must_use]
+    pub fn listing(&self) -> ReadSignal<CurrentListing> {
+        self.0.listing.clone()
+    }
+    /// The entries the entry list shows, in display order: the current
+    /// folder's entries that pass the entry predicate and the filter text.
+    /// Empty while the folder is loading or failed, when it is empty and when
+    /// nothing matches; placeholder rows are not entries.
+    ///
+    /// Use it with [`Self::selection`] and [`Self::path_of`] to read a
+    /// selection in the order the user sees it.
+    #[must_use]
+    pub fn shown_entries(&self) -> ReadSignal<EntryList> {
+        self.0.shown.clone()
+    }
+    /// Hides the entries of the entry list that `predicate` rejects, such as
+    /// files of a type the application cannot open. The folder tree is not
+    /// affected. It replaces an earlier predicate; the filter text applies on
+    /// top of it, and the selection is left as it is, so a selected entry may
+    /// become hidden ([`Self::shown_entries`] has the visible ones).
+    ///
+    /// The predicate must be pure: its answer may depend on the entry alone.
+    /// The list is filtered again when a predicate is installed or cleared,
+    /// the folder, its listing or the filter text changes, not when a value
+    /// the predicate captured changes; install it again for that. It runs
+    /// while derived values settle and must not call this controller or write
+    /// signals.
+    ///
+    /// # Errors
+    /// The errors of [`Signal::set`]: `Closed` after the runtime shut down,
+    /// a phase write error such as `WriteDuringUpdate`, or `BorrowConflict`.
+    /// The earlier predicate then stays.
+    pub fn set_entry_predicate(
+        &self,
+        predicate: impl Fn(&DirectoryEntry) -> bool + 'static,
+    ) -> Result<(), RuntimeError> {
+        self.replace_predicate(Some(Rc::new(predicate)))
+    }
+    /// Removes the entry predicate, so the entry list shows every entry the
+    /// filter text matches.
+    ///
+    /// # Errors
+    /// Same as [`Self::set_entry_predicate`].
+    pub fn clear_entry_predicate(&self) -> Result<(), RuntimeError> {
+        self.replace_predicate(None)
+    }
+    fn replace_predicate(&self, predicate: Option<PredicateFn>) -> Result<(), RuntimeError> {
+        let revision = self.0.predicate_revision.get()?.wrapping_add(1);
+        // The revision is written first: when it is refused, nothing changed.
+        self.0.predicate_revision.set(revision)?;
+        *self.0.predicate.borrow_mut() = predicate;
+        Ok(())
+    }
     /// The entry list's selection, by row key; see [`Self::path_of`].
     pub fn selection(&self) -> ListSelection {
         self.0.selection.clone()
     }
 
-    /// The paths of the selected entries, in key order: the active entry in
+    /// The paths of the selected entries, in the order of their row keys,
+    /// which is neither display order nor the order they were selected in
+    /// (see [`Self::shown_entries`] for display order): the active entry in
     /// [`SelectionMode::Single`], the selected set in
     /// [`SelectionMode::Multiple`]. Placeholder rows, such as the loading row,
     /// have no path and are left out.
@@ -1058,6 +1209,9 @@ mod tests {
             .unwrap();
         let request = requests.borrow_mut().remove(index);
         let before = controller.entries().get().unwrap();
+        let shown = controller.shown_entries().get().unwrap();
+        let listing = controller.listing().get().unwrap();
+        assert_eq!(shown.len(), 2);
         let offered = crate::VirtualList::new(controller.entries(), 24.0).unwrap();
         let revision = offered.try_content_rows().unwrap().unwrap().revision();
         controller
@@ -1065,6 +1219,8 @@ mod tests {
             .unwrap();
         ui.flush(ui.now()).unwrap();
         assert_eq!(controller.entries().get().unwrap(), before);
+        assert_eq!(controller.shown_entries().get().unwrap(), shown);
+        assert_eq!(controller.listing().get().unwrap(), listing);
         assert_eq!(
             offered.try_content_rows().unwrap().unwrap().revision(),
             revision

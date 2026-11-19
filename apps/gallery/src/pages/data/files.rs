@@ -167,30 +167,154 @@ pub(crate) fn file_browser(ui: &mut Runtime) -> Result<Element, AppError> {
         format!("Listings applied: {applied}; stale results dropped: {stale}")
     })?;
     let refresh = controller.clone();
-    Ok(page([section(
-        "browser-section",
-        "A file browser over a host-supplied source",
+    let dialog_section = file_dialog(ui)?;
+    Ok(page([
+        section(
+            "browser-section",
+            "A file browser over a host-supplied source",
+            [
+                label(
+                    "browser-help",
+                    "The browser asks the host for each folder and shows what arrives; it never reads the disk. Expand folders in the tree or click one to open it, double-click or press Enter on an entry, filter the entries by name, filter the folder tree from the field above it (it searches only folders already listed, so it never asks for a listing), and press Backspace in a list for the parent folder. Locked fails with an error row, Latest project is a link to a folder, and Kicks has enough samples to scroll. Turn on slow listing to see loading rows, then open another folder before one arrives: its late result is dropped as stale.",
+                ),
+                toggle("slow", "Slow listing (600 ms on a thread)", &slow)?,
+                Element::new(
+                    "refresh",
+                    Button::new("Refresh", move |_| refresh.refresh()),
+                ),
+                stage(
+                    "browser-stage",
+                    360,
+                    Element::new(
+                        "library",
+                        FileBrowser::new(&controller, 24.0)?.folder_filter(true),
+                    ),
+                ),
+                Element::new("opened", Label::new(opened.read_only())),
+                Element::new("selected", Label::new(selected)),
+                Element::new("deliveries", Label::new(counted)),
+            ],
+        ),
+        dialog_section,
+    ]))
+}
+
+/// What the page says about an ended file dialog session.
+fn describe(outcome: FileDialogOutcome) -> String {
+    match outcome {
+        FileDialogOutcome::Accepted(selection) => {
+            let paths: Vec<String> = selection
+                .paths()
+                .iter()
+                .map(|path| path.to_string_lossy().into_owned())
+                .collect();
+            match selection.filter() {
+                Some(filter) => format!("Chose {} as {filter}", paths.join(", ")),
+                None => format!("Chose {}", paths.join(", ")),
+            }
+        }
+        FileDialogOutcome::Cancelled => "Cancelled".to_owned(),
+        other => format!("Ended without a choice: {other:?}"),
+    }
+}
+
+/// A file dialog over the same synthetic library, one request per button.
+fn file_dialog(ui: &mut Runtime) -> Result<Element, AppError> {
+    let slot: Rc<OnceCell<FileDialogController>> = Rc::new(OnceCell::new());
+    let backlog: Rc<RefCell<Vec<DirectoryResponse>>> = Rc::default();
+    let (target, waiting) = (slot.clone(), backlog.clone());
+    let mailbox = ui.mailbox(Capacity::new(64)?, move |response: DirectoryResponse| {
+        let Some(dialog) = target.get() else {
+            return Ok(());
+        };
+        let queued = std::mem::take(&mut *waiting.borrow_mut());
+        for response in std::iter::once(response).chain(queued) {
+            dialog.deliver(response)?;
+        }
+        Ok(())
+    })?;
+    let sender = mailbox.sender();
+    let dialog = FileDialogController::new(ui, [ROOT], move |request| {
+        let listing = listing(request.directory());
+        send_or_keep(&sender, &backlog, request.respond(listing));
+    })
+    .map_err(ApplicationError::new)?;
+    let _ = slot.set(dialog.clone());
+    ui.keep_alive(mailbox);
+    let report = ui.signal("Open a dialog to choose something.".to_owned());
+    let audio = || -> Result<Vec<FileFilter>, FileDialogError> {
+        Ok(vec![
+            FileFilter::new("wav", "Samples (*.wav)", ["wav"])?,
+            FileFilter::new("text", "Notes (*.txt)", ["txt"])?,
+            FileFilter::all("all", "All files")?,
+        ])
+    };
+    let opener = |key: &str, title: &str, request: FileDialogRequest| {
+        let dialog = dialog.clone();
+        Element::new(
+            key,
+            Button::new(title, move |_| match dialog.open(request.clone()) {
+                // A press while a session is open is ignored.
+                Ok(()) | Err(FileDialogError::Busy) => Ok(()),
+                Err(FileDialogError::Runtime(error)) => Err(error),
+                Err(error) => Err(ApplicationError::new(error).into()),
+            }),
+        )
+    };
+    let filters = audio().map_err(ApplicationError::new)?;
+    let buttons = Row::new([
+        opener(
+            "open-file",
+            "Open file…",
+            FileDialogRequest::new(FileDialogMode::OpenFile)
+                .filters(filters.clone())
+                .map_err(ApplicationError::new)?,
+        ),
+        opener(
+            "open-files",
+            "Open files…",
+            FileDialogRequest::new(FileDialogMode::OpenFiles)
+                .start_folder(Path::new(ROOT).join("Drums/Kicks")),
+        ),
+        opener(
+            "choose-folder",
+            "Choose folder…",
+            FileDialogRequest::new(FileDialogMode::ChooseFolder),
+        ),
+        opener(
+            "save",
+            "Save as…",
+            FileDialogRequest::new(FileDialogMode::SaveFile)
+                .title("Save notes")
+                .start_folder(Path::new(ROOT).join("Projects"))
+                // Notes first, so the suggested name completes to notes.txt.
+                .filters([filters[1].clone(), filters[0].clone(), filters[2].clone()])
+                .and_then(|request| request.suggested_name("notes"))
+                .map_err(ApplicationError::new)?,
+        ),
+    ])
+    .gap(MetricRole::ItemGap);
+    let anchor = Element::new(
+        "dialog-anchor",
+        Column::new([
+            Element::new("dialog-buttons", buttons),
+            Element::new("dialog-result", Label::new(report.read_only())),
+        ])
+        .gap(MetricRole::ItemGap),
+    );
+    Ok(section(
+        "dialog-section",
+        "A file dialog",
         [
             label(
-                "browser-help",
-                "The browser asks the host for each folder and shows what arrives; it never reads the disk. Expand folders in the tree or click one to open it, double-click or press Enter on an entry, filter the entries by name, filter the folder tree from the field above it (it searches only folders already listed, so it never asks for a listing), and press Backspace in a list for the parent folder. Locked fails with an error row, Latest project is a link to a folder, and Kicks has enough samples to scroll. Turn on slow listing to see loading rows, then open another folder before one arrives: its late result is dropped as stale.",
+                "dialog-help",
+                "Each button opens the same dialog with another request: one file of a chosen type, several files, a folder, or a name to save under. The dialog is modal to the window and hands each outcome to the page when the session ends. Save as suggests notes, which completes to the existing notes.txt, so confirming asks before replacing it; choose another type to save under another extension. damaged.bin and Old link cannot be opened and are refused in place.",
             ),
-            toggle("slow", "Slow listing (600 ms on a thread)", &slow)?,
             Element::new(
-                "refresh",
-                Button::new("Refresh", move |_| refresh.refresh()),
+                "file-dialog",
+                FileDialog::in_window(ui, &dialog, anchor)
+                    .on_outcome(move |_, outcome| report.set(describe(outcome))),
             ),
-            stage(
-                "browser-stage",
-                360,
-                Element::new(
-                    "library",
-                    FileBrowser::new(&controller, 24.0)?.folder_filter(true),
-                ),
-            ),
-            Element::new("opened", Label::new(opened.read_only())),
-            Element::new("selected", Label::new(selected)),
-            Element::new("deliveries", Label::new(counted)),
         ],
-    )]))
+    ))
 }

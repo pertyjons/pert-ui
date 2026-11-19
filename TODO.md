@@ -81,17 +81,12 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   a cheaper evaluation of strips without corners (CPU and GPU), and
   retaining encoded geometry across a pure translation, for the fill quads
   of the diagram's boxes that are encoded again when every node moves.
-- [ ] **DIALOG-01** 2026-11-19 `crates/pert-ui-runtime/src/dialog.rs`
-  `Dialog::dismiss_surface` — State and interaction contracts (one mounted
-  owner per `DialogController`): it finishes the controller's session
-  without checking that this mount owns the controller, and
-  `dismiss_owner` (`runtime/surfaces.rs`) calls it for any removed or
-  logically hidden component with a surface child. A second mounted
-  `Dialog` on the same controller, which stays closed with `DialogBusy`,
-  therefore ends the first owner's open session when it is removed or
-  hidden. Found by reading, in the Codex review of
-  `plans/file-dialog-design.md`; not reproduced by a test. Return early
-  unless `owns()`, and add the reverse of
-  `a_second_mounted_dialog_owner_is_busy_until_the_first_unmounts`
-  (`crates/pert-ui/tests/surfaces/transient_reconcile.rs`), which removes
-  only the first owner. The file dialog plan's slice 1 depends on it.
+- [ ] **LABEL-01** 2026-11-19 `crates/pert-ui-runtime/src/layout.rs`
+  `Element::with_label` with `Element::structural` — Inspection and
+  diagnostics (a composite without semantics of its own, such as a `Select`,
+  is named by its element's label through its internal part): a `Select`
+  element that is also structural leaves its control unnamed, while the same
+  element without `structural` names it. Observed in the file dialog's type
+  selector with a bound label; whether a fixed label behaves the same was
+  not checked. Either carry the label through a structural element or
+  document that `structural` drops it, with a test of both forms.

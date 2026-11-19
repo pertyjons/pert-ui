@@ -53,6 +53,7 @@ guarantee this document does not state.
   - [Stacking, hit testing and pointer refresh](#stacking-hit-testing-and-pointer-refresh)
   - [Content search hooks](#content-search-hooks)
   - [Host-loaded data](#host-loaded-data)
+  - [File dialog sessions](#file-dialog-sessions)
   - [Editor sessions](#editor-sessions)
   - [Workspace hooks](#workspace-hooks)
   - [Inspection in custom components](#inspection-in-custom-components)
@@ -202,7 +203,9 @@ that reconciles.
 Components whose data belongs to a controller (`VirtualList`, `Table`,
 `Tree`, `FileBrowser`, `ColorPicker`, `HistoryNavigator`) keep their mounted
 controller, source binding and structural options, such as a list's axis or a
-table's row height, and say so; a new key replaces them. Their permissions and
+table's row height, and say so; a new key replaces them. A `FileDialog` is the
+exception its [session rules](#file-dialog-sessions) describe: like `Dialog`,
+it adopts a description's controller. Their permissions and
 callbacks follow the new description, including removal: a collection
 described without its reorder callback, or with a fixed denial, cancels an
 armed or active gesture at the update the re-description schedules, as a
@@ -293,6 +296,10 @@ leave current presentation unchanged.
 
 A still-visible surface whose declared kind changes is admitted again under the
 new kind's conflict/cancellation/focus rules, retaining the original opener.
+
+A `Dialog` ends its controller's session only while its mount owns the
+controller. A second mount on the same controller, which stays closed and
+fails its updates with `DialogBusy`, ends nothing when it is hidden or removed.
 
 An admission that an error interrupted is retried with the surface's current
 kind. A pending ApplicationDialog blocks other windows and targetless command
@@ -812,7 +819,9 @@ selected keys: a collection observes its selection when it updates and reports
 the origin of the latest write, `User` for a click or a key on any collection
 sharing the selection and `Application` for a write through the selection or a
 controller, including a filter moving the active item off a hidden row, so writes between two updates of one collection
-arrive as one change. The two names mark that difference: `on_select` reports
+arrive as one change. `ListSelection::set_mode` changes the mode for every
+clone; narrowing to a single selection that drops keys is such an application
+write, and a mode change that alters no key is not reported. The two names mark that difference: `on_select` reports
 each settled tab change; `on_selection_change` reports a collection's bound
 selection as observed at its update, coalescing writes between updates.
 Committed geometry is observable too:
@@ -1556,6 +1565,11 @@ back to its default workspace as for any unsupported document. Layout clamps sav
 sizes to current usable bounds without rewriting the preference merely because
 the current window is smaller. The host chooses storage and I/O policy.
 
+A `Dialog`'s content is addressed under its documented `dialog` segment, which
+is therefore part of the path of content that has workspace state. It is the
+one key of the library's own in such paths; the rest of a dialog's structure
+is structural and adds none.
+
 Capture is complete or fails: a participant that cannot build its state, for
 example because a key it must record is not storable workspace text, fails
 the whole capture (and an explicit restore) with an error naming its path,
@@ -2051,6 +2065,56 @@ shows data that is loading or failed. Issuing fails with `Exhausted` after
 on this contract and reports such failures from its methods and its update
 instead of leaving a folder loading. A host must keep its own project, undo
 and persistent domain state.
+
+### File dialog sessions
+
+A `FileDialogController` owns one session at a time and wraps a
+`DialogController`, so the dialog rules for busy, owners, visibility and
+admission apply. `open` reserves the session before anything else: a refusal
+(`FileDialogError::Busy`, a phase or shutdown error) changes nothing and
+requests nothing. After the reservation the session's state is written and
+the browser navigates to the starting folder, which hands the host its listing
+request inside `open`; a failure there is not rolled back but ends the session
+as `FileDialogFailure::Start`, with the same error returned. Configuration
+(mode, texts, filters, starting folder, suggested name) belongs to the
+`FileDialogRequest` and is fixed for the session; redescribing the mounted
+`FileDialog` never changes it.
+
+A session ends once, the first ending wins, and its outcome is retained by the
+controller, independent of any mounted component, until `take_outcome`:
+`Accepted` with a selection, `Cancelled` (cancel, Escape), `Dismissed` (owner
+removed or logically hidden) or `Failed` (modal conflict, no space, or a
+failed start). The accepted selection is stored before the session is
+finished and released only when the take succeeds; a refused finish discards
+it and leaves the session open. No outcome is readable after runtime
+shutdown. A listing response never ends, accepts or moves a session: it is
+browser data under the [host-loaded data](#host-loaded-data) rules, also when
+it arrives after its session ended.
+
+Confirm is judged from what the entry list shows: an entry hidden by the type
+filter or the filter text, and a placeholder row, count as absent, and several
+files are reported in display order. Confirm is unavailable while the shown
+folder is loading or failed. Refusals (an unusable entry, a selection that is
+not all files, text that is not one file name, a name several entries share)
+are shown in place and write no outcome. A listed entry is reported by the
+path its listing delivered, unchanged; only a new save target is built, from
+the shown folder and the typed name. Saving over a listed file asks first,
+inside the dialog, with the candidate fixed when the question appears;
+`FileDialogController`'s rustdoc has the per-mode rules.
+
+With `FileDialog::on_outcome` the mounted dialog takes each ended session's
+outcome and hands it to the application after settling, once; a dialog
+removed before that call leaves the outcome with the controller, and the
+callback's failure does not bring the outcome back. A description without the
+callback removes it.
+
+A `FileDialog` described again reconciles its anchor and keeps its session.
+Described with another controller under the same key, it dismisses the mounted
+controller's open session with `OwnerRemoved` and mounts the new controller's
+content. Its content has one fixed size, which the dialog scrolls when the
+window or region is smaller. The content is mounted while the dialog is
+closed, so the browser's split position is workspace state in every state of
+the dialog; nothing of a session is captured.
 
 ### Editor sessions
 

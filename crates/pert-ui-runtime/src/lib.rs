@@ -212,11 +212,16 @@ mod color_picker;
 pub use color_picker::ColorPicker;
 mod async_source;
 pub use async_source::{RequestTicket, RequestTracker, TicketStatus};
+mod file_dialog;
+pub use file_dialog::{
+    FileDialog, FileDialogController, FileDialogError, FileDialogFailure, FileDialogMode,
+    FileDialogOutcome, FileDialogRequest, FileDialogSelection, FileDialogStatus, FileFilter,
+};
 mod file_browser;
 pub use file_browser::{
-    DirectoryEntry, DirectoryRequest, DirectoryResponse, EntryKind, FileBrowser,
-    FileBrowserController, FileBrowserError, LinkTarget, ListingDelivery, ListingError,
-    ListingErrorKind, list_directory,
+    CurrentListing, DirectoryEntry, DirectoryRequest, DirectoryResponse, EntryKind, EntryList,
+    FileBrowser, FileBrowserController, FileBrowserError, LinkTarget, ListingDelivery,
+    ListingError, ListingErrorKind, list_directory,
 };
 mod color_swatch;
 pub use color_swatch::ColorSwatch;
@@ -436,13 +441,13 @@ pub mod prelude {
     pub use crate::{
         Accordion, AlertDialog, Banner, Breadcrumb, Button, Checkbox, Chip, Collapsible,
         CollectionFilter, ColorPicker, ColorSwatch, Column, Container, ContextMenu, DecimalInput,
-        Dialog, Divider, Dynamic, Each, Field, FileBrowser, Form, Grid, Group, HistoryButtons,
-        HistoryNavigator, Image, InlineChoice, InlineDecimal, InlineInteger, InlineReadout,
-        InlineSelect, InlineText, InlineToggle, IntegerInput, Label, Link, Menu, MenuBar,
-        MultiSelect, Popover, ProgressBar, PropertyGrid, QuickPick, RadioGroup, Row, ScrollArea,
-        SearchField, SegmentedControl, Select, SelectableText, Show, Spinner, Table, Tabs,
-        TextArea, TextField, ToastHost, Toggle, Toolbar, Tooltip, Tree, View, VirtualList, Wrap,
-        ZoomView,
+        Dialog, Divider, Dynamic, Each, Field, FileBrowser, FileDialog, Form, Grid, Group,
+        HistoryButtons, HistoryNavigator, Image, InlineChoice, InlineDecimal, InlineInteger,
+        InlineReadout, InlineSelect, InlineText, InlineToggle, IntegerInput, Label, Link, Menu,
+        MenuBar, MultiSelect, Popover, ProgressBar, PropertyGrid, QuickPick, RadioGroup, Row,
+        ScrollArea, SearchField, SegmentedControl, Select, SelectableText, Show, Spinner, Table,
+        Tabs, TextArea, TextField, ToastHost, Toggle, Toolbar, Tooltip, Tree, View, VirtualList,
+        Wrap, ZoomView,
     };
     // Vocabulary: layout containers.
     #[doc(no_inline)]
@@ -486,8 +491,10 @@ pub mod prelude {
     // Vocabulary: files.
     #[doc(no_inline)]
     pub use crate::{
-        DirectoryEntry, DirectoryRequest, DirectoryResponse, EntryKind, FileBrowserController,
-        LinkTarget, ListingDelivery, ListingError, ListingErrorKind,
+        CurrentListing, DirectoryEntry, DirectoryRequest, DirectoryResponse, EntryKind,
+        FileBrowserController, FileDialogController, FileDialogError, FileDialogMode,
+        FileDialogOutcome, FileDialogRequest, FileDialogStatus, FileFilter, LinkTarget,
+        ListingDelivery, ListingError, ListingErrorKind,
     };
     // Vocabulary: navigation.
     #[doc(no_inline)]

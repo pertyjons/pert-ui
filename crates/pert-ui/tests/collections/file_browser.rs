@@ -1563,3 +1563,126 @@ fn long_placeholders_stay_on_one_line_in_narrow_rows() {
     settle(&mut failed.ui);
     assert_eq!(too_tall(&failed), [], "a long listing error fits");
 }
+
+/// A mounted browser over an idle controller, and its request log.
+fn idle() -> (
+    Runtime,
+    FileBrowserController,
+    Rc<RefCell<Vec<DirectoryRequest>>>,
+) {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(800.0, 600.0, 1.0).unwrap())
+        .unwrap();
+    let requests = Rc::new(RefCell::new(Vec::new()));
+    let queue = requests.clone();
+    let controller = FileBrowserController::new_idle(
+        &ui,
+        ListSelection::new(&ui, SelectionMode::Multiple),
+        ["/r"],
+        move |request| queue.borrow_mut().push(request),
+    )
+    .unwrap();
+    ui.mount_tree(Element::new(
+        "browser",
+        FileBrowser::new(&controller, 24.0).unwrap(),
+    ))
+    .unwrap();
+    settle(&mut ui);
+    (ui, controller, requests)
+}
+
+fn names(entries: &[DirectoryEntry]) -> Vec<String> {
+    entries
+        .iter()
+        .map(|entry| entry.name().to_string_lossy().into_owned())
+        .collect()
+}
+
+#[test]
+fn an_idle_controller_requests_nothing_until_it_is_navigated() {
+    let (mut ui, controller, requests) = idle();
+    assert!(requests.borrow().is_empty(), "mounting requests nothing");
+    assert_eq!(controller.listing().get().unwrap(), CurrentListing::Loading);
+    assert!(controller.shown_entries().get().unwrap().is_empty());
+
+    controller.navigate("/r").unwrap();
+    settle(&mut ui);
+    let request = requests.borrow_mut().remove(0);
+    assert_eq!(request.directory(), Path::new("/r"));
+    assert!(requests.borrow().is_empty());
+    controller
+        .deliver(request.respond(Ok(vec![file("/r/b.txt"), dir("/r/a")])))
+        .unwrap();
+    let CurrentListing::Loaded(entries) = controller.listing().get().unwrap() else {
+        panic!("the listing is loaded");
+    };
+    assert_eq!(names(&entries), ["a", "b.txt"], "display order");
+}
+
+#[test]
+fn a_failed_listing_is_reported_and_shows_no_entries() {
+    let (_ui, controller, requests) = idle();
+    controller.refresh().unwrap();
+    let request = requests.borrow_mut().remove(0);
+    let error = ListingError::new(ListingErrorKind::PermissionDenied, "denied");
+    controller
+        .deliver(request.respond(Err(error.clone())))
+        .unwrap();
+    assert_eq!(
+        controller.listing().get().unwrap(),
+        CurrentListing::Failed(error)
+    );
+    assert!(controller.shown_entries().get().unwrap().is_empty());
+}
+
+#[test]
+fn the_entry_predicate_hides_entries_and_a_replacement_filters_again() {
+    let (mut ui, controller, requests) = idle();
+    controller.refresh().unwrap();
+    let request = requests.borrow_mut().remove(0);
+    controller
+        .deliver(request.respond(Ok(vec![
+            dir("/r/sub"),
+            file("/r/a.txt"),
+            file("/r/b.png"),
+            file("/r/c.txt"),
+        ])))
+        .unwrap();
+    let extension = |wanted: &'static str| {
+        move |entry: &DirectoryEntry| {
+            entry.opens_as_directory()
+                || entry
+                    .path()
+                    .extension()
+                    .is_some_and(|found| found == wanted)
+        }
+    };
+    controller.set_entry_predicate(extension("txt")).unwrap();
+    settle(&mut ui);
+    let shown = controller.shown_entries();
+    assert_eq!(names(&shown.get().unwrap()), ["sub", "a.txt", "c.txt"]);
+
+    // Same folder and filter text: only the predicate changed.
+    controller.set_entry_predicate(extension("png")).unwrap();
+    assert_eq!(names(&shown.get().unwrap()), ["sub", "b.png"]);
+
+    // The filter text applies on top of the predicate.
+    controller.filter().set("b".to_owned()).unwrap();
+    assert_eq!(names(&shown.get().unwrap()), ["sub", "b.png"]);
+    controller.filter().set("png".to_owned()).unwrap();
+    assert_eq!(names(&shown.get().unwrap()), ["b.png"]);
+
+    // The unfiltered listing still has everything.
+    let CurrentListing::Loaded(all) = controller.listing().get().unwrap() else {
+        panic!("the listing is loaded");
+    };
+    assert_eq!(all.len(), 4);
+
+    controller.filter().set(String::new()).unwrap();
+    controller.clear_entry_predicate().unwrap();
+    assert_eq!(
+        shown.get().unwrap(),
+        all,
+        "unfiltered rows share the listing"
+    );
+}

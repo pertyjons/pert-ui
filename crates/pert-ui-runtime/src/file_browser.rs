@@ -204,6 +204,48 @@ impl DirectoryEntry {
     }
 }
 
+/// Directory entries in display order, shared rather than copied: what
+/// [`FileBrowserController::shown_entries`] and a loaded
+/// [`CurrentListing`] hold.
+///
+/// It dereferences to a slice. Two lists are equal when they share one
+/// allocation or are both empty, so a signal holding one does not compare
+/// entries one by one; lists built separately from equal entries are not
+/// equal.
+#[derive(Clone, Debug)]
+pub struct EntryList(pub(crate) std::rc::Rc<[DirectoryEntry]>);
+impl Default for EntryList {
+    /// An empty list.
+    fn default() -> Self {
+        Self(std::rc::Rc::from(Vec::new()))
+    }
+}
+impl PartialEq for EntryList {
+    fn eq(&self, other: &Self) -> bool {
+        std::rc::Rc::ptr_eq(&self.0, &other.0) || (self.0.is_empty() && other.0.is_empty())
+    }
+}
+impl std::ops::Deref for EntryList {
+    type Target = [DirectoryEntry];
+    fn deref(&self) -> &[DirectoryEntry] {
+        &self.0
+    }
+}
+
+/// What a [`FileBrowserController`] knows about the folder it shows, from
+/// [`FileBrowserController::listing`].
+#[derive(Clone, Debug, PartialEq)]
+#[non_exhaustive]
+pub enum CurrentListing {
+    /// No listing has arrived for the folder yet.
+    Loading,
+    /// The folder's entries in display order: directories first, each group
+    /// by name ignoring case. Filters do not apply here.
+    Loaded(EntryList),
+    /// Why the folder could not be listed.
+    Failed(ListingError),
+}
+
 /// The browser's request for the listing of one directory, handed to the
 /// host's request callback.
 ///

@@ -61,7 +61,8 @@ pub(crate) enum Gesture {
 #[derive(Clone)]
 #[must_use]
 pub struct ListSelection {
-    mode: SelectionMode,
+    /// Shared, so [`ListSelection::set_mode`] reaches every clone.
+    mode: Rc<Cell<SelectionMode>>,
     active: Signal<Option<String>>,
     selected: Signal<Rc<BTreeSet<String>>>,
     /// Where a Shift range starts; moves with every gesture that is not a range.
@@ -78,7 +79,7 @@ pub struct ListSelection {
 impl std::fmt::Debug for ListSelection {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ListSelection")
-            .field("mode", &self.mode)
+            .field("mode", &self.mode.get())
             .finish_non_exhaustive()
     }
 }
@@ -118,7 +119,7 @@ impl ListSelection {
     /// while it describes its children.
     pub fn new(ui: &impl crate::StateOwner, mode: SelectionMode) -> Self {
         Self {
-            mode,
+            mode: Rc::new(Cell::new(mode)),
             active: ui.signal(None),
             selected: ui.signal(Rc::new(BTreeSet::new())),
             anchor: Rc::new(RefCell::new(None)),
@@ -141,10 +142,61 @@ impl ListSelection {
     fn written(&self) {
         self.last.set(self.origin.get());
     }
-    /// Whether one or several items can be selected.
+    /// Whether one or several items can be selected. Clones share the mode;
+    /// [`ListSelection::set_mode`] changes it.
     #[must_use]
-    pub const fn mode(&self) -> SelectionMode {
-        self.mode
+    pub fn mode(&self) -> SelectionMode {
+        self.mode.get()
+    }
+    /// Changes how many items the selection holds, for every clone.
+    ///
+    /// Setting the mode it already has does nothing. Going to
+    /// [`SelectionMode::Single`] reduces the selected keys to the active
+    /// item, or to none without one; going to [`SelectionMode::Multiple`]
+    /// keeps them. Either way the active item becomes the anchor of the next
+    /// range. A reduction that changes the selected keys is an ordinary
+    /// selection write, which collections sharing the selection report with
+    /// [`ChangeOrigin::Application`]; a mode change that alters no key is not
+    /// a selection change and is not reported.
+    ///
+    /// Collections read the mode when they interpret a gesture or a write, so
+    /// a list that is mounted follows the change from its next gesture; a
+    /// press it has deferred to the pointer's release is interpreted under
+    /// the mode current at the release.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{ListSelection, Runtime, SelectionMode};
+    /// let ui = Runtime::new();
+    /// let selection = ListSelection::new(&ui, SelectionMode::Multiple);
+    /// selection.select(["a".to_owned(), "c".to_owned()])?;
+    /// selection.set_active(Some("c".to_owned()))?;
+    /// selection.set_mode(SelectionMode::Single)?;
+    /// assert_eq!(selection.mode(), SelectionMode::Single);
+    /// assert!(selection.is_selected("c")? && !selection.is_selected("a")?);
+    /// # Ok::<(), pert_ui::RuntimeError>(())
+    /// ```
+    ///
+    /// # Errors
+    /// Same as [`ListSelection::set_active`]. A rejected call changes neither
+    /// the mode, the signals nor the anchor.
+    pub fn set_mode(&self, mode: SelectionMode) -> Result<(), RuntimeError> {
+        // Refused phases are found first, also when nothing would change.
+        self.selected.shared().writable()?;
+        if self.mode.get() == mode {
+            return Ok(());
+        }
+        let active = self.active.get()?;
+        if mode == SelectionMode::Single {
+            let single: BTreeSet<String> = active.iter().cloned().collect();
+            if *self.selected.get()? != single {
+                self.selected.set(Rc::new(single))?;
+                self.written();
+            }
+        }
+        *self.anchor.borrow_mut() = active;
+        self.mode.set(mode);
+        Ok(())
     }
     /// The item keyboard navigation is on, if any.
     #[must_use]
@@ -177,7 +229,7 @@ impl ListSelection {
     /// from inside that phase; or `BorrowConflict`. A rejected call changes
     /// neither the signals nor the anchor.
     pub fn set_active(&self, key: Option<String>) -> Result<(), RuntimeError> {
-        if self.mode == SelectionMode::Single {
+        if self.mode.get() == SelectionMode::Single {
             self.selected.set(Rc::new(key.iter().cloned().collect()))?;
         }
         self.active.set(key.clone())?;
@@ -195,7 +247,7 @@ impl ListSelection {
     /// Same as [`ListSelection::set_active`].
     pub fn select(&self, keys: impl IntoIterator<Item = String>) -> Result<(), RuntimeError> {
         let mut keys = keys.into_iter();
-        match self.mode {
+        match self.mode.get() {
             SelectionMode::Single => self.set_active(keys.next()),
             SelectionMode::Multiple => {
                 self.selected.set(Rc::new(keys.collect()))?;
@@ -224,7 +276,7 @@ impl ListSelection {
         let Some(key) = items.key(index) else {
             return Ok(());
         };
-        let single = self.mode == SelectionMode::Single;
+        let single = self.mode.get() == SelectionMode::Single;
         match gesture {
             Gesture::Toggle if single => self.replace(key)?,
             Gesture::Toggle | Gesture::Press { toggle: true, .. } if !single => {
@@ -257,7 +309,7 @@ impl ListSelection {
         Ok(())
     }
     fn replace(&self, key: String) -> Result<(), RuntimeError> {
-        if self.mode == SelectionMode::Multiple {
+        if self.mode.get() == SelectionMode::Multiple {
             self.selected.set(Rc::new(BTreeSet::from([key.clone()])))?;
         }
         self.set_active(Some(key))

@@ -703,6 +703,42 @@ fn the_file_browser_page_lists_through_a_mailbox_and_shows_failures() {
 }
 
 #[test]
+fn the_file_page_saves_through_its_dialog_and_reports_the_outcome() {
+    let (mut ui, root) = mounted();
+    open(&mut ui, &root, "files");
+    settle(&mut ui);
+    let save = find(&ui, &root, "save");
+    ui.focus(&save).unwrap();
+    press(&mut ui, KeyCode::Enter);
+    // The dialog's listing arrives through the page's mailbox.
+    settle(&mut ui);
+    let dialog = find(&ui, &root, "file-dialog");
+    let picker = find(&ui, &dialog, "picker");
+    let accept = ui.find_exposed_part(&picker, "accept").unwrap().unwrap();
+    ui.focus(&accept).unwrap();
+    // "notes" completes to the existing notes.txt: the dialog asks first.
+    press(&mut ui, KeyCode::Enter);
+    assert_eq!(
+        text(&ui, "dialog-result"),
+        ["Open a dialog to choose something."]
+    );
+    let accept = ui.find_exposed_part(&picker, "accept").unwrap().unwrap();
+    ui.focus(&accept).unwrap();
+    press(&mut ui, KeyCode::Enter);
+    settle(&mut ui);
+    // Built as the page builds it, so the separators are the platform's.
+    let saved = std::path::Path::new(crate::pages::data::files::ROOT)
+        .join("Projects")
+        .join("notes.txt");
+    assert_eq!(
+        text(&ui, "dialog-result"),
+        [format!("Chose {} as text", saved.display())]
+    );
+    assert!(ui.validation_report().issues.is_empty());
+    assert!(ui.next_deadline().is_none(), "the dialog schedules nothing");
+}
+
+#[test]
 fn the_file_browser_page_keeps_a_response_its_full_mailbox_refuses() {
     use crate::pages::data::files::{ROOT, listing, send_or_keep};
     use std::{cell::RefCell, rc::Rc};
@@ -798,7 +834,8 @@ fn the_file_browser_filters_only_listed_folders() {
     let deliveries = text(&ui, "deliveries");
     // Kicks lies in Drums, which is not listed yet: nothing matches and the
     // filter asks for no listing.
-    filter_collection(&mut ui, &root, "folders", "kick");
+    // The page's file dialog holds a browser of its own, so look in this one.
+    filter_collection(&mut ui, &library, "folders", "kick");
     settle(&mut ui);
     assert!(ui.children(&tree).unwrap().is_empty());
     assert_eq!(text(&ui, "deliveries"), deliveries);
@@ -806,7 +843,9 @@ fn the_file_browser_filters_only_listed_folders() {
         .inspect()
         .components
         .into_iter()
-        .find(|component| component.key == "folders")
+        .find(|component| {
+            component.key == "folders" && component.details.properties.contains_key("shown")
+        })
         .unwrap()
         .details;
     assert_eq!(details.properties["shown"], InspectValue::Number(0.0));

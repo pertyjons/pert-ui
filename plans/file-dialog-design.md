@@ -689,6 +689,92 @@ composition the advanced path and the ordinary case one call, with the
 acceptance rules, the save name handling and the retained outcome written
 once. It retires nothing.
 
+## 10a. As implemented in slice 1 (0.3.123)
+
+The contract now lives in `FileDialogController`'s and `FileDialog`'s rustdoc
+and in [contracts](../docs/contracts.md#file-dialog-sessions). Where the
+implementation differs from the sections above, it is the reference:
+
+- `FileDialog::in_window` and `in_view` take a state owner first
+  (`in_window(ui, &controller, anchor)`): the type selector's open state
+  needs one, and a leading owner is the constructor convention.
+- A description with another controller under the same key is adopted, as
+  `Dialog` does: the mounted controller's open session is dismissed with
+  `OwnerRemoved` and the new controller's content is mounted. Section 2.5
+  said the controller was kept for life; composing over `Dialog` through the
+  public API cannot refuse the handoff, and adopting it keeps the content and
+  the session's controller together. The row height stays fixed at mount.
+- The replace question is shown in place of the browser, the name field and
+  the selector, not in the footer beside them. Hiding them is what keeps
+  them from taking input while the question shows.
+- The content's parts other than the browser are internal structure, reached
+  as exposed parts: `accept`, `cancel`, `name`, `filter`, `refusal`,
+  `question`.
+- `FileFilter::matches` and the request's getters are public, for the
+  operating-system service and hand-built pickers.
+- The loaded entries are an `EntryList`; `ShownEntries` did not become a type.
+- The reaction to the user's changes (clearing a refusal, copying an active
+  file's name, applying a newly selected type) runs through the content's
+  after-settling notification. Nothing a session must not lose depends on it.
+
+Found while implementing:
+
+- A dialog's documented `dialog` segment reaches the workspace path of the
+  browser's split position. The maintainer decided on 2026-11-19 that the
+  segment is a stable part of such paths (plan decision 11).
+- Reacting to an ended session needed a component the application wrote
+  itself. The maintainer amended decision 5 on 2026-11-19:
+  `FileDialog::on_outcome` hands the retained outcome over after settling.
+
+Tested in slice 1: sections 3 (rules 1 to 9 and 11, except a failed start
+and shutdown), 4.2 to 4.5, the extension examples, the Unix name cases, the
+small-window case for both scopes, the hand-built composition and workspace
+capture. Not tested: a start that fails after the reservation
+(`FileDialogFailure::Start` needs exhausted request generations, which the
+public API cannot produce), a refused write during accept or take, the
+Windows name rule, a session opened under an already hidden ancestor, and
+`set_mode` with `Tree` and `Table` (the mode is read only by `ListSelection`
+itself, and `VirtualList` is tested).
+
+Codex reviewed the implementation on 2026-11-19 (read-only, static) and
+found five major defects and eight minor ones; all but one are repaired, most
+with a regression test:
+
+- a suggested or copied name with a control character, which the name field
+  cannot show, could be accepted: such names are refused or not copied, and
+  activating a file in a save dialog now asks about that entry directly;
+- a copied name kept its tie to the listed file after an edit that was typed
+  back: an observed edit, or a folder change, ends the tie;
+- a copied name was judged by the entry as it was when copied: it is judged
+  by the listing's present entry for that path;
+- `Dialog` kept the replaced session's modality for an adopted controller
+  whose session was already open (existing code, reached through the
+  handoff): repaired in `Dialog::reconcile`;
+- an extension with `:` could build a Windows stream name: `:` is refused in
+  extensions and the completed name is validated;
+- `ChooseFolder` reported a file type; `set_mode` skipped the phase check
+  for an equal mode; a long confirm caption could take the whole action row;
+  the availability of confirm searched the listing; a private string-table
+  helper duplicated `UiSettings::strings_binding`.
+
+Left as it is: a listing delivered for the shown folder that removes the
+active or a selected entry clears a refusal, although section 4.6 says the
+status line is kept. The content cannot tell that change from the user's.
+
+Tests added after the review also pin two things section 11 assumed: a
+session opened under a hidden owner stays open and unpresented until the
+owner is shown, and the type selector operated by keyboard filters the list
+and is reported. The second found that a structural element's label does not
+name a `Select`'s control (TODO.md LABEL-01), so the selector keeps an
+address segment, `type`.
+
+Still without a test after the review: a start that fails after the
+reservation, the Windows name rule, a listing that changes while the replace
+question shows, restoring a moved split position while the dialog is closed,
+and `set_mode` with `Tree`, `Table` and a deferred press. The fixes made
+after the review have not been reviewed again. The regression tests added after the review were not each run
+against the unrepaired code first; the `Dialog` ownership test was.
+
 ## 11. Assumed, not yet tested
 
 - That an idle browser mounted in a closed dialog requests nothing: the

@@ -366,3 +366,91 @@ fn a_filter_moving_the_active_row_off_a_hidden_one_reports_application() -> Test
     );
     Ok(())
 }
+
+#[test]
+fn narrowing_the_mode_keeps_the_active_item_and_reports_the_application() -> TestResult {
+    let mut f = list(SelectionMode::Multiple)?;
+    let clone = f.selection.clone();
+    f.selection
+        .select(["apple".to_owned(), "plum".to_owned()])?;
+    f.selection.set_active(Some("plum".to_owned()))?;
+    f.ui.flush(Duration::ZERO)?;
+    f.log.borrow_mut().clear();
+
+    f.selection.set_mode(SelectionMode::Single)?;
+    assert_eq!(clone.mode(), SelectionMode::Single, "clones share the mode");
+    assert_eq!(
+        *clone.selected().get()?,
+        ["plum".to_owned()].into_iter().collect()
+    );
+    f.ui.flush(Duration::ZERO)?;
+    let log = f.log.borrow().clone();
+    assert_eq!(log.len(), 1);
+    assert_eq!(log[0].origin, ChangeOrigin::Application);
+    assert_eq!(log[0].previous_selected.len(), 2);
+
+    // The mounted list now selects one item at a time, also with Control.
+    let apple = support::key_path(&f.ui, &f.list, &["apple"]).ok_or("mounted")?;
+    f.ui.key_input(KeyCode::ControlLeft, KeyAction::Press)?;
+    click(&mut f.ui, &apple)?;
+    f.ui.key_input(KeyCode::ControlLeft, KeyAction::Release)?;
+    assert_eq!(
+        *f.selection.selected().get()?,
+        ["apple".to_owned()].into_iter().collect()
+    );
+    Ok(())
+}
+
+#[test]
+fn a_refused_mode_change_reports_the_refusal_even_for_the_same_mode() -> TestResult {
+    let mut f = list(SelectionMode::Multiple)?;
+    f.ui.shutdown();
+    assert_eq!(
+        f.selection.set_mode(SelectionMode::Multiple),
+        Err(RuntimeError::Closed)
+    );
+    assert_eq!(
+        f.selection.set_mode(SelectionMode::Single),
+        Err(RuntimeError::Closed)
+    );
+    assert_eq!(f.selection.mode(), SelectionMode::Multiple);
+    Ok(())
+}
+
+#[test]
+fn widening_the_mode_changes_no_key_and_reports_nothing() -> TestResult {
+    let mut f = list(SelectionMode::Single)?;
+    f.selection.set_active(Some("pear".to_owned()))?;
+    f.ui.flush(Duration::ZERO)?;
+    f.log.borrow_mut().clear();
+
+    f.selection.set_mode(SelectionMode::Single)?;
+    f.selection.set_mode(SelectionMode::Multiple)?;
+    f.ui.flush(Duration::ZERO)?;
+    assert!(f.log.borrow().is_empty());
+    assert_eq!(
+        *f.selection.selected().get()?,
+        ["pear".to_owned()].into_iter().collect()
+    );
+
+    // The active item is the anchor of the next range: Shift+Down from pear.
+    f.ui.focus(&f.list)?;
+    f.ui.key_input(KeyCode::ShiftLeft, KeyAction::Press)?;
+    press(&mut f.ui, KeyCode::ArrowDown)?;
+    f.ui.key_input(KeyCode::ShiftLeft, KeyAction::Release)?;
+    assert_eq!(
+        *f.selection.selected().get()?,
+        ["pear".to_owned(), "plum".to_owned()].into_iter().collect()
+    );
+    Ok(())
+}
+
+#[test]
+fn narrowing_without_an_active_item_selects_nothing() -> TestResult {
+    let f = list(SelectionMode::Multiple)?;
+    f.selection.select(["apple".to_owned()])?;
+    f.selection.set_mode(SelectionMode::Single)?;
+    assert!(f.selection.selected().get()?.is_empty());
+    assert_eq!(f.selection.active().get()?, None);
+    Ok(())
+}

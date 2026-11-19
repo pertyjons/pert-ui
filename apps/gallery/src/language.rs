@@ -106,6 +106,28 @@ pub(crate) fn swedish() -> Result<UiStrings, RuntimeError> {
         (NotAWholeNumber, "Skriv ett heltal"),
         (NumberOutOfRange, "Skriv ett tal från {min} till {max}"),
         (NumberOffStep, "Skriv ett tal i steg om {step}"),
+        (FileDialogOpen, "Öppna"),
+        (FileDialogChooseFolder, "Välj mapp"),
+        (FileDialogChoose, "Välj ”{name}”"),
+        (FileDialogSave, "Spara"),
+        (FileDialogName, "Namn"),
+        (FileDialogType, "Filtyp"),
+        (
+            FileDialogReplaceQuestion,
+            "”{name}” finns redan. Vill du ersätta den?",
+        ),
+        (FileDialogReplace, "Ersätt"),
+        (FileDialogBack, "Tillbaka"),
+        (FileDialogUnusable, "Den här posten kan inte användas"),
+        (
+            FileDialogNotAllFiles,
+            "Markeringen får bara innehålla filer",
+        ),
+        (
+            FileDialogInvalidName,
+            "Skriv ett filnamn utan mappavgränsare",
+        ),
+        (FileDialogAmbiguousName, "Flera poster har det här namnet"),
     ];
     rows.into_iter()
         .try_fold(UiStrings::english(), |table, (role, text)| {

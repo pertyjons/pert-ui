@@ -180,6 +180,36 @@ fn a_second_mounted_dialog_owner_is_busy_until_the_first_unmounts() -> TestResul
 }
 
 #[test]
+fn removing_or_hiding_a_refused_second_owner_leaves_the_first_owners_session() -> TestResult {
+    let mut ui = ui()?;
+    let state = DialogController::new(&ui);
+    let root = ui.mount_tree(Element::new(
+        "root",
+        Column::new([
+            Element::new("first", dialog(&state, "First")),
+            Element::new("second", dialog(&state, "Second")),
+        ]),
+    ))?;
+    assert_eq!(ui.flush(ui.now()), Err(RuntimeError::DialogBusy));
+    state.open()?;
+    assert_eq!(ui.flush(ui.now()), Err(RuntimeError::DialogBusy));
+    assert_eq!(property(&ui, &["first"], "open")?, InspectValue::Bool(true));
+
+    // The second owner never owned the controller: hiding it ends nothing.
+    let second = ui.children(&root)?[1].clone();
+    ui.set_visible(&second, false)?;
+    let _ = ui.flush(ui.now());
+    assert_eq!(state.status().get()?, DialogStatus::Open);
+
+    // Nor does removing it.
+    ui.reconcile_children(&root, vec![Element::new("first", dialog(&state, "First"))])?;
+    frame(&mut ui);
+    assert_eq!(state.status().get()?, DialogStatus::Open);
+    assert_eq!(property(&ui, &["first"], "open")?, InspectValue::Bool(true));
+    Ok(())
+}
+
+#[test]
 fn a_dialog_described_with_another_controller_dismisses_the_old_session() -> TestResult {
     let mut ui = ui()?;
     let old = DialogController::new(&ui);
@@ -204,6 +234,35 @@ fn a_dialog_described_with_another_controller_dismisses_the_old_session() -> Tes
     new.open()?;
     frame(&mut ui);
     assert_eq!(property(&ui, &["owner"], "open")?, InspectValue::Bool(true));
+    Ok(())
+}
+
+#[test]
+fn an_adopted_controllers_open_session_takes_the_new_modality() -> TestResult {
+    let mut ui = ui()?;
+    let (first, second) = (DialogController::new(&ui), DialogController::new(&ui));
+    let (root, owner) = mount(&mut ui, Element::new("owner", dialog(&first, "First")))?;
+    first.open()?;
+    frame(&mut ui);
+    assert_eq!(
+        property(&ui, &["owner"], "window_modal")?,
+        InspectValue::Bool(true)
+    );
+    // The second controller is already open when the description adopts it.
+    second.open()?;
+    redescribe(
+        &mut ui,
+        &root,
+        &owner,
+        Element::new("owner", dialog(&second, "Second").view_modal()),
+    )?;
+    frame(&mut ui);
+    assert_eq!(property(&ui, &["owner"], "open")?, InspectValue::Bool(true));
+    assert_eq!(
+        property(&ui, &["owner"], "window_modal")?,
+        InspectValue::Bool(false),
+        "the adopted session is view-modal, as described"
+    );
     Ok(())
 }
 

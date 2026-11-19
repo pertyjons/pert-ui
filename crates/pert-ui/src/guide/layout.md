@@ -1146,6 +1146,82 @@ current, superseded by a newer ticket, settled (cancelled or already applied)
 or foreign. The component completes a ticket after applying its result and
 leaves it pending when applying fails, so a retry can apply it.
 
+# Asking for a file
+
+[`FileDialog`] is that browser with what choosing a file needs around it: a
+name field, a file-type selector, a line for refusals and confirm and cancel
+buttons. A [`FileDialogController`] holds its session. Create it once, with
+the roots and the request callback a browser takes, and mount a
+[`FileDialog::in_window`] (modal to the window) or [`FileDialog::in_view`]
+(confined to its anchor's region) around the view it belongs to. Creating the
+controller asks the host for nothing.
+
+Each use opens a session with a [`FileDialogRequest`]: the
+[`FileDialogMode`] (one file, several files, a folder, or a name to save
+under), and optionally a title, the [`FileFilter`]s offered, a starting folder
+and a suggested name. The session ends once, and its [`FileDialogOutcome`]
+stays with the controller until [`FileDialogController::take_outcome`], so it
+is not lost when the dialog is removed. To act on it when the session ends,
+give the dialog [`FileDialog::on_outcome`], which takes the outcome and calls
+the application with it; or bind [`FileDialogController::status`] and take the
+outcome yourself.
+
+```rust
+use pert_ui::prelude::*;
+use pert_ui::Viewport;
+use std::{cell::RefCell, path::PathBuf, rc::Rc};
+
+let mut ui = Runtime::new();
+ui.set_viewport(Viewport::new(900.0, 700.0, 1.0)?)?;
+// A real host lists on a worker and delivers through a Mailbox.
+let requests = Rc::new(RefCell::new(Vec::new()));
+let queue = requests.clone();
+let files = FileDialogController::new(&ui, ["/projects"], move |request| {
+    queue.borrow_mut().push(request)
+})?;
+ui.mount_tree(Element::new(
+    "document",
+    FileDialog::in_window(&ui, &files, Element::new("view", Label::new("Document"))),
+))?;
+
+files.open(
+    FileDialogRequest::new(FileDialogMode::SaveFile)
+        .title("Export drawing")
+        .filters([
+            FileFilter::new("svg", "SVG drawing", ["svg"])?,
+            FileFilter::new("png", "PNG image", ["png"])?,
+        ])?
+        .suggested_name("drawing")?,
+)?;
+ui.flush(ui.now())?;
+let request = requests.borrow_mut().remove(0);
+files.deliver(request.respond(Ok(vec![
+    DirectoryEntry::new("/projects/old.svg", EntryKind::File),
+])))?;
+
+// The user confirms the suggested name; the selected type completes it.
+assert!(files.accept()?);
+let Some(FileDialogOutcome::Accepted(selection)) = files.take_outcome()? else {
+    panic!("the session was accepted");
+};
+assert_eq!(selection.paths(), [PathBuf::from("/projects/drawing.svg")]);
+assert_eq!(selection.filter(), Some("svg"));
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
+Confirming is refused in place, with a message, for an entry that cannot be
+used, and a save over a listed file asks first; the session continues either
+way. [`FileDialogController`] documents what each mode accepts. An accepted
+path says what the user chose in a listing that may be out of date: whether
+it can be read or written is for the application to find out when it acts.
+
+A picker with another shape can be composed from the same parts: a [`Dialog`]
+around a [`FileBrowser`] whose controller comes from
+[`FileBrowserController::new_idle`], with
+[`FileBrowserController::set_entry_predicate`] for the file types and
+[`FileBrowserController::listing`] and
+[`FileBrowserController::shown_entries`] for what the folder holds and shows.
+
 # Revealing, searching and navigating
 
 To send the user to a target that may be hidden, in an unselected tab, a

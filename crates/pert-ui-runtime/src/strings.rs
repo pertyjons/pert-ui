@@ -228,6 +228,36 @@ pub enum StringRole {
     /// The refusal of a number off a parameter's step lattice: `{step}`,
     /// formatted as the editor shows its values.
     NumberOffStep,
+    /// The file dialog's title and confirm caption when it opens files.
+    FileDialogOpen,
+    /// The file dialog's title when it chooses a folder.
+    FileDialogChooseFolder,
+    /// The file dialog's confirm caption when it chooses a folder: `{name}`
+    /// is the folder it will accept.
+    FileDialogChoose,
+    /// The file dialog's title and confirm caption when it saves a file.
+    FileDialogSave,
+    /// The name of the file dialog's file-name field.
+    FileDialogName,
+    /// The name of the file dialog's file-type selector.
+    FileDialogType,
+    /// The file dialog's question before an existing file is replaced:
+    /// `{name}` is the file.
+    FileDialogReplaceQuestion,
+    /// The file dialog's confirm caption while it asks about replacing.
+    FileDialogReplace,
+    /// The file dialog's caption for returning from that question.
+    FileDialogBack,
+    /// The file dialog's refusal of an entry that is neither a file nor a
+    /// folder, or could not be read.
+    FileDialogUnusable,
+    /// The file dialog's refusal of a selection that holds something other
+    /// than files.
+    FileDialogNotAllFiles,
+    /// The file dialog's refusal of text that is not one file name.
+    FileDialogInvalidName,
+    /// The file dialog's refusal of a name several entries share.
+    FileDialogAmbiguousName,
 }
 
 crate::tables::variant_list! {
@@ -255,7 +285,11 @@ crate::tables::variant_list! {
         CommandNotAvailable, CommandBlocked, CommandNoRepeat, CommandFailed,
         EntryFailed, ToolWindowOptions, ToolWindowHide,
         ToolWindowDock, ToolWindowFloat, ToolWindowOpenWindow, NotANumber,
-        NotAWholeNumber, NumberOutOfRange, NumberOffStep,
+        NotAWholeNumber, NumberOutOfRange, NumberOffStep, FileDialogOpen,
+        FileDialogChooseFolder, FileDialogChoose, FileDialogSave, FileDialogName,
+        FileDialogType, FileDialogReplaceQuestion, FileDialogReplace, FileDialogBack,
+        FileDialogUnusable, FileDialogNotAllFiles, FileDialogInvalidName,
+        FileDialogAmbiguousName,
     ];
 }
 const STRING_ROLE_COUNT: usize = STRING_ROLES.len();
@@ -283,6 +317,7 @@ impl StringRole {
             Self::ToolWindowOptions | Self::ToolWindowHide => &["title"],
             Self::NumberOutOfRange => &["min", "max"],
             Self::NumberOffStep => &["step"],
+            Self::FileDialogChoose | Self::FileDialogReplaceQuestion => &["name"],
             _ => &[],
         }
     }
@@ -419,6 +454,31 @@ const ENGLISH: [(StringRole, &str); STRING_ROLE_COUNT] = [
     (
         StringRole::NumberOffStep,
         "Enter a number in steps of {step}",
+    ),
+    (StringRole::FileDialogOpen, "Open"),
+    (StringRole::FileDialogChooseFolder, "Choose folder"),
+    (StringRole::FileDialogChoose, "Choose “{name}”"),
+    (StringRole::FileDialogSave, "Save"),
+    (StringRole::FileDialogName, "Name"),
+    (StringRole::FileDialogType, "File type"),
+    (
+        StringRole::FileDialogReplaceQuestion,
+        "“{name}” already exists. Replace it?",
+    ),
+    (StringRole::FileDialogReplace, "Replace"),
+    (StringRole::FileDialogBack, "Back"),
+    (StringRole::FileDialogUnusable, "This entry cannot be used"),
+    (
+        StringRole::FileDialogNotAllFiles,
+        "The selection must contain only files",
+    ),
+    (
+        StringRole::FileDialogInvalidName,
+        "Enter a file name without folder separators",
+    ),
+    (
+        StringRole::FileDialogAmbiguousName,
+        "Several entries have this name",
     ),
 ];
 
@@ -784,6 +844,16 @@ pub enum UiMessage<'a> {
         /// The step between allowed numbers, as the editor formats it.
         step: &'a str,
     },
+    /// [`StringRole::FileDialogChoose`].
+    FileDialogChoose {
+        /// The folder's display name.
+        name: &'a str,
+    },
+    /// [`StringRole::FileDialogReplaceQuestion`].
+    FileDialogReplaceQuestion {
+        /// The file's display name.
+        name: &'a str,
+    },
 }
 
 impl UiMessage<'_> {
@@ -808,6 +878,8 @@ impl UiMessage<'_> {
             Self::ToolWindowHide { .. } => StringRole::ToolWindowHide,
             Self::NumberOutOfRange { .. } => StringRole::NumberOutOfRange,
             Self::NumberOffStep { .. } => StringRole::NumberOffStep,
+            Self::FileDialogChoose { .. } => StringRole::FileDialogChoose,
+            Self::FileDialogReplaceQuestion { .. } => StringRole::FileDialogReplaceQuestion,
         }
     }
 
@@ -844,6 +916,11 @@ impl UiMessage<'_> {
             (Self::NumberOutOfRange { min, .. }, "min") => out.push_str(min),
             (Self::NumberOutOfRange { max, .. }, "max") => out.push_str(max),
             (Self::NumberOffStep { step }, "step") => out.push_str(step),
+            (
+                Self::FileDialogChoose { name: entry }
+                | Self::FileDialogReplaceQuestion { name: entry },
+                "name",
+            ) => out.push_str(entry),
             // Unreachable for validated templates; an unknown name writes nothing.
             _ => {}
         }
@@ -884,6 +961,8 @@ mod tests {
             UiMessage::ToolWindowHide { title: "x" },
             UiMessage::NumberOutOfRange { min: "x", max: "x" },
             UiMessage::NumberOffStep { step: "x" },
+            UiMessage::FileDialogChoose { name: "x" },
+            UiMessage::FileDialogReplaceQuestion { name: "x" },
         ];
         for message in messages {
             let text = strings.format(message);

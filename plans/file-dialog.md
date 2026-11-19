@@ -1,6 +1,6 @@
 # Plan: file dialog
 
-Status: proposed 2026-11-19; not started. Every type and method this plan
+Status: slices 0 and 1 done (0.3.123); slices 2 to 5 not started. Every type and method this plan
 names is a proposal until a slice implements and documents it. The
 [decisions](#decisions) were settled on 2026-11-19. An independent Codex
 review of the first draft (2026-11-19, read-only, static) found two blockers
@@ -326,6 +326,12 @@ before slice 1 fixes public API:
 
 ### 1. Dialog content and outcome, in the window
 
+Status: implemented in 0.3.123 on `file-dialog-slice-1`, with the repair of
+TODO.md DIALOG-01. [file-dialog-design.md](file-dialog-design.md) section 10a
+lists where the implementation differs from the note, what it found
+(TODO.md DIALOG-02, and that reacting to an outcome needs an application
+component) and what is not tested.
+
 - `FileDialogController`, `FileDialogRequest`, `FileDialogMode`,
   `FileFilter`, `FileDialogOutcome`, `FileDialog::in_window` and the plain
   content element; the browser additions from slice 0.
@@ -418,7 +424,10 @@ Settled by the maintainer on 2026-11-19, following the plan's proposals:
 Confirmed by the maintainer on 2026-11-19, after the review:
 
 5. The outcome is a retained slot read with `take_outcome`, as for
-   `DialogController`, not an `on_outcome` callback.
+   `DialogController`. Amended by the maintainer on 2026-11-19 after slice 1
+   showed that an application otherwise needs a component of its own to act
+   on an ending: `FileDialog::on_outcome` hands the retained outcome over
+   after settling, and a removed dialog leaves it with the controller.
 6. Mode, filters and context travel in the request given to `open`, not on
    the controller or the description.
 7. `FileDialog::in_window` ships first; the own window becomes the default
@@ -431,6 +440,9 @@ Confirmed by the maintainer on 2026-11-19, after the review:
    later schema version.
 10. Back and forward history is out of scope, and places are application
     data rather than stored bookmarks.
+11. A `Dialog`'s documented `dialog` segment is a stable part of workspace
+    paths (decided 2026-11-19; it was TODO.md DIALOG-02). The panel does not
+    become structural.
 
 ## Review record
 
