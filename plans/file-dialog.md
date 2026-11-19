@@ -161,8 +161,8 @@ Acceptance is specified by a decision table in slice 0 and tested per row:
 - Per mode: what Enter, a double click and the confirm button accept, given
   the highlighted entry, the selection and the name field. Choose folder
   accepts the highlighted folder when there is one, otherwise the current
-  folder. Several files are reported in the browser's key order, and a
-  selected entry the filter hides is not reported.
+  folder. Several files are reported in display order, and a selected entry
+  the filter hides is not reported.
 - Which entry kinds a mode accepts: links by their listed target, never an
   entry with an error, never `EntryKind::Other`.
 - The name field: text naming a folder navigates; in save as, anything else
@@ -309,8 +309,11 @@ the controller because it outlives any one dialog.
 
 ### 0. Design note
 
-A section in [contracts](../docs/contracts.md) or a note in `docs/`, written
-and approved before slice 1 fixes public API:
+Status: drafted 2026-11-19 as [file-dialog-design.md](file-dialog-design.md)
+and revised after a Codex review of the draft; approved by the maintainer
+on 2026-11-19. Its section 9 lists where it narrows or corrects this plan; where
+the two differ, the note is the newer text. It is written and approved
+before slice 1 fixes public API:
 
 - The constructor, request and outcome API above, with the retention and
   precedence rules and shutdown behaviour.
