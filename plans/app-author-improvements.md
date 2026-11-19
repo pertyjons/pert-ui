@@ -82,6 +82,9 @@ stays window-free.
 - **File dialogs:** asynchronous completion, cancellation distinct from
   failure, owner-window identity, modality, completion after the owner
   closed; no blocking file work in components.
+  This is the operating system's own dialog; the dialog the library draws
+  itself is planned in [file-dialog.md](file-dialog.md), whose mode, filter
+  and outcome types this service should reuse.
 - **External file drop** and **opening a URL or file** in the default
   application.
 - **Window controls:** icon, maximize, fullscreen and position, with
