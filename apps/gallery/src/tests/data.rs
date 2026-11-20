@@ -734,6 +734,20 @@ fn the_file_page_saves_through_its_dialog_and_reports_the_outcome() {
         text(&ui, "dialog-result"),
         [format!("Chose {} as text", saved.display())]
     );
+    // The accepted session is in the memory document the page shows, under
+    // the button's purpose, and the next session offers the folder as recent.
+    let stored = text(&ui, "dialog-memory").join("\n");
+    assert!(stored.contains("context \"save-notes\""), "{stored}");
+    assert!(stored.contains("filter=\"text\""), "{stored}");
+    assert!(stored.contains("recent "), "{stored}");
+    let save = find(&ui, &root, "save");
+    ui.focus(&save).unwrap();
+    press(&mut ui, KeyCode::Enter);
+    settle(&mut ui);
+    assert!(ui.find_descendant(&dialog, "recent-0").unwrap().is_some());
+    assert!(ui.find_descendant(&dialog, "place-1").unwrap().is_some());
+    press(&mut ui, KeyCode::Escape);
+    settle(&mut ui);
     assert!(ui.validation_report().issues.is_empty());
     assert!(ui.next_deadline().is_none(), "the dialog schedules nothing");
 }

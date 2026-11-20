@@ -1,6 +1,7 @@
 # Plan: file dialog
 
-Status: slices 0 and 1 done (0.3.123); slices 2 to 5 not started. Every type and method this plan
+Status: slices 0, 1 (0.3.123, repairs in 0.3.124) and 2 (0.3.125) done;
+slices 3a to 5 not started. Every type and method this plan
 names is a proposal until a slice implements and documents it. The
 [decisions](#decisions) were settled on 2026-11-19. An independent Codex
 review of the first draft (2026-11-19, read-only, static) found two blockers
@@ -347,6 +348,12 @@ component) and what is not tested.
 
 ### 2. Memory
 
+Status: implemented in 0.3.125 on `file-dialog-slice-2`.
+[file-dialog-design.md](file-dialog-design.md) section 10b lists what was
+decided while implementing and what is not tested. The dialog's size is not
+in the memory yet: the in-window dialog has a fixed size (note section 9,
+item 5), so it arrives with the own window in slice 3b.
+
 - `FileDialogMemory`, `with_memory`, the starting-folder search, recent
   folders and application-supplied places in the dialog.
 - The schema with `encode`/`decode` and the tests named under
@@ -440,6 +447,13 @@ Confirmed by the maintainer on 2026-11-19, after the review:
    later schema version.
 10. Back and forward history is out of scope, and places are application
     data rather than stored bookmarks.
+12. Slice 2 scope, confirmed by the maintainer on 2026-11-20 after its
+    review: an explicit `start_folder` takes precedence over the remembered
+    folder and is not searched for; the dialog's size joins the memory with
+    the own window in slice 3b, not before; and the gallery shows the memory
+    document instead of storing it, since it has no settings storage. Where
+    the [Memory](#memory) section and the slice 2 text say otherwise, this
+    decision holds.
 11. A `Dialog`'s documented `dialog` segment is a stable part of workspace
     paths (decided 2026-11-19; it was TODO.md DIALOG-02). The panel does not
     become structural.

@@ -45,6 +45,13 @@ fn stage() -> Stage {
     stage_in(Viewport::new(1000.0, 800.0, 1.0).unwrap())
 }
 fn stage_in(viewport: Viewport) -> Stage {
+    stage_from(viewport, None)
+}
+/// A stage whose controller remembers in `memory`.
+fn stage_with(memory: &FileDialogMemory) -> Stage {
+    stage_from(Viewport::new(1000.0, 800.0, 1.0).unwrap(), Some(memory))
+}
+fn stage_from(viewport: Viewport, memory: Option<&FileDialogMemory>) -> Stage {
     let mut ui = Runtime::new();
     ui.set_viewport(viewport).unwrap();
     let requests = Rc::new(RefCell::new(Vec::new()));
@@ -52,6 +59,10 @@ fn stage_in(viewport: Viewport) -> Stage {
     let dialog =
         FileDialogController::new(&ui, ["/r"], move |request| queue.borrow_mut().push(request))
             .unwrap();
+    let dialog = match memory {
+        Some(memory) => dialog.with_memory(memory),
+        None => dialog,
+    };
     let root = ui
         .mount_tree(Element::new(
             "open",
@@ -92,6 +103,59 @@ impl Stage {
             ListingDelivery::Applied
         );
         settle(&mut self.ui);
+    }
+    /// Answers the latest request for `directory` with a failure.
+    #[track_caller]
+    fn fail(&mut self, directory: &str, kind: ListingErrorKind) -> ListingDelivery {
+        let request = {
+            let mut requests = self.requests.borrow_mut();
+            let index = requests
+                .iter()
+                .rposition(|request| request.directory() == Path::new(directory))
+                .unwrap_or_else(|| panic!("no request for {directory}: {requests:?}"));
+            requests.remove(index)
+        };
+        let delivery = self
+            .dialog
+            .deliver(request.respond(Err(ListingError::new(kind, "refused"))))
+            .unwrap();
+        settle(&mut self.ui);
+        delivery
+    }
+    /// The folders requested and not yet answered, oldest first, without
+    /// the root, which the folder tree asks for in every session.
+    fn awaited(&self) -> Vec<PathBuf> {
+        self.requests
+            .borrow()
+            .iter()
+            .map(|request| request.directory().to_owned())
+            .filter(|directory| directory != Path::new("/r"))
+            .collect()
+    }
+    /// Takes the oldest unanswered request for `directory`.
+    #[track_caller]
+    fn take_request(&self, directory: &Path) -> DirectoryRequest {
+        let mut requests = self.requests.borrow_mut();
+        let index = requests
+            .iter()
+            .position(|request| request.directory() == directory)
+            .unwrap_or_else(|| panic!("no request for {directory:?}"));
+        requests.remove(index)
+    }
+    /// Opens `request`, answers `folder` with one text file, makes it
+    /// active and confirms.
+    fn accept_in(&mut self, request: FileDialogRequest, folder: &str) -> FileDialogSelection {
+        self.open(request);
+        self.answer(folder, vec![file(&format!("{folder}/a.txt"))]);
+        self.click_row(0);
+        assert!(self.confirm());
+        match self.outcome() {
+            Some(FileDialogOutcome::Accepted(selection)) => {
+                settle(&mut self.ui);
+                selection
+            }
+            other => panic!("not accepted: {other:?}"),
+        }
     }
     fn status(&self) -> FileDialogStatus {
         self.dialog.status().get().unwrap()
@@ -1452,4 +1516,677 @@ fn a_second_dialog_on_the_controller_never_reports_the_owners_session() -> TestR
     settle(&mut ui);
     assert_eq!(*seen.borrow(), [("other", FileDialogOutcome::Cancelled)]);
     Ok(())
+}
+
+// Memory: what an accepted session leaves for the next one.
+
+fn folder_in(context: &str) -> FileDialogRequest {
+    request(FileDialogMode::ChooseFolder)
+        .context(context)
+        .unwrap()
+}
+
+#[test]
+fn an_accepted_session_is_remembered_per_context() {
+    let memory = FileDialogMemory::new();
+    let mut stage = stage_with(&memory);
+    let selection = stage.accept_in(
+        request(FileDialogMode::OpenFile)
+            .context("project")
+            .unwrap()
+            .filters(text_filters())
+            .unwrap()
+            .start_folder("/r/sub"),
+        "/r/sub",
+    );
+    assert!(selection.folder_remembered());
+    assert_eq!(memory.last_folder(Some("project")), Some("/r/sub".into()));
+    assert_eq!(memory.last_filter(Some("project")).as_deref(), Some("txt"));
+    assert_eq!(memory.recent_folders(), [PathBuf::from("/r/sub")]);
+    assert_eq!(memory.last_folder(None), None, "another purpose");
+    assert_eq!(memory.last_folder(Some("export")), None);
+
+    // The same purpose starts where it was; another starts at the root.
+    stage.open(folder_in("project"));
+    assert_eq!(stage.current(), PathBuf::from("/r/sub"));
+    assert!(stage.dialog.cancel().unwrap());
+    let _ = stage.outcome();
+    settle(&mut stage.ui);
+    stage.open(folder_in("export"));
+    assert_eq!(stage.current(), PathBuf::from("/r"));
+}
+
+#[test]
+fn a_session_that_is_not_accepted_remembers_nothing() {
+    let memory = FileDialogMemory::new();
+    let mut stage = stage_with(&memory);
+    stage.opened(folder_in("project"));
+    assert!(stage.dialog.cancel().unwrap());
+    assert_eq!(stage.outcome(), Some(FileDialogOutcome::Cancelled));
+    assert_eq!(memory, FileDialogMemory::new());
+    assert_eq!(memory.encode(), "pert-ui-file-dialog-memory 1\n");
+}
+
+#[test]
+fn a_dialog_without_a_memory_reports_the_folder_as_not_remembered() {
+    let mut stage = stage();
+    let selection = stage.accept_in(request(FileDialogMode::ChooseFolder), "/r");
+    assert!(!selection.folder_remembered());
+}
+
+#[test]
+fn the_remembered_type_is_selected_when_the_request_offers_it() {
+    let memory = FileDialogMemory::decode(
+        "pert-ui-file-dialog-memory 1\ncontext \"project\" filter=\"all\"\n",
+    )
+    .unwrap();
+    let mut stage = stage_with(&memory);
+    let asked = || {
+        request(FileDialogMode::OpenFile)
+            .context("project")
+            .unwrap()
+    };
+    stage.opened(asked().filters(text_filters()).unwrap());
+    stage.click_row(2);
+    assert!(stage.confirm(), "b.png shows under the remembered type");
+    match stage.outcome() {
+        Some(FileDialogOutcome::Accepted(selection)) => {
+            assert_eq!(selection.filter(), Some("all"));
+        }
+        other => panic!("{other:?}"),
+    }
+    settle(&mut stage.ui);
+    // A request that no longer offers it starts with its first type.
+    stage.opened(
+        asked()
+            .filters([FileFilter::new("png", "Images", ["png"]).unwrap()])
+            .unwrap(),
+    );
+    stage.click_row(1);
+    assert!(stage.confirm());
+    match stage.outcome() {
+        Some(FileDialogOutcome::Accepted(selection)) => {
+            assert_eq!(selection.filter(), Some("png"));
+            assert_eq!(selection.paths(), [PathBuf::from("/r/b.png")]);
+        }
+        other => panic!("{other:?}"),
+    }
+}
+
+fn remembering(folder: &str) -> FileDialogMemory {
+    FileDialogMemory::decode(&format!(
+        "pert-ui-file-dialog-memory 1\ncontext \"project\" folder=\"{folder}\"\n"
+    ))
+    .unwrap()
+}
+
+#[test]
+fn an_explicit_starting_folder_takes_precedence_and_is_not_searched_for() {
+    let mut stage = stage_with(&remembering("/r/sub"));
+    stage.open(folder_in("project").start_folder("/r/else"));
+    assert_eq!(stage.current(), PathBuf::from("/r/else"));
+    assert_eq!(
+        stage.fail("/r/else", ListingErrorKind::NotFound),
+        ListingDelivery::Applied
+    );
+    assert_eq!(stage.current(), PathBuf::from("/r/else"), "shown as failed");
+    assert!(stage.awaited().is_empty());
+}
+
+#[test]
+fn a_remembered_folder_that_is_gone_gives_way_to_its_ancestors() {
+    let mut stage = stage_with(&remembering("/r/a/b"));
+    stage.open(folder_in("project"));
+    assert_eq!(stage.awaited(), [PathBuf::from("/r/a/b")]);
+    stage.fail("/r/a/b", ListingErrorKind::NotFound);
+    assert_eq!(stage.current(), PathBuf::from("/r/a"));
+    stage.fail("/r/a", ListingErrorKind::NotADirectory);
+    assert_eq!(stage.current(), PathBuf::from("/r"));
+    stage.answer("/r", listing());
+    assert_eq!(stage.current(), PathBuf::from("/r"));
+    assert!(stage.awaited().is_empty());
+    assert_eq!(stage.status(), FileDialogStatus::Open);
+    // The search is over: a later failure of the folder moves nothing.
+    let sub = stage.row(0);
+    stage.click_with(&sub, 2);
+    assert_eq!(stage.current(), PathBuf::from("/r/sub"));
+    stage.fail("/r/sub", ListingErrorKind::NotFound);
+    assert_eq!(stage.current(), PathBuf::from("/r/sub"));
+}
+
+#[test]
+fn the_search_ends_at_the_first_root_and_at_a_refusal_of_another_kind() {
+    // Outside every root: the ancestors run out and the first root is tried.
+    let mut stage = stage_with(&remembering("/gone"));
+    stage.open(folder_in("project"));
+    stage.fail("/gone", ListingErrorKind::NotFound);
+    assert_eq!(stage.current(), PathBuf::from("/"));
+    stage.fail("/", ListingErrorKind::NotFound);
+    assert_eq!(stage.current(), PathBuf::from("/r"));
+    stage.fail("/r", ListingErrorKind::NotFound);
+    assert_eq!(
+        stage.current(),
+        PathBuf::from("/r"),
+        "nothing is left to try"
+    );
+    assert!(stage.awaited().is_empty());
+
+    // A folder the user may not read is shown as that, not searched past.
+    let mut stage = stage_with(&remembering("/r/a/b"));
+    stage.open(folder_in("project"));
+    stage.fail("/r/a/b", ListingErrorKind::PermissionDenied);
+    assert_eq!(stage.current(), PathBuf::from("/r/a/b"));
+    assert!(stage.awaited().is_empty());
+}
+
+#[test]
+fn the_search_stops_when_the_user_goes_elsewhere() {
+    let mut stage = stage_with(&remembering("/r/a/b"));
+    stage
+        .dialog
+        .places()
+        .set(vec![FilePlace::new("Samples", "/r/samples").unwrap()])
+        .unwrap();
+    stage.open(folder_in("project"));
+    let place = widget(&stage.ui, &stage.root, "place-0");
+    stage.click(&place);
+    assert_eq!(stage.current(), PathBuf::from("/r/samples"));
+    // The late answer for the remembered folder moves nothing.
+    assert_eq!(
+        stage.fail("/r/a/b", ListingErrorKind::NotFound),
+        ListingDelivery::Stale
+    );
+    assert_eq!(stage.current(), PathBuf::from("/r/samples"));
+    assert_eq!(stage.awaited(), [PathBuf::from("/r/samples")]);
+    // Nor does the place's own failure start a search.
+    stage.fail("/r/samples", ListingErrorKind::NotFound);
+    assert_eq!(stage.current(), PathBuf::from("/r/samples"));
+}
+
+#[test]
+fn a_reopened_dialog_is_not_moved_by_the_earlier_sessions_search() {
+    let mut stage = stage_with(&remembering("/r/a/b"));
+    stage.open(folder_in("project"));
+    assert!(stage.dialog.cancel().unwrap());
+    let _ = stage.outcome();
+    settle(&mut stage.ui);
+    stage.open(folder_in("export").start_folder("/r/z"));
+    let late = stage.take_request(Path::new("/r/a/b"));
+    assert_eq!(
+        stage
+            .dialog
+            .deliver(late.respond(Err(ListingError::new(ListingErrorKind::NotFound, "gone"))))
+            .unwrap(),
+        ListingDelivery::Stale
+    );
+    settle(&mut stage.ui);
+    assert_eq!(stage.current(), PathBuf::from("/r/z"));
+    assert_eq!(stage.awaited(), [PathBuf::from("/r/z")]);
+}
+
+#[test]
+fn dialogs_sharing_a_memory_keep_each_others_updates() {
+    let memory = FileDialogMemory::new();
+    let (mut first, mut second) = (stage_with(&memory), stage_with(&memory));
+    // Both open before either accepts: neither writes back what it opened with.
+    first.open(folder_in("project").start_folder("/r/one"));
+    second.open(folder_in("export").start_folder("/r/two"));
+    first.answer("/r/one", listing());
+    second.answer("/r/two", listing());
+    assert!(first.confirm());
+    assert!(second.confirm());
+    assert_eq!(memory.last_folder(Some("project")), Some("/r/one".into()));
+    assert_eq!(memory.last_folder(Some("export")), Some("/r/two".into()));
+    assert_eq!(
+        memory.recent_folders(),
+        [PathBuf::from("/r/two"), PathBuf::from("/r/one")]
+    );
+    let (_, _) = (first.outcome(), second.outcome());
+    settle(&mut first.ui);
+    settle(&mut second.ui);
+
+    // For one context the later accept wins.
+    first.open(folder_in("project").start_folder("/r/a"));
+    second.open(folder_in("project").start_folder("/r/b"));
+    first.answer("/r/a", listing());
+    second.answer("/r/b", listing());
+    assert!(second.confirm());
+    assert!(first.confirm());
+    assert_eq!(memory.last_folder(Some("project")), Some("/r/a".into()));
+}
+
+#[cfg(unix)]
+#[test]
+fn a_folder_whose_path_is_not_unicode_is_not_remembered() {
+    use std::os::unix::ffi::OsStrExt;
+    let odd = PathBuf::from("/r").join(std::ffi::OsStr::from_bytes(b"caf\xe9"));
+    let memory = remembering("/r/sub");
+    let mut stage = stage_with(&memory);
+    stage.open(folder_in("project").start_folder(&odd));
+    let request = stage.take_request(&odd);
+    stage
+        .dialog
+        .deliver(request.respond(Ok(Vec::new())))
+        .unwrap();
+    settle(&mut stage.ui);
+    assert!(stage.confirm());
+    match stage.outcome() {
+        Some(FileDialogOutcome::Accepted(selection)) => {
+            assert_eq!(selection.paths(), [odd]);
+            assert!(!selection.folder_remembered());
+        }
+        other => panic!("{other:?}"),
+    }
+    assert_eq!(memory, remembering("/r/sub"), "nothing lossy is stored");
+}
+
+#[test]
+fn places_and_recent_folders_are_offered_beside_the_browser() {
+    let memory = FileDialogMemory::new();
+    let mut stage = stage_with(&memory);
+    stage.opened(request(FileDialogMode::ChooseFolder));
+    let left = |stage: &Stage| {
+        let browser = widget(&stage.ui, &stage.root, "browser");
+        stage.ui.bounds(&browser).unwrap().expect("laid out").x()
+    };
+    let alone = left(&stage);
+    assert!(
+        stage
+            .ui
+            .bounds(&widget(&stage.ui, &stage.root, "shortcuts"))
+            .unwrap()
+            .is_none(),
+        "no column without places or recent folders"
+    );
+    stage
+        .dialog
+        .places()
+        .set(vec![FilePlace::new("Samples", "/r/samples").unwrap()])
+        .unwrap();
+    settle(&mut stage.ui);
+    assert!(left(&stage) > alone, "the browser makes room");
+    let place = widget(&stage.ui, &stage.root, "place-0");
+    assert_eq!(
+        support::semantics_of(&stage.ui, &place).and_then(|semantics| semantics.name),
+        Some("Samples".to_owned())
+    );
+    stage.click(&place);
+    assert_eq!(stage.current(), PathBuf::from("/r/samples"));
+    stage.answer("/r/samples", listing());
+    assert!(stage.confirm());
+    let _ = stage.outcome();
+    settle(&mut stage.ui);
+
+    // The accepted folder is a recent one in the next session.
+    stage.opened(request(FileDialogMode::ChooseFolder).start_folder("/r"));
+    let recent = widget(&stage.ui, &stage.root, "recent-0");
+    assert_eq!(
+        support::semantics_of(&stage.ui, &recent).and_then(|semantics| semantics.name),
+        Some("samples".to_owned())
+    );
+    stage.click(&recent);
+    assert_eq!(stage.current(), PathBuf::from("/r/samples"));
+}
+
+#[test]
+fn a_place_needs_a_label_and_a_folder() {
+    for (label, folder) in [("", "/r"), ("  ", "/r"), ("a\nb", "/r"), ("Home", "")] {
+        assert_eq!(
+            FilePlace::new(label, folder),
+            Err(FileDialogError::InvalidPlace),
+            "{label:?} {folder:?}"
+        );
+    }
+    let place = FilePlace::new("Home", "/home/ada").unwrap();
+    assert_eq!(
+        (place.label(), place.folder()),
+        ("Home", Path::new("/home/ada"))
+    );
+}
+
+#[test]
+fn the_memory_document_round_trips_and_is_deterministic() {
+    let memory = FileDialogMemory::new();
+    let mut stage = stage_with(&memory);
+    for (context, folder) in [(None, "/r/plain"), (Some("project"), "/r/a \"b\" \\c")] {
+        let asked = request(FileDialogMode::OpenFile)
+            .filters(text_filters())
+            .unwrap()
+            .start_folder(folder);
+        let asked = match context {
+            Some(context) => asked.context(context).unwrap(),
+            None => asked,
+        };
+        stage.open(asked);
+        stage.answer(folder, vec![file(&format!("{folder}/a.txt"))]);
+        stage.click_row(0);
+        assert!(stage.confirm());
+        let _ = stage.outcome();
+        settle(&mut stage.ui);
+    }
+    let text = memory.encode();
+    assert_eq!(
+        text,
+        "pert-ui-file-dialog-memory 1\n\
+         default folder=\"/r/plain\" filter=\"txt\"\n\
+         context \"project\" folder=\"/r/a \\\"b\\\" \\\\c\" filter=\"txt\"\n\
+         recent \"/r/a \\\"b\\\" \\\\c\"\n\
+         recent \"/r/plain\"\n"
+    );
+    let decoded = FileDialogMemory::decode(&text).unwrap();
+    assert_eq!(decoded, memory);
+    assert_eq!(decoded.encode(), text);
+    // A transport's line layout is tolerated and encodes canonically again.
+    let loose = format!(
+        "\n{}",
+        text.replace('\n', "\r\n\r\n")
+            .replace(" filter", "   filter")
+    );
+    assert_eq!(FileDialogMemory::decode(&loose).unwrap().encode(), text);
+    memory.clear();
+    assert_eq!(memory, FileDialogMemory::new());
+}
+
+#[test]
+fn an_invalid_memory_document_is_rejected_whole() {
+    use FileDialogMemoryError as E;
+    let head = "pert-ui-file-dialog-memory 1\n";
+    let malformed = |body: &str| {
+        let result = FileDialogMemory::decode(&format!("{head}{body}"));
+        assert!(
+            matches!(result, Err(E::Malformed(_))),
+            "{body:?}: {result:?}"
+        );
+    };
+    assert!(matches!(FileDialogMemory::decode(""), Err(E::Malformed(_))));
+    assert!(matches!(
+        FileDialogMemory::decode("pert-ui-workspace 1\n"),
+        Err(E::Malformed(_))
+    ));
+    for version in ["0", "2"] {
+        assert_eq!(
+            FileDialogMemory::decode(&format!("pert-ui-file-dialog-memory {version}\n")),
+            Err(E::UnsupportedVersion {
+                found: version.parse().unwrap(),
+                supported: 1
+            })
+        );
+    }
+    malformed("size width=\"1\"\n");
+    malformed("default\n");
+    malformed("default folder=\"/a\" colour=\"red\"\n");
+    malformed("default folder=\"/a\" folder=\"/b\"\n");
+    malformed("default folder=\"/a\\n\"\n");
+    malformed("default folder=\"/a\"\ndefault folder=\"/b\"\n");
+    malformed("recent \"/a\"\ncontext \"x\" folder=\"/a\"\n");
+    malformed("context \"x\" folder=\"/a\"\ndefault folder=\"/a\"\n");
+    malformed("recent \"/a\" \"/b\"\n");
+    malformed("recent /a\n");
+    // Tokens that run together, and a stray carriage return, are no layout.
+    malformed("context\"x\" folder=\"/a\"\n");
+    malformed("context \"x\"folder=\"/a\"\n");
+    malformed("default folder=\"/a\"filter=\"f\"\n");
+    malformed("recent\"/a\"\n");
+    malformed("recent \"/a\"\r\r\n");
+    let decode = |body: &str| FileDialogMemory::decode(&format!("{head}{body}"));
+    assert_eq!(
+        decode("context \"  \" folder=\"/a\"\n"),
+        Err(E::InvalidKey("  ".to_owned()))
+    );
+    assert_eq!(
+        decode("default filter=\"\"\n"),
+        Err(E::InvalidKey(String::new()))
+    );
+    assert_eq!(decode("default folder=\"\"\n"), Err(E::InvalidPath));
+    assert_eq!(decode("recent \"a\tb\"\n"), Err(E::InvalidPath));
+    assert_eq!(
+        decode(&format!("recent \"/{}\"\n", "a".repeat(4096))),
+        Err(E::InvalidPath)
+    );
+    assert_eq!(
+        decode("context \"x\" folder=\"/a\"\ncontext \"x\" folder=\"/b\"\n"),
+        Err(E::DuplicateContext("x".to_owned()))
+    );
+    assert_eq!(
+        decode("recent \"/a\"\nrecent \"/a\"\n"),
+        Err(E::DuplicateRecent("/a".to_owned()))
+    );
+    // The same folder under another spelling is the same folder.
+    assert_eq!(
+        decode("recent \"/a/b\"\nrecent \"/a/./b\"\n"),
+        Err(E::DuplicateRecent("/a/./b".to_owned()))
+    );
+    let recents = |count: usize| {
+        (0..count)
+            .map(|index| format!("recent \"/r/{index}\"\n"))
+            .collect::<String>()
+    };
+    assert!(decode(&recents(FileDialogMemory::MAX_RECENT)).is_ok());
+    assert_eq!(
+        decode(&recents(FileDialogMemory::MAX_RECENT + 1)),
+        Err(E::TooManyRecent)
+    );
+    let contexts = |count: usize| {
+        (0..count)
+            .map(|index| format!("context \"c{index}\" folder=\"/r\"\n"))
+            .collect::<String>()
+    };
+    assert!(decode(&contexts(FileDialogMemory::MAX_CONTEXTS)).is_ok());
+    assert_eq!(
+        decode(&contexts(FileDialogMemory::MAX_CONTEXTS + 1)),
+        Err(E::TooManyContexts)
+    );
+    // One invalid entry in an otherwise valid document rejects all of it.
+    assert_eq!(
+        decode("context \"x\" folder=\"/a\"\nrecent \"/a\"\nrecent \"\"\n"),
+        Err(E::InvalidPath)
+    );
+    assert_eq!(
+        FileDialogMemory::decode(&" ".repeat(FileDialogMemory::MAX_DOCUMENT_BYTES + 1)),
+        Err(E::TooLarge)
+    );
+}
+
+#[test]
+fn the_search_stops_when_the_user_opens_the_parent_in_the_browser() {
+    let mut stage = stage_with(&remembering("/r/a/b"));
+    stage.open(folder_in("project"));
+    let entries = widget(&stage.ui, &stage.root, "entries");
+    stage.ui.focus(&entries).unwrap();
+    press(&mut stage.ui, KeyCode::Backspace);
+    settle(&mut stage.ui);
+    assert_eq!(stage.current(), PathBuf::from("/r/a"));
+    assert_eq!(
+        stage.fail("/r/a/b", ListingErrorKind::NotFound),
+        ListingDelivery::Stale
+    );
+    // The folder the user opened fails: it is shown, not searched past.
+    stage.fail("/r/a", ListingErrorKind::NotFound);
+    assert_eq!(stage.current(), PathBuf::from("/r/a"));
+    assert_eq!(stage.awaited(), Vec::<PathBuf>::new());
+}
+
+#[test]
+fn another_folders_listing_neither_ends_nor_advances_the_search() {
+    // A kept listing of the remembered folder shows while the fresh one is
+    // due: the tree's listing arriving first must not end the search.
+    let memory = FileDialogMemory::new();
+    let mut stage = stage_with(&memory);
+    let asked = || {
+        request(FileDialogMode::OpenFile)
+            .context("project")
+            .unwrap()
+    };
+    stage.accept_in(asked().start_folder("/r/sub"), "/r/sub");
+    stage.open(asked());
+    assert_eq!(stage.current(), PathBuf::from("/r/sub"));
+    stage.answer("/r", listing());
+    assert_eq!(stage.current(), PathBuf::from("/r/sub"));
+    stage.fail("/r/sub", ListingErrorKind::NotFound);
+    assert_eq!(stage.current(), PathBuf::from("/r"), "the parent is tried");
+
+    // A kept failure of the remembered folder shows while the fresh answer
+    // is due: another folder's listing must not move the dialog on.
+    let mut stage = stage_with(&remembering("/r/x"));
+    stage.open(folder_in("other").start_folder("/r/x"));
+    stage.fail("/r/x", ListingErrorKind::NotFound);
+    assert!(stage.dialog.cancel().unwrap());
+    let _ = stage.outcome();
+    settle(&mut stage.ui);
+    stage.open(folder_in("project"));
+    stage.answer("/r", listing());
+    assert_eq!(stage.current(), PathBuf::from("/r/x"));
+    stage.answer("/r/x", Vec::new());
+    assert_eq!(stage.current(), PathBuf::from("/r/x"), "it is there again");
+}
+
+#[test]
+fn the_search_goes_on_above_the_first_root() {
+    let mut stage = stage_with(&remembering("/r/a"));
+    stage.open(folder_in("project"));
+    stage.fail("/r/a", ListingErrorKind::NotFound);
+    assert_eq!(stage.current(), PathBuf::from("/r"));
+    stage.fail("/r", ListingErrorKind::NotFound);
+    assert_eq!(
+        stage.current(),
+        PathBuf::from("/"),
+        "the root is an ancestor too"
+    );
+    let pending = stage.requests.borrow().len();
+    stage.fail("/", ListingErrorKind::NotFound);
+    // The first root was tried on the way: nothing is requested again.
+    assert_eq!(stage.current(), PathBuf::from("/"));
+    assert_eq!(stage.requests.borrow().len(), pending - 1);
+}
+
+#[test]
+fn a_memory_given_during_a_session_is_the_next_sessions() {
+    let (first, second) = (FileDialogMemory::new(), FileDialogMemory::new());
+    let mut stage = stage_with(&first);
+    stage.open(request(FileDialogMode::OpenFile).start_folder("/r/one"));
+    let _ = stage.dialog.clone().with_memory(&second);
+    stage.answer("/r/one", vec![file("/r/one/a.txt")]);
+    stage.click_row(0);
+    assert!(stage.confirm());
+    let _ = stage.outcome();
+    settle(&mut stage.ui);
+    assert_eq!(first.last_folder(None), Some("/r/one".into()));
+    assert_eq!(second, FileDialogMemory::new());
+    stage.accept_in(
+        request(FileDialogMode::OpenFile).start_folder("/r/two"),
+        "/r/two",
+    );
+    assert_eq!(first.last_folder(None), Some("/r/one".into()));
+    assert_eq!(second.last_folder(None), Some("/r/two".into()));
+}
+
+#[test]
+fn a_dismissed_session_leaves_the_memory_as_it_was() -> TestResult {
+    let memory = remembering("/r/sub");
+    let mut stage = stage_with(&memory);
+    stage.open(folder_in("project").start_folder("/r/else"));
+    stage.answer("/r/else", listing());
+    stage.ui.set_visible(&stage.root, false)?;
+    settle(&mut stage.ui);
+    assert!(matches!(
+        stage.outcome(),
+        Some(FileDialogOutcome::Dismissed(_))
+    ));
+    assert_eq!(memory, remembering("/r/sub"));
+    Ok(())
+}
+
+#[test]
+fn a_reordered_place_is_not_opened_by_a_press_on_another() {
+    let mut stage = stage();
+    let place = |label: &str, folder: &str| FilePlace::new(label, folder).unwrap();
+    let places = stage.dialog.places();
+    places
+        .set(vec![place("One", "/r/one"), place("Two", "/r/two")])
+        .unwrap();
+    stage.opened(request(FileDialogMode::ChooseFolder));
+    let one = widget(&stage.ui, &stage.root, "place-0");
+    let point = stage.point(&one);
+    stage
+        .ui
+        .pointer_input(PointerEvent::new(
+            point,
+            PointerKind::Press(PointerButton::Primary),
+        ))
+        .unwrap();
+    // The list is reordered under the held press.
+    places
+        .set(vec![place("Two", "/r/two"), place("One", "/r/one")])
+        .unwrap();
+    settle(&mut stage.ui);
+    assert_eq!(
+        widget(&stage.ui, &stage.root, "place-0"),
+        one,
+        "One keeps its key"
+    );
+    stage
+        .ui
+        .pointer_input(PointerEvent::new(
+            point,
+            PointerKind::Release(PointerButton::Primary),
+        ))
+        .unwrap();
+    settle(&mut stage.ui);
+    assert_ne!(stage.current(), PathBuf::from("/r/two"));
+    // A place given twice is one item.
+    places
+        .set(vec![place("Two", "/r/two"), place("Two", "/r/two")])
+        .unwrap();
+    settle(&mut stage.ui);
+    let shortcuts = widget(&stage.ui, &stage.root, "shortcuts");
+    assert!(
+        stage
+            .ui
+            .find_descendant(&shortcuts, "place-1")
+            .unwrap()
+            .is_some()
+    );
+    assert!(
+        stage
+            .ui
+            .find_descendant(&shortcuts, "place-0")
+            .unwrap()
+            .is_none()
+    );
+}
+
+#[test]
+fn a_place_scrolled_out_of_view_is_reached_and_opened_by_keyboard() {
+    let mut stage = stage();
+    let places = (0..40)
+        .map(|index| FilePlace::new(format!("Place {index}"), format!("/r/p{index}")).unwrap())
+        .collect::<Vec<_>>();
+    stage.dialog.places().set(places).unwrap();
+    stage.opened(request(FileDialogMode::ChooseFolder));
+    let last = widget(&stage.ui, &stage.root, "place-39");
+    stage.ui.focus(&last).unwrap();
+    settle(&mut stage.ui);
+    press(&mut stage.ui, KeyCode::Enter);
+    settle(&mut stage.ui);
+    assert_eq!(stage.current(), PathBuf::from("/r/p39"));
+}
+
+#[test]
+fn recent_folders_that_share_a_name_are_shown_by_their_paths() {
+    let memory = FileDialogMemory::decode(
+        "pert-ui-file-dialog-memory 1\n\
+         recent \"/r/a/src\"\nrecent \"/r/b/src\"\nrecent \"/r/docs\"\n",
+    )
+    .unwrap();
+    let mut stage = stage_with(&memory);
+    stage.opened(request(FileDialogMode::ChooseFolder));
+    let name = |stage: &Stage, key: &str| {
+        let item = widget(&stage.ui, &stage.root, key);
+        support::semantics_of(&stage.ui, &item)
+            .and_then(|semantics| semantics.name)
+            .unwrap()
+    };
+    assert_eq!(name(&stage, "recent-0"), "/r/a/src");
+    assert_eq!(name(&stage, "recent-1"), "/r/b/src");
+    assert_eq!(name(&stage, "recent-2"), "docs");
 }

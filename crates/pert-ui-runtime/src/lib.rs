@@ -214,8 +214,9 @@ mod async_source;
 pub use async_source::{RequestTicket, RequestTracker, TicketStatus};
 mod file_dialog;
 pub use file_dialog::{
-    FileDialog, FileDialogController, FileDialogError, FileDialogFailure, FileDialogMode,
-    FileDialogOutcome, FileDialogRequest, FileDialogSelection, FileDialogStatus, FileFilter,
+    FileDialog, FileDialogController, FileDialogError, FileDialogFailure, FileDialogMemory,
+    FileDialogMemoryError, FileDialogMode, FileDialogOutcome, FileDialogRequest,
+    FileDialogSelection, FileDialogStatus, FileFilter, FilePlace,
 };
 mod file_browser;
 pub use file_browser::{
@@ -492,9 +493,9 @@ pub mod prelude {
     #[doc(no_inline)]
     pub use crate::{
         CurrentListing, DirectoryEntry, DirectoryRequest, DirectoryResponse, EntryKind,
-        FileBrowserController, FileDialogController, FileDialogError, FileDialogMode,
-        FileDialogOutcome, FileDialogRequest, FileDialogStatus, FileFilter, LinkTarget,
-        ListingDelivery, ListingError, ListingErrorKind,
+        FileBrowserController, FileDialogController, FileDialogError, FileDialogMemory,
+        FileDialogMode, FileDialogOutcome, FileDialogRequest, FileDialogStatus, FileFilter,
+        FilePlace, LinkTarget, ListingDelivery, ListingError, ListingErrorKind,
     };
     // Vocabulary: navigation.
     #[doc(no_inline)]

@@ -241,6 +241,10 @@ pub enum StringRole {
     FileDialogName,
     /// The name of the file dialog's file-type selector.
     FileDialogType,
+    /// The heading over the places the application offers in a file dialog.
+    FileDialogPlaces,
+    /// The heading over a file dialog's recent folders.
+    FileDialogRecent,
     /// The file dialog's question before an existing file is replaced:
     /// `{name}` is the file.
     FileDialogReplaceQuestion,
@@ -287,7 +291,7 @@ crate::tables::variant_list! {
         ToolWindowDock, ToolWindowFloat, ToolWindowOpenWindow, NotANumber,
         NotAWholeNumber, NumberOutOfRange, NumberOffStep, FileDialogOpen,
         FileDialogChooseFolder, FileDialogChoose, FileDialogSave, FileDialogName,
-        FileDialogType, FileDialogReplaceQuestion, FileDialogReplace, FileDialogBack,
+        FileDialogType, FileDialogPlaces, FileDialogRecent, FileDialogReplaceQuestion, FileDialogReplace, FileDialogBack,
         FileDialogUnusable, FileDialogNotAllFiles, FileDialogInvalidName,
         FileDialogAmbiguousName,
     ];
@@ -461,6 +465,8 @@ const ENGLISH: [(StringRole, &str); STRING_ROLE_COUNT] = [
     (StringRole::FileDialogSave, "Save"),
     (StringRole::FileDialogName, "Name"),
     (StringRole::FileDialogType, "File type"),
+    (StringRole::FileDialogPlaces, "Places"),
+    (StringRole::FileDialogRecent, "Recent"),
     (
         StringRole::FileDialogReplaceQuestion,
         "“{name}” already exists. Replace it?",

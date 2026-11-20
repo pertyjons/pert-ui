@@ -1215,6 +1215,31 @@ way. [`FileDialogController`] documents what each mode accepts. An accepted
 path says what the user chose in a listing that may be out of date: whether
 it can be read or written is for the application to find out when it acts.
 
+To start each dialog where the user last was, create one
+[`FileDialogMemory`], give it to the controller with
+[`FileDialogController::with_memory`] and name each purpose with
+[`FileDialogRequest::context`]. An accepted session records its folder and
+file type under that purpose and adds the folder to the recent ones the
+dialog lists; a remembered folder that is gone gives way to its parent, and
+so on upward, until a folder lists or fails for another reason, such as a
+permission. The memory is yours to store:
+[`FileDialogMemory::encode`] after an accepted outcome,
+[`FileDialogMemory::decode`] at startup. Folders the application knows, such
+as a projects directory, are offered as [`FilePlace`]s through
+[`FileDialogController::places`].
+
+```rust
+use pert_ui::prelude::*;
+
+let ui = Runtime::new();
+let memory = FileDialogMemory::decode("pert-ui-file-dialog-memory 1\n")?;
+let files = FileDialogController::new(&ui, ["/projects"], |_request| {})?.with_memory(&memory);
+files.places().set(vec![FilePlace::new("Projects", "/projects")?])?;
+let request = FileDialogRequest::new(FileDialogMode::OpenFile).context("open-project")?;
+assert_eq!(memory.last_folder(request.context_key()), None);
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
 A picker with another shape can be composed from the same parts: a [`Dialog`]
 around a [`FileBrowser`] whose controller comes from
 [`FileBrowserController::new_idle`], with

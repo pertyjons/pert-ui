@@ -801,6 +801,79 @@ further independent review. A second dialog mounted on a controller another
 owns fails every flush with `DialogBusy` (existing `Dialog` rule), so no
 callback is delivered until it is removed; the outcome stays takeable.
 
+## 10b. As implemented in slice 2 (0.3.125)
+
+The contract is in `FileDialogMemory`'s and `FileDialogController`'s rustdoc
+and in [contracts](../docs/contracts.md#file-dialog-sessions). Decided while
+implementing and accepted by the maintainer on 2026-11-20:
+
+- **An explicit `start_folder` takes precedence over the remembered folder**
+  and is not searched for. It keeps slice 1's meaning of the builder; an
+  application that wants a default only until something is remembered sets it
+  when `FileDialogMemory::last_folder` is `None`, as the gallery does.
+- **The remembered folder is the folder the dialog showed at accept**, in
+  every mode, also when `ChooseFolder` accepts an active subfolder.
+- **`with_memory` is a builder on the controller**, applying to every clone
+  from the next `open`; the memory itself is a shared handle
+  (`Rc`, UI thread), and equality compares contents.
+- **The document is line-based text** like the workspace's, reusing its
+  scanner: `default`, `context "key"` and `recent "path"` lines with
+  `folder=` and `filter=` fields. Capacities: 64 contexts, 12 recent folders,
+  4096 bytes per path, 1 MiB per document. A path with a control character
+  is treated like a non-Unicode one: not stored.
+- **A folder that was not remembered is reported on the selection**
+  (`FileDialogSelection::folder_remembered`), which is also `false` without
+  a memory.
+- **The recent folders shown are the session's snapshot**; another dialog's
+  accept shows in the next session. Places are a signal on the controller
+  (`places()`), validated as `FilePlace`.
+- **No size in the memory** in this slice, per section 9 item 5; "cancel
+  after resize" has therefore no test.
+- **The gallery shows the encoded document** under the result instead of
+  writing a file: it has no settings storage, and its workspace is likewise
+  only stored by the check mode and the tools page.
+
+Codex reviewed the slice on 2026-11-20 (read-only; it ran the prebuilt test
+binaries) and found one blocker and ten other points; repaired before the
+commit, with regression tests:
+
+- the search read the shown folder's listing after any applied response, so
+  another folder's listing, or a kept listing, could end or advance it: each
+  step now waits for the answer to the one request it made, by generation,
+  which also keeps a request the user made for the same folder out of it;
+- a memory given to the controller during a session received that session's
+  write: the session keeps the memory it started with;
+- places and recent folders were keyed by position, so a reorder put another
+  folder under a held press: each keeps a number while it is listed, and an
+  identical place given twice is shown once;
+- the first root ended the ancestor walk early when it was an ancestor: the
+  walk goes on above it and does not request it a second time;
+- the rustdoc advertised the list's scroll position as workspace state,
+  which a structural scroll area does not record: the claim is removed and
+  the headings are internal structure;
+- recent folders were compared as text: they are compared as paths;
+- the decoder accepted tokens that run together and a stray `\r`: both are
+  malformed now;
+- stale descriptions, and tests that claimed more than they asserted.
+
+The review's point 8, the three scope decisions in the list above (explicit
+start over memory, no size yet, the gallery showing the document rather than
+storing it), was confirmed by the maintainer on 2026-11-20 as plan
+decision 12.
+
+Tested: the per-context round through two sessions, no write on cancel, the
+remembered type and its fallback, precedence of an explicit start, the
+ancestor search to the first root, a refusal of another kind, a search
+overtaken by a place and by a reopened dialog, two dialogs sharing a memory
+(disjoint contexts and one context), a non-Unicode folder, places and recent
+folders in the content, document round trip, tolerated layout and every
+rejection, capacity and eviction (unit tests in `memory.rs`), and a search
+overtaken by opening the parent in the browser. Not tested: a workspace
+capture with places shown, Tab traversal through the list (focus and Enter
+on an item scrolled out of view are), Windows path prefixes in the ancestor
+walk, and anything native. The repairs after the review have had no further
+independent review.
+
 ## 11. Assumed, not yet tested
 
 - That an idle browser mounted in a closed dialog requests nothing: the

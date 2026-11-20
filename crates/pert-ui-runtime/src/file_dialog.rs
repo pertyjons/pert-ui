@@ -9,8 +9,8 @@
 use crate::{
     CurrentListing, DialogController, DialogOutcome, DialogStatus, DirectoryEntry,
     DirectoryRequest, DirectoryResponse, EntryKind, FileBrowserController, FileBrowserError,
-    GeometryError, LinkTarget, ListSelection, ListingDelivery, ReadSignal, RuntimeError,
-    SelectionMode, Signal, StringRole, SurfaceDismissal, TextField, UiMessage,
+    GeometryError, LinkTarget, ListSelection, ListingDelivery, ListingErrorKind, ReadSignal,
+    RuntimeError, SelectionMode, Signal, StringRole, SurfaceDismissal, TextField, UiMessage,
 };
 use std::cell::{Cell, RefCell};
 use std::collections::{BTreeSet, HashSet};
@@ -18,7 +18,9 @@ use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
+mod memory;
 mod view;
+pub use memory::{FileDialogMemory, FileDialogMemoryError};
 pub use view::FileDialog;
 
 /// What a file dialog asks the user for.
@@ -70,6 +72,10 @@ pub enum FileDialogError {
     /// [`FileDialogRequest::suggested_name`].
     #[error("the suggested name is not one file name")]
     InvalidName,
+    /// A place whose label is blank or holds a control character, or whose
+    /// folder is the empty path.
+    #[error("the place is not valid")]
+    InvalidPlace,
     /// A dialog size below [`FileDialog::MINIMUM_SIZE`].
     #[error("the file dialog cannot be smaller than 480 by 320")]
     TooSmall,
@@ -116,6 +122,48 @@ fn valid_name(name: &str) -> bool {
         && TextField::check(name).is_ok()
         && matches!(components.next(), Some(Component::Normal(_)))
         && components.next().is_none()
+}
+
+/// A folder the application offers as a shortcut beside a file dialog's
+/// browser, from [`FileDialogController::places`].
+///
+/// The library has no places of its own: it cannot know the user's home or
+/// documents folder, so the application supplies what it knows. The folder
+/// need not be inside one of the controller's roots.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct FilePlace {
+    label: String,
+    folder: PathBuf,
+}
+impl FilePlace {
+    /// Creates a place shown as `label` that opens `folder`.
+    ///
+    /// # Errors
+    /// [`FileDialogError::InvalidPlace`] for a label that is blank or holds
+    /// a control character, and for the empty path.
+    pub fn new(
+        label: impl Into<String>,
+        folder: impl Into<PathBuf>,
+    ) -> Result<Self, FileDialogError> {
+        let (label, folder) = (label.into(), folder.into());
+        if label.trim().is_empty()
+            || label.chars().any(char::is_control)
+            || folder.as_os_str().is_empty()
+        {
+            return Err(FileDialogError::InvalidPlace);
+        }
+        Ok(Self { label, folder })
+    }
+    /// The text the place is shown as.
+    #[must_use]
+    pub fn label(&self) -> &str {
+        &self.label
+    }
+    /// The folder the place opens.
+    #[must_use]
+    pub fn folder(&self) -> &Path {
+        &self.folder
+    }
 }
 
 /// A file type the user can choose in a file dialog: an identity, a label
@@ -269,7 +317,8 @@ impl FileDialogRequest {
     pub const MAX_KEY_CHARS: usize = 64;
 
     /// Creates a request with the mode's default texts, no file types, no
-    /// suggested name, starting in the controller's first root.
+    /// suggested name and no starting folder or context; see
+    /// [`Self::start_folder`] for where such a session starts.
     pub fn new(mode: FileDialogMode) -> Self {
         Self {
             mode,
@@ -296,9 +345,10 @@ impl FileDialogRequest {
         self.accept_label = Some(label.into());
         self
     }
-    /// Names the purpose of the dialog, such as `"open-project"`. It is
-    /// carried for remembering where the user was, per purpose; this version
-    /// of the dialog validates it and does not use it yet.
+    /// Names the purpose of the dialog, such as `"open-project"`. A
+    /// controller with a [`FileDialogMemory`] remembers the folder and the
+    /// file type per purpose; requests without a context share one unnamed
+    /// purpose. Without a memory the key has no effect.
     ///
     /// # Errors
     /// [`FileDialogError::InvalidContext`] unless the key is 1 to
@@ -312,8 +362,10 @@ impl FileDialogRequest {
         self.context = Some(key);
         Ok(self)
     }
-    /// Offers file types. The first is selected when the session starts, and
-    /// the selected one restricts which files the list shows. Without
+    /// Offers file types. The first is selected when the session starts,
+    /// unless the controller's [`FileDialogMemory`] remembers another of
+    /// them for the request's context, and the selected one restricts which
+    /// files the list shows. Without
     /// filters, the default, every file shows and the dialog has no selector.
     /// [`FileDialogMode::ChooseFolder`] ignores them.
     ///
@@ -334,8 +386,13 @@ impl FileDialogRequest {
         self.filters = filters;
         Ok(self)
     }
-    /// The folder the session starts in, instead of the controller's first
-    /// root. It need not be inside a root.
+    /// The folder the session starts in. It need not be inside a root. An
+    /// explicit starting folder is used as given: it takes precedence over a
+    /// folder the controller's [`FileDialogMemory`] remembers, and no other
+    /// folder is tried when its listing fails. Without one the session
+    /// starts in the remembered folder, else in the controller's first root.
+    /// To prefer a remembered folder over a default of the application's,
+    /// set this only when [`FileDialogMemory::last_folder`] is `None`.
     pub fn start_folder(mut self, folder: impl Into<PathBuf>) -> Self {
         self.start = Some(folder.into());
         self
@@ -412,6 +469,7 @@ impl FileDialogRequest {
 pub struct FileDialogSelection {
     paths: Vec<PathBuf>,
     filter: Option<String>,
+    remembered: bool,
 }
 impl FileDialogSelection {
     /// The chosen paths; never empty. Several files are in the order the
@@ -434,6 +492,15 @@ impl FileDialogSelection {
     #[must_use]
     pub fn filter(&self) -> Option<&str> {
         self.filter.as_deref()
+    }
+    /// Whether the controller's [`FileDialogMemory`] took the folder the
+    /// dialog showed. It is `false` without a memory, and with one when the
+    /// folder's path cannot be stored (see the memory's rules for paths); a
+    /// host that persists the memory can then tell the user that this folder
+    /// will not be offered again.
+    #[must_use]
+    pub const fn folder_remembered(&self) -> bool {
+        self.remembered
     }
 }
 
@@ -648,6 +715,15 @@ struct Inner {
     message: Signal<Option<Refusal>>,
     question: Signal<Option<PathBuf>>,
     origin: RefCell<Option<Origin>>,
+    memory: RefCell<Option<FileDialogMemory>>,
+    places: Signal<Vec<FilePlace>>,
+    /// The memory's recent folders as the session found them.
+    recent: Signal<Vec<PathBuf>>,
+    /// The memory the open session started from and writes to when accepted.
+    session_memory: RefCell<Option<FileDialogMemory>>,
+    /// The opening's search for the remembered folder; shared with the
+    /// request sink, which notes the request the search waits for.
+    search: Rc<RefCell<Option<Search>>>,
     /// The accepted selection, between acceptance and `take_outcome`.
     selection: RefCell<Option<FileDialogSelection>>,
     /// Why the session failed to start, between `open` and `take_outcome`.
@@ -669,6 +745,37 @@ struct Texts {
     name_label: ReadSignal<String>,
     type_label: ReadSignal<String>,
     choices: ReadSignal<Vec<crate::Choice<String>>>,
+    shortcuts: ReadSignal<Rc<Shortcuts>>,
+}
+
+/// The opening's search for a remembered folder that may be gone: the folder
+/// being tried and the one listing request whose answer continues it.
+#[derive(Clone, Debug)]
+struct Search {
+    folder: PathBuf,
+    /// The generation of the request the search issued for `folder`; a
+    /// request the user's navigation issues later is not the search's.
+    generation: Option<u64>,
+    /// While the search's own navigation hands out its request.
+    capturing: bool,
+    /// Whether the first root is `folder` or was tried before it.
+    root_tried: bool,
+    /// Whether nothing follows `folder`: the first root after the ancestors.
+    last: bool,
+}
+
+/// What the list beside the browser shows.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+struct Shortcuts {
+    places_heading: String,
+    places: Vec<FilePlace>,
+    recent_heading: String,
+    recent: Vec<PathBuf>,
+}
+impl Shortcuts {
+    fn is_empty(&self) -> bool {
+        self.places.is_empty() && self.recent.is_empty()
+    }
 }
 
 /// Shows a path's last component, or the whole path when it has none.
@@ -759,6 +866,27 @@ fn chosen<'a>(
 /// The listing may be out of date, so an accepted path says what the user
 /// chose, not what the filesystem holds.
 ///
+/// # Memory and places
+///
+/// With a [`FileDialogMemory`] ([`Self::with_memory`]) a session starts in
+/// the folder, and with the file type, of the last accepted session of its
+/// request's [context](FileDialogRequest::context), unless the request names
+/// a [starting folder](FileDialogRequest::start_folder). A remembered folder
+/// may be gone: when its listing fails as
+/// [`NotFound`](crate::ListingErrorKind::NotFound) or
+/// [`NotADirectory`](crate::ListingErrorKind::NotADirectory) the dialog
+/// requests its parent instead, then that folder's parent, and after the
+/// last ancestor the first root, unless that was among them. Only the answer
+/// to the request the search itself made continues it. Any other failure,
+/// such as a folder the user may not read, is shown and ends the search, and
+/// so does the user opening a folder, the one shown included, so an answer
+/// that arrives late never moves the browser. An accepted session is written to
+/// the memory before its outcome can be taken; no other ending writes.
+///
+/// The dialog lists the memory's recent folders, as they were when the
+/// session opened, and the application's [places](Self::places) beside the
+/// browser; activating one opens its folder.
+///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
 /// use pert_ui::{
@@ -833,11 +961,24 @@ impl FileDialogController {
         }
         let roots: Vec<PathBuf> = roots.into_iter().map(Into::into).collect();
         let first_root = roots.first().cloned().ok_or(FileDialogError::NoRoots)?;
+        let search: Rc<RefCell<Option<Search>>> = Rc::default();
+        let (noted, mut request) = (search.clone(), request);
         let browser = FileBrowserController::new_idle(
             ui,
             ListSelection::new(ui, SelectionMode::Single),
             roots,
-            request,
+            move |asked: DirectoryRequest| {
+                {
+                    let mut search = noted.borrow_mut();
+                    if let Some(search) = search.as_mut()
+                        && search.capturing
+                        && asked.directory() == search.folder
+                    {
+                        search.generation = Some(asked.generation());
+                    }
+                }
+                request(asked);
+            },
         )?;
         let dialog = DialogController::new(ui);
         let config = ui.signal(Config(Rc::new(FileDialogRequest::new(
@@ -932,7 +1073,19 @@ impl FileDialogController {
                 .map(|filter| crate::Choice::new(filter.id().to_owned(), filter.label()))
                 .collect::<Vec<_>>()
         })?;
+        let places = ui.signal(Vec::<FilePlace>::new());
+        let recent = ui.signal(Vec::<PathBuf>::new());
+        let shortcuts =
+            ReadSignal::combine((&places, &recent, &strings), |(places, recent, strings)| {
+                Rc::new(Shortcuts {
+                    places_heading: strings.text(StringRole::FileDialogPlaces).to_owned(),
+                    places: places.clone(),
+                    recent_heading: strings.text(StringRole::FileDialogRecent).to_owned(),
+                    recent: recent.clone(),
+                })
+            })?;
         let texts = Texts {
+            shortcuts,
             title,
             accept,
             cancel,
@@ -1000,6 +1153,11 @@ impl FileDialogController {
             message,
             question,
             origin: RefCell::new(None),
+            memory: RefCell::new(None),
+            places,
+            recent,
+            session_memory: RefCell::new(None),
+            search,
             selection: RefCell::new(None),
             failure: RefCell::new(None),
             status,
@@ -1018,12 +1176,36 @@ impl FileDialogController {
         Ok(controller)
     }
 
+    /// Gives the controller a memory, replacing an earlier one: sessions
+    /// then start where the last accepted session of their context was, and
+    /// accepted sessions are recorded in it, by the rules on
+    /// [`FileDialogMemory`]. It applies to every clone of the controller and
+    /// from the next [`Self::open`]: a session that is open keeps, and when
+    /// accepted writes to, the memory it started with. Call it where the
+    /// controller is created.
+    /// Any number of controllers may share one memory.
+    pub fn with_memory(self, memory: &FileDialogMemory) -> Self {
+        *self.0.memory.borrow_mut() = Some(memory.clone());
+        self
+    }
+
+    /// The places the dialog offers beside its browser, which the
+    /// application writes or binds; empty at first. Activating a place opens
+    /// its folder. The list is application data: it is not stored in a
+    /// [`FileDialogMemory`]. A change shows in an open session as well. A
+    /// place given twice, with the same label and folder, is shown once.
+    #[must_use]
+    pub fn places(&self) -> Signal<Vec<FilePlace>> {
+        self.0.places.clone()
+    }
+
     /// Starts a session configured by `request`.
     ///
     /// The session is reserved first, and a refusal there changes nothing
     /// and requests nothing. Then the session's state is written and the
     /// browser navigates to the starting folder
-    /// ([`FileDialogRequest::start_folder`], else the first root), which
+    /// ([`FileDialogRequest::start_folder`], else the folder the memory
+    /// remembers for the request's context, else the first root), which
     /// hands the host its listing request before this call returns. Should
     /// one of those steps fail after the reservation, nothing is rolled back:
     /// the session ends as [`FileDialogFailure::Start`] and the same error is
@@ -1042,6 +1224,7 @@ impl FileDialogController {
         *self.0.selection.borrow_mut() = None;
         *self.0.failure.borrow_mut() = None;
         *self.0.origin.borrow_mut() = None;
+        *self.0.search.borrow_mut() = None;
         if let Err(error) = self.start(request) {
             *self.0.failure.borrow_mut() = Some(error.clone());
             // The reservation stands, so the session ends rather than vanishes.
@@ -1061,13 +1244,29 @@ impl FileDialogController {
         })?;
         selection.clear()?;
         inner.browser.filter().set(String::new())?;
-        // A folder is not of a file type, so that mode selects none.
+        // The session keeps the memory it starts from: one given to the
+        // controller later is the next session's.
+        let memory = inner.memory.borrow().clone();
+        (*inner.session_memory.borrow_mut()).clone_from(&memory);
+        let context = request.context.as_deref();
+        let remembered = memory
+            .as_ref()
+            .and_then(|memory| memory.last_filter(context));
+        // A folder is not of a file type, so that mode selects none. A
+        // remembered type the request no longer offers selects the first.
         inner.filter.set(
             request
                 .filters
-                .first()
+                .iter()
+                .find(|filter| Some(filter.id()) == remembered.as_deref())
+                .or_else(|| request.filters.first())
                 .filter(|_| request.mode != FileDialogMode::ChooseFolder)
                 .map_or_else(String::new, |filter| filter.id().to_owned()),
+        )?;
+        inner.recent.set(
+            memory
+                .as_ref()
+                .map_or_else(Vec::new, FileDialogMemory::recent_folders),
         )?;
         inner
             .name
@@ -1078,13 +1277,24 @@ impl FileDialogController {
             })?;
         inner.message.set(None)?;
         inner.question.set(None)?;
+        // Only a remembered folder is searched for: it may be gone since.
+        let remembered = match (&request.start, &memory) {
+            (None, Some(memory)) => memory.last_folder(context),
+            _ => None,
+        };
         let start = request
             .start
             .clone()
             .unwrap_or_else(|| inner.first_root.clone());
         inner.config.set(Config(Rc::new(request)))?;
         self.apply_predicate()?;
-        inner.browser.navigate(start)
+        match remembered {
+            Some(folder) => {
+                let root_tried = folder == inner.first_root;
+                self.seek(folder, root_tried, false)
+            }
+            None => inner.browser.navigate(start),
+        }
     }
     /// The file type selected in the session, if it offers any.
     fn selected_filter(&self) -> Result<Option<FileFilter>, RuntimeError> {
@@ -1116,12 +1326,25 @@ impl FileDialogController {
     /// it answers this controller's latest request for a directory the
     /// browser still wants, and is otherwise [`ListingDelivery::Stale`]. A
     /// response that arrives after its session ended is ordinary browser
-    /// data under that rule; it never ends, accepts or moves a session.
+    /// data under that rule; it never ends or accepts a session, and it
+    /// moves one only as the search for a remembered folder that the type
+    /// describes.
     ///
     /// # Errors
     /// Same as [`FileBrowserController::deliver`].
     pub fn deliver(&self, response: DirectoryResponse) -> Result<ListingDelivery, RuntimeError> {
+        let asked = response.request();
+        let (directory, generation) = (asked.directory().to_owned(), asked.generation());
+        let missing = response.listing().is_err_and(|error| {
+            matches!(
+                error.kind(),
+                ListingErrorKind::NotFound | ListingErrorKind::NotADirectory
+            )
+        });
         let delivery = self.0.browser.deliver(response)?;
+        if delivery == ListingDelivery::Applied {
+            self.search_on(&directory, generation, missing)?;
+        }
         // A copied name's tie to its file ends when a listing of the folder
         // no longer has the file; the file appearing again does not restore it.
         let origin = self.0.origin.borrow().as_ref().map(|o| o.path.clone());
@@ -1133,6 +1356,82 @@ impl FileDialogController {
             *self.0.origin.borrow_mut() = None;
         }
         Ok(delivery)
+    }
+
+    /// Shows `folder` as a step of the opening's search and notes the
+    /// request that step waits for.
+    fn seek(&self, folder: PathBuf, root_tried: bool, last: bool) -> Result<(), RuntimeError> {
+        let inner = &self.0;
+        *inner.search.borrow_mut() = Some(Search {
+            folder: folder.clone(),
+            generation: None,
+            capturing: true,
+            root_tried,
+            last,
+        });
+        let navigated = inner.browser.navigate(folder);
+        let mut search = inner.search.borrow_mut();
+        match search.as_mut() {
+            Some(step) if navigated.is_ok() && step.generation.is_some() => step.capturing = false,
+            // Refused, or no request was made: there is no answer to wait for.
+            _ => *search = None,
+        }
+        navigated
+    }
+    /// Continues the opening's search when the answer to its own request
+    /// was applied: a folder that is missing or no folder gives way to its
+    /// parent, ancestor by ancestor, and after the last one to the first
+    /// root unless that was tried on the way. Any other answer ends the
+    /// search, and no other response touches it.
+    fn search_on(
+        &self,
+        directory: &Path,
+        generation: u64,
+        missing: bool,
+    ) -> Result<(), RuntimeError> {
+        let inner = &self.0;
+        let step = {
+            let mut search = inner.search.borrow_mut();
+            if !search
+                .as_ref()
+                .is_some_and(|step| step.folder == directory && step.generation == Some(generation))
+            {
+                return Ok(());
+            }
+            search.take()
+        };
+        let Some(step) = step else {
+            return Ok(());
+        };
+        if !missing
+            || step.last
+            || inner.status.get()? != FileDialogStatus::Open
+            || inner.browser.current().get()? != step.folder
+        {
+            return Ok(());
+        }
+        let parent = step
+            .folder
+            .parent()
+            .filter(|parent| !parent.as_os_str().is_empty());
+        match parent {
+            Some(parent) => {
+                let root_tried = step.root_tried || parent == inner.first_root;
+                self.seek(parent.to_owned(), root_tried, false)
+            }
+            None if !step.root_tried => self.seek(inner.first_root.clone(), true, true),
+            None => Ok(()),
+        }
+    }
+    /// Opens `folder` from the list of places and recent folders.
+    pub(super) fn go_to(&self, folder: &Path) -> Result<(), RuntimeError> {
+        let inner = &self.0;
+        if inner.status.get()? != FileDialogStatus::Open || inner.question.get()?.is_some() {
+            return Ok(());
+        }
+        *inner.search.borrow_mut() = None;
+        inner.message.set(None)?;
+        inner.browser.navigate(folder)
     }
 
     /// Whether a session is open or an outcome waits.
@@ -1269,9 +1568,25 @@ impl FileDialogController {
     /// Ends the session as accepted with `paths`.
     fn finish(&self, paths: Vec<PathBuf>) -> Result<bool, RuntimeError> {
         let filter = self.selected_filter()?.map(|filter| filter.id);
-        *self.0.selection.borrow_mut() = Some(FileDialogSelection { paths, filter });
+        let current = self.0.browser.current().get()?;
+        let context = self.0.config.get()?.0.context.clone();
+        *self.0.selection.borrow_mut() = Some(FileDialogSelection {
+            paths,
+            filter: filter.clone(),
+            remembered: false,
+        });
         match self.0.dialog.accept() {
-            Ok(true) => Ok(true),
+            Ok(true) => {
+                // The session is accepted; its memory is written before
+                // anything can take the outcome.
+                if let Some(memory) = &*self.0.session_memory.borrow() {
+                    let remembered = memory.record(context.as_deref(), &current, filter.as_deref());
+                    if let Some(selection) = &mut *self.0.selection.borrow_mut() {
+                        selection.remembered = remembered;
+                    }
+                }
+                Ok(true)
+            }
             ended => {
                 // The selection and the ended session are kept together.
                 *self.0.selection.borrow_mut() = None;
@@ -1349,6 +1664,14 @@ impl FileDialogController {
         if edited || change.current {
             *inner.origin.borrow_mut() = None;
         }
+        // The user went elsewhere: the opening's search is over.
+        if change.current {
+            let current = inner.browser.current().get()?;
+            let mut search = inner.search.borrow_mut();
+            if search.as_ref().is_some_and(|step| step.folder != current) {
+                *search = None;
+            }
+        }
         if inner.message.get()?.is_some() {
             inner.message.set(None)?;
         }
@@ -1367,7 +1690,7 @@ impl FileDialogController {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::Runtime;
+    use crate::{ListingError, Runtime};
 
     /// The dialog offers no refresh of its own, so the browser is refreshed
     /// directly, as a host-side change of the folder would arrive.
@@ -1400,5 +1723,45 @@ mod tests {
         dialog.0.browser.refresh().unwrap();
         answer(vec![entry]);
         assert!(dialog.0.origin.borrow().is_none(), "and stays untied");
+    }
+
+    /// Activating the shown folder in the browser's tree requests it again
+    /// without changing it; that request is the user's, not the search's.
+    #[test]
+    fn a_request_the_user_made_for_the_sought_folder_ends_the_search() {
+        let ui = Runtime::new();
+        let requests: Rc<RefCell<Vec<DirectoryRequest>>> = Rc::default();
+        let queue = requests.clone();
+        let memory = FileDialogMemory::new();
+        assert!(memory.record(None, Path::new("/r/a/b"), None));
+        let dialog =
+            FileDialogController::new(&ui, ["/r"], move |request| queue.borrow_mut().push(request))
+                .unwrap()
+                .with_memory(&memory);
+        dialog
+            .open(FileDialogRequest::new(FileDialogMode::ChooseFolder))
+            .unwrap();
+        dialog.0.browser.navigate("/r/a/b").unwrap();
+        let missing = || Err(ListingError::new(ListingErrorKind::NotFound, "gone"));
+        let mut asked: Vec<DirectoryRequest> = requests
+            .borrow_mut()
+            .drain(..)
+            .filter(|request| request.directory() == Path::new("/r/a/b"))
+            .collect();
+        assert_eq!(asked.len(), 2);
+        let (users, searchs) = (asked.remove(1), asked.remove(0));
+        assert_eq!(
+            dialog.deliver(searchs.respond(missing())).unwrap(),
+            ListingDelivery::Stale
+        );
+        assert_eq!(
+            dialog.deliver(users.respond(missing())).unwrap(),
+            ListingDelivery::Applied
+        );
+        assert_eq!(
+            dialog.current().get().unwrap(),
+            PathBuf::from("/r/a/b"),
+            "shown as failed, where the user asked to be"
+        );
     }
 }

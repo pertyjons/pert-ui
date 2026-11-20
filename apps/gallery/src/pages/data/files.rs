@@ -239,9 +239,20 @@ fn file_dialog(ui: &mut Runtime) -> Result<Element, AppError> {
         send_or_keep(&sender, &backlog, request.respond(listing));
     })
     .map_err(ApplicationError::new)?;
+    // The memory is the application's: a host decodes it from its settings
+    // at startup and stores `encode()` after an accepted outcome. The page
+    // shows that document instead of writing a file.
+    let memory = FileDialogMemory::new();
+    let dialog = dialog.with_memory(&memory);
+    let place = |label: &str, folder: &str| FilePlace::new(label, Path::new(ROOT).join(folder));
+    dialog.places().set(vec![
+        place("Drums", "Drums").map_err(ApplicationError::new)?,
+        place("Projects", "Projects").map_err(ApplicationError::new)?,
+    ])?;
     let _ = slot.set(dialog.clone());
     ui.keep_alive(mailbox);
     let report = ui.signal("Open a dialog to choose something.".to_owned());
+    let stored = ui.signal(memory.encode());
     let audio = || -> Result<Vec<FileFilter>, FileDialogError> {
         Ok(vec![
             FileFilter::new("wav", "Samples (*.wav)", ["wav"])?,
@@ -249,48 +260,66 @@ fn file_dialog(ui: &mut Runtime) -> Result<Element, AppError> {
             FileFilter::all("all", "All files")?,
         ])
     };
-    let opener = |key: &str, title: &str, request: FileDialogRequest| {
-        let dialog = dialog.clone();
+    // `first` is where a purpose starts until it has a remembered folder: an
+    // explicit starting folder would otherwise take precedence over it.
+    let opener = |key: &str, title: &str, request: FileDialogRequest, first: Option<&str>| {
+        let (dialog, memory) = (dialog.clone(), memory.clone());
+        let first = first.map(|folder| Path::new(ROOT).join(folder));
         Element::new(
             key,
-            Button::new(title, move |_| match dialog.open(request.clone()) {
-                // A press while a session is open is ignored.
-                Ok(()) | Err(FileDialogError::Busy) => Ok(()),
-                Err(FileDialogError::Runtime(error)) => Err(error),
-                Err(error) => Err(ApplicationError::new(error).into()),
+            Button::new(title, move |_| {
+                let request = match &first {
+                    Some(first) if memory.last_folder(request.context_key()).is_none() => {
+                        request.clone().start_folder(first)
+                    }
+                    _ => request.clone(),
+                };
+                match dialog.open(request) {
+                    // A press while a session is open is ignored.
+                    Ok(()) | Err(FileDialogError::Busy) => Ok(()),
+                    Err(FileDialogError::Runtime(error)) => Err(error),
+                    Err(error) => Err(ApplicationError::new(error).into()),
+                }
             }),
         )
+    };
+    let asked = |mode: FileDialogMode, context: &str| {
+        FileDialogRequest::new(mode)
+            .context(context)
+            .map_err(ApplicationError::new)
     };
     let filters = audio().map_err(ApplicationError::new)?;
     let buttons = Row::new([
         opener(
             "open-file",
             "Open file…",
-            FileDialogRequest::new(FileDialogMode::OpenFile)
+            asked(FileDialogMode::OpenFile, "open-sample")?
                 .filters(filters.clone())
                 .map_err(ApplicationError::new)?,
+            None,
         ),
         opener(
             "open-files",
             "Open files…",
-            FileDialogRequest::new(FileDialogMode::OpenFiles)
-                .start_folder(Path::new(ROOT).join("Drums/Kicks")),
+            asked(FileDialogMode::OpenFiles, "open-samples")?,
+            Some("Drums/Kicks"),
         ),
         opener(
             "choose-folder",
             "Choose folder…",
-            FileDialogRequest::new(FileDialogMode::ChooseFolder),
+            asked(FileDialogMode::ChooseFolder, "choose-folder")?,
+            None,
         ),
         opener(
             "save",
             "Save as…",
-            FileDialogRequest::new(FileDialogMode::SaveFile)
+            asked(FileDialogMode::SaveFile, "save-notes")?
                 .title("Save notes")
-                .start_folder(Path::new(ROOT).join("Projects"))
                 // Notes first, so the suggested name completes to notes.txt.
                 .filters([filters[1].clone(), filters[0].clone(), filters[2].clone()])
                 .and_then(|request| request.suggested_name("notes"))
                 .map_err(ApplicationError::new)?,
+            Some("Projects"),
         ),
     ])
     .gap(MetricRole::ItemGap);
@@ -299,6 +328,7 @@ fn file_dialog(ui: &mut Runtime) -> Result<Element, AppError> {
         Column::new([
             Element::new("dialog-buttons", buttons),
             Element::new("dialog-result", Label::new(report.read_only())),
+            Element::new("dialog-memory", Label::new(stored.read_only())),
         ])
         .gap(MetricRole::ItemGap),
     );
@@ -308,12 +338,16 @@ fn file_dialog(ui: &mut Runtime) -> Result<Element, AppError> {
         [
             label(
                 "dialog-help",
-                "Each button opens the same dialog with another request: one file of a chosen type, several files, a folder, or a name to save under. The dialog is modal to the window and hands each outcome to the page when the session ends. Save as suggests notes, which completes to the existing notes.txt, so confirming asks before replacing it; choose another type to save under another extension. damaged.bin and Old link cannot be opened and are refused in place.",
+                "Each button opens the same dialog with another request: one file of a chosen type, several files, a folder, or a name to save under. The dialog is modal to the window and hands each outcome to the page when the session ends. Each button is a purpose of its own: the dialog remembers the folder and the file type per purpose, lists the folders of accepted sessions as recent ones beside the two places the page supplies, and the text under the result is the memory document a host would store. Save as suggests notes, which completes to the existing notes.txt, so confirming asks before replacing it; choose another type to save under another extension. damaged.bin and Old link cannot be opened and are refused in place.",
             ),
             Element::new(
                 "file-dialog",
-                FileDialog::in_window(ui, &dialog, anchor)
-                    .on_outcome(move |_, outcome| report.set(describe(outcome))),
+                FileDialog::in_window(ui, &dialog, anchor).on_outcome(move |_, outcome| {
+                    // An accepted session has written the memory: this
+                    // is where a host stores the document.
+                    stored.set(memory.encode())?;
+                    report.set(describe(outcome))
+                }),
             ),
         ],
     ))

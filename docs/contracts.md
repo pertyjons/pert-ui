@@ -2088,9 +2088,11 @@ removed or logically hidden) or `Failed` (modal conflict, no space, or a
 failed start). The accepted selection is stored before the session is
 finished and released only when the take succeeds; a refused finish discards
 it and leaves the session open. No outcome is readable after runtime
-shutdown. A listing response never ends, accepts or moves a session: it is
-browser data under the [host-loaded data](#host-loaded-data) rules, also when
-it arrives after its session ended.
+shutdown. A listing response never ends or accepts a session and is browser
+data under the [host-loaded data](#host-loaded-data) rules, also when it
+arrives after its session ended. The one response that moves a session is the
+answer to the opening's own request for a remembered folder, described
+below.
 
 Confirm is judged from what the entry list shows: an entry hidden by the type
 filter or the filter text, and a placeholder row, count as absent, and several
@@ -2120,6 +2122,39 @@ field would refuse to show is refused as a suggestion and is not copied. A
 copied name stays tied to its listed file until the user edits it, leaves the
 folder, or a listing of the folder no longer has the file; the file appearing
 again does not restore the tie.
+
+A `FileDialogMemory` is application-owned state that any number of
+controllers share; it is neither workspace state nor part of a session. Only
+an accepted session writes to it, once, before the outcome is readable: the
+folder the dialog showed and the selected file type under the request's
+context (requests without one share an unnamed context), and that folder at
+the front of the recent folders. The write merges into the memory as it then
+is, never a snapshot from the opening, so dialogs sharing a memory keep each
+other's contexts and the later accept wins for one context. Lists are bounded
+(`MAX_CONTEXTS`, `MAX_RECENT`) and drop the least recently used; recent
+folders are distinct as paths, the newest spelling kept. Schema
+version 1 stores Unicode paths only: a folder that is not valid Unicode, holds
+a control character or exceeds `MAX_PATH_BYTES` is not stored, the context
+keeps its earlier folder, and `FileDialogSelection::folder_remembered`
+reports it. `encode` is deterministic and `decode` validates the whole
+document against its own versioned closed schema, rejecting it for one
+invalid line; the host chooses storage.
+
+A session starts in the request's explicit starting folder, else the
+context's remembered folder, else the first root. Only a remembered folder is
+searched for: a listing that fails as not found or not a directory moves the
+dialog to the parent, ancestor by ancestor, and after the last ancestor to
+the first root unless it was among them; any other failure is shown and ends
+the search. Each step waits for the answer to the one request it made:
+another folder's listing, a kept listing of the same folder and the answer to
+a request the user's navigation made neither continue nor end it. The search
+belongs to the opening and ends when the user opens a folder or the session
+ends, so a late response cannot move the browser. A session writes to the
+memory it started with, also when the controller is given another meanwhile. Places are application data the controller
+exposes as a signal, shown beside the browser with the recent folders as the
+session found them; they are not stored in the memory. Each listed folder
+keeps its key while it is listed, so reordering the list never retargets a
+held press.
 
 A `FileDialog` described again reconciles its anchor and keeps its session.
 Described with another controller under the same key, it dismisses the mounted

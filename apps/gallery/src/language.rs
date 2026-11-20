@@ -112,6 +112,8 @@ pub(crate) fn swedish() -> Result<UiStrings, RuntimeError> {
         (FileDialogSave, "Spara"),
         (FileDialogName, "Namn"),
         (FileDialogType, "Filtyp"),
+        (FileDialogPlaces, "Platser"),
+        (FileDialogRecent, "Senaste"),
         (
             FileDialogReplaceQuestion,
             "”{name}” finns redan. Vill du ersätta den?",

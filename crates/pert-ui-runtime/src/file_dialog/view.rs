@@ -1,13 +1,15 @@
 //! The mounted file dialog: its owner and the content it shows.
 use super::{
     FileDialogController, FileDialogError, FileDialogMode, FileDialogOutcome, FileDialogStatus,
+    FilePlace,
 };
 use crate::layout::rect;
 use crate::{
-    ArrangeContext, Button, Component, Constraints, Dialog, Element, EventContext, FileBrowser,
-    Label, MeasureContext, MetricRole, Notifier, RuntimeError, Select, Size, SizeLimits, TextField,
-    UpdateContext,
+    ArrangeContext, Button, Column, Component, Constraints, Dialog, Dynamic, Element, EventContext,
+    FileBrowser, Label, MeasureContext, MetricRole, Notifier, RuntimeError, ScrollArea, ScrollAxes,
+    Select, Size, SizeLimits, TextField, UpdateContext,
 };
+use std::cell::RefCell;
 use std::path::PathBuf;
 use std::rc::Rc;
 
@@ -38,7 +40,9 @@ enum Scope {
 /// dialog's content is closed until [`FileDialogController::open`] starts a
 /// session, and appears centered over the window ([`Self::in_window`]) or
 /// over the anchor's region ([`Self::in_view`]). It shows the controller's
-/// [`FileBrowser`], in a save dialog a name field, a file-type selector when
+/// [`FileBrowser`], to its left the application's places and the memory's
+/// recent folders when there are any, in a save dialog a name field, a
+/// file-type selector when
 /// the request offers types and does not ask for a folder, a line for refusals, and cancel and confirm
 /// buttons. Escape cancels; Enter and double click on an entry, and Enter in
 /// the name field, confirm; Backspace inside the browser opens the parent
@@ -74,9 +78,15 @@ enum Scope {
 /// test operates are [exposed parts](Element::expose_part) of the content:
 /// `accept` and `cancel` for the buttons, `name` for the name field, `filter`
 /// for the type selector, `refusal` for the line that says why confirm was
-/// refused and `question` for the replace question. Workspace capture
-/// includes the browser's split position whether or not a session is open;
-/// nothing of a session is captured.
+/// refused and `question` for the replace question. The places and recent
+/// folders are buttons under the content's `shortcuts` segment, keyed
+/// `place-N` and `recent-N`. The number stays with a folder while it is
+/// listed and says nothing of its position: a list that starts empty
+/// numbers its items from zero in the order shown, and a later item takes a
+/// number that became free. Workspace capture includes the browser's split
+/// position whether or not a session is open; nothing of a session and
+/// nothing of that list is captured, and what the dialog remembers between
+/// sessions belongs to the [`FileDialogMemory`](super::FileDialogMemory).
 ///
 /// See [`FileDialogController`] for a complete example.
 #[must_use]
@@ -216,6 +226,75 @@ impl FileDialog {
         if let Ok(browser) = FileBrowser::new(&inner.browser, self.row_height) {
             parts.push(Element::new("browser", browser));
         }
+        let go = controller.clone();
+        let numbers: Rc<RefCell<(Slots<FilePlace>, Slots<PathBuf>)>> = Rc::default();
+        parts.push(Element::new(
+            "shortcuts",
+            Dynamic::new(inner.texts.shortcuts.clone(), move |_, shortcuts| {
+                let mut numbers = numbers.borrow_mut();
+                let mut items = Vec::new();
+                let mut section =
+                    |name: &str, heading: &str, folders: Vec<(usize, String, PathBuf)>| {
+                        if folders.is_empty() {
+                            return;
+                        }
+                        items.push(
+                            Element::new(format!("{name}-heading"), Label::new(heading))
+                                .structural(),
+                        );
+                        for (number, label, folder) in folders {
+                            let go = go.clone();
+                            items.push(Element::new(
+                                format!("{name}-{number}"),
+                                Button::new(label, move |_| go.go_to(&folder)),
+                            ));
+                        }
+                    };
+                section(
+                    "place",
+                    &shortcuts.places_heading,
+                    numbers
+                        .0
+                        .assign(&shortcuts.places)
+                        .into_iter()
+                        .map(|(number, place)| {
+                            (number, place.label().to_owned(), place.folder().to_owned())
+                        })
+                        .collect(),
+                );
+                // A recent folder is shown by its name, or by its whole path
+                // when another shares the name.
+                let named = |folder: &PathBuf| super::display_name(folder);
+                section(
+                    "recent",
+                    &shortcuts.recent_heading,
+                    numbers
+                        .1
+                        .assign(&shortcuts.recent)
+                        .into_iter()
+                        .map(|(number, folder)| {
+                            let name = named(&folder);
+                            let shared = shortcuts
+                                .recent
+                                .iter()
+                                .any(|other| *other != folder && named(other) == name);
+                            let label = if shared {
+                                folder.to_string_lossy().into_owned()
+                            } else {
+                                name
+                            };
+                            (number, label, folder)
+                        })
+                        .collect(),
+                );
+                Element::new(
+                    "scroll",
+                    ScrollArea::new(Element::new("items", Column::new(items)).structural())
+                        .axes(ScrollAxes::Vertical),
+                )
+                .structural()
+            }),
+        ));
         let submit = controller.clone();
         parts.push(
             Element::new(
@@ -366,6 +445,52 @@ impl Component for FileDialog {
     }
 }
 
+/// Numbers for listed items that stay with an item while it is listed, so a
+/// reordered list never puts another item under a key that holds a press. A
+/// number is free for a new item only from the build after its item left.
+struct Slots<T>(Vec<Option<T>>);
+impl<T> Default for Slots<T> {
+    fn default() -> Self {
+        Self(Vec::new())
+    }
+}
+impl<T: Clone + PartialEq> Slots<T> {
+    /// The distinct `items` in their order, each with its number.
+    fn assign(&mut self, items: &[T]) -> Vec<(usize, T)> {
+        let left: Vec<usize> = (0..self.0.len())
+            .filter(|&slot| {
+                self.0[slot]
+                    .as_ref()
+                    .is_some_and(|held| !items.contains(held))
+            })
+            .collect();
+        let mut assigned: Vec<(usize, T)> = Vec::new();
+        for item in items {
+            if assigned.iter().any(|(_, seen)| seen == item) {
+                continue;
+            }
+            let held = self.0.iter().position(|slot| slot.as_ref() == Some(item));
+            let number = held.unwrap_or_else(|| {
+                let free = self.0.iter().position(Option::is_none);
+                let number = free.unwrap_or(self.0.len());
+                if free.is_none() {
+                    self.0.push(None);
+                }
+                self.0[number] = Some(item.clone());
+                number
+            });
+            assigned.push((number, item.clone()));
+        }
+        for slot in left {
+            self.0[slot] = None;
+        }
+        while self.0.last().is_some_and(Option::is_none) {
+            self.0.pop();
+        }
+        assigned
+    }
+}
+
 /// Lays its only child out as itself; a key without a presentation.
 struct Pass(Vec<Element>);
 impl Component for Pass {
@@ -403,6 +528,7 @@ impl Component for Pass {
 /// Which of the content's optional parts the session shows.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 struct Shows {
+    shortcuts: bool,
     name: bool,
     filter: bool,
     question: bool,
@@ -431,6 +557,11 @@ struct Picker {
     notifier: Option<Notifier>,
     shows: Shows,
 }
+impl Picker {
+    /// The widest the column of places and recent folders gets, in logical
+    /// pixels.
+    const SHORTCUTS_WIDTH: f32 = 168.0;
+}
 impl Component for Picker {
     fn reconcile(&mut self, next: Self) -> Option<crate::Invalidation> {
         let changed = self.size != next.size;
@@ -455,6 +586,7 @@ impl Component for Picker {
             session: session.clone(),
         };
         let shows = Shows {
+            shortcuts: !cx.read(&inner.texts.shortcuts)?.is_empty() && !question,
             name: session.0.mode == FileDialogMode::SaveFile && !question,
             filter: !session.0.filters.is_empty()
                 && session.0.mode != FileDialogMode::ChooseFolder
@@ -487,6 +619,7 @@ impl Component for Picker {
     fn child_visible(&self, key: &str) -> bool {
         match key {
             "browser" => !self.shows.question,
+            "shortcuts" => self.shows.shortcuts,
             "name" => self.shows.name,
             "type" => self.shows.filter,
             "question" => self.shows.question,
@@ -555,8 +688,16 @@ impl Component for Picker {
             }
             bottom = (top - gap).max(0.0);
         }
+        // Places and recent folders take a column at the left when there
+        // are any.
+        let mut left = 0.0;
+        if let Some(shortcuts) = index(cx, "shortcuts")? {
+            let wide = Self::SHORTCUTS_WIDTH.min(width * 0.3);
+            cx.place(shortcuts, rect(0.0, 0.0, wide, bottom)?)?;
+            left = (wide + gap).min(width);
+        }
         if let Some(browser) = index(cx, "browser")? {
-            cx.place(browser, rect(0.0, 0.0, width, bottom)?)?;
+            cx.place(browser, rect(left, 0.0, width - left, bottom)?)?;
         }
         Ok(())
     }

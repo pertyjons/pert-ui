@@ -14565,6 +14565,7 @@ pub pert_ui_runtime::prelude::FileDialogError::Geometry(pert_ui_runtime::Geometr
 pub pert_ui_runtime::prelude::FileDialogError::InvalidContext
 pub pert_ui_runtime::prelude::FileDialogError::InvalidFilter
 pub pert_ui_runtime::prelude::FileDialogError::InvalidName
+pub pert_ui_runtime::prelude::FileDialogError::InvalidPlace
 pub pert_ui_runtime::prelude::FileDialogError::NoRoots
 pub pert_ui_runtime::prelude::FileDialogError::Runtime(pert_ui_runtime::RuntimeError)
 pub pert_ui_runtime::prelude::FileDialogError::TooSmall
@@ -18163,8 +18164,10 @@ pub fn pert_ui_runtime::FileDialogController::current(&self) -> pert_ui_runtime:
 pub fn pert_ui_runtime::FileDialogController::deliver(&self, pert_ui_runtime::DirectoryResponse) -> core::result::Result<pert_ui_runtime::ListingDelivery, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileDialogController::new(&impl pert_ui_runtime::StateOwner, impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::Into<std::path::PathBuf>>, impl core::ops::function::FnMut(pert_ui_runtime::DirectoryRequest) + 'static) -> core::result::Result<Self, pert_ui_runtime::FileDialogError>
 pub fn pert_ui_runtime::FileDialogController::open(&self, pert_ui_runtime::FileDialogRequest) -> core::result::Result<(), pert_ui_runtime::FileDialogError>
+pub fn pert_ui_runtime::FileDialogController::places(&self) -> pert_ui_runtime::Signal<alloc::vec::Vec<pert_ui_runtime::FilePlace>>
 pub fn pert_ui_runtime::FileDialogController::status(&self) -> pert_ui_runtime::ReadSignal<pert_ui_runtime::FileDialogStatus>
 pub fn pert_ui_runtime::FileDialogController::take_outcome(&self) -> core::result::Result<core::option::Option<pert_ui_runtime::FileDialogOutcome>, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialogController::with_memory(self, &pert_ui_runtime::FileDialogMemory) -> Self
 impl core::clone::Clone for pert_ui_runtime::FileDialogController
 pub fn pert_ui_runtime::FileDialogController::clone(&self) -> Self
 impl core::fmt::Debug for pert_ui_runtime::FileDialogController
@@ -18176,6 +18179,36 @@ impl core::marker::Unpin for pert_ui_runtime::FileDialogController
 impl core::marker::UnsafeUnpin for pert_ui_runtime::FileDialogController
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileDialogController
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileDialogController
+pub struct pert_ui_runtime::prelude::FileDialogMemory(_)
+impl pert_ui_runtime::FileDialogMemory
+pub const pert_ui_runtime::FileDialogMemory::MAX_CONTEXTS: usize
+pub const pert_ui_runtime::FileDialogMemory::MAX_DOCUMENT_BYTES: usize
+pub const pert_ui_runtime::FileDialogMemory::MAX_PATH_BYTES: usize
+pub const pert_ui_runtime::FileDialogMemory::MAX_RECENT: usize
+pub const pert_ui_runtime::FileDialogMemory::SCHEMA_VERSION: u32
+pub fn pert_ui_runtime::FileDialogMemory::clear(&self)
+pub fn pert_ui_runtime::FileDialogMemory::decode(&str) -> core::result::Result<Self, pert_ui_runtime::FileDialogMemoryError>
+pub fn pert_ui_runtime::FileDialogMemory::encode(&self) -> alloc::string::String
+pub fn pert_ui_runtime::FileDialogMemory::last_filter(&self, core::option::Option<&str>) -> core::option::Option<alloc::string::String>
+pub fn pert_ui_runtime::FileDialogMemory::last_folder(&self, core::option::Option<&str>) -> core::option::Option<std::path::PathBuf>
+pub fn pert_ui_runtime::FileDialogMemory::new() -> Self
+pub fn pert_ui_runtime::FileDialogMemory::recent_folders(&self) -> alloc::vec::Vec<std::path::PathBuf>
+impl core::clone::Clone for pert_ui_runtime::FileDialogMemory
+pub fn pert_ui_runtime::FileDialogMemory::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::FileDialogMemory
+impl core::cmp::PartialEq for pert_ui_runtime::FileDialogMemory
+pub fn pert_ui_runtime::FileDialogMemory::eq(&self, &Self) -> bool
+impl core::default::Default for pert_ui_runtime::FileDialogMemory
+pub fn pert_ui_runtime::FileDialogMemory::default() -> Self
+impl core::fmt::Debug for pert_ui_runtime::FileDialogMemory
+pub fn pert_ui_runtime::FileDialogMemory::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for pert_ui_runtime::FileDialogMemory
+impl !core::marker::Send for pert_ui_runtime::FileDialogMemory
+impl !core::marker::Sync for pert_ui_runtime::FileDialogMemory
+impl core::marker::Unpin for pert_ui_runtime::FileDialogMemory
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileDialogMemory
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileDialogMemory
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileDialogMemory
 pub struct pert_ui_runtime::prelude::FileDialogRequest
 impl pert_ui_runtime::FileDialogRequest
 pub const pert_ui_runtime::FileDialogRequest::MAX_KEY_CHARS: usize
@@ -18232,6 +18265,26 @@ impl core::marker::Unpin for pert_ui_runtime::FileFilter
 impl core::marker::UnsafeUnpin for pert_ui_runtime::FileFilter
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileFilter
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileFilter
+pub struct pert_ui_runtime::prelude::FilePlace
+impl pert_ui_runtime::FilePlace
+pub fn pert_ui_runtime::FilePlace::folder(&self) -> &std::path::Path
+pub fn pert_ui_runtime::FilePlace::label(&self) -> &str
+pub fn pert_ui_runtime::FilePlace::new(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<std::path::PathBuf>) -> core::result::Result<Self, pert_ui_runtime::FileDialogError>
+impl core::clone::Clone for pert_ui_runtime::FilePlace
+pub fn pert_ui_runtime::FilePlace::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::FilePlace
+impl core::cmp::PartialEq for pert_ui_runtime::FilePlace
+pub fn pert_ui_runtime::FilePlace::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FilePlace
+pub fn pert_ui_runtime::FilePlace::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FilePlace
+impl core::marker::Freeze for pert_ui_runtime::FilePlace
+impl core::marker::Send for pert_ui_runtime::FilePlace
+impl core::marker::Sync for pert_ui_runtime::FilePlace
+impl core::marker::Unpin for pert_ui_runtime::FilePlace
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FilePlace
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FilePlace
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FilePlace
 pub struct pert_ui_runtime::prelude::FilterCounts
 pub pert_ui_runtime::prelude::FilterCounts::shown: usize
 pub pert_ui_runtime::prelude::FilterCounts::total: usize
@@ -27683,6 +27736,7 @@ pub pert_ui_runtime::FileDialogError::Geometry(pert_ui_runtime::GeometryError)
 pub pert_ui_runtime::FileDialogError::InvalidContext
 pub pert_ui_runtime::FileDialogError::InvalidFilter
 pub pert_ui_runtime::FileDialogError::InvalidName
+pub pert_ui_runtime::FileDialogError::InvalidPlace
 pub pert_ui_runtime::FileDialogError::NoRoots
 pub pert_ui_runtime::FileDialogError::Runtime(pert_ui_runtime::RuntimeError)
 pub pert_ui_runtime::FileDialogError::TooSmall
@@ -27727,6 +27781,36 @@ impl core::marker::Unpin for pert_ui_runtime::FileDialogFailure
 impl core::marker::UnsafeUnpin for pert_ui_runtime::FileDialogFailure
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileDialogFailure
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileDialogFailure
+#[non_exhaustive] pub enum pert_ui_runtime::FileDialogMemoryError
+pub pert_ui_runtime::FileDialogMemoryError::DuplicateContext(alloc::string::String)
+pub pert_ui_runtime::FileDialogMemoryError::DuplicateRecent(alloc::string::String)
+pub pert_ui_runtime::FileDialogMemoryError::InvalidKey(alloc::string::String)
+pub pert_ui_runtime::FileDialogMemoryError::InvalidPath
+pub pert_ui_runtime::FileDialogMemoryError::Malformed(alloc::string::String)
+pub pert_ui_runtime::FileDialogMemoryError::TooLarge
+pub pert_ui_runtime::FileDialogMemoryError::TooManyContexts
+pub pert_ui_runtime::FileDialogMemoryError::TooManyRecent
+pub pert_ui_runtime::FileDialogMemoryError::UnsupportedVersion
+pub pert_ui_runtime::FileDialogMemoryError::UnsupportedVersion::found: u32
+pub pert_ui_runtime::FileDialogMemoryError::UnsupportedVersion::supported: u32
+impl core::clone::Clone for pert_ui_runtime::FileDialogMemoryError
+pub fn pert_ui_runtime::FileDialogMemoryError::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::FileDialogMemoryError
+impl core::cmp::PartialEq for pert_ui_runtime::FileDialogMemoryError
+pub fn pert_ui_runtime::FileDialogMemoryError::eq(&self, &Self) -> bool
+impl core::error::Error for pert_ui_runtime::FileDialogMemoryError
+impl core::fmt::Debug for pert_ui_runtime::FileDialogMemoryError
+pub fn pert_ui_runtime::FileDialogMemoryError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui_runtime::FileDialogMemoryError
+pub fn pert_ui_runtime::FileDialogMemoryError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FileDialogMemoryError
+impl core::marker::Freeze for pert_ui_runtime::FileDialogMemoryError
+impl core::marker::Send for pert_ui_runtime::FileDialogMemoryError
+impl core::marker::Sync for pert_ui_runtime::FileDialogMemoryError
+impl core::marker::Unpin for pert_ui_runtime::FileDialogMemoryError
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileDialogMemoryError
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileDialogMemoryError
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileDialogMemoryError
 #[non_exhaustive] pub enum pert_ui_runtime::FileDialogMode
 pub pert_ui_runtime::FileDialogMode::ChooseFolder
 pub pert_ui_runtime::FileDialogMode::OpenFile
@@ -30279,6 +30363,8 @@ pub pert_ui_runtime::StringRole::FileDialogInvalidName
 pub pert_ui_runtime::StringRole::FileDialogName
 pub pert_ui_runtime::StringRole::FileDialogNotAllFiles
 pub pert_ui_runtime::StringRole::FileDialogOpen
+pub pert_ui_runtime::StringRole::FileDialogPlaces
+pub pert_ui_runtime::StringRole::FileDialogRecent
 pub pert_ui_runtime::StringRole::FileDialogReplace
 pub pert_ui_runtime::StringRole::FileDialogReplaceQuestion
 pub pert_ui_runtime::StringRole::FileDialogSave
@@ -34803,8 +34889,10 @@ pub fn pert_ui_runtime::FileDialogController::current(&self) -> pert_ui_runtime:
 pub fn pert_ui_runtime::FileDialogController::deliver(&self, pert_ui_runtime::DirectoryResponse) -> core::result::Result<pert_ui_runtime::ListingDelivery, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileDialogController::new(&impl pert_ui_runtime::StateOwner, impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::Into<std::path::PathBuf>>, impl core::ops::function::FnMut(pert_ui_runtime::DirectoryRequest) + 'static) -> core::result::Result<Self, pert_ui_runtime::FileDialogError>
 pub fn pert_ui_runtime::FileDialogController::open(&self, pert_ui_runtime::FileDialogRequest) -> core::result::Result<(), pert_ui_runtime::FileDialogError>
+pub fn pert_ui_runtime::FileDialogController::places(&self) -> pert_ui_runtime::Signal<alloc::vec::Vec<pert_ui_runtime::FilePlace>>
 pub fn pert_ui_runtime::FileDialogController::status(&self) -> pert_ui_runtime::ReadSignal<pert_ui_runtime::FileDialogStatus>
 pub fn pert_ui_runtime::FileDialogController::take_outcome(&self) -> core::result::Result<core::option::Option<pert_ui_runtime::FileDialogOutcome>, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialogController::with_memory(self, &pert_ui_runtime::FileDialogMemory) -> Self
 impl core::clone::Clone for pert_ui_runtime::FileDialogController
 pub fn pert_ui_runtime::FileDialogController::clone(&self) -> Self
 impl core::fmt::Debug for pert_ui_runtime::FileDialogController
@@ -34816,6 +34904,36 @@ impl core::marker::Unpin for pert_ui_runtime::FileDialogController
 impl core::marker::UnsafeUnpin for pert_ui_runtime::FileDialogController
 impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileDialogController
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileDialogController
+pub struct pert_ui_runtime::FileDialogMemory(_)
+impl pert_ui_runtime::FileDialogMemory
+pub const pert_ui_runtime::FileDialogMemory::MAX_CONTEXTS: usize
+pub const pert_ui_runtime::FileDialogMemory::MAX_DOCUMENT_BYTES: usize
+pub const pert_ui_runtime::FileDialogMemory::MAX_PATH_BYTES: usize
+pub const pert_ui_runtime::FileDialogMemory::MAX_RECENT: usize
+pub const pert_ui_runtime::FileDialogMemory::SCHEMA_VERSION: u32
+pub fn pert_ui_runtime::FileDialogMemory::clear(&self)
+pub fn pert_ui_runtime::FileDialogMemory::decode(&str) -> core::result::Result<Self, pert_ui_runtime::FileDialogMemoryError>
+pub fn pert_ui_runtime::FileDialogMemory::encode(&self) -> alloc::string::String
+pub fn pert_ui_runtime::FileDialogMemory::last_filter(&self, core::option::Option<&str>) -> core::option::Option<alloc::string::String>
+pub fn pert_ui_runtime::FileDialogMemory::last_folder(&self, core::option::Option<&str>) -> core::option::Option<std::path::PathBuf>
+pub fn pert_ui_runtime::FileDialogMemory::new() -> Self
+pub fn pert_ui_runtime::FileDialogMemory::recent_folders(&self) -> alloc::vec::Vec<std::path::PathBuf>
+impl core::clone::Clone for pert_ui_runtime::FileDialogMemory
+pub fn pert_ui_runtime::FileDialogMemory::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::FileDialogMemory
+impl core::cmp::PartialEq for pert_ui_runtime::FileDialogMemory
+pub fn pert_ui_runtime::FileDialogMemory::eq(&self, &Self) -> bool
+impl core::default::Default for pert_ui_runtime::FileDialogMemory
+pub fn pert_ui_runtime::FileDialogMemory::default() -> Self
+impl core::fmt::Debug for pert_ui_runtime::FileDialogMemory
+pub fn pert_ui_runtime::FileDialogMemory::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Freeze for pert_ui_runtime::FileDialogMemory
+impl !core::marker::Send for pert_ui_runtime::FileDialogMemory
+impl !core::marker::Sync for pert_ui_runtime::FileDialogMemory
+impl core::marker::Unpin for pert_ui_runtime::FileDialogMemory
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileDialogMemory
+impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileDialogMemory
+impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileDialogMemory
 pub struct pert_ui_runtime::FileDialogRequest
 impl pert_ui_runtime::FileDialogRequest
 pub const pert_ui_runtime::FileDialogRequest::MAX_KEY_CHARS: usize
@@ -34852,6 +34970,7 @@ impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileDialogRequest
 pub struct pert_ui_runtime::FileDialogSelection
 impl pert_ui_runtime::FileDialogSelection
 pub fn pert_ui_runtime::FileDialogSelection::filter(&self) -> core::option::Option<&str>
+pub const fn pert_ui_runtime::FileDialogSelection::folder_remembered(&self) -> bool
 pub fn pert_ui_runtime::FileDialogSelection::into_paths(self) -> alloc::vec::Vec<std::path::PathBuf>
 pub fn pert_ui_runtime::FileDialogSelection::paths(&self) -> &[std::path::PathBuf]
 impl core::clone::Clone for pert_ui_runtime::FileDialogSelection
@@ -34892,6 +35011,26 @@ impl core::marker::Unpin for pert_ui_runtime::FileFilter
 impl core::marker::UnsafeUnpin for pert_ui_runtime::FileFilter
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileFilter
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileFilter
+pub struct pert_ui_runtime::FilePlace
+impl pert_ui_runtime::FilePlace
+pub fn pert_ui_runtime::FilePlace::folder(&self) -> &std::path::Path
+pub fn pert_ui_runtime::FilePlace::label(&self) -> &str
+pub fn pert_ui_runtime::FilePlace::new(impl core::convert::Into<alloc::string::String>, impl core::convert::Into<std::path::PathBuf>) -> core::result::Result<Self, pert_ui_runtime::FileDialogError>
+impl core::clone::Clone for pert_ui_runtime::FilePlace
+pub fn pert_ui_runtime::FilePlace::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::FilePlace
+impl core::cmp::PartialEq for pert_ui_runtime::FilePlace
+pub fn pert_ui_runtime::FilePlace::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FilePlace
+pub fn pert_ui_runtime::FilePlace::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FilePlace
+impl core::marker::Freeze for pert_ui_runtime::FilePlace
+impl core::marker::Send for pert_ui_runtime::FilePlace
+impl core::marker::Sync for pert_ui_runtime::FilePlace
+impl core::marker::Unpin for pert_ui_runtime::FilePlace
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FilePlace
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FilePlace
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FilePlace
 pub struct pert_ui_runtime::FilterCounts
 pub pert_ui_runtime::FilterCounts::shown: usize
 pub pert_ui_runtime::FilterCounts::total: usize

@@ -991,7 +991,7 @@ const fn density_name(density: crate::Density) -> &'static str {
     }
 }
 
-fn write_quoted(out: &mut String, text: &str) {
+pub(crate) fn write_quoted(out: &mut String, text: &str) {
     out.push('"');
     for character in text.chars() {
         match character {
@@ -1108,13 +1108,13 @@ fn decode_path(text: &str) -> Result<WorkspacePath, WorkspaceError> {
     WorkspacePath::new(segments)
 }
 
-struct Scanner<'a> {
+pub(crate) struct Scanner<'a> {
     text: &'a str,
     position: usize,
 }
 
 impl<'a> Scanner<'a> {
-    const fn new(text: &'a str) -> Self {
+    pub(crate) const fn new(text: &'a str) -> Self {
         Self { text, position: 0 }
     }
     fn rest(&self) -> &'a str {
@@ -1125,11 +1125,16 @@ impl<'a> Scanner<'a> {
             self.position += 1;
         }
     }
-    fn at_end(&mut self) -> bool {
+    /// Whether the scanner stands at a space or at the end of the line.
+    pub(crate) fn at_gap(&self) -> bool {
+        let rest = self.rest();
+        rest.is_empty() || rest.starts_with(' ')
+    }
+    pub(crate) fn at_end(&mut self) -> bool {
         self.skip_spaces();
         self.rest().is_empty()
     }
-    fn expect(&mut self, character: char) -> Result<(), WorkspaceError> {
+    pub(crate) fn expect(&mut self, character: char) -> Result<(), WorkspaceError> {
         if self.rest().starts_with(character) {
             self.position += character.len_utf8();
             Ok(())
@@ -1138,7 +1143,7 @@ impl<'a> Scanner<'a> {
         }
     }
     /// A bare token of `A-Za-z0-9_-`, used for names, kinds and settings values.
-    fn word(&mut self) -> Result<&'a str, WorkspaceError> {
+    pub(crate) fn word(&mut self) -> Result<&'a str, WorkspaceError> {
         self.skip_spaces();
         let rest = self.rest();
         let end = rest
@@ -1162,7 +1167,7 @@ impl<'a> Scanner<'a> {
         self.position += end;
         Ok(&rest[..end])
     }
-    fn quoted(&mut self) -> Result<String, WorkspaceError> {
+    pub(crate) fn quoted(&mut self) -> Result<String, WorkspaceError> {
         self.skip_spaces();
         self.expect('"')?;
         let mut value = String::new();

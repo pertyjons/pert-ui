@@ -5,6 +5,23 @@ needs: additions, behavior changes, breaking changes with their replacement,
 and notable fixes. The detailed per-version entries up to 0.3.101 are in Git
 history (this file at commit f5fde76).
 
+## 0.3.125 (2026-11-20): File dialog memory and places
+
+- Added: `FileDialogMemory`, application-owned and shared by any number of
+  controllers through `FileDialogController::with_memory`. An accepted
+  session records its folder and file type under the request's context and
+  the folder among the recent ones; the next session of that context starts
+  there, and a remembered folder that is gone gives way to its nearest
+  listable ancestor. `encode` and `decode` store it as a versioned text
+  document of its own, with `FileDialogMemoryError`. Unicode paths only;
+  `FileDialogSelection::folder_remembered` says whether the folder was kept.
+- Added: `FilePlace` and `FileDialogController::places`, folders the
+  application offers beside the browser, where the dialog also lists the
+  memory's recent folders. `FileDialogError::InvalidPlace`.
+- Added: `StringRole::FileDialogPlaces` and `StringRole::FileDialogRecent`.
+- Changed: `FileDialogRequest::context` now selects what a controller with a
+  memory remembers; without a memory nothing changes.
+
 ## 0.3.124 (2026-11-20): File dialog review repairs
 
 - Fixed: a save dialog could accept a suggested or listed name its name field
