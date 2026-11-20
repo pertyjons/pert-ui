@@ -1,7 +1,8 @@
 # Plan: file dialog
 
-Status: slices 0, 1 (0.3.123, repairs in 0.3.124) and 2 (0.3.125) done;
-slices 3a to 5 not started. Every type and method this plan
+Status: slices 0, 1 (0.3.123, repairs in 0.3.124) and 2 (0.3.125) done.
+Slice 3 (the own window) is deferred until an application needs it
+(decision 13); slices 4 and 5 do not depend on it and are not started. Every type and method this plan
 names is a proposal until a slice implements and documents it. The
 [decisions](#decisions) were settled on 2026-11-19. An independent Codex
 review of the first draft (2026-11-19, read-only, static) found two blockers
@@ -364,6 +365,12 @@ item 5), so it arrives with the own window in slice 3b.
 
 ### 3a. Dialog window: runtime protocol
 
+Status: deferred with 3b by decision 13. The in-window dialog is the
+presentation the library ships. [file-dialog-window-design.md](file-dialog-window-design.md)
+is the parked design for when the own window is taken up; its review found
+that the detach protocol does not carry a modal dialog as it is, so the text
+below understates the work.
+
 - The design note for the own-window request, answering every point under
   [Presentation and modality](#presentation-and-modality).
 - The runtime request, receipt and host-integration steps, with `Dialog`
@@ -447,6 +454,11 @@ Confirmed by the maintainer on 2026-11-19, after the review:
    later schema version.
 10. Back and forward history is out of scope, and places are application
     data rather than stored bookmarks.
+13. The own window is deferred (maintainer, 2026-11-20). `FileDialog::in_window`
+    and `in_view` are the shipped presentations, and decision 7's
+    `FileDialog::new` is not introduced. Slice 3 is taken up again when an
+    application needs a dialog outside its owner's window, starting from the
+    parked design note and its open decisions.
 12. Slice 2 scope, confirmed by the maintainer on 2026-11-20 after its
     review: an explicit `start_folder` takes precedence over the remembered
     folder and is not searched for; the dialog's size joins the memory with
