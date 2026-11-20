@@ -775,6 +775,32 @@ and `set_mode` with `Tree`, `Table` and a deferred press. The fixes made
 after the review have not been reviewed again. The regression tests added after the review were not each run
 against the unrepaired code first; the `Dialog` ownership test was.
 
+Codex reviewed the committed slice again on 2026-11-20 (read-only; it ran
+the prebuilt test binaries) and found one blocker and eight smaller points,
+repaired in 0.3.124:
+
+- the dialog judged a suggested or copied name by `char::is_control`, the
+  name field by `TextField::check`, so a name with a Unicode line separator
+  was accepted without being shown: both now use the field's check;
+- a copied name's tie to its file survived the file leaving the listing: an
+  applied listing without the file ends it (unit test in `file_dialog.rs`,
+  since the dialog offers no refresh);
+- `on_outcome` could report a session another dialog owned, lost the order
+  of endings and waited while its dialog was hidden: `DialogController`
+  records the owner an ending had and requests the owner's notifier at the
+  ending; the one-taker rule is documented;
+- confirm availability walked the listing in the open modes: it looks keys up
+  in a set rebuilt only when the shown entries change;
+- three tests could pass with the regression their names exclude, and the
+  workspace test did not pin the `dialog` segment: repaired.
+
+The ordering and hidden-dialog tests were run against the code without the
+request at the ending and failed there. Not done: restoring a moved split
+while the dialog is closed is still untested, and these repairs have had no
+further independent review. A second dialog mounted on a controller another
+owns fails every flush with `DialogBusy` (existing `Dialog` rule), so no
+callback is delivered until it is removed; the outcome stays takeable.
+
 ## 11. Assumed, not yet tested
 
 - That an idle browser mounted in a closed dialog requests nothing: the

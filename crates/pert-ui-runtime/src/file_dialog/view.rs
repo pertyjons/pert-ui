@@ -9,6 +9,7 @@ use crate::{
     UpdateContext,
 };
 use std::path::PathBuf;
+use std::rc::Rc;
 
 /// What the content saw change since its last update.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -38,7 +39,7 @@ enum Scope {
 /// session, and appears centered over the window ([`Self::in_window`]) or
 /// over the anchor's region ([`Self::in_view`]). It shows the controller's
 /// [`FileBrowser`], in a save dialog a name field, a file-type selector when
-/// the request offers types, a line for refusals, and cancel and confirm
+/// the request offers types and does not ask for a folder, a line for refusals, and cancel and confirm
 /// buttons. Escape cancels; Enter and double click on an entry, and Enter in
 /// the name field, confirm; Backspace inside the browser opens the parent
 /// folder. Before an existing file is replaced, the content shows the
@@ -89,6 +90,8 @@ pub struct FileDialog {
     selector: Option<Select<String>>,
     outcome: Option<OutcomeFn>,
     notifier: Option<Notifier>,
+    /// Identifies this mount's owner to the session controller.
+    token: Rc<()>,
 }
 type OutcomeFn = Box<dyn FnMut(&mut EventContext, FileDialogOutcome) -> Result<(), RuntimeError>>;
 description_debug!(FileDialog);
@@ -143,6 +146,7 @@ impl FileDialog {
             )),
             outcome: None,
             notifier: None,
+            token: Rc::new(()),
         }
     }
     /// Calls `outcome` with each ended session's outcome, so the application
@@ -151,12 +155,20 @@ impl FileDialog {
     /// The mounted dialog takes the outcome from its controller and hands it
     /// over [after settling](https://github.com/pertyjons/pert-ui/blob/main/docs/contracts.md#after-settling):
     /// in an event phase, once the flush that follows the ending has settled.
-    /// The callback may write signals and may open the next session. It runs
-    /// once per ended session; its error is returned from the flush and does
-    /// not bring the outcome back. A dialog removed before that call does not
-    /// run it, and the outcome then stays with the controller for
-    /// [`FileDialogController::take_outcome`], so nothing is lost. Without
-    /// this callback the outcome always stays with the controller.
+    /// The callback may write signals and may open the next session. Dialogs
+    /// are called in the order their sessions ended, and a hidden dialog is
+    /// called too.
+    ///
+    /// The retained outcome has one taker. The callback runs at most once per
+    /// ended session, for a session that ended while this dialog was the
+    /// controller's mounted owner; its error is returned from the flush and
+    /// does not bring the outcome back. It does not run, and the outcome
+    /// stays with the controller for [`FileDialogController::take_outcome`],
+    /// when the application takes the outcome first, when the dialog is
+    /// removed before the call (which also ends an open session as
+    /// dismissed), and when the session ended with no dialog mounted or with
+    /// another dialog as owner. Without this callback the outcome always
+    /// stays with the controller.
     ///
     /// It replaces an earlier callback, and a description without one removes
     /// it from the mounted dialog.
@@ -285,7 +297,8 @@ impl Component for FileDialog {
             return Vec::new();
         };
         let content = self.content();
-        let dialog = Dialog::new(self.controller.0.dialog.clone(), anchor, content);
+        let dialog = Dialog::new(self.controller.0.dialog.clone(), anchor, content)
+            .with_token(self.token.clone());
         let dialog = match self.scope {
             Scope::Window => dialog,
             Scope::View => dialog.view_modal(),
@@ -298,8 +311,17 @@ impl Component for FileDialog {
     }
     fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
         let status = cx.read(&self.controller.status())?;
-        if status == FileDialogStatus::Finished && self.outcome.is_some() {
-            self.notifier.get_or_insert_with(|| cx.notifier()).request();
+        let dialog = &self.controller.0.dialog;
+        let notifier = self.notifier.get_or_insert_with(|| cx.notifier());
+        // The controller requests delivery at each ending from here on, in
+        // the order sessions end and also while this owner is hidden.
+        dialog.watch(&self.token, notifier);
+        // An ending from before that registration is requested here.
+        if status == FileDialogStatus::Finished
+            && self.outcome.is_some()
+            && dialog.ended_with(&self.token)
+        {
+            notifier.request();
         }
         Ok(())
     }
@@ -307,6 +329,12 @@ impl Component for FileDialog {
         let Some(callback) = &mut self.outcome else {
             return Ok(());
         };
+        // Only the session this mount owned is its to report: another
+        // dialog's, or one that ended by this owner's removal, stays with
+        // the controller.
+        if !self.controller.0.dialog.ended_with(&self.token) {
+            return Ok(());
+        }
         // Taken here, so a repeated request finds nothing to report.
         match self.controller.take_outcome()? {
             Some(outcome) => callback(cx, outcome),

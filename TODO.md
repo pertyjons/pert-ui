@@ -90,3 +90,11 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   selector with a bound label; whether a fixed label behaves the same was
   not checked. Either carry the label through a structural element or
   document that `structural` drops it, with a test of both forms.
+- [ ] **BROWSER-01** 2026-11-20 `crates/pert-ui-runtime/src/file_browser/view.rs`
+  entry rows — Rust and data invariants (keep presentation formatting
+  separate from canonical values): a listed name with a Unicode line
+  separator (U+2028) is laid out on two lines and reports
+  `ExceedsFixedHeight` in the fixed-height row, seen in the file dialog test
+  `a_name_the_field_cannot_show_is_neither_suggested_nor_copied`. Show such
+  names on one line, for example by presenting line and paragraph separators
+  as a replacement glyph, without changing the entry's path, and test it.

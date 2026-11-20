@@ -10,10 +10,10 @@ use crate::{
     CurrentListing, DialogController, DialogOutcome, DialogStatus, DirectoryEntry,
     DirectoryRequest, DirectoryResponse, EntryKind, FileBrowserController, FileBrowserError,
     GeometryError, LinkTarget, ListSelection, ListingDelivery, ReadSignal, RuntimeError,
-    SelectionMode, Signal, StringRole, SurfaceDismissal, UiMessage,
+    SelectionMode, Signal, StringRole, SurfaceDismissal, TextField, UiMessage,
 };
 use std::cell::{Cell, RefCell};
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, HashSet};
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
@@ -100,8 +100,9 @@ fn valid_key(text: &str) -> bool {
 }
 
 /// Whether `name` is one file name: one normal path component without a
-/// separator or a control character, which the name field could not show. Names a filesystem may still reject are the application's to
-/// discover when it writes.
+/// separator, and text the name field accepts ([`TextField::check`]), so the
+/// dialog never judges a name the field refused to show. Names a filesystem
+/// may still reject are the application's to discover when it writes.
 fn valid_name(name: &str) -> bool {
     use std::path::Component;
     let separators: &[char] = if cfg!(windows) {
@@ -112,7 +113,7 @@ fn valid_name(name: &str) -> bool {
     let mut components = Path::new(name).components();
     !name.is_empty()
         && !name.contains(separators)
-        && !name.chars().any(char::is_control)
+        && TextField::check(name).is_ok()
         && matches!(components.next(), Some(Component::Normal(_)))
         && components.next().is_none()
 }
@@ -427,8 +428,9 @@ impl FileDialogSelection {
         self.paths
     }
     /// The identity of the file type selected when the user confirmed, or
-    /// `None` when the request offered none. A save dialog offering several
-    /// formats learns the chosen one here.
+    /// `None` when the request offered none and for
+    /// [`FileDialogMode::ChooseFolder`], which shows no selector. A save
+    /// dialog offering several formats learns the chosen one here.
     #[must_use]
     pub fn filter(&self) -> Option<&str> {
         self.filter.as_deref()
@@ -941,6 +943,16 @@ impl FileDialogController {
             choices,
         };
         let judging = browser.clone();
+        // The shown paths, rebuilt only when the shown entries change, so a
+        // moved selection is judged by lookups.
+        let shown_paths = browser.shown_entries().map(|shown| {
+            Rc::new(
+                shown
+                    .iter()
+                    .map(|entry| entry.path().to_owned())
+                    .collect::<HashSet<PathBuf>>(),
+            )
+        })?;
         // Whether confirm is available, by the first checks of
         // `Facts::decide`: it never needs the listing searched for a name.
         let can_confirm = ReadSignal::combine(
@@ -949,12 +961,17 @@ impl FileDialogController {
                 &question,
                 &config,
                 &browser.listing(),
-                &browser.shown_entries(),
+                &shown_paths,
                 &selection.active(),
                 &selection.selected(),
                 &name,
             ),
             move |(status, question, config, listing, shown, active, selected, name)| {
+                let is_shown = |key: &String| {
+                    judging
+                        .path_of(key)
+                        .is_some_and(|path| shown.contains(&path))
+                };
                 if *status != FileDialogStatus::Open {
                     return false;
                 }
@@ -967,14 +984,8 @@ impl FileDialogController {
                 match config.0.mode {
                     FileDialogMode::ChooseFolder => true,
                     FileDialogMode::SaveFile => !name.is_empty(),
-                    FileDialogMode::OpenFile => {
-                        chosen(&judging, shown, active.as_deref(), &BTreeSet::new())
-                            .0
-                            .is_some()
-                    }
-                    FileDialogMode::OpenFiles => {
-                        !chosen(&judging, shown, None, selected).1.is_empty()
-                    }
+                    FileDialogMode::OpenFile => active.as_ref().is_some_and(is_shown),
+                    FileDialogMode::OpenFiles => selected.iter().any(is_shown),
                 }
             },
         )?;
@@ -1110,7 +1121,18 @@ impl FileDialogController {
     /// # Errors
     /// Same as [`FileBrowserController::deliver`].
     pub fn deliver(&self, response: DirectoryResponse) -> Result<ListingDelivery, RuntimeError> {
-        self.0.browser.deliver(response)
+        let delivery = self.0.browser.deliver(response)?;
+        // A copied name's tie to its file ends when a listing of the folder
+        // no longer has the file; the file appearing again does not restore it.
+        let origin = self.0.origin.borrow().as_ref().map(|o| o.path.clone());
+        if delivery == ListingDelivery::Applied
+            && let Some(path) = origin
+            && let CurrentListing::Loaded(entries) = self.0.browser.listing().get()?
+            && !entries.iter().any(|entry| entry.path() == path)
+        {
+            *self.0.origin.borrow_mut() = None;
+        }
+        Ok(delivery)
     }
 
     /// Whether a session is open or an outcome waits.
@@ -1126,7 +1148,9 @@ impl FileDialogController {
     }
 
     /// Takes the ended session's outcome and makes the controller idle.
-    /// Returns `None` while idle or open. The outcome, with an accepted
+    /// Returns `None` while idle or open, and once a mounted dialog's
+    /// [`FileDialog::on_outcome`] callback has taken it: whichever takes
+    /// first has the outcome. The outcome, with an accepted
     /// selection, is released only when the take succeeds.
     ///
     /// # Errors
@@ -1280,11 +1304,12 @@ impl FileDialogController {
     /// Copies a listed file's name into the name field and remembers the
     /// entry as the text's origin.
     ///
-    /// A name the field cannot show, one with a control character, is not
-    /// copied: the field keeps its text and no origin is recorded.
+    /// A name the field refuses ([`TextField::check`]), such as one with a
+    /// control character or a Unicode line separator, is not copied: the
+    /// field keeps its text and no origin is recorded.
     fn name_from(&self, entry: &DirectoryEntry) -> Result<(), RuntimeError> {
         let text = entry.name().to_string_lossy().into_owned();
-        if text.chars().any(char::is_control) {
+        if TextField::check(&text).is_err() {
             return Ok(());
         }
         self.0.name.set(text.clone())?;
@@ -1336,5 +1361,44 @@ impl FileDialogController {
             }
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::Runtime;
+
+    /// The dialog offers no refresh of its own, so the browser is refreshed
+    /// directly, as a host-side change of the folder would arrive.
+    #[test]
+    fn a_copied_names_origin_does_not_return_with_its_file() {
+        let ui = Runtime::new();
+        let requests: Rc<RefCell<Vec<DirectoryRequest>>> = Rc::default();
+        let queue = requests.clone();
+        let dialog =
+            FileDialogController::new(&ui, ["/r"], move |request| queue.borrow_mut().push(request))
+                .unwrap();
+        let answer = |entries: Vec<DirectoryEntry>| {
+            let request = requests.borrow_mut().pop().unwrap();
+            assert_eq!(
+                dialog.deliver(request.respond(Ok(entries))).unwrap(),
+                ListingDelivery::Applied
+            );
+        };
+        let entry = DirectoryEntry::new("/r/a.txt", EntryKind::File);
+        dialog
+            .open(FileDialogRequest::new(FileDialogMode::SaveFile))
+            .unwrap();
+        answer(vec![entry.clone()]);
+        dialog.name_from(&entry).unwrap();
+        assert!(dialog.0.origin.borrow().is_some());
+
+        dialog.0.browser.refresh().unwrap();
+        answer(Vec::new());
+        assert!(dialog.0.origin.borrow().is_none(), "the file is gone");
+        dialog.0.browser.refresh().unwrap();
+        answer(vec![entry]);
+        assert!(dialog.0.origin.borrow().is_none(), "and stays untied");
     }
 }

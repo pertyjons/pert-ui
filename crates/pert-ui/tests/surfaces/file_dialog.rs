@@ -337,15 +337,23 @@ fn a_double_click_accepts_a_file() {
 #[test]
 fn open_files_reports_the_selection_in_display_order() {
     let mut stage = stage();
-    stage.opened(request(FileDialogMode::OpenFiles));
+    // c.txt is listed a session before a.txt, so its row key sorts first
+    // while the list shows it last.
+    stage.open(request(FileDialogMode::OpenFiles));
+    stage.answer("/r", vec![file("/r/c.txt")]);
+    assert!(stage.dialog.cancel().unwrap());
+    let _ = stage.outcome();
+    settle(&mut stage.ui);
+    stage.open(request(FileDialogMode::OpenFiles));
+    stage.answer("/r", vec![file("/r/a.txt"), file("/r/c.txt")]);
     assert!(!stage.confirm(), "nothing selected");
     // Select c.txt, then add a.txt with Control: display order is a, c.
-    stage.click_row(3);
+    stage.click_row(1);
     stage
         .ui
         .key_input(KeyCode::ControlLeft, KeyAction::Press)
         .unwrap();
-    stage.click_row(1);
+    stage.click_row(0);
     stage
         .ui
         .key_input(KeyCode::ControlLeft, KeyAction::Release)
@@ -493,6 +501,8 @@ fn save_opens_a_folder_whose_name_is_typed() {
     stage.type_name("sub");
     assert!(!stage.confirm());
     assert_eq!(stage.current(), PathBuf::from("/r/sub"));
+    // With the folder listed, only an empty name keeps confirm unavailable.
+    stage.answer("/r/sub", vec![file("/r/sub/x.txt")]);
     assert!(!stage.enabled("accept"), "the name was cleared");
 }
 
@@ -1001,11 +1011,19 @@ fn the_browsers_split_is_workspace_state_and_a_session_is_not() -> TestResult {
     let mut stage = stage();
     // Captured before any session: the closed dialog's content is mounted.
     let closed = stage.ui.capture_workspace()?;
+    // The path is what a stored document holds: the dialog's `dialog`
+    // segment and the content's keys, none of the structural ones.
     assert!(
+        closed.entries().any(|(path, _)| {
+            let segments = path.segments().collect::<Vec<_>>();
+            segments.starts_with(&["open", "dialog", "picker", "browser"])
+                && segments.ends_with(&["panes"])
+        }),
+        "the split takes part while the dialog is closed: {:?}",
         closed
             .entries()
-            .any(|(path, _)| path.segments().any(|segment| segment == "panes")),
-        "the split takes part while the dialog is closed"
+            .map(|(path, _)| path.segments().collect::<Vec<_>>())
+            .collect::<Vec<_>>()
     );
     stage.opened(request(FileDialogMode::SaveFile));
     stage.type_name("draft");
@@ -1186,7 +1204,9 @@ fn a_session_opened_under_a_hidden_owner_stays_open_until_it_is_shown() {
     settle(&mut stage.ui);
     stage.answer("/r", listing());
     assert_eq!(stage.status(), FileDialogStatus::Open);
-    assert!(stage.confirm());
+    // The content is presented: its confirm button takes the click.
+    let accept = stage.part("accept");
+    stage.click(&accept);
     assert_eq!(stage.accepted(), [PathBuf::from("/r")]);
 }
 
@@ -1284,5 +1304,152 @@ fn on_outcome_hands_each_ended_session_to_the_application_once() -> TestResult {
     ui.unmount(&root)?;
     assert_eq!(seen.borrow().len(), 1);
     assert_eq!(dialog.take_outcome()?, Some(FileDialogOutcome::Cancelled));
+    Ok(())
+}
+
+#[test]
+fn a_name_the_field_cannot_show_is_neither_suggested_nor_copied() {
+    // A Unicode line separator is no control character, yet the field
+    // refuses it; the dialog must not judge text the field does not show.
+    assert_eq!(
+        request(FileDialogMode::SaveFile).suggested_name("a\u{2028}b"),
+        Err(FileDialogError::InvalidName)
+    );
+    let mut stage = stage();
+    stage.open(request(FileDialogMode::SaveFile));
+    stage.answer("/r", vec![file("/r/a\u{2028}b")]);
+    stage.click_row(0);
+    assert!(!stage.enabled("accept"), "the name stays empty");
+    assert!(!stage.confirm());
+    assert_eq!(stage.status(), FileDialogStatus::Open);
+}
+
+/// Which dialog's callback received which outcome, in call order.
+type Reported = Rc<RefCell<Vec<(&'static str, FileDialogOutcome)>>>;
+
+/// Mounts one dialog per controller in a column, each logging its name with
+/// the outcomes its callback receives.
+fn logging(
+    ui: &mut Runtime,
+    dialogs: &[(&'static str, &FileDialogController)],
+) -> (WidgetId, Reported) {
+    let seen: Reported = Rc::default();
+    let children: Vec<Element> = dialogs
+        .iter()
+        .map(|&(name, dialog)| {
+            let log = seen.clone();
+            Element::new(
+                name,
+                FileDialog::in_view(ui, dialog, Element::new("view", Label::new(name))).on_outcome(
+                    move |_, outcome| {
+                        log.borrow_mut().push((name, outcome));
+                        Ok(())
+                    },
+                ),
+            )
+        })
+        .collect();
+    let root = ui
+        .mount_tree(Element::new("root", Column::new(children)))
+        .unwrap();
+    (root, seen)
+}
+
+#[test]
+fn the_application_taking_the_outcome_first_leaves_the_callback_unrun() -> TestResult {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(1000.0, 800.0, 1.0)?)?;
+    let dialog = FileDialogController::new(&ui, ["/r"], |_| {})?;
+    let (_root, seen) = logging(&mut ui, &[("a", &dialog)]);
+    settle(&mut ui);
+    dialog.open(request(FileDialogMode::OpenFile))?;
+    settle(&mut ui);
+    assert!(dialog.cancel()?);
+    assert_eq!(dialog.take_outcome()?, Some(FileDialogOutcome::Cancelled));
+    settle(&mut ui);
+    assert!(seen.borrow().is_empty(), "the outcome has one taker");
+    Ok(())
+}
+
+#[test]
+fn callbacks_run_in_the_order_the_sessions_ended() -> TestResult {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(1000.0, 800.0, 1.0)?)?;
+    let first = FileDialogController::new(&ui, ["/r"], |_| {})?;
+    let second = FileDialogController::new(&ui, ["/r"], |_| {})?;
+    let (_root, seen) = logging(&mut ui, &[("first", &first), ("second", &second)]);
+    settle(&mut ui);
+    first.open(request(FileDialogMode::OpenFile))?;
+    second.open(request(FileDialogMode::OpenFile))?;
+    settle(&mut ui);
+    // Ended against mount order, within one flush.
+    assert!(second.cancel()?);
+    assert!(first.cancel()?);
+    settle(&mut ui);
+    let names: Vec<_> = seen.borrow().iter().map(|(name, _)| *name).collect();
+    assert_eq!(names, ["second", "first"]);
+    Ok(())
+}
+
+#[test]
+fn a_hidden_dialog_still_reports_its_dismissed_session() -> TestResult {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(1000.0, 800.0, 1.0)?)?;
+    let dialog = FileDialogController::new(&ui, ["/r"], |_| {})?;
+    let (root, seen) = logging(&mut ui, &[("a", &dialog)]);
+    settle(&mut ui);
+    dialog.open(request(FileDialogMode::OpenFile))?;
+    settle(&mut ui);
+    ui.set_visible(&widget(&ui, &root, "a"), false)?;
+    settle(&mut ui);
+    assert!(
+        matches!(
+            seen.borrow().as_slice(),
+            [("a", FileDialogOutcome::Dismissed(_))]
+        ),
+        "{:?}",
+        seen.borrow()
+    );
+    Ok(())
+}
+
+#[test]
+fn a_second_dialog_on_the_controller_never_reports_the_owners_session() -> TestResult {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(1000.0, 800.0, 1.0)?)?;
+    let dialog = FileDialogController::new(&ui, ["/r"], |_| {})?;
+    let (root, seen) = logging(&mut ui, &[("kept", &dialog), ("other", &dialog)]);
+    // The second mount is refused while the first owns the controller.
+    assert_eq!(ui.flush(ui.now()), Err(RuntimeError::DialogBusy));
+    dialog.open(request(FileDialogMode::OpenFile))?;
+    let _ = ui.flush(ui.now());
+    // While the refused mount fails every flush nothing is delivered, and
+    // the outcome waits with the controller.
+    assert!(dialog.cancel()?);
+    assert_eq!(ui.flush(ui.now()), Err(RuntimeError::DialogBusy));
+    assert!(seen.borrow().is_empty());
+    assert_eq!(dialog.take_outcome()?, Some(FileDialogOutcome::Cancelled));
+    let _ = ui.flush(ui.now());
+
+    // The owner is removed with a session open: that outcome is nobody's
+    // callback's, also once the other dialog has taken the controller over.
+    dialog.open(request(FileDialogMode::OpenFile))?;
+    let _ = ui.flush(ui.now());
+    ui.unmount(&widget(&ui, &root, "kept"))?;
+    settle(&mut ui);
+    settle(&mut ui);
+    assert!(seen.borrow().is_empty());
+    assert_eq!(
+        dialog.take_outcome()?,
+        Some(FileDialogOutcome::Dismissed(SurfaceDismissal::OwnerRemoved))
+    );
+
+    // The dialog that took over reports the sessions it owns.
+    settle(&mut ui);
+    dialog.open(request(FileDialogMode::OpenFile))?;
+    settle(&mut ui);
+    assert!(dialog.cancel()?);
+    settle(&mut ui);
+    assert_eq!(*seen.borrow(), [("other", FileDialogOutcome::Cancelled)]);
     Ok(())
 }

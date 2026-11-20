@@ -5,6 +5,17 @@ needs: additions, behavior changes, breaking changes with their replacement,
 and notable fixes. The detailed per-version entries up to 0.3.101 are in Git
 history (this file at commit f5fde76).
 
+## 0.3.124 (2026-11-20): File dialog review repairs
+
+- Fixed: a save dialog could accept a suggested or listed name its name field
+  refused to show, such as one with a Unicode line separator; such a name is
+  now `FileDialogError::InvalidName` as a suggestion and is not copied.
+- Fixed: `FileDialog::on_outcome` runs only for a session its dialog owned,
+  in the order sessions ended, and also while the dialog is hidden. An
+  outcome the application takes first is not reported again.
+- Fixed: a name copied from a listed file no longer targets that file again
+  after the file left the folder's listing and came back.
+
 ## 0.3.123 (2026-11-19): File dialog in the window
 
 - Added: `FileDialog`, a file dialog the library draws over `FileBrowser`,

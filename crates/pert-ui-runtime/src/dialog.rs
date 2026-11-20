@@ -49,7 +49,14 @@ pub struct DialogController {
     /// The mounted owner's token; empty while no owner is mounted.
     owner: Rc<RefCell<Weak<()>>>,
     closing: Rc<Cell<bool>>,
+    /// The owner mounted when the latest session ended; empty when none was
+    /// or when the session ended by that owner's removal.
+    ended: Rc<RefCell<Weak<()>>>,
+    /// A composing component's request to hear of its owner's ended session.
+    watcher: Rc<RefCell<Option<Watcher>>>,
 }
+/// An owner's token and the notifier requested when its session ends.
+type Watcher = (Weak<()>, Notifier);
 /// Shows the session status, or the error reading it after runtime shutdown,
 /// and whether a mounted dialog owner uses this controller.
 impl std::fmt::Debug for DialogController {
@@ -73,7 +80,34 @@ impl DialogController {
             status: ui.signal(DialogStatus::Idle),
             owner: Rc::new(RefCell::new(Weak::new())),
             closing: Rc::new(Cell::new(false)),
+            ended: Rc::new(RefCell::new(Weak::new())),
+            watcher: Rc::new(RefCell::new(None)),
         }
+    }
+    /// Whether `token` identifies the live mounted owner.
+    fn owned_by(&self, token: &Rc<()>) -> bool {
+        self.owner
+            .borrow()
+            .upgrade()
+            .is_some_and(|owner| Rc::ptr_eq(&owner, token))
+    }
+    /// Requests `notifier` whenever a session ends while the owner
+    /// identified by `token` is mounted, at the ending itself, so requests
+    /// keep the order of endings and reach a hidden owner. Ignored unless
+    /// that owner is the mounted one; a later owner's registration replaces
+    /// it.
+    pub(crate) fn watch(&self, token: &Rc<()>, notifier: &Notifier) {
+        if self.owned_by(token) {
+            *self.watcher.borrow_mut() = Some((Rc::downgrade(token), notifier.clone()));
+        }
+    }
+    /// Whether the latest session ended while the owner identified by
+    /// `token` was mounted, other than by that owner's removal.
+    pub(crate) fn ended_with(&self, token: &Rc<()>) -> bool {
+        self.ended
+            .borrow()
+            .upgrade()
+            .is_some_and(|owner| Rc::ptr_eq(&owner, token))
     }
     fn has_owner(&self) -> bool {
         self.owner.borrow().strong_count() > 0
@@ -128,6 +162,16 @@ impl DialogController {
         }
         let changed = self.status.set_changed(DialogStatus::Finished(outcome))?;
         self.closing.set(self.has_owner());
+        let owner = self.owner.borrow().clone();
+        if let Some((token, notifier)) = &*self.watcher.borrow()
+            && owner
+                .upgrade()
+                .zip(token.upgrade())
+                .is_some_and(|(owner, token)| Rc::ptr_eq(&owner, &token))
+        {
+            notifier.request();
+        }
+        *self.ended.borrow_mut() = owner;
         Ok(changed)
     }
     /// Takes the completed outcome and releases its slot. Returns None for an
@@ -244,12 +288,14 @@ impl Dialog {
         self.escape = false;
         self
     }
+    /// Identifies the mount by `token`, which a composing component keeps to
+    /// ask the controller about this owner.
+    pub(crate) fn with_token(mut self, token: Rc<()>) -> Self {
+        self.token = token;
+        self
+    }
     fn owns(&self) -> bool {
-        self.state
-            .owner
-            .borrow()
-            .upgrade()
-            .is_some_and(|owner| Rc::ptr_eq(&owner, &self.token))
+        self.state.owned_by(&self.token)
     }
     /// Takes the controller over unless another live mount owns it. Returns
     /// whether this mount owns it.
@@ -276,6 +322,8 @@ impl Dialog {
                 )));
         }
         *self.state.owner.borrow_mut() = Weak::new();
+        *self.state.ended.borrow_mut() = Weak::new();
+        *self.state.watcher.borrow_mut() = None;
         self.state.closing.set(false);
     }
 }

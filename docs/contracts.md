@@ -1567,8 +1567,9 @@ the current window is smaller. The host chooses storage and I/O policy.
 
 A `Dialog`'s content is addressed under its documented `dialog` segment, which
 is therefore part of the path of content that has workspace state. It is the
-one key of the library's own in such paths; the rest of a dialog's structure
-is structural and adds none.
+one segment `Dialog` itself adds to such paths; the rest of its structure is
+structural and adds none. Components inside the content, such as a
+`FileDialog`'s picker and browser, add their own documented segments.
 
 Capture is complete or fails: a participant that cannot build its state, for
 example because a key it must record is not storable workspace text, fails
@@ -2102,11 +2103,23 @@ the shown folder and the typed name. Saving over a listed file asks first,
 inside the dialog, with the candidate fixed when the question appears;
 `FileDialogController`'s rustdoc has the per-mode rules.
 
-With `FileDialog::on_outcome` the mounted dialog takes each ended session's
-outcome and hands it to the application after settling, once; a dialog
-removed before that call leaves the outcome with the controller, and the
-callback's failure does not bring the outcome back. A description without the
-callback removes it.
+With `FileDialog::on_outcome` the mounted dialog takes the outcome of a
+session that ended while it was the controller's mounted owner and hands it to
+the application after settling, at most once. Delivery is requested at the
+ending itself, so dialogs are called in the order their sessions ended and a
+hidden dialog is called too. The retained outcome has one taker: the callback
+does not run, and the outcome stays with the controller, when the application
+calls `take_outcome` first, when the dialog is removed before the call, and
+when the session ended with no dialog mounted or with another dialog as
+owner. The callback's failure does not bring the outcome back. A description
+without the callback removes it.
+
+The name field and the dialog judge the same text: a suggested name, and a
+listed name copied into the field, must pass `TextField::check`, so a name the
+field would refuse to show is refused as a suggestion and is not copied. A
+copied name stays tied to its listed file until the user edits it, leaves the
+folder, or a listing of the folder no longer has the file; the file appearing
+again does not restore the tie.
 
 A `FileDialog` described again reconciles its anchor and keeps its session.
 Described with another controller under the same key, it dismisses the mounted
