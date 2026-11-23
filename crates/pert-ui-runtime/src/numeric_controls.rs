@@ -93,6 +93,7 @@ struct NumericControl {
     control: Cell<Option<Rect>>,
     readout: Cell<Option<Rect>>,
     reserved_columns: Cell<usize>,
+    fixed_cell_slot: Cell<Option<f32>>,
     extent: Cell<f32>,
     inset: Cell<f32>,
     edit: Option<EditSession<f32>>,
@@ -134,6 +135,7 @@ impl NumericControl {
             control: Cell::new(None),
             readout: Cell::new(None),
             reserved_columns: Cell::new(0),
+            fixed_cell_slot: Cell::new(None),
             extent: Cell::new(0.0),
             inset: Cell::new(0.0),
             edit: None,
@@ -281,12 +283,15 @@ impl NumericControl {
         // for the widest character that a fixed-decimal value can contain.
         // Single-character layouts are shared across controls, even when they
         // have different ranges, precisions or units.
+        let space = cx.text(" ", None, self.value_style)?.blank_advance();
+        let mut fixed_cells = true;
         let mut advance = 0.0_f32;
         let mut overhang = 0.0_f32;
         let mut height = 0.0_f32;
         for ch in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "-"] {
             let glyph = cx.text(ch, None, self.value_style)?;
             let width = glyph.advance_width();
+            fixed_cells &= space == Some(width);
             advance = advance.max(width);
             overhang = overhang.max(glyph.size().width() - width);
             height = height.max(glyph.size().height());
@@ -299,12 +304,24 @@ impl NumericControl {
             width += suffix.width();
             height = height.max(suffix.height());
         }
+        self.fixed_cell_slot.set(fixed_cells.then_some(width));
         Ok(Size::new(width, height)?)
     }
     fn paint_value(&self, p: &mut Painter, enabled: bool) -> Result<(), DrawError> {
         if let Some(rect) = self.readout.get() {
-            let text = p.text(&self.value_text(false), None, self.value_style)?;
-            let x = rect.x() + (rect.width() - text.size().width()).max(0.0);
+            // Keep the shaped digits on the same raster phase when the font
+            // has invisible, digit-width spaces and the full slot fits.
+            let fixed = self.field.format.is_none()
+                && self
+                    .fixed_cell_slot
+                    .get()
+                    .is_some_and(|width| rect.width() >= width);
+            let text = p.text(&self.value_text(fixed), None, self.value_style)?;
+            let x = if fixed {
+                rect.x()
+            } else {
+                rect.x() + (rect.width() - text.size().width()).max(0.0)
+            };
             let color = p.color(if enabled {
                 ColorRole::OnSurface
             } else {
@@ -663,6 +680,7 @@ impl Component for NumericControl {
             control: _,
             readout: _,
             reserved_columns: _,
+            fixed_cell_slot: _,
             extent: _,
             inset: _,
             edit: _,

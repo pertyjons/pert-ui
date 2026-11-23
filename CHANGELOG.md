@@ -7,6 +7,8 @@ history (this file at commit f5fde76).
 
 ## Unreleased
 
+- Fixed a one-pixel shift of the decimal point at fractional scale when a
+  fixed-width Knob or Slider readout gains a digit.
 - Added `KnobVariant` and `Knob::variant` with Bakelite, Orbit and Diode
   faces. Bakelite is the new default. Select Orbit for a continuous arc.
 - Added `Knob::value_style`, `Slider::value_style` and `InlineSlider::style`.

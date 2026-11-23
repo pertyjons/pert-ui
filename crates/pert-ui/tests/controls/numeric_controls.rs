@@ -853,3 +853,77 @@ fn a_dynamic_over_a_parameter_snapshot_redescribes_during_a_gesture()
     assert_eq!(p.snapshot().get()?.base, 51.0);
     Ok(())
 }
+
+#[cfg(feature = "cpu")]
+#[test]
+fn bundled_monospace_keeps_the_decimal_and_unit_at_the_same_pixels() {
+    let scale = 1.25;
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(450.0, 320.0, scale).unwrap())
+        .unwrap();
+    let (parameter, host) = ui
+        .parameter(
+            ParameterId::new(1, 1, "amount").unwrap(),
+            ParameterSpec::new("Amount", -100.0, 100.0, 9.99).unwrap(),
+        )
+        .unwrap();
+    ui.mount_tree(Element::new(
+        "row",
+        Row::new([
+            Element::new(
+                "slider",
+                Slider::new(parameter.clone()).show_value(true).unit("V"),
+            ),
+            Element::new(
+                "vertical",
+                Slider::new(parameter.clone())
+                    .orientation(Orientation::Vertical)
+                    .show_value(true)
+                    .unit("V"),
+            ),
+            Element::new("knob", Knob::new(parameter).show_value(true).unit("V")),
+        ]),
+    ))
+    .unwrap();
+    // Column runs of visible text in each readout. The period and the V
+    // each occupy an isolated run in the bundled font.
+    let positions = |ui: &mut Runtime| {
+        ui.flush(Duration::ZERO).unwrap();
+        let scene = ui.paint().unwrap();
+        let frame = pert_ui::cpu::CpuRenderer::new().render(&scene).unwrap();
+        let mut result = Vec::new();
+        for (_, clip) in readout_rects(&scene) {
+            let rect = clip.unwrap();
+            let pixel = |n: f32| (f64::from(n) * scale).round() as u32;
+            let mut runs: Vec<std::ops::Range<u32>> = Vec::new();
+            for x in pixel(rect.x())..pixel(rect.x() + rect.width()) {
+                let ink = (pixel(rect.y())..pixel(rect.y() + rect.height())).any(|y| {
+                    let i = 4 * (y * frame.width() + x) as usize;
+                    frame.pixels()[i] > 90
+                });
+                if ink {
+                    if let Some(previous) = runs.last_mut().filter(|r| r.end == x) {
+                        previous.end += 1;
+                    } else {
+                        runs.push(x..x + 1);
+                    }
+                }
+            }
+            let mut periods = runs.iter().filter(|r| r.len() <= 3);
+            let period = periods.next().expect("visible period").clone();
+            assert!(periods.next().is_none(), "{runs:?}");
+            result.push((period, runs.last().unwrap().clone()));
+        }
+        assert_eq!(result.len(), 3);
+        result
+    };
+    for mode in [TextRenderingMode::LineMask, TextRenderingMode::PhaseLine] {
+        ui.ui_settings().set_text_rendering(mode).unwrap();
+        host.write_base(9.99).unwrap();
+        let initial = positions(&mut ui);
+        for value in [10.00, 99.99, 100.00, -100.00] {
+            host.write_base(value).unwrap();
+            assert_eq!(positions(&mut ui), initial, "{mode:?}, {value}");
+        }
+    }
+}

@@ -268,14 +268,15 @@ and noneditable controls preserve normal scrolling.
 Sliders have slim thumbs with the button theme's corner radius and optional
 `show_value(true)` readouts: right of a horizontal track, centered below a
 vertical track.
-`decimal_places` defaults to 2. The monospaced readout reserves the larger
-formatted endpoint, including a sign and rounding carry, so decimal positions and
-track length stay fixed as values change. `format` installs a [`NumberFormat`]
-instead, the same type the inline rows and number inputs take: its display and
-unit callbacks produce the text, its width hint reserves the slot, and the text
-ends at the slot's right edge. Only display matters, since sliders never parse
-text; formatting never quantizes the parameter, and an unchanged clone of the
-format retains layout on redescription. Metadata/format/theme changes may resize
+`decimal_places` defaults to 2. Slider and Knob right-align the value and unit
+together in a slot wide enough for the longer formatted endpoint, including
+a sign and rounding carry. At a fixed precision, the bundled monospace font
+keeps the decimal point and unit aligned as values change. With a proportional
+font, digit widths can vary while the slot's right edge and track length stay
+fixed. An application-supplied [`NumberFormat`] reserves the width of its hint
+and supplies the display text and optional unit. Formatting preserves the
+parameter value, and an unchanged clone of the format retains layout on
+redescription. Metadata/format/theme changes may resize
 it. Constrained allocations clip readouts without wrapping. Visible values use
 [`Painter::text`] inside the reserved slot, so ordinary edits
 repaint without remeasuring controls or ancestors. Only a changed reserved digit
@@ -290,11 +291,10 @@ An empty unit reserves no extra space.
 gestures. Bakelite is the default. Compose a separate label for a heading.
 Enable the value below the dial with `show_value(true)`. Knob and Slider
 accept `value_style` for their readouts. The defaults are MonospaceMicro and
-MonospaceCaption respectively. Proportional faces keep the slot edge stable.
-InlineSlider accepts `style` for its value, unit and editable draft. A custom rotary control
-with another look builds on the same public parameter binding and on
-[`Painter::stroke_arc`]/[`Painter::fill_triangle`], which cache coverage
-exactly like the built-in geometry, as the example below does.
+MonospaceCaption respectively. InlineSlider accepts `style` for its value,
+unit and editable draft. A custom rotary control can use the same public
+parameter binding and draw with [`Painter::stroke_arc`] and
+[`Painter::fill_triangle`].
 
 ```rust
 use pert_ui::{parameter::*, prelude::*};
@@ -304,7 +304,8 @@ let (amount, host) = ui.parameter(
     ParameterSpec::new("Amount", -1.0, 1.0, 0.0)?,
 )?;
 ui.mount_tree(Element::new("controls", Row::new([
-    Element::new("slider", Slider::new(amount.clone()).show_value(true).decimal_places(1)?.unit("%")),
+    Element::new("slider", Slider::new(amount.clone()).show_value(true)
+        .value_style(pert_ui::TextStyle::MonospaceMicro).decimal_places(1)?.unit("%")),
     Element::new("knob", Knob::new(amount.clone()).variant(KnobVariant::Orbit)
         .show_value(true).value_style(pert_ui::TextStyle::Micro)),
     Element::new("vertical", Slider::new(amount.clone()).orientation(Orientation::Vertical).show_value(true)),
@@ -579,14 +580,15 @@ parameter ownership.
 
 ```rust
 use pert_ui::{Column, Element, InlineDecimal, InlineInteger, InlineSlider,
-    ParameterId, ParameterSpec, Runtime};
+    ParameterId, ParameterSpec, Runtime, TextStyle};
 let mut ui = Runtime::new();
 let count = ui.signal(8_i64);
 let decimal = ui.signal(0.9_f64);
 let (amount, _host) = ui.parameter(ParameterId::new(1, 1, "amount")?,
     ParameterSpec::new("Amount", 0.0, 2.0, 0.9)?)?;
 ui.mount_tree(Element::new("controls", Column::new([
-    Element::new("slider", InlineSlider::new(amount).label("Glide").unit("s")),
+    Element::new("slider", InlineSlider::new(amount).label("Glide")
+        .style(TextStyle::MonospaceMicro).unit("s")),
     Element::new("integer", InlineInteger::new(count).range(0, 100)?
         .label("Vol").unit("%")),
     Element::new("decimal", InlineDecimal::new(decimal).range(0.0, 2.0)?

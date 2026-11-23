@@ -280,6 +280,12 @@ impl TextLayout {
     pub(crate) fn advance_width(&self) -> f32 {
         self.shaped.width() / self.scale
     }
+    /// Full typographic advance, including hanging space, for a layout with no ink.
+    pub(crate) fn blank_advance(&self) -> Option<f32> {
+        self.ink
+            .is_none()
+            .then(|| self.shaped.full_width() / self.scale)
+    }
     // First-line typographic extent above and below its baseline. Unlike ink
     // bounds, this stays stable when the visible glyphs change.
     pub(crate) fn first_line_box(&self) -> Option<(f32, f32)> {
