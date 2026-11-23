@@ -395,6 +395,11 @@ changes recolor semantic spans without reshaping their coverage. Existing plain
 and rich captions share one [`TextSource`], which also accepts a binding to
 reactive rich content. Text fields continue to edit plain strings.
 
+Use `TextStyle::Micro` for compact labels or `TextStyle::MonospaceMicro`
+for compact numeric text. Both follow `MetricRole::MicroSize`, initially 10
+logical pixels across densities. A rich span's `style` sets its live font role
+and size together. A subsequent `font_role` or `size` replaces that property.
+
 ```rust
 use pert_ui::{Button, ColorRole, Column, Element, FontRole, Icon, Label,
               RichText, Runtime, TextSpan, Viewport};
@@ -404,7 +409,7 @@ let mut ui = Runtime::new();
 ui.set_viewport(Viewport::new(400.0, 160.0, 1.25)?)?;
 let mono = ui.fonts().default_font(FontRole::Monospace)?;
 let title = RichText::new().icon(Icon::Settings).gap().text("Settings ")
-    .span(TextSpan::new("42.00").font(mono).color_role(ColorRole::Warning));
+    .span(TextSpan::new("42.00").style(pert_ui::TextStyle::Micro).font(mono).color_role(ColorRole::Warning));
 ui.mount_tree(Element::new("content", Column::new([
     Element::new("title", Label::new(title)),
     Element::new("save", Button::new("Save", |_| Ok(())).leading_icon(Icon::Save)),

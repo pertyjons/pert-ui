@@ -30,7 +30,7 @@ pub(crate) enum FontChoice {
 pub struct TextSpan {
     pub(crate) text: String,
     pub(crate) font: Option<FontChoice>,
-    pub(crate) size: Option<Length>,
+    pub(crate) size: Option<crate::Spacing>,
     pub(crate) color: TextColor,
 }
 impl TextSpan {
@@ -42,6 +42,14 @@ impl TextSpan {
             size: None,
             color: TextColor::Inherit,
         }
+    }
+    /// Selects both the font role and live theme size, preserving tint.
+    /// Later font and size setters replace their respective properties.
+    /// The first text span also supplies paragraph defaults, even when empty.
+    pub fn style(mut self, style: crate::TextStyle) -> Self {
+        self.font = Some(FontChoice::Role(style.font_role()));
+        self.size = Some(crate::Spacing::Theme(style.metric()));
+        self
     }
     /// Selects one immutable registered font, followed by bundled text fallback.
     pub fn font(mut self, font: FontId) -> Self {
@@ -55,7 +63,7 @@ impl TextSpan {
     }
     /// Sets logical font size before DPI/zoom. Zero is rejected during preparation.
     pub fn size(mut self, size: Length) -> Self {
-        self.size = Some(size);
+        self.size = Some(size.into());
         self
     }
     /// Preserves a literal tint across theme changes.
@@ -185,7 +193,10 @@ impl RichText {
         }
     }
     // Unused dimensions do not participate in resolved geometry or its cache key.
-    pub(crate) fn metrics(&self, mut metric: impl FnMut(crate::MetricRole) -> f32) -> (f32, f32) {
+    pub(crate) fn metrics(
+        &self,
+        mut metric: impl FnMut(crate::MetricRole) -> f32,
+    ) -> (f32, f32, Vec<(crate::MetricRole, f32)>) {
         let size = if self.has_icons() {
             metric(crate::MetricRole::IconSize)
         } else {
@@ -196,7 +207,16 @@ impl RichText {
         } else {
             0.0
         };
-        (size, gap)
+        let mut sizes = Vec::new();
+        for part in &self.parts {
+            if let Inline::Text(span) = part
+                && let Some(crate::Spacing::Theme(role)) = span.size
+                && !sizes.iter().any(|(key, _)| *key == role)
+            {
+                sizes.push((role, metric(role)));
+            }
+        }
+        (size, gap, sizes)
     }
     pub(crate) fn has_icons(&self) -> bool {
         self.parts.iter().any(|p| matches!(p, Inline::Icon(..)))

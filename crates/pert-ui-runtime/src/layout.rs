@@ -1024,13 +1024,14 @@ impl MeasureContext<'_> {
     ) -> Result<crate::TextLayout, RuntimeError> {
         self.runtime.track_fonts(self.node);
         let size = self.metric(style.metric());
-        let (icon_size, gap) = text.metrics(|role| self.metric(role));
+        let (icon_size, gap, sizes) = text.metrics(|role| self.metric(role));
         self.runtime.prepare_rich_text(
             self.node,
             text,
             crate::text::TextRequest::new(style, size, self.font_reads)
                 .width(width)
-                .inline(icon_size, gap),
+                .inline(icon_size, gap)
+                .span_sizes(&sizes),
         )
     }
     /// Stable sibling key at a visible child index; hidden children are absent.

@@ -126,7 +126,9 @@ pub enum MetricRole {
     MeterThickness,
     /// Preferred diameter of a knob's dial.
     KnobDiameter,
-    /// Stroke width of a knob's arc and pointer.
+    /// Base stroke weight for knob pointers, tracks and marks. The face scales
+    /// individual details and limits the weight to fit the available radius.
+    /// Zero omits the face decoration.
     KnobStroke,
     /// Vertical pointer travel that moves a knob across its full range, before
     /// Shift's fine adjustment divides the sensitivity by ten.
@@ -139,6 +141,8 @@ pub enum MetricRole {
     BodySize,
     /// Heading text size, independent of density.
     HeadingSize,
+    /// Small panel text size, 10 logical pixels in every default density.
+    MicroSize,
     /// Caption text size, independent of density.
     CaptionSize,
     /// Monospace text size, independent of density.
@@ -175,6 +179,7 @@ crate::tables::variant_list! {
         ColorStripThickness,
         BodySize,
         HeadingSize,
+        MicroSize,
         CaptionSize,
         MonospaceSize,
     ];
@@ -226,6 +231,7 @@ const METRIC_DEFAULTS: [(MetricRole, [f32; 3]); METRIC_ROLE_COUNT] = [
     (MetricRole::ColorStripThickness, [12.0, 16.0, 20.0]),
     (MetricRole::BodySize, [14.0, 14.0, 14.0]),
     (MetricRole::HeadingSize, [18.0, 18.0, 18.0]),
+    (MetricRole::MicroSize, [10.0; 3]),
     (MetricRole::CaptionSize, [12.0, 12.0, 12.0]),
     (MetricRole::MonospaceSize, [14.0, 14.0, 14.0]),
 ];
@@ -303,14 +309,40 @@ impl ThemeMetrics {
         role: MetricRole,
         value: crate::Length,
     ) -> Result<Self, crate::GeometryError> {
-        if matches!(
-            role,
+        let requires_positive = match role {
             MetricRole::BodySize
-                | MetricRole::HeadingSize
-                | MetricRole::CaptionSize
-                | MetricRole::MonospaceSize
-        ) && value.get() == 0.0
-        {
+            | MetricRole::HeadingSize
+            | MetricRole::CaptionSize
+            | MetricRole::MonospaceSize
+            | MetricRole::MicroSize => true,
+            MetricRole::ItemGap
+            | MetricRole::SectionGap
+            | MetricRole::GroupPadding
+            | MetricRole::ContentMargin
+            | MetricRole::ControlPaddingX
+            | MetricRole::ControlPaddingY
+            | MetricRole::ControlHeight
+            | MetricRole::ControlWidth
+            | MetricRole::TabHeight
+            | MetricRole::IconGap
+            | MetricRole::IconSize
+            | MetricRole::TabGap
+            | MetricRole::ResizeWidth
+            | MetricRole::BorderWidth
+            | MetricRole::FocusWidth
+            | MetricRole::CornerRadius
+            | MetricRole::ScrollbarLane
+            | MetricRole::ScrollbarThumb
+            | MetricRole::ScrollbarMinimumThumb
+            | MetricRole::ProgressHeight
+            | MetricRole::MeterThickness
+            | MetricRole::KnobDiameter
+            | MetricRole::KnobStroke
+            | MetricRole::KnobTravel
+            | MetricRole::ColorAreaSize
+            | MetricRole::ColorStripThickness => false,
+        };
+        if requires_positive && value.get() == 0.0 {
             return Err(crate::GeometryError::Empty);
         }
         self.values[role as usize] = value.get();

@@ -286,7 +286,12 @@ count of the default presentation requests layout through
 Sliders append it to the enabled readout, and inline rows show it after the value.
 An empty unit reserves no extra space.
 
-[`Knob`] is the built-in rotary parameter control. A custom rotary control
+[`Knob`] offers Bakelite, Orbit and Diode faces with the same hit area and
+gestures. Bakelite is the default. Compose a separate label for a heading.
+Enable the value below the dial with `show_value(true)`. Knob and Slider
+accept `value_style` for their readouts. The defaults are MonospaceMicro and
+MonospaceCaption respectively. Proportional faces keep the slot edge stable.
+InlineSlider accepts `style` for its value, unit and editable draft. A custom rotary control
 with another look builds on the same public parameter binding and on
 [`Painter::stroke_arc`]/[`Painter::fill_triangle`], which cache coverage
 exactly like the built-in geometry, as the example below does.
@@ -300,6 +305,8 @@ let (amount, host) = ui.parameter(
 )?;
 ui.mount_tree(Element::new("controls", Row::new([
     Element::new("slider", Slider::new(amount.clone()).show_value(true).decimal_places(1)?.unit("%")),
+    Element::new("knob", Knob::new(amount.clone()).variant(KnobVariant::Orbit)
+        .show_value(true).value_style(pert_ui::TextStyle::Micro)),
     Element::new("vertical", Slider::new(amount.clone()).orientation(Orientation::Vertical).show_value(true)),
 ])))?;
 // Retain the authoritative owner while these controls should remain available.

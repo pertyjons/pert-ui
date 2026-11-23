@@ -12,8 +12,18 @@ const KNOB_START_DEGREES: f32 = 135.0;
 /// Angular travel of a knob from minimum to maximum. An angle rather than a
 /// length, so it is not a theme metric, which zoom and DPI would scale.
 const KNOB_SWEEP_DEGREES: f32 = 270.0;
-/// Fraction of the dial's radius where the pointer line starts.
-const KNOB_POINTER_INNER: f32 = 0.35;
+/// Dial appearance, independent of the parameter's mapping and edit gestures.
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+#[non_exhaustive]
+pub enum KnobVariant {
+    /// A rimmed face with major and minor scale marks and a radial pointer.
+    #[default]
+    Bakelite,
+    /// A continuous value arc with a moving endpoint.
+    Orbit,
+    /// A dotted scale with a short pointer between the discrete marks.
+    Diode,
+}
 
 /// Direction of a linear slider. Positions increase rightward or upward.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
@@ -73,6 +83,8 @@ struct NumericControl {
     orientation: Orientation,
     shape: Shape,
     arc_origin: ArcOrigin,
+    variant: KnobVariant,
+    value_style: TextStyle,
     /// A knob's primary presses, for double-click reset.
     clicks: crate::ClickCounter,
     show_value: bool,
@@ -107,6 +119,14 @@ impl NumericControl {
             orientation: Orientation::Horizontal,
             shape,
             arc_origin: ArcOrigin::Minimum,
+            variant: KnobVariant::default(),
+            value_style: if inline {
+                TextStyle::Monospace
+            } else if shape == Shape::Rotary {
+                TextStyle::MonospaceMicro
+            } else {
+                TextStyle::MonospaceCaption
+            },
             clicks: crate::ClickCounter::new(),
             show_value: false,
             decimal_places: 2,
@@ -228,16 +248,9 @@ impl NumericControl {
                 .max(self.number(spec.maximum()).len())
         })
     }
-    /// The readout's text, or with `template` the text whose measured width
-    /// reserves the readout slot. An installed format supplies both: its
-    /// width hint reserves the slot, its display callback and its unit
-    /// callback, or without one the literal unit, produce the text. Without a
-    /// format the fixed decimal places pad the value to the wider endpoint.
-    fn value_text(&self, template: bool) -> String {
+    /// Inspection keeps the fixed-decimal value padded to the wider endpoint.
+    fn value_text(&self, padded: bool) -> String {
         if let Some(format) = &self.field.format {
-            if template {
-                return format.hint.clone();
-            }
             let mut text = (format.display)(self.value);
             let unit = format
                 .unit
@@ -249,12 +262,8 @@ impl NumericControl {
             }
             return text;
         }
-        let width = self.columns();
-        let mut text = if template {
-            "0".repeat(width)
-        } else {
-            format!("{:>width$}", self.number(self.value))
-        };
+        let width = if padded { self.columns() } else { 0 };
+        let mut text = format!("{:>width$}", self.number(self.value));
         if !self.unit.is_empty() {
             text.push(' ');
             text.push_str(&self.unit);
@@ -262,13 +271,48 @@ impl NumericControl {
         text
     }
     fn value_size(&self, cx: &MeasureContext<'_>) -> Result<Size, RuntimeError> {
-        if self.show_value {
-            Ok(cx
-                .text(&self.value_text(true), None, TextStyle::MonospaceCaption)?
-                .size())
-        } else {
-            Ok(Size::ZERO)
+        if !self.show_value {
+            return Ok(Size::ZERO);
         }
+        if let Some(format) = &self.field.format {
+            return Ok(cx.text(&format.hint, None, self.value_style)?.size());
+        }
+        // The role may resolve to a proportional font. Reserve each column
+        // for the widest character that a fixed-decimal value can contain.
+        // Single-character layouts are shared across controls, even when they
+        // have different ranges, precisions or units.
+        let mut advance = 0.0_f32;
+        let mut overhang = 0.0_f32;
+        let mut height = 0.0_f32;
+        for ch in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "-"] {
+            let glyph = cx.text(ch, None, self.value_style)?;
+            let width = glyph.advance_width();
+            advance = advance.max(width);
+            overhang = overhang.max(glyph.size().width() - width);
+            height = height.max(glyph.size().height());
+        }
+        let mut width = advance * self.columns() as f32 + overhang;
+        if !self.unit.is_empty() {
+            let suffix = cx
+                .text(&format!(" {}", self.unit), None, self.value_style)?
+                .size();
+            width += suffix.width();
+            height = height.max(suffix.height());
+        }
+        Ok(Size::new(width, height)?)
+    }
+    fn paint_value(&self, p: &mut Painter, enabled: bool) -> Result<(), DrawError> {
+        if let Some(rect) = self.readout.get() {
+            let text = p.text(&self.value_text(false), None, self.value_style)?;
+            let x = rect.x() + (rect.width() - text.size().width()).max(0.0);
+            let color = p.color(if enabled {
+                ColorRole::OnSurface
+            } else {
+                ColorRole::Muted
+            });
+            p.with_clip(rect, |p| text.paint(p, Point::new(x, rect.y())?, color))?;
+        }
+        Ok(())
     }
     fn editable(&self) -> bool {
         self.enabled
@@ -420,8 +464,7 @@ impl NumericControl {
             .transpose()?
             .unwrap_or(self.normalized))
     }
-    /// Paints a knob: a track arc, the value arc from its origin, a pointer,
-    /// the readout, and the focus and error outlines.
+    /// Paints the selected face, its readout and interaction outlines.
     fn paint_knob(
         &self,
         p: &mut Painter,
@@ -435,81 +478,99 @@ impl NumericControl {
             ColorRole::Muted
         });
         let [x, y, side, _] = control.values();
-        let stroke = p.metric(MetricRole::KnobStroke).min(side / 4.0);
-        let radius = (side - stroke) / 2.0 - p.metric(MetricRole::FocusWidth);
-        if radius > 0.0 && stroke > 0.0 {
-            let center = Point::new(x + side / 2.0, y + side / 2.0)?;
-            let disc = radius - stroke;
-            if enabled && self.hovered && disc > 0.0 {
-                p.fill_ellipse(
-                    Rect::new(center.x() - disc, center.y() - disc, 2.0 * disc, 2.0 * disc)?,
-                    p.color(ColorRole::SurfaceHover),
-                )?;
-            }
-            let width = Length::new(stroke)?;
-            let r = Length::new(radius)?;
-            p.stroke_arc(
-                center,
-                r,
-                KNOB_START_DEGREES,
-                KNOB_SWEEP_DEGREES,
-                width,
-                p.color(ColorRole::Outline),
-            )?;
-            let n = self.normalized;
+        let radius = side * 0.5 - p.metric(MetricRole::FocusWidth);
+        let stroke = p.metric(MetricRole::KnobStroke).min(radius * 0.22);
+        if stroke > 0.0 {
+            let center = Point::new(x + side * 0.5, y + side * 0.5)?;
             let origin = match self.arc_origin {
                 ArcOrigin::Minimum => 0.0,
-                // A specification's own default always normalizes; before the
-                // specification is read the arc starts at the minimum.
                 ArcOrigin::Default => self
                     .spec
                     .as_ref()
                     .and_then(|s| s.normalize(&s.default_value()).ok())
                     .map_or(0.0, NormalizedValue::get),
             };
-            p.stroke_arc(
-                center,
-                r,
-                KNOB_START_DEGREES + KNOB_SWEEP_DEGREES * n.min(origin),
-                KNOB_SWEEP_DEGREES * (n - origin).abs(),
-                width,
-                active,
-            )?;
-            let angle = (KNOB_START_DEGREES + KNOB_SWEEP_DEGREES * n).to_radians();
-            let at = |fraction: f32| {
+            let n = self.normalized;
+            let at = |position: f32, fraction: f32| {
+                let angle = (KNOB_START_DEGREES + KNOB_SWEEP_DEGREES * position).to_radians();
                 Point::new(
                     center.x() + radius * fraction * angle.cos(),
                     center.y() + radius * fraction * angle.sin(),
                 )
             };
-            p.stroke_polyline(
-                &[at(KNOB_POINTER_INNER)?, at(1.0)?],
-                StrokeStyle::new(width).with_cap(LineCap::Round),
-                p.color(if enabled {
-                    ColorRole::OnSurface
-                } else {
-                    ColorRole::Muted
-                }),
-            )?;
-        }
-        if let Some(rect) = self.readout.get() {
-            let color = p.color(if enabled {
-                ColorRole::OnSurface
-            } else {
-                ColorRole::Muted
-            });
-            let text = p.text(&self.value_text(false), None, TextStyle::MonospaceCaption)?;
-            let [x, y, width, _] = rect.values();
-            // Padded default text fills its slot; formatted text, whose width
-            // the hint reserved, ends at the slot's right edge so the value's
-            // last digit and unit stay put as the value changes.
-            let x = if self.field.format.is_some() {
-                x + (width - text.size().width()).max(0.0)
-            } else {
-                x
+            let disc = |p: &mut Painter, point: Point, r: f32, color| {
+                p.fill_ellipse(
+                    Rect::new(point.x() - r, point.y() - r, 2.0 * r, 2.0 * r)?,
+                    color,
+                )
             };
-            p.with_clip(rect, |p| text.paint(p, crate::Point::new(x, y)?, color))?;
+            let outline = p.color(ColorRole::Outline);
+            let rim = p.color(ColorRole::Muted);
+            let face = p.color(if enabled && self.hovered {
+                ColorRole::SurfaceHover
+            } else {
+                ColorRole::SurfaceContainer
+            });
+            let face_radius = radius
+                * if self.variant == KnobVariant::Bakelite {
+                    0.74
+                } else {
+                    0.67
+                };
+            disc(p, center, face_radius, rim)?;
+            disc(p, center, face_radius - stroke * 0.55, face)?;
+            match self.variant {
+                KnobVariant::Orbit => {
+                    let r = Length::new(radius * 0.82)?;
+                    p.stroke_arc(
+                        center,
+                        r,
+                        KNOB_START_DEGREES,
+                        KNOB_SWEEP_DEGREES,
+                        Length::new(stroke * 0.45)?,
+                        outline,
+                    )?;
+                    p.stroke_arc(
+                        center,
+                        r,
+                        KNOB_START_DEGREES + KNOB_SWEEP_DEGREES * n.min(origin),
+                        KNOB_SWEEP_DEGREES * (n - origin).abs(),
+                        Length::new(stroke)?,
+                        active,
+                    )?;
+                    disc(p, at(n, 0.82)?, stroke.min(radius * 0.17), active)?;
+                }
+                KnobVariant::Diode | KnobVariant::Bakelite => {
+                    let dotted = self.variant == KnobVariant::Diode;
+                    let intervals = if dotted { 18 } else { 20 };
+                    for i in 0..=intervals {
+                        let t = i as f32 / intervals as f32;
+                        let lit = n != origin && (origin.min(n)..=origin.max(n)).contains(&t);
+                        let color = if lit { active } else { outline };
+                        if dotted {
+                            let r = if lit { stroke * 0.52 } else { stroke * 0.35 };
+                            disc(p, at(t, 0.86)?, r.min(radius * 0.082), color)?;
+                        } else {
+                            let outer = if i % 5 == 0 { 0.98 } else { 0.92 };
+                            p.stroke_polyline(
+                                &[at(t, 0.81)?, at(t, outer)?],
+                                StrokeStyle::new(Length::new(
+                                    stroke * if lit { 0.66 } else { 0.40 },
+                                )?),
+                                color,
+                            )?;
+                        }
+                    }
+                    let inner = if dotted { 0.20 } else { 0.08 };
+                    p.stroke_polyline(
+                        &[at(n, inner)?, at(n, 0.57)?],
+                        StrokeStyle::new(Length::new(stroke)?).with_cap(LineCap::Round),
+                        active,
+                    )?;
+                }
+            }
         }
+        self.paint_value(p, enabled)?;
         if self.focused {
             focus_ring(p, control)?;
         }
@@ -588,6 +649,8 @@ impl Component for NumericControl {
             decimal_places,
             unit,
             arc_origin,
+            variant,
+            value_style,
             shape: _,
             clicks: _,
             spec: _,
@@ -635,7 +698,17 @@ impl Component for NumericControl {
             self.enabled = enabled;
             invalidation = invalidation.max(Some(Invalidation::Paint));
         }
-        if arc_origin != self.arc_origin {
+        if value_style != self.value_style {
+            self.value_style = value_style;
+            if self.field.inline {
+                self.field.set_style(value_style);
+            }
+            if self.field.inline || show_value {
+                invalidation = Some(Invalidation::Layout);
+            }
+        }
+        if arc_origin != self.arc_origin || variant != self.variant {
+            self.variant = variant;
             self.arc_origin = arc_origin;
             invalidation = invalidation.max(Some(Invalidation::Paint));
         }
@@ -1228,24 +1301,7 @@ impl Component for NumericControl {
             )?
         };
         p.fill_shape(thumb, shape, active)?;
-        if let Some(rect) = self.readout.get() {
-            let color = p.color(if enabled {
-                ColorRole::OnSurface
-            } else {
-                ColorRole::Muted
-            });
-            let text = p.text(&self.value_text(false), None, TextStyle::MonospaceCaption)?;
-            let [x, y, width, _] = rect.values();
-            // Padded default text fills its slot; formatted text, whose width
-            // the hint reserved, ends at the slot's right edge so the value's
-            // last digit and unit stay put as the value changes.
-            let x = if self.field.format.is_some() {
-                x + (width - text.size().width()).max(0.0)
-            } else {
-                x
-            };
-            p.with_clip(rect, |p| text.paint(p, crate::Point::new(x, y)?, color))?;
-        }
+        self.paint_value(p, enabled)?;
         let rect = Rect::from_size(size);
         if self.focused {
             focus_ring(p, rect)?;
@@ -1274,7 +1330,7 @@ impl Component for NumericControl {
         );
         if !self.field.inline && self.show_value {
             d.properties
-                .insert("readout".into(), InspectValue::Text(self.value_text(false)));
+                .insert("readout".into(), InspectValue::Text(self.value_text(true)));
         }
         d.properties
             .insert("editing".into(), InspectValue::Bool(self.edit.is_some()));
@@ -1573,13 +1629,20 @@ macro_rules! numeric_widget {
 macro_rules! readout_api {
     ($name:ident) => {
         impl $name {
+            /// Selects the optional readout typography without enabling it.
+            /// Knob defaults to MonospaceMicro and Slider to MonospaceCaption.
+            pub fn value_style(mut self, style: TextStyle) -> Self {
+                self.0.value_style = style;
+                self
+            }
             /// Shows or hides the numeric readout, off by default. It sits at
             /// the right (horizontal) or centered below (vertical).
-            /// Fixed decimal places and monospaced padding reserve the larger of
+            /// Fixed decimal places reserve columns for the larger of
             /// both formatted endpoints, including the sign and rounding carry;
             /// an installed [`format`](Self::format) reserves its width hint instead.
-            /// Ordinary value changes preserve track length, readout origin and
-            /// decimal alignment. Metadata, format or theme changes may resize it.
+            /// Ordinary value changes preserve track length and
+            /// the slot edge. Decimal alignment depends on the font.
+            /// Metadata, format or theme changes may resize it.
             /// Constrained allocations clip text without wrapping it or overlapping
             /// the control. Slider readouts do not start gestures.
             pub fn show_value(mut self, visible: bool) -> Self {
@@ -1643,17 +1706,24 @@ numeric_widget!(
     InlineSlider,
     true,
     Shape::Linear,
-    "A one-line parameter row with a caption, a short track, an editable value and a unit, sharing one Tab stop. Inline controls fit toolbars, channel strips and status bars at ControlHeight and follow the ordinary theme metrics for density and zoom. The secondary caption uses `TextStyle::Caption`; the value and unit use `TextStyle::Monospace` on one baseline. Click the value or press Enter/F2 to type; horizontal value dragging begins after four logical pixels and uses 160 logical pixels for full travel, with Shift dividing sensitivity by ten. Track, key and wheel gestures keep the normal parameter edit protocol. Enter confirms typed values; Escape or loss of context cancels, and invalid text stays editable without changing the base. While typing, keys reach the value before application key commands, as in `TextField`, and `Runtime::text_command` acts on the typed text as the clipboard chords do; outside text mode the row is not a text editor, except that `TextCommand::BeginEdit` begins text mode as Enter/F2 does, requesting focus for it, and answers `Handled`. `BeginEdit` answers `Unavailable` where Enter/F2 does nothing: while the parameter takes no edit (disabled, unavailable, without edit authority or not editable), during a gesture that holds the row's edit (a pressed value, a track drag or a held step key, which then ends on its release as before), and in text mode. Inspection reports text mode as the `text_editing` property. Resting focus schedules no caret work. The caption and unit are literal presentation text outside selection, clipboard text and IME composition. Editable track and value hover uses SurfaceHover without changing row geometry."
+    "A one-line parameter row with a caption, a short track, an editable value and a unit, sharing one Tab stop. Inline controls fit toolbars, channel strips and status bars at ControlHeight and follow the ordinary theme metrics for density and zoom. The secondary caption uses `TextStyle::Caption`; the value and unit default to `TextStyle::Monospace` on one baseline. Click the value or press Enter/F2 to type; horizontal value dragging begins after four logical pixels and uses 160 logical pixels for full travel, with Shift dividing sensitivity by ten. Track, key and wheel gestures keep the normal parameter edit protocol. Enter confirms typed values; Escape or loss of context cancels, and invalid text stays editable without changing the base. While typing, keys reach the value before application key commands, as in `TextField`, and `Runtime::text_command` acts on the typed text as the clipboard chords do; outside text mode the row is not a text editor, except that `TextCommand::BeginEdit` begins text mode as Enter/F2 does, requesting focus for it, and answers `Handled`. `BeginEdit` answers `Unavailable` where Enter/F2 does nothing: while the parameter takes no edit (disabled, unavailable, without edit authority or not editable), during a gesture that holds the row's edit (a pressed value, a track drag or a held step key, which then ends on its release as before), and in text mode. Inspection reports text mode as the `text_editing` property. Resting focus schedules no caret work. The caption and unit are literal presentation text outside selection, clipboard text and IME composition. Editable track and value hover uses SurfaceHover without changing row geometry."
 );
 numeric_widget!(
     Knob,
     false,
     Shape::Rotary,
-    "A rotary parameter control: the slider's edit protocol, keyboard and wheel behavior in a round dial.\n\nThe dial is [`MetricRole::KnobDiameter`] across by default, with a 270-degree track arc open at the bottom, a value arc in `ColorRole::Primary` from its [`ArcOrigin`] to the value, and a pointer line, all [`MetricRole::KnobStroke`] wide. A larger allocation centers the largest square that fits; the optional readout (`show_value`) sits centered below. A primary press on the dial begins one edit without changing the value; vertical dragging moves it, upward increasing, by the full range over [`MetricRole::KnobTravel`] logical pixels, and Shift divides the sensitivity by ten at any point in the drag. The matched release commits a drag that moved the value; a release without movement cancels the edit, so a click alone records no edit for the host. A second primary press within 500 ms and four logical pixels of a press that began an edit and did not move the value is a double-click (counted by [`ClickCounter`]): it begins, previews and commits one edit to the parameter's default, as Backspace does. Hover shows `SurfaceHover` inside the arc, and the focus ring surrounds the dial.\n\n```\n# use pert_ui_runtime as pert_ui;\nuse pert_ui::{ArcOrigin, Element, KeyAction, KeyCode, Knob, ParameterId, ParameterSpec, Runtime, Viewport};\nlet mut ui = Runtime::new();\nui.set_viewport(Viewport::new(120.0, 120.0, 1.0)?)?;\nlet (balance, _host) = ui.parameter(\n    ParameterId::new(1, 1, \"balance\")?,\n    ParameterSpec::new(\"Balance\", -1.0, 1.0, 0.0)?,\n)?;\nlet knob = ui.mount_tree(Element::new(\"balance\", Knob::new(balance.clone()).arc_origin(ArcOrigin::Default).show_value(true)))?;\nui.flush(std::time::Duration::ZERO)?;\nassert!(ui.bounds(&knob)?.is_some_and(|dial| dial.width() > 0.0));\nui.focus(&knob)?;\nui.key_input(KeyCode::End, KeyAction::Press)?;\nui.key_input(KeyCode::End, KeyAction::Release)?;\nassert_eq!(balance.snapshot().get()?.base, 1.0);\nui.key_input(KeyCode::Backspace, KeyAction::Press)?;\nui.key_input(KeyCode::Backspace, KeyAction::Release)?;\nassert_eq!(balance.snapshot().get()?.base, 0.0);\n# Ok::<(), Box<dyn std::error::Error>>(())\n```"
+    "A rotary parameter control: the slider's edit protocol, keyboard and wheel behavior in a round dial.\n\nThe dial is [`MetricRole::KnobDiameter`] across by default, with a 270-degree scale open at the bottom. [`KnobVariant`] selects the face, Bakelite by default. Primary marks show the extent from [`ArcOrigin`] to the current value. [`MetricRole::KnobStroke`] controls stroke weight. A larger allocation centers the largest square that fits; the optional readout (`show_value`) sits centered below. A primary press on the dial begins one edit without changing the value; vertical dragging moves it, upward increasing, by the full range over [`MetricRole::KnobTravel`] logical pixels, and Shift divides the sensitivity by ten at any point in the drag. The matched release commits a drag that moved the value; a release without movement cancels the edit, so a click alone records no edit for the host. A second primary press within 500 ms and four logical pixels of a press that began an edit and did not move the value is a double-click (counted by [`ClickCounter`]): it begins, previews and commits one edit to the parameter's default, as Backspace does. Hover shows `SurfaceHover` inside the face, and the focus ring surrounds the dial.\n\n```\n# use pert_ui_runtime as pert_ui;\nuse pert_ui::{ArcOrigin, Element, KeyAction, KeyCode, Knob, ParameterId, ParameterSpec, Runtime, Viewport};\nlet mut ui = Runtime::new();\nui.set_viewport(Viewport::new(120.0, 120.0, 1.0)?)?;\nlet (balance, _host) = ui.parameter(\n    ParameterId::new(1, 1, \"balance\")?,\n    ParameterSpec::new(\"Balance\", -1.0, 1.0, 0.0)?,\n)?;\nlet knob = ui.mount_tree(Element::new(\"balance\", Knob::new(balance.clone()).arc_origin(ArcOrigin::Default).show_value(true)))?;\nui.flush(std::time::Duration::ZERO)?;\nassert!(ui.bounds(&knob)?.is_some_and(|dial| dial.width() > 0.0));\nui.focus(&knob)?;\nui.key_input(KeyCode::End, KeyAction::Press)?;\nui.key_input(KeyCode::End, KeyAction::Release)?;\nassert_eq!(balance.snapshot().get()?.base, 1.0);\nui.key_input(KeyCode::Backspace, KeyAction::Press)?;\nui.key_input(KeyCode::Backspace, KeyAction::Release)?;\nassert_eq!(balance.snapshot().get()?.base, 0.0);\n# Ok::<(), Box<dyn std::error::Error>>(())\n```"
 );
 readout_api!(Slider);
 readout_api!(Knob);
 impl Knob {
+    /// Selects the dial face. Bakelite is the default. Changing the face
+    /// preserves the dial geometry and any active parameter gesture.
+    pub fn variant(mut self, variant: KnobVariant) -> Self {
+        self.0.variant = variant;
+        self
+    }
+
     /// Selects where the value arc starts, [`ArcOrigin::Minimum`] by default.
     /// Presentation only: the origin never changes the value, the mapping or
     /// the edit protocol, and changing it in place repaints without layout.
@@ -1678,6 +1748,14 @@ impl Slider {
 }
 
 impl InlineSlider {
+    /// Selects value, unit and draft typography. Defaults to Monospace.
+    /// The leading caption keeps its own style.
+    pub fn style(mut self, style: TextStyle) -> Self {
+        self.0.value_style = style;
+        self.0.field.set_style(style);
+        self
+    }
+
     /// Sets the row's leading caption, empty by default. Without a caption
     /// the row's accessible name is the parameter's name.
     ///

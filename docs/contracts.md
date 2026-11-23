@@ -377,6 +377,12 @@ InlineSlider, ColorSwatch, ColorPicker, Collapsible and Accordion take an
 activation or an armed header press without toggling; ColorPicker's permission
 follows same-key redescription although its binding and options stay retained.
 
+On a retained Knob, the dial variant changes only paint. A visible Knob or
+Slider readout remeasures when its style changes. An InlineSlider passes its
+value style to the mounted draft editor during the next update. Presentation
+changes retain the parameter session, focus and draft selection under the
+usual geometry and input-context rules.
+
 History controls and geometry controls take a constant or a bound signal through
 one `Permission` builder each, and `FloatingWindow::movable` restores the
 position when revoked during a move.

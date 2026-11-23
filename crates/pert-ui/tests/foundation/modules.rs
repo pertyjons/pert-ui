@@ -108,6 +108,7 @@ mod every_name {
         };
     }
     mod parameter_names {
+        use pert_ui::parameter::KnobVariant;
         use pert_ui::parameter::{
             AnyDeliveryMonitor, AnyParameter, AnyParameterHost, AnyParameterSnapshot,
             AnyPreviewEvent, AnySpec, AnyTerminalEvent, AnyValue, ArcOrigin, AuthorityReceipt,
@@ -174,6 +175,7 @@ mod every_glob_combines {
     use pert_ui::{commands::*, component::*, host::*, inspection::*, live::*, parameter::*};
     use pert_ui::{prelude::*, testing::*, windowing::*};
 
+    use self::KnobVariant as _;
     #[cfg(feature = "svg")]
     use self::Svg as _;
     use self::{

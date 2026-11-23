@@ -5,6 +5,16 @@ needs: additions, behavior changes, breaking changes with their replacement,
 and notable fixes. The detailed per-version entries up to 0.3.101 are in Git
 history (this file at commit f5fde76).
 
+## Unreleased
+
+- Added `KnobVariant` and `Knob::variant` with Bakelite, Orbit and Diode
+  faces. Bakelite is the new default. Select Orbit for a continuous arc.
+- Added `Knob::value_style`, `Slider::value_style` and `InlineSlider::style`.
+  Visible Knob readouts now use 10 logical pixels. Select
+  `TextStyle::MonospaceCaption` to restore the former size.
+- Added `MetricRole::MicroSize` and `TextSpan::style`. Exhaustive matches on
+  `TextStyle` must handle the new `Micro` and `MonospaceMicro` variants.
+
 ## 0.3.125 (2026-11-20): File dialog memory and places
 
 - Added: `FileDialogMemory`, application-owned and shared by any number of

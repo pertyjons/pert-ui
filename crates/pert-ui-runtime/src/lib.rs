@@ -101,7 +101,7 @@ pub use number_format::{NumberFormat, NumberLocale, NumberLocaleError};
 mod strings;
 pub use strings::{StringRole, UiMessage, UiStringError, UiStrings};
 mod numeric_controls;
-pub use numeric_controls::{ArcOrigin, InlineSlider, Knob, Orientation, Slider};
+pub use numeric_controls::{ArcOrigin, InlineSlider, Knob, KnobVariant, Orientation, Slider};
 mod breadcrumb;
 mod chip;
 mod collapsible;
@@ -737,11 +737,11 @@ pub mod parameter {
         AnySpec, AnyTerminalEvent, AnyValue, ArcOrigin, AuthorityReceipt, AuthorityResponse,
         AuthorityStatus, BindingError, ChoiceId, ChoiceOption, DeliveryError, DeliveryMonitor,
         DeliveryResolution, DeliverySnapshot, DeliveryStatus, EditError, EditOutcome, EditSequence,
-        EditSession, EditSource, EditToken, HostValue, InlineSlider, Knob, NormalizedValue,
-        NormalizedValueError, Parameter, ParameterError, ParameterFamily, ParameterHost,
-        ParameterId, ParameterIdError, ParameterMapping, ParameterSnapshot, ParameterSpec,
-        ParameterState, ParameterValue, PowerExponent, PreviewEvent, PreviewOutcome, RemoteCommit,
-        RemoteHost, ResponseDisposition, Revision, SinkError, SinkErrorKind, Slider,
+        EditSession, EditSource, EditToken, HostValue, InlineSlider, Knob, KnobVariant,
+        NormalizedValue, NormalizedValueError, Parameter, ParameterError, ParameterFamily,
+        ParameterHost, ParameterId, ParameterIdError, ParameterMapping, ParameterSnapshot,
+        ParameterSpec, ParameterState, ParameterValue, PowerExponent, PreviewEvent, PreviewOutcome,
+        RemoteCommit, RemoteHost, ResponseDisposition, Revision, SinkError, SinkErrorKind, Slider,
         SubmissionDelivery, TerminalEvent,
     };
 }

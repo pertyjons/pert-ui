@@ -1527,7 +1527,7 @@ impl Painter {
         style: crate::TextStyle,
     ) -> Result<crate::TextLayout, DrawError> {
         let _timing = self.profiler.span(crate::ProfileOperation::Text, None, "");
-        let (icon_size, gap) = text.metrics(|role| self.metric(role));
+        let (icon_size, gap, sizes) = text.metrics(|role| self.metric(role));
         let size = self.metric(style.metric());
         Ok(self.text.prepare_rich(
             text,
@@ -1537,7 +1537,8 @@ impl Painter {
                     self.window_scale,
                     self.view_scale,
                 ))
-                .inline(icon_size, gap),
+                .inline(icon_size, gap)
+                .span_sizes(&sizes),
         )?)
     }
     /// Paints a standard or custom font icon centered inside reserved logical bounds.

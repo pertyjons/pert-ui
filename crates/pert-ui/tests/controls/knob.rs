@@ -359,7 +359,15 @@ fn arc_origin_changes_in_place_and_only_the_painted_arc() {
         ..
     } = setup(Knob::new);
     // At the default value the minimum origin fills a value arc.
-    let minimum = ui.paint().unwrap().commands().len();
+    let primary = Palette::dark().color(ColorRole::Primary);
+    let active = |scene: &DisplayList| {
+        scene
+            .commands()
+            .iter()
+            .filter(|c| matches!(c, DrawCommand::DrawVector { color, .. } if *color == primary))
+            .count()
+    };
+    let minimum = active(&ui.paint().unwrap());
     let bounds = ui.bounds(&knob).unwrap();
     ui.reconcile_children(
         &root,
@@ -373,7 +381,9 @@ fn arc_origin_changes_in_place_and_only_the_painted_arc() {
     assert_eq!(ui.children(&root).unwrap(), vec![knob.clone()]);
     assert_eq!(ui.bounds(&knob).unwrap(), bounds);
     // The default origin at the default value draws no value arc.
-    assert_eq!(ui.paint().unwrap().commands().len(), minimum - 1);
+    let at_default = active(&ui.paint().unwrap());
+    assert_eq!(at_default, 1, "only the radial pointer remains active");
+    assert!(minimum > at_default);
     assert_eq!(base(&parameter), 0.0);
 }
 
@@ -572,4 +582,208 @@ fn an_enabled_knob_whose_edit_is_refused_does_not_arm_a_double_click() {
     );
     assert_eq!(base(&parameter), stepped, "no reset to the default");
     assert_ne!(stepped, 0.0);
+}
+
+#[test]
+fn changing_the_face_preserves_the_drag() {
+    let Setup {
+        mut ui,
+        parameter,
+        host: _host,
+        root,
+        knob,
+        center,
+    } = setup(Knob::new);
+    pointer(&mut ui, center, PointerKind::Press(PointerButton::Primary));
+    pointer(&mut ui, offset(center, -20.0), PointerKind::Move);
+    let before = parameter.snapshot().get().unwrap();
+    let bounds = ui.bounds(&knob).unwrap();
+    for variant in [
+        KnobVariant::Diode,
+        KnobVariant::Orbit,
+        KnobVariant::Bakelite,
+    ] {
+        ui.reconcile_children(
+            &root,
+            vec![Element::new(
+                "knob",
+                Knob::new(parameter.clone()).variant(variant),
+            )],
+        )
+        .unwrap();
+        ui.flush(Duration::ZERO).unwrap();
+        let now = parameter.snapshot().get().unwrap();
+        assert_eq!(
+            (now.preview, now.edit_source),
+            (before.preview, before.edit_source)
+        );
+        assert_eq!(ui.bounds(&knob).unwrap(), bounds);
+    }
+    pointer(
+        &mut ui,
+        offset(center, -20.0),
+        PointerKind::Release(PointerButton::Primary),
+    );
+    assert_eq!(Some(base(&parameter)), before.preview);
+}
+
+#[cfg(feature = "cpu")]
+#[test]
+fn compact_faces_show_the_active_extent_on_both_sides_of_default() {
+    let mut pictures = Vec::new();
+    for mode in [ThemeMode::Dark, ThemeMode::Light] {
+        for variant in [
+            KnobVariant::Bakelite,
+            KnobVariant::Orbit,
+            KnobVariant::Diode,
+        ] {
+            let Setup { mut ui, host, .. } =
+                setup(|p| Knob::new(p).variant(variant).arc_origin(ArcOrigin::Default));
+            ui.set_viewport(Viewport::new(40.0, 40.0, 1.25).unwrap())
+                .unwrap();
+            ui.theme().set_mode(mode).unwrap();
+            ui.theme().set_density(Density::Compact).unwrap();
+            let primary = ui
+                .theme()
+                .palette(mode)
+                .unwrap()
+                .color(ColorRole::Primary)
+                .to_srgb8();
+            let mut counts = Vec::new();
+            for v in [-100.0, -50.0, 0.0, 50.0, 100.0] {
+                host.write_base(v).unwrap();
+                ui.flush(Duration::ZERO).unwrap();
+                let frame = pert_ui::cpu::CpuRenderer::new()
+                    .render(&ui.paint().unwrap())
+                    .unwrap();
+                let count = frame
+                    .pixels()
+                    .as_chunks::<4>()
+                    .0
+                    .iter()
+                    .filter(|pixel| pixel.iter().zip(primary).all(|(a, b)| a.abs_diff(b) < 30))
+                    .count();
+                counts.push(count);
+                if v == 50.0 {
+                    assert!(!pictures.contains(&frame.pixels().to_vec()));
+                    pictures.push(frame.pixels().to_vec());
+                }
+            }
+            assert!(counts[2] > 0, "{variant:?} pointer at rest");
+            assert!(
+                counts[0] > counts[1]
+                    && counts[1] > counts[2]
+                    && counts[2] < counts[3]
+                    && counts[3] < counts[4],
+                "{mode:?} {variant:?} {counts:?}"
+            );
+        }
+    }
+}
+
+#[test]
+fn a_readout_follows_the_selected_style_and_restores_the_live_default() {
+    let Setup {
+        mut ui,
+        parameter,
+        root,
+        knob,
+        host: _host,
+        ..
+    } = setup(|p| Knob::new(p).show_value(true));
+    let bounds = |ui: &Runtime| ui.bounds(&knob).unwrap().unwrap();
+    let original = bounds(&ui);
+    let describe = |ui: &mut Runtime, dial| {
+        ui.reconcile_children(&root, vec![Element::new("knob", dial)])
+            .unwrap();
+        ui.flush(Duration::ZERO).unwrap();
+    };
+    let dial = || Knob::new(parameter.clone());
+    describe(
+        &mut ui,
+        dial().show_value(true).value_style(TextStyle::Heading),
+    );
+    let heading = bounds(&ui);
+    assert!(heading.height() > original.height());
+    ui.theme()
+        .set_metrics(
+            Density::Standard,
+            ThemeMetrics::default()
+                .with_metric(MetricRole::MicroSize, Length::from(32))
+                .unwrap(),
+        )
+        .unwrap();
+    ui.flush(Duration::ZERO).unwrap();
+    assert_eq!(bounds(&ui), heading);
+    describe(&mut ui, dial().show_value(true));
+    assert!(bounds(&ui).height() > heading.height());
+    let mut hidden = dial();
+    assert_eq!(
+        hidden.reconcile(dial().value_style(TextStyle::Heading)),
+        None
+    );
+    assert_eq!(
+        hidden.reconcile(dial().variant(KnobVariant::Diode)),
+        Some(Invalidation::Paint)
+    );
+}
+
+#[test]
+fn each_face_uses_live_theme_roles_for_hover_focus_conflict_and_disabled_state() {
+    for variant in [
+        KnobVariant::Bakelite,
+        KnobVariant::Orbit,
+        KnobVariant::Diode,
+    ] {
+        let Setup {
+            mut ui,
+            host,
+            parameter,
+            root,
+            knob,
+            center,
+        } = setup(|p| Knob::new(p).variant(variant));
+        let palette = Palette::dark()
+            .with_color(ColorRole::Primary, Color::from_srgb8(10, 240, 44, 255))
+            .with_color(
+                ColorRole::SurfaceHover,
+                Color::from_srgb8(173, 22, 198, 255),
+            );
+        ui.theme().set_palette(ThemeMode::Dark, palette).unwrap();
+        let uses = |scene: &DisplayList, role| {
+            let color = palette.color(role);
+            scene.commands().iter().any(|command| match command {
+                DrawCommand::DrawVector { color: paint, .. } => *paint == color,
+                _ => crate::support::paints_with(command, color),
+            })
+        };
+        ui.flush(Duration::ZERO).unwrap();
+        let idle = ui.paint().unwrap();
+        assert!(uses(&idle, ColorRole::Primary));
+        assert!(uses(&idle, ColorRole::SurfaceContainer));
+        pointer(&mut ui, center, PointerKind::Move);
+        ui.focus(&knob).unwrap();
+        ui.flush(Duration::ZERO).unwrap();
+        let hover = ui.paint().unwrap();
+        assert!(uses(&hover, ColorRole::SurfaceHover));
+        assert!(uses(&hover, ColorRole::FocusRing));
+        pointer(&mut ui, center, PointerKind::Press(PointerButton::Primary));
+        pointer(&mut ui, offset(center, -10.0), PointerKind::Move);
+        host.write_base(17.0).unwrap();
+        ui.flush(Duration::ZERO).unwrap();
+        assert!(uses(&ui.paint().unwrap(), ColorRole::Error));
+        ui.reconcile_children(
+            &root,
+            vec![Element::new(
+                "knob",
+                Knob::new(parameter).disabled().variant(variant),
+            )],
+        )
+        .unwrap();
+        ui.flush(Duration::ZERO).unwrap();
+        let disabled = ui.paint().unwrap();
+        assert!(uses(&disabled, ColorRole::Muted));
+        assert!(!uses(&disabled, ColorRole::Primary));
+        assert!(!uses(&disabled, ColorRole::SurfaceHover));
+    }
 }

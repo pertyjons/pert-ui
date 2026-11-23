@@ -262,3 +262,64 @@ fn text_above_the_raster_limit_is_stretched_under_scale_and_zoom() {
     );
     assert!(!ui.needs_paint());
 }
+
+#[test]
+fn styled_spans_follow_live_micro_metrics_and_literal_size_precedence() {
+    for density in [Density::Compact, Density::Standard, Density::Comfortable] {
+        let metrics = ThemeMetrics::for_density(density);
+        assert_eq!(metrics.metric(MetricRole::MicroSize), 10.0);
+        assert!(
+            metrics
+                .with_metric(MetricRole::MicroSize, Length::from(0))
+                .is_err()
+        );
+    }
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(500.0, 200.0, 1.25).unwrap())
+        .unwrap();
+    let span = TextSpan::new("Level")
+        .size(Length::from(20))
+        .style(TextStyle::Micro);
+    let fixed = TextSpan::new("Level")
+        .style(TextStyle::MonospaceMicro)
+        .size(Length::from(20));
+    let labels = ui
+        .mount_tree(Element::new(
+            "row",
+            Row::new([
+                Element::new("live", Label::new(RichText::new().span(span))),
+                Element::new("fixed", Label::new(RichText::new().span(fixed))),
+                Element::new(
+                    "button",
+                    Button::new(
+                        RichText::new()
+                            .span(TextSpan::new("Parameter settings").style(TextStyle::Micro)),
+                        |_| Ok(()),
+                    ),
+                ),
+            ]),
+        ))
+        .unwrap();
+    ui.flush(Duration::ZERO).unwrap();
+    let ids = ui.children(&labels).unwrap();
+    let width = |ui: &Runtime, i: usize| ui.bounds(&ids[i]).unwrap().unwrap().width();
+    let prior = (width(&ui, 0), width(&ui, 1), width(&ui, 2));
+    let before = ui.paint().unwrap();
+    ui.theme()
+        .set_metrics(
+            Density::Standard,
+            ThemeMetrics::default()
+                .with_metric(MetricRole::MicroSize, Length::from(30))
+                .unwrap(),
+        )
+        .unwrap();
+    ui.flush(Duration::ZERO).unwrap();
+    assert!(width(&ui, 0) > 2.0 * prior.0);
+    assert_eq!(width(&ui, 1), prior.1);
+    assert!(width(&ui, 2) > prior.2);
+    assert!(
+        ui.paint().unwrap().masks().last().unwrap().height()
+            > before.masks().last().unwrap().height()
+    );
+    assert!(ui.paint().unwrap().masks()[0].height() > before.masks()[0].height());
+}

@@ -818,3 +818,48 @@ fn inline_rows_in_text_mode_route_plain_keys_and_text_commands_to_the_draft() {
         frame(&mut ui);
     }
 }
+
+#[test]
+fn restyling_an_open_slider_preserves_its_draft_selection_and_session() {
+    let mut ui = Runtime::new();
+    ui.set_viewport(Viewport::new(400.0, 120.0, 1.0).unwrap())
+        .unwrap();
+    let (parameter, _host) = ui
+        .parameter(
+            ParameterId::new(1, 1, "amount").unwrap(),
+            ParameterSpec::new("Amount", 0.0, 100.0, 12.0).unwrap(),
+        )
+        .unwrap();
+    let field = |style| Element::new("field", InlineSlider::new(parameter.clone()).style(style));
+    let root = ui
+        .mount_tree(Element::new("row", Row::new([field(TextStyle::Micro)])))
+        .unwrap();
+    frame(&mut ui);
+    let id = ui.children(&root).unwrap()[0].clone();
+    click(&mut ui, &id);
+    ui.text_input("432").unwrap();
+    key(&mut ui, KeyCode::ArrowLeft);
+    ui.key_input(KeyCode::ShiftLeft, KeyAction::Press).unwrap();
+    key(&mut ui, KeyCode::ArrowLeft);
+    ui.key_input(KeyCode::ShiftLeft, KeyAction::Release)
+        .unwrap();
+    frame(&mut ui);
+    let focused = ui.focused();
+    let (_, before) = ui.text_input_state().unwrap();
+    let original = parameter.snapshot().get().unwrap();
+    ui.reconcile_children(&root, vec![field(TextStyle::Heading)])
+        .unwrap();
+    frame(&mut ui);
+    let (_, after) = ui.text_input_state().unwrap();
+    assert_eq!(ui.focused(), focused);
+    assert_eq!(after.session, before.session);
+    assert!(after.caret.height() > before.caret.height());
+    assert_eq!(
+        parameter.snapshot().get().unwrap().edit_source,
+        original.edit_source
+    );
+    ui.text_input(".").unwrap();
+    key(&mut ui, KeyCode::Enter);
+    frame(&mut ui);
+    assert_eq!(parameter.snapshot().get().unwrap().base, 4.2);
+}

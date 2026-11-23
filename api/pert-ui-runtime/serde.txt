@@ -1705,6 +1705,7 @@ pub pert_ui_runtime::component::MetricRole::KnobDiameter
 pub pert_ui_runtime::component::MetricRole::KnobStroke
 pub pert_ui_runtime::component::MetricRole::KnobTravel
 pub pert_ui_runtime::component::MetricRole::MeterThickness
+pub pert_ui_runtime::component::MetricRole::MicroSize
 pub pert_ui_runtime::component::MetricRole::MonospaceSize
 pub pert_ui_runtime::component::MetricRole::ProgressHeight
 pub pert_ui_runtime::component::MetricRole::ResizeWidth
@@ -2460,8 +2461,10 @@ pub enum pert_ui_runtime::component::TextStyle
 pub pert_ui_runtime::component::TextStyle::Body
 pub pert_ui_runtime::component::TextStyle::Caption
 pub pert_ui_runtime::component::TextStyle::Heading
+pub pert_ui_runtime::component::TextStyle::Micro
 pub pert_ui_runtime::component::TextStyle::Monospace
 pub pert_ui_runtime::component::TextStyle::MonospaceCaption
+pub pert_ui_runtime::component::TextStyle::MonospaceMicro
 impl core::clone::Clone for pert_ui_runtime::TextStyle
 pub fn pert_ui_runtime::TextStyle::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_runtime::TextStyle
@@ -13595,6 +13598,28 @@ impl core::marker::Unpin for pert_ui_runtime::DeliveryStatus
 impl core::marker::UnsafeUnpin for pert_ui_runtime::DeliveryStatus
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::DeliveryStatus
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::DeliveryStatus
+#[non_exhaustive] pub enum pert_ui_runtime::parameter::KnobVariant
+pub pert_ui_runtime::parameter::KnobVariant::Bakelite
+pub pert_ui_runtime::parameter::KnobVariant::Diode
+pub pert_ui_runtime::parameter::KnobVariant::Orbit
+impl core::clone::Clone for pert_ui_runtime::KnobVariant
+pub fn pert_ui_runtime::KnobVariant::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::KnobVariant
+impl core::cmp::PartialEq for pert_ui_runtime::KnobVariant
+pub fn pert_ui_runtime::KnobVariant::eq(&self, &Self) -> bool
+impl core::default::Default for pert_ui_runtime::KnobVariant
+pub fn pert_ui_runtime::KnobVariant::default() -> Self
+impl core::fmt::Debug for pert_ui_runtime::KnobVariant
+pub fn pert_ui_runtime::KnobVariant::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::KnobVariant
+impl core::marker::StructuralPartialEq for pert_ui_runtime::KnobVariant
+impl core::marker::Freeze for pert_ui_runtime::KnobVariant
+impl core::marker::Send for pert_ui_runtime::KnobVariant
+impl core::marker::Sync for pert_ui_runtime::KnobVariant
+impl core::marker::Unpin for pert_ui_runtime::KnobVariant
+impl core::marker::UnsafeUnpin for pert_ui_runtime::KnobVariant
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::KnobVariant
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::KnobVariant
 pub enum pert_ui_runtime::parameter::ResponseDisposition
 pub pert_ui_runtime::parameter::ResponseDisposition::AlreadyResolved
 pub pert_ui_runtime::parameter::ResponseDisposition::Applied
@@ -13742,6 +13767,7 @@ pub fn pert_ui_runtime::InlineSlider::unit(self, impl core::convert::Into<alloc:
 impl pert_ui_runtime::InlineSlider
 pub fn pert_ui_runtime::InlineSlider::format(self, pert_ui_runtime::NumberFormat<f32>) -> Self
 pub fn pert_ui_runtime::InlineSlider::label(self, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
+pub fn pert_ui_runtime::InlineSlider::style(self, pert_ui_runtime::TextStyle) -> Self
 impl core::fmt::Debug for pert_ui_runtime::InlineSlider
 pub fn pert_ui_runtime::InlineSlider::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl pert_ui_runtime::Component for pert_ui_runtime::InlineSlider
@@ -13818,6 +13844,7 @@ impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::InlineSlider
 pub struct pert_ui_runtime::parameter::Knob(_)
 impl pert_ui_runtime::Knob
 pub fn pert_ui_runtime::Knob::arc_origin(self, pert_ui_runtime::ArcOrigin) -> Self
+pub fn pert_ui_runtime::Knob::variant(self, pert_ui_runtime::KnobVariant) -> Self
 impl pert_ui_runtime::Knob
 pub fn pert_ui_runtime::Knob::decimal_places(self, u8) -> core::result::Result<Self, pert_ui_runtime::NumberInputError>
 pub fn pert_ui_runtime::Knob::disabled(self) -> Self
@@ -13827,6 +13854,7 @@ pub fn pert_ui_runtime::Knob::unit(self, impl core::convert::Into<alloc::string:
 impl pert_ui_runtime::Knob
 pub fn pert_ui_runtime::Knob::format(self, pert_ui_runtime::NumberFormat<f32>) -> Self
 pub fn pert_ui_runtime::Knob::show_value(self, bool) -> Self
+pub fn pert_ui_runtime::Knob::value_style(self, pert_ui_runtime::TextStyle) -> Self
 impl core::fmt::Debug for pert_ui_runtime::Knob
 pub fn pert_ui_runtime::Knob::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl pert_ui_runtime::Component for pert_ui_runtime::Knob
@@ -14038,6 +14066,7 @@ pub fn pert_ui_runtime::Slider::unit(self, impl core::convert::Into<alloc::strin
 impl pert_ui_runtime::Slider
 pub fn pert_ui_runtime::Slider::format(self, pert_ui_runtime::NumberFormat<f32>) -> Self
 pub fn pert_ui_runtime::Slider::show_value(self, bool) -> Self
+pub fn pert_ui_runtime::Slider::value_style(self, pert_ui_runtime::TextStyle) -> Self
 impl pert_ui_runtime::Slider
 pub fn pert_ui_runtime::Slider::orientation(self, pert_ui_runtime::Orientation) -> Self
 impl core::fmt::Debug for pert_ui_runtime::Slider
@@ -15156,6 +15185,7 @@ pub pert_ui_runtime::prelude::MetricRole::KnobDiameter
 pub pert_ui_runtime::prelude::MetricRole::KnobStroke
 pub pert_ui_runtime::prelude::MetricRole::KnobTravel
 pub pert_ui_runtime::prelude::MetricRole::MeterThickness
+pub pert_ui_runtime::prelude::MetricRole::MicroSize
 pub pert_ui_runtime::prelude::MetricRole::MonospaceSize
 pub pert_ui_runtime::prelude::MetricRole::ProgressHeight
 pub pert_ui_runtime::prelude::MetricRole::ResizeWidth
@@ -15717,8 +15747,10 @@ pub enum pert_ui_runtime::prelude::TextStyle
 pub pert_ui_runtime::prelude::TextStyle::Body
 pub pert_ui_runtime::prelude::TextStyle::Caption
 pub pert_ui_runtime::prelude::TextStyle::Heading
+pub pert_ui_runtime::prelude::TextStyle::Micro
 pub pert_ui_runtime::prelude::TextStyle::Monospace
 pub pert_ui_runtime::prelude::TextStyle::MonospaceCaption
+pub pert_ui_runtime::prelude::TextStyle::MonospaceMicro
 impl core::clone::Clone for pert_ui_runtime::TextStyle
 pub fn pert_ui_runtime::TextStyle::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_runtime::TextStyle
@@ -22565,6 +22597,7 @@ pub fn pert_ui_runtime::TextSpan::font(self, pert_ui_runtime::FontId) -> Self
 pub fn pert_ui_runtime::TextSpan::font_role(self, pert_ui_runtime::FontRole) -> Self
 pub fn pert_ui_runtime::TextSpan::new(impl core::convert::Into<alloc::string::String>) -> Self
 pub fn pert_ui_runtime::TextSpan::size(self, pert_ui_runtime::Length) -> Self
+pub fn pert_ui_runtime::TextSpan::style(self, pert_ui_runtime::TextStyle) -> Self
 impl core::clone::Clone for pert_ui_runtime::TextSpan
 pub fn pert_ui_runtime::TextSpan::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_runtime::TextSpan
@@ -28637,6 +28670,28 @@ impl core::marker::Unpin for pert_ui_runtime::KeyTransition
 impl core::marker::UnsafeUnpin for pert_ui_runtime::KeyTransition
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::KeyTransition
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::KeyTransition
+#[non_exhaustive] pub enum pert_ui_runtime::KnobVariant
+pub pert_ui_runtime::KnobVariant::Bakelite
+pub pert_ui_runtime::KnobVariant::Diode
+pub pert_ui_runtime::KnobVariant::Orbit
+impl core::clone::Clone for pert_ui_runtime::KnobVariant
+pub fn pert_ui_runtime::KnobVariant::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::KnobVariant
+impl core::cmp::PartialEq for pert_ui_runtime::KnobVariant
+pub fn pert_ui_runtime::KnobVariant::eq(&self, &Self) -> bool
+impl core::default::Default for pert_ui_runtime::KnobVariant
+pub fn pert_ui_runtime::KnobVariant::default() -> Self
+impl core::fmt::Debug for pert_ui_runtime::KnobVariant
+pub fn pert_ui_runtime::KnobVariant::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::KnobVariant
+impl core::marker::StructuralPartialEq for pert_ui_runtime::KnobVariant
+impl core::marker::Freeze for pert_ui_runtime::KnobVariant
+impl core::marker::Send for pert_ui_runtime::KnobVariant
+impl core::marker::Sync for pert_ui_runtime::KnobVariant
+impl core::marker::Unpin for pert_ui_runtime::KnobVariant
+impl core::marker::UnsafeUnpin for pert_ui_runtime::KnobVariant
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::KnobVariant
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::KnobVariant
 #[non_exhaustive] pub enum pert_ui_runtime::LayoutError
 pub pert_ui_runtime::LayoutError::BlankKey
 pub pert_ui_runtime::LayoutError::BlankLabel
@@ -28968,6 +29023,7 @@ pub pert_ui_runtime::MetricRole::KnobDiameter
 pub pert_ui_runtime::MetricRole::KnobStroke
 pub pert_ui_runtime::MetricRole::KnobTravel
 pub pert_ui_runtime::MetricRole::MeterThickness
+pub pert_ui_runtime::MetricRole::MicroSize
 pub pert_ui_runtime::MetricRole::MonospaceSize
 pub pert_ui_runtime::MetricRole::ProgressHeight
 pub pert_ui_runtime::MetricRole::ResizeWidth
@@ -30860,8 +30916,10 @@ pub enum pert_ui_runtime::TextStyle
 pub pert_ui_runtime::TextStyle::Body
 pub pert_ui_runtime::TextStyle::Caption
 pub pert_ui_runtime::TextStyle::Heading
+pub pert_ui_runtime::TextStyle::Micro
 pub pert_ui_runtime::TextStyle::Monospace
 pub pert_ui_runtime::TextStyle::MonospaceCaption
+pub pert_ui_runtime::TextStyle::MonospaceMicro
 impl core::clone::Clone for pert_ui_runtime::TextStyle
 pub fn pert_ui_runtime::TextStyle::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_runtime::TextStyle
@@ -36369,6 +36427,7 @@ pub fn pert_ui_runtime::InlineSlider::unit(self, impl core::convert::Into<alloc:
 impl pert_ui_runtime::InlineSlider
 pub fn pert_ui_runtime::InlineSlider::format(self, pert_ui_runtime::NumberFormat<f32>) -> Self
 pub fn pert_ui_runtime::InlineSlider::label(self, impl core::convert::Into<pert_ui_runtime::TextSource>) -> Self
+pub fn pert_ui_runtime::InlineSlider::style(self, pert_ui_runtime::TextStyle) -> Self
 impl core::fmt::Debug for pert_ui_runtime::InlineSlider
 pub fn pert_ui_runtime::InlineSlider::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl pert_ui_runtime::Component for pert_ui_runtime::InlineSlider
@@ -36984,6 +37043,7 @@ impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::KeyboardState
 pub struct pert_ui_runtime::Knob(_)
 impl pert_ui_runtime::Knob
 pub fn pert_ui_runtime::Knob::arc_origin(self, pert_ui_runtime::ArcOrigin) -> Self
+pub fn pert_ui_runtime::Knob::variant(self, pert_ui_runtime::KnobVariant) -> Self
 impl pert_ui_runtime::Knob
 pub fn pert_ui_runtime::Knob::decimal_places(self, u8) -> core::result::Result<Self, pert_ui_runtime::NumberInputError>
 pub fn pert_ui_runtime::Knob::disabled(self) -> Self
@@ -36993,6 +37053,7 @@ pub fn pert_ui_runtime::Knob::unit(self, impl core::convert::Into<alloc::string:
 impl pert_ui_runtime::Knob
 pub fn pert_ui_runtime::Knob::format(self, pert_ui_runtime::NumberFormat<f32>) -> Self
 pub fn pert_ui_runtime::Knob::show_value(self, bool) -> Self
+pub fn pert_ui_runtime::Knob::value_style(self, pert_ui_runtime::TextStyle) -> Self
 impl core::fmt::Debug for pert_ui_runtime::Knob
 pub fn pert_ui_runtime::Knob::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
 impl pert_ui_runtime::Component for pert_ui_runtime::Knob
@@ -40763,6 +40824,7 @@ pub fn pert_ui_runtime::Slider::unit(self, impl core::convert::Into<alloc::strin
 impl pert_ui_runtime::Slider
 pub fn pert_ui_runtime::Slider::format(self, pert_ui_runtime::NumberFormat<f32>) -> Self
 pub fn pert_ui_runtime::Slider::show_value(self, bool) -> Self
+pub fn pert_ui_runtime::Slider::value_style(self, pert_ui_runtime::TextStyle) -> Self
 impl pert_ui_runtime::Slider
 pub fn pert_ui_runtime::Slider::orientation(self, pert_ui_runtime::Orientation) -> Self
 impl core::fmt::Debug for pert_ui_runtime::Slider
@@ -41795,6 +41857,7 @@ pub fn pert_ui_runtime::TextSpan::font(self, pert_ui_runtime::FontId) -> Self
 pub fn pert_ui_runtime::TextSpan::font_role(self, pert_ui_runtime::FontRole) -> Self
 pub fn pert_ui_runtime::TextSpan::new(impl core::convert::Into<alloc::string::String>) -> Self
 pub fn pert_ui_runtime::TextSpan::size(self, pert_ui_runtime::Length) -> Self
+pub fn pert_ui_runtime::TextSpan::style(self, pert_ui_runtime::TextStyle) -> Self
 impl core::clone::Clone for pert_ui_runtime::TextSpan
 pub fn pert_ui_runtime::TextSpan::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_runtime::TextSpan

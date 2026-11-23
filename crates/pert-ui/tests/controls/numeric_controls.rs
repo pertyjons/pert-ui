@@ -309,19 +309,37 @@ fn readouts_reserve_signed_rounded_endpoints_across_values_and_scales() {
                 ParameterSpec::new("Value", -999.999, 99.999, 0.0).unwrap(),
             )
             .unwrap();
+        let fonts = ui.fonts();
+        fonts
+            .set_default(
+                FontRole::Monospace,
+                fonts.default_font(FontRole::Body).unwrap(),
+            )
+            .unwrap();
         let root = ui
             .mount_tree(Element::new(
                 "controls",
                 Row::new([
                     Element::new(
                         "horizontal",
-                        Slider::new(parameter.clone()).show_value(true).unit("%"),
+                        Slider::new(parameter.clone())
+                            .value_style(TextStyle::Micro)
+                            .show_value(true)
+                            .unit("%"),
                     ),
                     Element::new(
                         "vertical",
                         Slider::new(parameter.clone())
+                            .value_style(TextStyle::Body)
                             .orientation(Orientation::Vertical)
                             .show_value(true)
+                            .unit("%"),
+                    ),
+                    Element::new(
+                        "knob",
+                        Knob::new(parameter.clone())
+                            .show_value(true)
+                            .value_style(TextStyle::MonospaceMicro)
                             .unit("%"),
                     ),
                 ]),
@@ -333,9 +351,11 @@ fn readouts_reserve_signed_rounded_endpoints_across_values_and_scales() {
         let original = ui.paint().unwrap();
         let text = readout_rects(&original);
         ui.set_profiling(true).unwrap();
-        assert_eq!(text.len(), 2); // one readout per slider
+        assert_eq!(text.len(), 3);
         assert!(text[0].0.x() > bounds[0].unwrap().x());
-        for value in [-999.999, -100.0, -10.0, -0.001, -0.0, 9.99, 10.0, 99.999] {
+        for value in [
+            -999.999, -100.0, -10.0, -0.001, -0.0, 1.11, 8.88, 10.0, 99.999,
+        ] {
             host.write_base(value).unwrap();
             ui.flush(Duration::ZERO).unwrap();
             let scene = ui.paint().unwrap();
@@ -366,11 +386,13 @@ fn readouts_reserve_signed_rounded_endpoints_across_values_and_scales() {
                     "rounded negative zero has no sign"
                 );
             }
-            assert_eq!(
-                readout_rects(&scene),
-                text,
-                "value {value} at scale {scale}"
-            );
+            for ((now, clip), (before, before_clip)) in readout_rects(&scene).iter().zip(&text) {
+                assert_eq!(clip, before_clip);
+                assert!(
+                    (now.x() + now.width() - before.x() - before.width()).abs() <= 1.0,
+                    "readout edge for {value} at {scale}: {now:?} vs {before:?}"
+                );
+            }
             assert_eq!(
                 ids.iter()
                     .map(|id| ui.bounds(id).unwrap())

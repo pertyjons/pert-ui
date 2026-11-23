@@ -148,6 +148,10 @@ pub enum TextStyle {
     /// text. A registered font that ligates a tab with printable text keeps
     /// that glyph, as [`TextLayout`] describes.
     Monospace,
+    /// Small body text for dense panels, using MicroSize (10 logical pixels by default).
+    Micro,
+    /// Small numeric text using the monospace font role and MicroSize.
+    MonospaceMicro,
     /// Secondary monospaced text: bundled Noto Sans Mono at CaptionSize
     /// (12 logical pixels by default). Digits, signs, decimal points and spaces
     /// have equal advances; ordinary shaping and bounded coverage still apply.
@@ -156,6 +160,7 @@ pub enum TextStyle {
 impl TextStyle {
     pub(crate) fn metric(self) -> crate::MetricRole {
         match self {
+            Self::Micro | Self::MonospaceMicro => crate::MetricRole::MicroSize,
             Self::Body => crate::MetricRole::BodySize,
             Self::Heading => crate::MetricRole::HeadingSize,
             Self::Caption | Self::MonospaceCaption => crate::MetricRole::CaptionSize,
@@ -166,6 +171,7 @@ impl TextStyle {
     #[cfg(test)]
     fn pixels(self) -> f32 {
         match self {
+            Self::Micro | Self::MonospaceMicro => 10.0,
             Self::Body | Self::Monospace => 14.0,
             Self::Heading => 18.0,
             Self::Caption | Self::MonospaceCaption => 12.0,
@@ -174,7 +180,9 @@ impl TextStyle {
     pub(crate) fn font_role(self) -> crate::FontRole {
         match self {
             Self::Heading => crate::FontRole::Heading,
-            Self::Monospace | Self::MonospaceCaption => crate::FontRole::Monospace,
+            Self::Monospace | Self::MonospaceCaption | Self::MonospaceMicro => {
+                crate::FontRole::Monospace
+            }
             _ => crate::FontRole::Body,
         }
     }
@@ -267,6 +275,10 @@ impl TextLayout {
     #[must_use]
     pub const fn size(&self) -> Size {
         self.size
+    }
+    /// Logical advance width before raster-bound rounding.
+    pub(crate) fn advance_width(&self) -> f32 {
+        self.shaped.width() / self.scale
     }
     // First-line typographic extent above and below its baseline. Unlike ink
     // bounds, this stays stable when the visible glyphs change.
@@ -585,6 +597,7 @@ pub(crate) struct TextRequest<'a> {
     pub(crate) style: TextStyle,
     /// Logical size of text without an explicit span size.
     pub(crate) font_size: f32,
+    span_sizes: &'a [(crate::MetricRole, f32)],
     /// Logical size of inline icons; zero omits them.
     pub(crate) icon_size: f32,
     /// Logical width of each inline gap.
@@ -600,6 +613,7 @@ impl<'a> TextRequest<'a> {
             scale: 1.0,
             style,
             font_size,
+            span_sizes: &[],
             icon_size: 0.0,
             gap: 0.0,
             reads,
@@ -611,6 +625,10 @@ impl<'a> TextRequest<'a> {
     }
     pub(crate) const fn scale(mut self, scale: f64) -> Self {
         self.scale = scale;
+        self
+    }
+    pub(crate) fn span_sizes(mut self, sizes: &'a [(crate::MetricRole, f32)]) -> Self {
+        self.span_sizes = sizes;
         self
     }
     /// Sets the logical icon size and gap width used by rich text.
@@ -828,7 +846,18 @@ impl TextService {
                     (
                         std::borrow::Cow::Borrowed(span.text.as_str()),
                         font,
-                        span.size.map_or(font_size, crate::Length::get),
+                        match span.size {
+                            None => font_size,
+                            Some(crate::Spacing::Fixed(length)) => length.get(),
+                            Some(crate::Spacing::Theme(role)) => {
+                                request
+                                    .span_sizes
+                                    .iter()
+                                    .find(|(key, _)| *key == role)
+                                    .ok_or(TextError::Geometry)?
+                                    .1
+                            }
+                        },
                         span.color,
                         false,
                     )
@@ -2313,6 +2342,60 @@ mod rich_tests {
             let restored = rich(&mut service, &content, None, 1.0);
             assert!(Arc::ptr_eq(&first.parts, &restored.parts));
         }
+    }
+
+    #[test]
+    fn named_span_style_replaces_both_slots_and_keeps_tint() {
+        let service = TextService::new().unwrap();
+        let foreign = TextService::new()
+            .unwrap()
+            .registry
+            .default_id(FontRole::Body);
+        let content = RichText::new()
+            .span(
+                TextSpan::new("")
+                    .font(foreign)
+                    .size(crate::Length::from(0))
+                    .style(TextStyle::MonospaceMicro),
+            )
+            .span(
+                TextSpan::new("abc")
+                    .color_role(crate::ColorRole::Muted)
+                    .style(TextStyle::Micro)
+                    .font_role(FontRole::Heading),
+            )
+            .span(
+                TextSpan::new("123")
+                    .style(TextStyle::MonospaceMicro)
+                    .size(crate::Length::from(19)),
+            );
+        let metrics = crate::ThemeMetrics::default();
+        let (icon, gap, sizes) = content.metrics(|role| metrics.metric(role));
+        assert_eq!(sizes, [(crate::MetricRole::MicroSize, 10.0)]);
+        let reads = Cell::new(0);
+        let runs = service
+            .resolve(
+                &content,
+                TextRequest::new(TextStyle::Body, 14.0, &reads)
+                    .inline(icon, gap)
+                    .span_sizes(&sizes),
+            )
+            .unwrap();
+        let mono = service.registry.default_index(FontRole::Monospace);
+        assert_eq!((runs.default_font, runs.default_size), (mono, 10.0));
+        assert_eq!(
+            (runs.spans[0].font, runs.spans[0].size),
+            (service.registry.default_index(FontRole::Heading), 10.0)
+        );
+        assert_eq!(
+            runs.colors[runs.spans[0].brush],
+            TextColor::Role(crate::ColorRole::Muted)
+        );
+        assert_eq!((runs.spans[1].font, runs.spans[1].size), (mono, 19.0));
+        assert_eq!(
+            reads.get(),
+            FontRole::Heading.mask() | FontRole::Monospace.mask()
+        );
     }
 
     #[test]

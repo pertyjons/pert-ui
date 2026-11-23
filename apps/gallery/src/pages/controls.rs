@@ -820,36 +820,52 @@ pub(crate) fn input(
             .show_value(true)
             .unit("%"),
     ));
+    let dial = |name: &'static str, key: &'static str, knob: Knob| {
+        Element::new(
+            name,
+            Column::new([
+                Element::new("name", Label::new(name).style(TextStyle::Micro)),
+                Element::new(key, knob),
+            ]),
+        )
+    };
     editors.push(Element::new(
         "knobs",
         Row::new([
-            Element::new(
+            dial(
+                "Bakelite",
                 "knob",
                 Knob::new(parameter.clone()).show_value(true).unit("%"),
             ),
-            Element::new(
+            dial(
+                "Orbit",
                 "knob-centered",
                 Knob::new(parameter.clone())
+                    .variant(KnobVariant::Orbit)
                     .arc_origin(ArcOrigin::Default)
                     .show_value(true)
                     .unit("%"),
             ),
             // A readout formatted by the application: one decimal, an
             // explicit sign and a unit, in a slot reserved by the width hint.
-            Element::new(
+            dial(
+                "Diode",
                 "knob-formatted",
-                Knob::new(parameter).show_value(true).format(
-                    NumberFormat::new(
-                        "+100.0 %",
-                        |value: f32| format!("{value:+.1}"),
-                        |text| {
-                            text.trim()
-                                .parse()
-                                .map_err(|_| NumberInputError::InvalidNumber)
-                        },
-                    )
-                    .unit(|_| "%".into()),
-                ),
+                Knob::new(parameter)
+                    .variant(KnobVariant::Diode)
+                    .show_value(true)
+                    .format(
+                        NumberFormat::new(
+                            "+100.0 %",
+                            |value: f32| format!("{value:+.1}"),
+                            |text| {
+                                text.trim()
+                                    .parse()
+                                    .map_err(|_| NumberInputError::InvalidNumber)
+                            },
+                        )
+                        .unit(|_| "%".into()),
+                    ),
             ),
         ]),
     ));
