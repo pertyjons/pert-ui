@@ -309,8 +309,8 @@ impl Pipeline {
         };
         let gradient_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             label: Some("gradient paints"),
-            entries: &[wgpu::BindGroupLayoutEntry {
-                binding: 0,
+            entries: &[0, 1].map(|binding| wgpu::BindGroupLayoutEntry {
+                binding,
                 visibility: wgpu::ShaderStages::FRAGMENT,
                 ty: wgpu::BindingType::Buffer {
                     ty: wgpu::BufferBindingType::Storage { read_only: true },
@@ -318,7 +318,7 @@ impl Pipeline {
                     min_binding_size: None,
                 },
                 count: None,
-            }],
+            }),
         });
         let pipeline = make_pipeline(&[Some(&layout)], "fragment");
         let gradient_pipeline = make_pipeline(

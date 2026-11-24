@@ -1137,7 +1137,7 @@ fn title_gradient_keeps_forty_logical_pixels_on_resize_and_clip()
         settle(&mut ui);
         let id = widget(&ui, &root, "example");
         let mut cpu = pert_ui::cpu::CpuRenderer::new();
-        for (width, viewport) in [(320, 640.), (500, 640.), (500, 176.)] {
+        for (width, viewport) in [(320, 640.), (500, 640.), (500, 176.), (500, 36.)] {
             state.set_size(Size::from([width, 120]))?;
             ui.set_viewport(Viewport::new(viewport, 200., scale)?)?;
             settle(&mut ui);
@@ -1148,6 +1148,9 @@ fn title_gradient_keeps_forty_logical_pixels_on_resize_and_clip()
             let row = ((f64::from(y) + 5.) * scale) as usize;
             for logical in [10., 20., 30., 40., 60., 100.] {
                 let col = ((f64::from(x) + logical) * scale) as usize;
+                if col >= frame.width() as usize {
+                    continue;
+                }
                 let t = ((col as f64 + 0.5) / scale - f64::from(x)) / 40.;
                 let expected = (t.clamp(0., 1.) * 255.).round() as u8;
                 let index = (row * frame.width() as usize + col) * 4;

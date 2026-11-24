@@ -232,7 +232,9 @@ pub use drawing::{
     Color, DisplayList, DrawCommand, DrawError, HexColorError, MaskId, MaskImage, OpaqueColor,
     Painter, PhysicalExtent, Rect, TranslucentColorError, Viewport,
 };
-pub use gradient::{Gradient, GradientError, GradientExtend, GradientId, GradientSpace};
+pub use gradient::{
+    Gradient, GradientError, GradientExtend, GradientId, GradientMapping, GradientSpace,
+};
 mod image;
 pub use image::{Image, ImageFit};
 mod resources;

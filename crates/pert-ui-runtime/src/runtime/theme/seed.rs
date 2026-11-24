@@ -223,17 +223,9 @@ impl Lch {
         Self::from_linear([red, green, blue])
     }
     fn from_linear([red, green, blue]: [f64; 3]) -> Self {
-        let lms = [
-            0.412_221_470_8 * red + 0.536_332_536_3 * green + 0.051_445_992_9 * blue,
-            0.211_903_498_2 * red + 0.680_699_545_1 * green + 0.107_396_956_6 * blue,
-            0.088_302_461_9 * red + 0.281_718_837_6 * green + 0.629_978_700_5 * blue,
-        ]
-        .map(f64::cbrt);
-        let [l, m, s] = lms;
-        let a = 1.977_998_495_1 * l - 2.428_592_205_0 * m + 0.450_593_709_9 * s;
-        let b = 0.025_904_037_1 * l + 0.782_771_766_2 * m - 0.808_675_766_0 * s;
+        let [lightness, a, b] = crate::gradient::lab([red, green, blue]);
         Self {
-            lightness: 0.210_454_255_3 * l + 0.793_617_785_0 * m - 0.004_072_046_8 * s,
+            lightness,
             chroma: a.hypot(b),
             hue: b.atan2(a),
         }

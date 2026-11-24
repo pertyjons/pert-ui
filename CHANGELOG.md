@@ -7,6 +7,14 @@ history (this file at commit f5fde76).
 
 ## Unreleased
 
+- Added linear and concentric radial `Gradient` paints for rectangular fills,
+  shape fills and borders, and `FloatingWindow::title_paint`. `GradientSpace`
+  selects interpolation and `GradientExtend` selects behavior beyond the stops.
+- Shape styles now accept `Paint`. Clone a reused `ShapeStyle` and construct
+  it at runtime. Display-list consumers resolve `RecordedPaint` gradient
+  handles (`GradientId`) against the list and prepare a `GradientMapping`
+  for their frame. Handle gradient validation and preparation errors.
+
 - Fixed a one-pixel shift of the decimal point at fractional scale when a
   fixed-width Knob or Slider readout gains a digit.
 - Added `KnobVariant` and `Knob::variant` with Bakelite, Orbit and Diode

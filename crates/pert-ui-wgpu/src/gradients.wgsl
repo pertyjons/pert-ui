@@ -6,10 +6,12 @@ struct GradientStop {
 }
 struct GradientRecord {
     coefficients: vec4f,
-    settings: vec4u, // count, space, extend, inner fraction (-1 for linear)
-    stops: array<GradientStop,16>,
+    axis: vec4f, // physical axis or radii, inner fraction (-1 for linear), padding
+    settings: vec4u, // count, space, extend, first stop
 }
 @group(1) @binding(0) var<storage,read> gradients: array<GradientRecord>;
+
+@group(1) @binding(1) var<storage,read> stops: array<GradientStop>;
 
 fn encoded_rgb(c:vec3f)->vec3f {
     return select(1.055*pow(c,vec3f(1./2.4))-.055,12.92*c,c<=vec3f(.0031308));
@@ -26,28 +28,56 @@ fn linear_from_lab(v:vec3f)->vec3f {
                        dot(cube,vec3f(-1.2684380046,2.6097574011,-.3413193965)),
                        dot(cube,vec3f(-.0041960863,-.7034186147,1.707614701))),vec3f(0),vec3f(1));
 }
+fn boundary_side(phase:f32, displacement:vec2f, axis:vec4f, coeff:vec2f)->f32 {
+    if axis.z<0. {return dot(displacement-phase*axis.xy,coeff);}
+    let minor=min(axis.x,axis.y);
+    let radius=(axis.z+phase*(1.-axis.z))*minor;
+    if radius<0. {return 1.;}
+    let uv=displacement*(vec2f(minor)/axis.xy);
+    let norm=max(abs(radius),max(abs(uv.x),abs(uv.y)));
+    if norm>1e15 || (norm>0. && norm<1e-15) {
+        return dot(uv/norm,uv/norm)-(radius/norm)*(radius/norm);
+    }
+    return dot(uv,uv)-radius*radius;
+}
 fn gradient_color(index:u32,pixel:vec2f)->vec4f {
     let coeff=gradients[index].coefficients;
     let settings=gradients[index].settings;
-    let inner=bitcast<f32>(settings.w);
+    let axis=gradients[index].axis;
+    let inner=axis.z;
     let delta=(pixel-coeff.xy)*coeff.zw;
     var t=delta.x+delta.y;
-    if inner>=0. { t=(length(delta)-inner)/(1.-inner); }
-    switch settings.z {
-        case 1u:{t=fract(t);}
-        case 2u:{t=1.-abs(1.-2.*fract(t*.5));}
-        default:{t=clamp(t,0.,1.);}
+    if inner>=0. {
+        t=(length((pixel-coeff.xy)/axis.xy)-inner)/(1.-inner);
+    } else if axis.y==0. {
+        t=(pixel.x-coeff.x)/axis.x;
+    } else if axis.x==0. {
+        t=(pixel.y-coeff.y)/axis.y;
     }
+    var cycle=0.;
+    if settings.z!=0u {
+        cycle=floor(t);
+        let nearest=round(t);
+        if abs(t-nearest)<0.001 {
+            cycle=select(nearest-1.,nearest,boundary_side(nearest,pixel-coeff.xy,axis,coeff.zw)>=0.);
+        }
+    }
+    let reverse=settings.z==2u && fract(cycle*.5)!=0.;
+    t=clamp(select(t-cycle,1.-(t-cycle),reverse),0.,1.);
     var lower=0u;
     for(var i=1u;i<settings.x;i++){
-        if gradients[index].stops[i].offset.x>t {break;}
+        let offset=stops[settings.w+i].offset.x;
+        if offset!=0. && abs(offset-t)<=0.001 {
+            let side=boundary_side(cycle+select(offset,1.-offset,reverse),pixel-coeff.xy,axis,coeff.zw);
+            if select(side<0.,side>0.,reverse) {break;}
+        } else if offset>t {break;}
         lower=i;
     }
-    let a=gradients[index].stops[lower];
+    let a=stops[settings.w+lower];
     var c=a.exact;
     if lower+1u<settings.x && t>a.offset.x {
-        let b=gradients[index].stops[lower+1u];
-        let f=(t-a.offset.x)/(b.offset.x-a.offset.x);
+        let b=stops[settings.w+lower+1u];
+        let f=clamp((t-a.offset.x)/(b.offset.x-a.offset.x),0.,1.);
         let mixed=mix(a.components,b.components,f);
         if mixed.a<=0. {return vec4f(0);}
         var rgb=mixed.rgb/mixed.a;

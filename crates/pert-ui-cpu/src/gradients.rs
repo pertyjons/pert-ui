@@ -1,11 +1,11 @@
 //! Shape paints that vary across the frame. Solid-only shapes retain their run path.
 use super::*;
-use pert_ui_runtime::{Gradient, GradientId};
+use pert_ui_runtime::{Gradient, GradientId, GradientMapping};
 
 #[derive(Clone, Copy)]
 pub(super) enum ShapePaint {
     Solid([f32; 4]),
-    Gradient(GradientId, [f32; 4]),
+    Gradient(GradientId, GradientMapping),
 }
 impl ShapePaint {
     pub(super) fn new(
@@ -21,7 +21,7 @@ impl ShapePaint {
                 scene
                     .gradient(id)
                     .ok_or(CpuRenderError::InvalidReference)?
-                    .coefficients(mapping)
+                    .prepare(mapping)
                     .map_err(DrawError::from)?,
             ),
             _ => return Err(CpuRenderError::Unsupported),
@@ -33,7 +33,7 @@ impl ShapePaint {
 }
 enum Samples<'a> {
     Solid([f32; 4]),
-    Direct(&'a Gradient, [f32; 4]),
+    Direct(&'a Gradient, GradientMapping),
     Rows {
         pixels: Vec<[f32; 4]>,
         left: u32,
@@ -42,7 +42,7 @@ enum Samples<'a> {
     },
     Columns {
         gradient: &'a Gradient,
-        params: [f32; 4],
+        params: GradientMapping,
         row: Option<u32>,
         colors: [[f32; 4]; 8],
     },
@@ -57,7 +57,7 @@ impl<'a> Samples<'a> {
             ShapePaint::Solid(c) => Self::Solid(c),
             ShapePaint::Gradient(id, params) => {
                 let gradient = &scene.gradients()[id.index()];
-                if gradient.inner().is_none() && params[3] == 0. {
+                if gradient.inner().is_none() && params.coefficients()[3] == 0. {
                     let pixels = (top..bottom.min(top.saturating_add(8)))
                         .flat_map(|y| (left..right).map(move |x| gradient.sample(params, x, y)))
                         .collect();
@@ -67,7 +67,7 @@ impl<'a> Samples<'a> {
                         top,
                         width: (right - left) as usize,
                     }
-                } else if gradient.inner().is_none() && params[2] == 0. {
+                } else if gradient.inner().is_none() && params.coefficients()[2] == 0. {
                     Self::Columns {
                         gradient,
                         params,

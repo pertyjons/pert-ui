@@ -329,3 +329,15 @@ cargo run --locked -p pert-ui-gallery -- --screenshot --palette violet toolbar w
 cargo run --locked -p pert-ui-gallery -- --screenshot --scale 2 tool-windows key:open-stage stage.png
 cargo run --locked -p pert-ui-gallery -- --screenshot - region:0,0,640,200 top.png
 ```
+
+## Gradients
+
+Open **Appearance & tools → Gradients** or start directly on that page:
+
+```sh
+cargo run --locked -p pert-ui-gallery -- --page gradients
+```
+
+The swatches show a linear gradient, a concentric radial gradient and a
+40-logical-pixel transition. Under **Surfaces → Floating windows**, the
+Out-1 title uses a fixed-width gradient on a resizable window.

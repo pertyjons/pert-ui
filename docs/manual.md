@@ -84,3 +84,11 @@ The first four also open a window with `-- --window`. The
 [gallery guide](../apps/gallery/README.md) shows every component on live
 pages, and [verification](verification.md) records execution evidence and
 the native-platform gaps.
+
+### A fixed-width gradient in a floating title
+
+Pass a linear `Gradient` from `Point::default()` to `Point::new(40., 0.)?`
+to `FloatingWindow::title_paint`. A title 320 logical pixels wide then shows
+40 pixels of transition followed by 280 pixels of the final color. Dragging
+the window moves the paint with the title, and resizing preserves the
+transition width. The gallery shows this on the Out-1 floating window.

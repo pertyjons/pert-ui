@@ -62,7 +62,7 @@ struct Stops {
     space: GradientSpace,
     key: u64,
 }
-fn lab([r, g, b]: [f64; 3]) -> [f64; 3] {
+pub(crate) fn lab([r, g, b]: [f64; 3]) -> [f64; 3] {
     let l = (0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b).cbrt();
     let m = (0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b).cbrt();
     let s = (0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b).cbrt();
@@ -120,6 +120,27 @@ impl Stops {
             space,
             key: hash.finish(),
         })
+    }
+}
+
+/// Frame-specific projection prepared from a validated gradient. The position
+/// and axis are in physical pixels, with coefficients incorporating viewport
+/// scaling independently on both axes.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct GradientMapping {
+    coefficients: [f32; 4],
+    axis: [f32; 2],
+}
+impl GradientMapping {
+    /// Physical origin followed by the two coefficients applied to displacement.
+    #[must_use]
+    pub fn coefficients(self) -> [f32; 4] {
+        self.coefficients
+    }
+    /// Start-to-end displacement for a line, or the outer radii of the ellipse.
+    #[must_use]
+    pub fn axis(self) -> [f32; 2] {
+        self.axis
     }
 }
 
@@ -227,6 +248,13 @@ impl Gradient {
     pub fn inner(&self) -> Option<f32> {
         self.inner
     }
+    /// Content key for indexing ramps independently of placement. Equal
+    /// stops in the same space have the same key; confirm equality after a hit.
+    #[must_use]
+    pub fn ramp_key(&self) -> u64 {
+        self.stops.key
+    }
+
     pub(crate) fn placed(&self, origin: (f64, f64), view: f32) -> Self {
         let [x, y, dx, dy] = self.geometry.map(|v| v * f64::from(view));
         Self {
@@ -242,7 +270,10 @@ impl Gradient {
     /// # Errors
     /// Returns [`GradientError::OutOfRange`] for origins beyond 2²² pixels,
     /// or coefficients that overflow, underflow, or exceed 65,536 per pixel.
-    pub fn coefficients(&self, mapping: &FrameMapping) -> Result<[f32; 4], GradientError> {
+    /// Preparation also rejects phase uncertainty larger than 1/1024 of the
+    /// narrowest distinct stop interval across the frame. Repeated phases and
+    /// hard stops additionally require uncertainty below a quarter pixel.
+    pub fn prepare(&self, mapping: &FrameMapping) -> Result<GradientMapping, GradientError> {
         let [sx, sy, _] = mapping.factors();
         let [x, y, dx, dy] = self.geometry;
         let (a, b) = if self.inner.is_some() {
@@ -261,31 +292,124 @@ impl Gradient {
         {
             return Err(GradientError::OutOfRange);
         }
-        Ok([x * sx, y * sy, a, b].map(|v| v as f32))
+        let origin = [x * sx, y * sy];
+        let axis = [dx * sx, dy * sy].map(|v| v as f32);
+        if axis.iter().any(|v| !v.is_finite()) {
+            return Err(GradientError::OutOfRange);
+        }
+        let extents = [mapping.frame_width(), mapping.frame_height()];
+        let terms = std::array::from_fn::<_, 2, _>(|i| {
+            origin[i]
+                .abs()
+                .max((f64::from(extents[i]) - origin[i]).abs())
+                * [a, b][i].abs()
+        });
+        let mut magnitude = terms[0] + terms[1];
+        if self.extend == GradientExtend::Pad {
+            // Outside the interpolation interval pad is constant. Opposing
+            // projection terms can still cancel into that interval.
+            magnitude = magnitude.min(if self.inner.is_some() {
+                2.
+            } else {
+                2. + 2. * terms[0].min(terms[1])
+            });
+        }
+        let remaining = 1. - f64::from(self.inner.unwrap_or(0.));
+        let rounding = origin
+            .iter()
+            .zip([a, b])
+            .map(|(&v, k)| (v - f64::from(v as f32)).abs() * k.abs())
+            .sum::<f64>();
+        let uncertainty = (rounding + 8. * f64::from(f32::EPSILON) * magnitude) / remaining;
+        let mut gap = 1f64;
+        let mut hard = self.extend == GradientExtend::Repeat;
+        for pair in self.stops().windows(2) {
+            let d = f64::from(pair[1].0) - f64::from(pair[0].0);
+            if d > 0. {
+                gap = gap.min(d);
+            } else {
+                hard = true;
+            }
+        }
+        let slope = if self.inner.is_some() {
+            a.abs().min(b.abs()) / remaining
+        } else {
+            a.hypot(b)
+        };
+        if uncertainty > gap / 1024. || (hard && uncertainty > slope * 0.25) {
+            return Err(GradientError::OutOfRange);
+        }
+        Ok(GradientMapping {
+            coefficients: [origin[0], origin[1], a, b].map(|v| v as f32),
+            axis,
+        })
     }
-    /// Evaluates a pixel from [`Self::coefficients`], returning premultiplied
-    /// linear RGBA including ordered RGB dithering anchored in the physical frame.
+    /// Evaluates physical pixel (x, y) using this gradient's frame mapping,
+    /// returning premultiplied linear RGBA with frame-anchored ordered RGB dither.
     #[must_use]
-    pub fn sample(&self, [ox, oy, a, b]: [f32; 4], x: u32, y: u32) -> [f32; 4] {
-        let dx = (x as f32 + 0.5 - ox) * a;
-        let dy = (y as f32 + 0.5 - oy) * b;
-        let t = match self.inner {
-            Some(inner) => ((dx * dx + dy * dy).sqrt() - inner) / (1. - inner),
-            None => dx + dy,
+    pub fn sample(&self, mapping: GradientMapping, x: u32, y: u32) -> [f32; 4] {
+        let [ox, oy, a, b] = mapping.coefficients;
+        let dx = x as f32 + 0.5 - ox;
+        let dy = y as f32 + 0.5 - oy;
+        let raw = match self.inner {
+            Some(inner) => {
+                (((dx / mapping.axis[0]).powi(2) + (dy / mapping.axis[1]).powi(2)).sqrt() - inner)
+                    / (1. - inner)
+            }
+            None if mapping.axis[1] == 0. => dx / mapping.axis[0],
+            None if mapping.axis[0] == 0. => dy / mapping.axis[1],
+            None => dx * a + dy * b,
         };
-        let t = match self.extend {
-            GradientExtend::Pad => t.clamp(0., 1.),
-            GradientExtend::Repeat => t - t.floor(),
-            GradientExtend::Reflect => 1. - (1. - t.rem_euclid(2.)).abs(),
+        // Rebase comparisons at the boundary. A rounded reciprocal can put
+        // an exact midpoint or seam just below its mathematical phase.
+        let side = |phase: f32| {
+            if let Some(inner) = self.inner {
+                let radius = (inner + phase * (1. - inner)) * mapping.axis[0].min(mapping.axis[1]);
+                if radius < 0. {
+                    return 1.;
+                }
+                let minor = mapping.axis[0].min(mapping.axis[1]);
+                let u = dx * (minor / mapping.axis[0]);
+                let v = dy * (minor / mapping.axis[1]);
+                let norm = radius.abs().max(u.abs()).max(v.abs());
+                if norm > 1e15 || (norm > 0. && norm < 1e-15) {
+                    return (u / norm).powi(2) + (v / norm).powi(2) - (radius / norm).powi(2);
+                }
+                u * u + v * v - radius * radius
+            } else {
+                (dx - phase * mapping.axis[0]) * a + (dy - phase * mapping.axis[1]) * b
+            }
         };
+        let periodic = self.extend != GradientExtend::Pad;
+        let mut cycle = if periodic { raw.floor() } else { 0. };
+        if periodic && (raw - raw.round()).abs() < 0.001 {
+            let nearest = raw.round();
+            cycle = if side(nearest) >= 0. {
+                nearest
+            } else {
+                nearest - 1.
+            };
+        }
+        let reverse = self.extend == GradientExtend::Reflect && cycle.rem_euclid(2.) == 1.;
+        let local = raw - cycle;
+        let t = if reverse { 1. - local } else { local }.clamp(0., 1.);
         let stops = self.stops();
-        let end = stops.partition_point(|s| s.0 <= t);
+        let end = stops.partition_point(|s| {
+            if s.0 == 0. || (s.0 - t).abs() > 0.001 {
+                return s.0 <= t;
+            }
+            if reverse {
+                side(cycle + (1. - s.0)) <= 0.
+            } else {
+                side(cycle + s.0) >= 0.
+            }
+        });
         let lower = end.saturating_sub(1);
         let (offset, color) = stops[lower];
         let [r, g, b, alpha] = if end == 0 || end == stops.len() || offset == t {
             color.channels()
         } else {
-            let f = (t - offset) / (stops[end].0 - offset);
+            let f = ((t - offset) / (stops[end].0 - offset)).clamp(0., 1.);
             let left = self.components()[lower];
             let right = self.components()[end];
             let [r, g, b, alpha] = std::array::from_fn(|i| left[i] * (1. - f) + right[i] * f);
@@ -338,6 +462,47 @@ impl crate::resources::SceneResource for Gradient {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn repeat_seam_and_hard_stop_take_the_right_hand_color() {
+        let frame =
+            FrameMapping::new(320, 24, crate::Viewport::new(320., 24., 1.).unwrap()).unwrap();
+        let black = Color::from_srgb8(0, 0, 0, 255);
+        let start = Point::new(0.5, 0.5).unwrap();
+        let repeat = Gradient::linear(
+            start,
+            Point::new(41.5, 0.5).unwrap(),
+            [(0., black), (1., Color::WHITE)],
+        )
+        .unwrap()
+        .with_extend(GradientExtend::Repeat);
+        assert!(repeat.sample(repeat.prepare(&frame).unwrap(), 41, 0)[0] < 0.001);
+        let hard = Gradient::linear(
+            start,
+            Point::new(82.5, 0.5).unwrap(),
+            [(0., black), (0.5, black), (0.5, Color::WHITE)],
+        )
+        .unwrap();
+        let prepared = hard.prepare(&frame).unwrap();
+        assert!(hard.sample(prepared, 40, 0)[0] < 0.001);
+        assert!(hard.sample(prepared, 41, 0)[0] > 0.99);
+        let stops = [(0., black), (0.5, black), (0.5, Color::WHITE)];
+        let diagonal = Gradient::linear(start, Point::new(2.5, 12.5).unwrap(), stops).unwrap();
+        assert!(diagonal.sample(diagonal.prepare(&frame).unwrap(), 1, 6)[0] > 0.99);
+        let radial = Gradient::radial(start, Size::from([74, 74]), 0., stops).unwrap();
+        assert!(radial.sample(radial.prepare(&frame).unwrap(), 12, 35)[0] > 0.99);
+        let tiny = Gradient::linear(
+            Point::default(),
+            Point::new(3. / 65536., 0.).unwrap(),
+            [(0., black), (1., Color::WHITE)],
+        )
+        .unwrap()
+        .with_extend(GradientExtend::Repeat);
+        assert!(matches!(
+            tiny.prepare(&frame),
+            Err(GradientError::OutOfRange)
+        ));
+    }
+
     #[test]
     fn invalid_geometry_or_stops_are_rejected_before_recording() {
         let a = Point::default();

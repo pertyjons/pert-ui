@@ -17,7 +17,7 @@ sites = [
     ("textures.rs", "        queue.write_texture", "image.pixels()[..]", 3),
 ]
 if (renderer / "gradients.rs").exists():
-    sites.append(("gradients.rs", "            queue.write_buffer(", "bytes[..]", 4))
+    sites.append(("gradients.rs", "            queue.write_buffer(", "bytes[upload.clone()]", 4))
 for file, site, data, kind in sites:
     insert(renderer / file, site, f"crate::probe_upload({kind}, &{data});\n")
 with (renderer / "lib.rs").open("a") as out:

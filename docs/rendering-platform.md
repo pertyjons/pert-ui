@@ -398,3 +398,16 @@ existing OS window and follow their own focus and dismissal contracts.
 The initial platform matrix and the evidence for each tested contract are in
 [verification](verification.md#native-evidence). Headless compilation and tests
 do not establish native GUI or GPU behavior on an untested platform.
+
+## Gradient shape paints
+
+CPU and wgpu evaluate linear and concentric elliptical paints on rectangles
+and shape fills and borders. Endpoints, centers and radii are in the painting
+component's logical coordinates. Clipping, rounding the shape and resizing
+its bounds preserve the paint coordinates. Pad extends the endpoint colors,
+Repeat tiles the interval, and Reflect reverses alternating intervals.
+The default uses premultiplied Oklab interpolation and frame-anchored RGB
+dithering. Frame preparation reports unrepresentable geometry. See the
+[gradient specification](../plans/rendering/gradient-spec.md) for the design
+and the [prototype measurements](../plans/rendering/gradient-probe/README.md)
+for the original isolated workload. Conic paint remains experimental.
