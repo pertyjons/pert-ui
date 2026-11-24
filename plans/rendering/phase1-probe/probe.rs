@@ -57,7 +57,8 @@
 //! directory for CPU captures of every page at every scale), `PROBE_TMP`
 //! (a directory for the diagram editor's files) and `PROBE_ONLY=cards` (only
 //! the gallery's zoom workload) or `PROBE_ONLY=mixer-diagram` (the solid
-//! application controls for phase 2).
+//! application controls for phase 2), or `PROBE_ONLY=zoom-present` for the
+//! repeated live and settled diagram zoom presentation measurements.
 use pert_ui::cpu::CpuRenderer;
 use pert_ui::parameter::*;
 use pert_ui::{
@@ -642,9 +643,9 @@ impl Probe {
     }
 
     /// Scenario 3: the diagram editor's zoom and pan, each on a fresh editor.
-    fn diagram(&mut self) -> Result<Vec<Series>> {
+    fn diagram(&mut self, scenarios: &[&str]) -> Result<Vec<Series>> {
         let mut out = vec![];
-        for scenario in ["live zoom", "settled zoom", "pan"] {
+        for &scenario in scenarios {
             let dir = self.tmp.join(format!(
                 "diagram-{}-{}",
                 std::process::id(),
@@ -915,10 +916,35 @@ impl Probe {
             self.series_table("Gallery zoom workload (64 cards)", &cards);
             return Ok(());
         }
+        if std::env::var("PROBE_ONLY").as_deref() == Ok("zoom-present") {
+            let mut live = Vec::new();
+            let mut settled = Vec::new();
+            // Start every trajectory at the original scale. Discard the first
+            // pair of trajectories to warm the driver and process.
+            for pass in 0..=5 {
+                let runs = self.diagram(&["live zoom", "settled zoom"])?;
+                let [steps, _, resting] = runs.as_slice() else {
+                    return Err("incomplete zoom trajectories".into());
+                };
+                for (series, samples) in [(steps, &mut live), (resting, &mut settled)] {
+                    if series.present.is_empty() || series.present.len() != series.compose.len() {
+                        return Err("zoom frame was not presented".into());
+                    }
+                    if pass > 0 {
+                        samples.extend_from_slice(&series.present);
+                    }
+                }
+            }
+            for (name, samples) in [("live zoom", live), ("settled zoom", settled)] {
+                self.out.row(name, "present_frames", samples.len() as f64);
+                self.out.row(name, "present_median_ms", median(&samples));
+            }
+            return Ok(());
+        }
         if std::env::var("PROBE_ONLY").as_deref() == Ok("mixer-diagram") {
             let mixer = self.mixer()?;
             self.series_table("Mixer with live data", &[mixer]);
-            let diagram = self.diagram()?;
+            let diagram = self.diagram(&["live zoom", "settled zoom", "pan"])?;
             self.series_table("Diagram editor zoom and pan", &diagram);
             return Ok(());
         }
@@ -931,7 +957,7 @@ impl Probe {
         }
         let mixer = self.mixer()?;
         self.series_table("Mixer with live data", &[mixer]);
-        let diagram = self.diagram()?;
+        let diagram = self.diagram(&["live zoom", "settled zoom", "pan"])?;
         self.series_table("Diagram editor zoom and pan", &diagram);
         let cards = self.cards()?;
         self.series_table("Gallery zoom workload (64 cards)", &cards);

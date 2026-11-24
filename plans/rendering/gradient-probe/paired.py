@@ -5,12 +5,12 @@ import subprocess
 from pathlib import Path
 
 
-def run(binary, output, temporary, cores):
+def run(binary, output, temporary, cores, workload):
     for attempt in range(3):
         with output.with_suffix(".log").open("w") as log:
             result = subprocess.run(
                 ["taskset", "-c", cores, binary],
-                env=dict(os.environ, PROBE_ONLY="mixer-diagram", PROBE_TMP=str(temporary),
+                env=dict(os.environ, PROBE_ONLY=workload, PROBE_TMP=str(temporary),
                          PROBE_TSV=str(output)),
                 stdout=log, stderr=subprocess.STDOUT,
             )
@@ -25,6 +25,7 @@ parser.add_argument("reference", type=Path)
 parser.add_argument("candidate", type=Path)
 parser.add_argument("output", type=Path)
 parser.add_argument("--cores", default="6,8")
+parser.add_argument("--workload", choices=["mixer-diagram", "zoom-present"], default="mixer-diagram")
 args = parser.parse_args()
 out = args.output.resolve()
 out.mkdir(parents=True, exist_ok=True)
@@ -36,4 +37,4 @@ for pair in range(10):
         samples.reverse()
     for label, exe in samples:
         print(pair+1, label, Path("/proc/loadavg").read_text().strip(), flush=True)
-        run(exe.resolve(), out / f"{label}-{pair+1}.tsv", tmp, args.cores)
+        run(exe.resolve(), out / f"{label}-{pair+1}.tsv", tmp, args.cores, args.workload)

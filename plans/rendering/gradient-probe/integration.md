@@ -90,3 +90,62 @@ also missed the 2% same-binary repeatability target (median 1.045). The
 hardware evidence supports the gradient prototype. Keep the branch separate
 while a strict zoom-presentation bound remains unresolved. Conic geometry
 is deferred.
+
+## Targeted zoom presentation check
+
+This follow-up times the host call to present a frame on the native surface
+for solid diagram scenes. It retains the original frame pacing, CPU render
+and offscreen readback between successive presentations. Each binary runs
+the same live and settled zoom trajectories once to warm up, then five
+times from fresh editors. This yields 150 live and 80 settled presentations
+per process. A skipped presentation invalidates that run. The isolated
+frame that ends a live gesture is outside the live-step statistic.
+
+The comparison uses reference 3448065 (before integration) and 11ddcfc
+(the prototype with the gallery examples). Run the reference against itself
+first, then compare reference and candidate. Each series has ten independent
+process pairs with alternating order on cores 6 and 8. For each scenario,
+take the ratio of the per-process median presentation times in each pair.
+Use the previously agreed 2% same-binary repeatability target and the
+second and ninth ordered candidate/reference ratios for the 5% gate. A
+ninth ratio below 1.05 passes, a second ratio above 1.05 fails, and a range
+straddling 1.05 leaves the bound unresolved.
+
+From the repository root on the measuring desktop:
+
+```sh
+RUNS=0 plans/rendering/phase1-probe/run.sh target/zoom-presentation reference=3448065 final=11ddcfc
+p=target/phase1-probe
+s=plans/rendering/gradient-probe/paired.py
+plans/rendering/tools/quiet-run.sh target/zoom-presentation/quiet.log sh -ec '
+  python3 "$1" "$2" "$2" target/zoom-presentation/aa --workload zoom-present
+  python3 "$1" "$2" "$3" target/zoom-presentation/ab --workload zoom-present
+' sh "$s" "$p/target-reference/release/phase1-probe" "$p/target-final/release/phase1-probe"
+python3 plans/rendering/gradient-probe/summarize.py target/zoom-presentation/aa
+python3 plans/rendering/gradient-probe/summarize.py target/zoom-presentation/ab
+```
+
+**Result, 2026-11-24.** Both zoom scenarios pass the native host presentation
+gate on this Linux desktop. Each process produced the full expected number of
+presented frames. In the table, each percentage is a change relative to the
+reference within a pair. The upper end of the last column is the ninth smallest change across
+the ten candidate/reference pairs, the decision statistic.
+
+| Scenario | Same-binary median change | Candidate median change | Candidate second to ninth |
+|---|---:|---:|---:|
+| Live zoom | +1.38% | +0.36% | −1.89% to +3.09% |
+| Settled zoom | −0.94% | +1.90% | −0.40% to +4.31% |
+
+The second-to-ninth same-binary ranges were −3.74% to +2.80% for live zoom
+and −1.75% to +1.08% for settled zoom. Both control medians meet the 2%
+repeatability target, with greater dispersion in live zoom. The quiet runner
+started at load 1.37 and sampled a peak of 2.13. The system was shared.
+The median of the individual process times moved from 0.517 to 0.520 ms
+for live zoom and from 0.527 to 0.543 ms for settled zoom. Those absolute
+times are medians across processes; the decision uses the paired ratios.
+[Raw process medians and frame counts](results/zoom-presentation.tsv).
+
+This resolves the zoom presentation uncertainty above. The performance
+measurements support merging the linear and radial gradient implementation
+for the measured workloads. Other adapters and platforms require their own
+native evidence.
