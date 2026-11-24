@@ -1,7 +1,7 @@
 # Gradient integration measurements
 
 On 2026-11-24 the Linux prototype used the production CPU renderer and wgpu
-on Intel UHD Graphics 770 with Vulkan. The gallery exposes a Gradients page
+on Intel UHD Graphics 770 with Vulkan. At measurement time the gallery showed a Gradients page
 and a resizable Out-1 window with a 40-logical-pixel title gradient. The
 application opts into the title paint. Both demonstrations can be opened
 directly with `--page gradients` or `--page windows`.

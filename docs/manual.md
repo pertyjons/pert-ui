@@ -91,4 +91,4 @@ Pass a linear `Gradient` from `Point::default()` to `Point::new(40., 0.)?`
 to `FloatingWindow::title_paint`. A title 320 logical pixels wide then shows
 40 pixels of transition followed by 280 pixels of the final color. Dragging
 the window moves the paint with the title, and resizing preserves the
-transition width. The gallery shows this on the Out-1 floating window.
+transition width. The Gradients gallery page shows the fixed-width transition.

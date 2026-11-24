@@ -340,4 +340,4 @@ cargo run --locked -p pert-ui-gallery -- --page gradients
 
 The swatches show a linear gradient, a concentric radial gradient and a
 40-logical-pixel transition. Under **Surfaces → Floating windows**, the
-Out-1 title uses a fixed-width gradient on a resizable window.
+Out-1 title gradient ends at the center of its Information icon as the window resizes.

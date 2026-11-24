@@ -3,6 +3,38 @@ use super::support::*;
 use pert_ui::prelude::*;
 
 #[test]
+fn output_title_gradient_tracks_the_info_icon_on_resize() {
+    use pert_ui::{KeyAction, KeyCode};
+    let (mut ui, root) = mounted();
+    open(&mut ui, &root, "windows");
+    let window = find(&ui, &root, "output-window");
+    let info = find(&ui, &window, "info");
+    let check = |ui: &mut Runtime| {
+        let bounds = ui.bounds(&info).unwrap().unwrap();
+        let center = bounds.x() + bounds.width() / 2.;
+        let scene = ui.paint().unwrap();
+        let [gradient] = scene.gradients() else {
+            panic!("expected one title gradient")
+        };
+        let mapping = pert_ui::FrameMapping::new(960, 640, ui.viewport()).unwrap();
+        let projection = gradient.prepare(&mapping).unwrap();
+        assert!((projection.coefficients()[0] + projection.axis()[0] - center).abs() < 0.01);
+        center
+    };
+    let before = check(&mut ui);
+    ui.focus(&window).unwrap();
+    ui.key_input(KeyCode::AltLeft, KeyAction::Press).unwrap();
+    ui.key_input(KeyCode::ShiftLeft, KeyAction::Press).unwrap();
+    press(&mut ui, KeyCode::ArrowRight);
+    ui.key_input(KeyCode::ShiftLeft, KeyAction::Release)
+        .unwrap();
+    ui.key_input(KeyCode::AltLeft, KeyAction::Release).unwrap();
+    assert_eq!(check(&mut ui) - before, 8.);
+    click(&mut ui, &info);
+    assert!(text(&ui, "window-message")[0].contains("ordinary numeric controls"));
+}
+
+#[test]
 fn floating_window_dialog_uses_the_properties_view_as_its_modal_area() {
     let (mut ui, root) = mounted();
     open(&mut ui, &root, "windows");

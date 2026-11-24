@@ -3,6 +3,10 @@
 use crate::gallery::{label, page, section, stage};
 use crate::samples::Canvas;
 use pert_ui::commands::*;
+use pert_ui::component::{
+    ArrangeContext, Component, Corner, CornerPosition, DrawError, MeasureContext, Painter, Rect,
+    Shape, UpdateContext,
+};
 use pert_ui::prelude::*;
 use pert_ui::windowing::*;
 
@@ -423,6 +427,73 @@ const WINDOW_NOTES_TEXT: &str = "This editor keeps its text and scroll state whe
 Tabs, splits and modal surfaces use the same public API inside a window.";
 const WINDOWS_HELP: &str = "Overlapping windows: drag titles, resize corners, or minimize. Closed windows are removed; restart the gallery to recreate them.";
 const RESTORED_MESSAGE: &str = "Restored minimized windows. Closed windows stay closed.";
+/// The title and action share a layout so the paint can end at the icon center.
+struct OutputTitle {
+    children: Vec<Element>,
+    icon_center: std::cell::Cell<f32>,
+}
+
+impl Component for OutputTitle {
+    fn take_children(&mut self) -> Vec<Element> {
+        std::mem::take(&mut self.children)
+    }
+
+    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+        Ok(())
+    }
+
+    fn measure(&self, cx: &MeasureContext<'_>, space: Constraints) -> Result<Size, RuntimeError> {
+        let label = cx.measure(0, space)?;
+        let info = cx.measure(1, Constraints::default())?;
+        Ok(Size::new(
+            cx.metric(MetricRole::ControlPaddingX) + label.width() + info.width(),
+            label.height().max(info.height()),
+        )?)
+    }
+
+    fn arrange(&self, cx: &mut ArrangeContext<'_>, size: Size) -> Result<(), RuntimeError> {
+        let info = cx.measure(1, Constraints::default())?;
+        let width = info.width().min(size.width());
+        let left = size.width() - width;
+        let padding = cx
+            .measurement()
+            .metric(MetricRole::ControlPaddingX)
+            .min(left);
+        let label = cx.measure(0, Constraints::default())?;
+        let height = label.height().min(size.height());
+        cx.place(
+            0,
+            Rect::new(
+                padding,
+                (size.height() - height) * 0.5,
+                left - padding,
+                height,
+            )?,
+        )?;
+        cx.place(1, Rect::new(left, 0., width, size.height())?)?;
+        self.icon_center.set(left + width * 0.5);
+        Ok(())
+    }
+
+    fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
+        let end = self.icon_center.get();
+        if end > 0. {
+            let gradient = pert_ui::Gradient::linear(
+                Point::default(),
+                Point::new(end, 0.)?,
+                [(0., Color::ACCENT), (1., Color::SURFACE)],
+            )?;
+            let corner = Corner::round(Length::new(p.metric(MetricRole::CornerRadius))?);
+            p.fill_shape(
+                Rect::from_size(p.size()),
+                Shape::RECTANGLE.with_corner(CornerPosition::TopLeft, corner),
+                gradient,
+            )?;
+        }
+        Ok(())
+    }
+}
+
 pub(crate) fn floating_windows(ui: &Runtime) -> Result<Element, AppError> {
     let message = ui.signal("Drag a title bar; resize at the bottom-right corner.".to_owned());
     let value = ui.signal(1.0_f64);
@@ -472,31 +543,40 @@ pub(crate) fn floating_windows(ui: &Runtime) -> Result<Element, AppError> {
             .padding(MetricRole::GroupPadding),
         ),
     )
-    .title_paint(
-        pert_ui::Gradient::linear(
-            Point::default(),
-            Point::new(40., 0.)?,
-            [(0., pert_ui::Color::ACCENT), (1., pert_ui::Color::SURFACE)],
-        )
-        .map_err(pert_ui::DrawError::from)?,
-    )
+    .title_paint(Color::SURFACE)
     .position(Point::new(20.0, 20.0)?)?
     .initial_size(Size::from([340, 240]))?
     .size_limits(SizeLimits::at_least(Size::from([280, 180])))
     .minimizable(true)
     .resizable(lock.read_only())
-    .title_action(Element::new(
-        "output-info",
-        Tooltip::new(
-            Element::new(
-                "info",
-                Button::icon(Icon::Info, "Information", move |_| {
-                    info.set("The window contains ordinary numeric controls and bindings.".into())
-                })
-                .frameless(),
-            ),
-            "Information",
-        ),
+    .drag_area(Element::new(
+        "output-title",
+        OutputTitle {
+            children: vec![
+                Element::new(
+                    "caption",
+                    Label::new("Out-1").color_role(ColorRole::OnButton),
+                )
+                .structural(),
+                Element::new(
+                    "output-info",
+                    Tooltip::new(
+                        Element::new(
+                            "info",
+                            Button::icon(Icon::Info, "Information", move |_| {
+                                info.set(
+                                    "The window contains ordinary numeric controls and bindings."
+                                        .into(),
+                                )
+                            })
+                            .frameless(),
+                        ),
+                        "Information",
+                    ),
+                ),
+            ],
+            icon_center: Default::default(),
+        },
     ))
     .title_action(Element::new(
         "output-menu",
