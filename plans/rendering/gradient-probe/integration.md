@@ -62,3 +62,31 @@ and 1.000 respectively. For presentation it was 1.029 and 0.963. The
 second and ninth sorted ratios for mixer CPU were 0.961 and 1.837, so this
 run cannot resolve the proposed 5% threshold. Four attempts in an earlier
 same-binary run produced no samples because mixer ticks timed out.
+
+## Quiet rerun and decision
+
+The quiet runner admitted the series at a 1-minute load of 0.91 and
+recorded a maximum of 1.00 over both series. On cores 6 and 8 it completed
+ten same-binary pairs followed by ten pairs against a85b6d0. The reference
+was 3448065. [Paired medians in milliseconds](results/integration-timing.tsv)
+retain CPU, offscreen GPU and host presentation for each individual run.
+
+For each multi-frame scenario the second and ninth same-binary CPU and
+GPU ratios fell within 0.98–1.02. The table gives the median production
+candidate/reference ratio and the ninth ordered ratio in parentheses. A
+ninth ratio below 1.05 clears the 5% criterion.
+
+| Scenario | CPU | Offscreen GPU | Host presentation |
+|---|---:|---:|---:|
+| Mixer ticks | 1.003 (1.005) | 0.998 (1.009) | 1.006 (1.028) |
+| Diagram pan | 1.006 (1.012) | 1.000 (1.009) | 1.000 (1.014) |
+| Diagram live zoom | 1.017 (1.029) | 0.996 (1.003) | 0.999 (1.066) |
+| Diagram settled zoom | 1.004 (1.016) | 1.005 (1.025) | 0.969 (1.072) |
+
+CPU and offscreen GPU meet the render-time gate on these workloads and this
+adapter. Presentation meets it for the mixer and pan. For both zoom scenarios
+the presentation interval crosses 1.05, and settled-zoom presentation
+also missed the 2% same-binary repeatability target (median 1.045). The
+hardware evidence supports the gradient prototype. Keep the branch separate
+while a strict zoom-presentation bound remains unresolved. Conic geometry
+is deferred.
