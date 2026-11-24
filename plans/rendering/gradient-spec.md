@@ -1,12 +1,12 @@
 # Phase 2 proposal: gradient paints
 
-**Status:** Slice 0 authorized and measured, 2026-11-24. The
-[prototype report](gradient-probe/README.md) records the results and
-remaining integration gates. The public API awaits maintainer approval. The [roadmap](../rendering-capabilities.md)
-and [phase 0 decisions](phase0-report.md#decisions) select pert-ui's own
-renderers, Oklab by default and linear-light compositing. The API names,
-limits and acceptance criteria below are proposals. Library implementation and
-after-measurements follow a separate decision.
+**Status (2026-11-24).** The prototype branch implements linear and
+concentric radial paints for rectangle and shape fills, shape borders and
+floating-window titles. The gallery Gradients page exercises both renderers.
+The remaining paint targets and conic geometry below describe proposed
+extensions. The [prototype report](gradient-probe/README.md) covers the
+isolated experiment. The [integration report](gradient-probe/integration.md)
+tracks production measurements and the merge decision.
 
 ## What an application can draw
 
