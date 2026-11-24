@@ -211,7 +211,7 @@ impl Landscape {
 enum Finish {
     SpectrumRail,
     Enamel,
-    OpalBorder,
+    OpalBorder { hovered: bool },
 }
 
 /// Paint the backdrop while the ordinary child owns input, focus and semantics.
@@ -223,7 +223,10 @@ impl Component for GradientControl {
     fn take_children(&mut self) -> Vec<Element> {
         self.child.take().into_iter().collect()
     }
-    fn update(&mut self, _: &mut UpdateContext) -> Result<(), RuntimeError> {
+    fn update(&mut self, cx: &mut UpdateContext) -> Result<(), RuntimeError> {
+        if let Finish::OpalBorder { hovered } = &mut self.finish {
+            *hovered = cx.hovered();
+        }
         Ok(())
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
@@ -233,11 +236,11 @@ impl Component for GradientControl {
             return Ok(());
         }
         let (bounds, stops) = match self.finish {
-            Finish::OpalBorder if p.focus_within() => (
+            Finish::OpalBorder { .. } if p.focus_within() => (
                 Rect::from_size(size),
                 [rgb([28, 101, 105]), rgb([62, 76, 144]), rgb([119, 51, 114])],
             ),
-            Finish::OpalBorder => {
+            Finish::OpalBorder { .. } => {
                 return p.fill_shape(
                     Rect::from_size(size),
                     Shape::rounded(Length::new(p.metric(MetricRole::CornerRadius))?),
@@ -272,9 +275,9 @@ impl Component for GradientControl {
         )
     }
     fn paint_foreground(&self, p: &mut Painter) -> Result<(), DrawError> {
-        if !matches!(self.finish, Finish::OpalBorder) {
+        let Finish::OpalBorder { hovered } = self.finish else {
             return Ok(());
-        }
+        };
         let size = p.size();
         // Leave the button's keyboard focus ring visible outside the gradient.
         let inset = if p.focus_within() {
@@ -297,12 +300,28 @@ impl Component for GradientControl {
                 (1., rgb([255, 204, 125])),
             ],
         )?;
+        let mut style = ShapeStyle::border(Length::from(2), rim);
+        if hovered {
+            // The translucent wash lets the native pressed face show through.
+            // Fade to clear around the caption for legibility in either theme.
+            let wash = Gradient::linear(
+                Point::new(inset, 0.)?,
+                Point::new(inset + w, 0.)?,
+                [
+                    (0., Color::from_srgb8(255, 151, 77, 212)),
+                    (0.45, Color::from_srgb8(255, 151, 77, 0)),
+                    (0.55, Color::from_srgb8(52, 204, 191, 0)),
+                    (1., Color::from_srgb8(52, 204, 191, 212)),
+                ],
+            )?;
+            style = style.with_fill(wash);
+        }
         p.draw_shape(
             Rect::new(inset, inset, w, h)?,
             Shape::rounded(Length::new(
                 (p.metric(MetricRole::CornerRadius) - inset).max(0.),
             )?),
-            ShapeStyle::border(Length::from(2), rim),
+            style,
         )
     }
 }
@@ -346,7 +365,7 @@ pub(crate) fn gradients(ui: &mut Runtime, id: ParameterId) -> Result<Element, Ap
                         "reset-sun",
                         Button::new("Reset sun", move |_| host.write_base(INITIAL_SUN)).frameless(),
                     )),
-                    finish: Finish::OpalBorder,
+                    finish: Finish::OpalBorder { hovered: false },
                 },
             ),
             Element::new(

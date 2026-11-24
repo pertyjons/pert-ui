@@ -343,8 +343,8 @@ Select **Change sky** to cycle through Afterglow, Arctic fjord and Moonrise.
 The enamel button layers a standard interactive button above a gradient.
 **Reset sun** restores the initial position and shows a gradient border
 around a solid button face. Tab to it to see the fill shift from teal through
-blue to plum. Tab away to restore the solid fill. Pointer hover and press
-use the standard button feedback.
+blue to plum. Tab away to restore the solid fill. Moving the pointer over the button adds an amber-to-turquoise wash. Moving it
+away restores the focused or resting fill. The focus ring stays visible.
 The material samples use reflected stops for brushed silver and repeating
 hard stops for a two-ink print. The swatches below show a linear gradient, a concentric radial gradient and a
 40-logical-pixel transition. Under **Surfaces → Floating windows**, the

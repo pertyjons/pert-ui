@@ -5,7 +5,7 @@ use pert_ui::testing::HostIntegration;
 use pert_ui::{DebugOverlay, Palette, TextEditError, ThemeMode, ValidationCode, Workspace};
 
 #[test]
-fn reset_sun_gradient_fill_follows_keyboard_focus() {
+fn reset_sun_gradient_fill_follows_hover_and_keyboard_focus() {
     let (mut ui, root) = mounted();
     open(&mut ui, &root, "gradients");
     let change = find(&ui, &root, "next-sky");
@@ -27,11 +27,23 @@ fn reset_sun_gradient_fill_follows_keyboard_focus() {
     settle(&mut ui);
     let resting = face(&mut ui);
     assert_eq!(resting[0], resting[1]);
+    let (x, y) = center_of(&ui, &reset);
+    pointer_at(&mut ui, x, y, pert_ui::PointerKind::Move);
+    let hover = face(&mut ui);
+    assert!(hover[0][0] > hover[1][0] + 15);
+    assert!(hover[1][1] > hover[0][1] + 10);
+    pointer_at(&mut ui, 0., 0., pert_ui::PointerKind::Move);
+    assert_eq!(face(&mut ui), resting);
     press(&mut ui, KeyCode::Tab);
     assert_eq!(ui.focused(), Some(reset));
     let focused = face(&mut ui);
     assert!(focused[0][1] > focused[1][1] + 10);
     assert!(focused[1][0] > focused[0][0] + 10);
+    pointer_at(&mut ui, x, y, pert_ui::PointerKind::Move);
+    let hover_focused = face(&mut ui);
+    assert!(hover_focused[0][0] > hover_focused[1][0] + 15);
+    pointer_at(&mut ui, 0., 0., pert_ui::PointerKind::Move);
+    assert_eq!(face(&mut ui), focused);
     press(&mut ui, KeyCode::Tab);
     assert_eq!(face(&mut ui), resting);
 }
