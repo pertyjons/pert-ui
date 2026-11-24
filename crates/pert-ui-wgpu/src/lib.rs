@@ -682,8 +682,8 @@ impl Renderer {
     /// - [`RenderError::Limit`] when the scene exceeds a
     ///   [`ResourceKind::scene_budget_bytes`], a resource exceeds the device texture
     ///   dimension, its vertices exceed the device buffer or a `u32` draw range,
-    ///   its shape or stroke records exceed the device's storage buffer
-    ///   binding size ([`LimitError::ShapeRecords`],
+    ///   its shape, gradient or stroke records exceed the device's storage buffer
+    ///   binding size ([`LimitError::ShapeRecords`], [`LimitError::GradientRecords`],
     ///   [`LimitError::StrokeRecords`]), or the coverage pages of its strokes
     ///   exceed [`Renderer::STROKE_COVERAGE_BUDGET`]
     ///   ([`LimitError::StrokeCoverage`]).
@@ -691,7 +691,7 @@ impl Renderer {
     ///   its geometry lies beyond the range that can be evaluated, or it is
     ///   malformed.
     /// - [`RenderError::Drawing`] when the vector fallback cannot flatten or
-    ///   rasterize a path, or a stroke cannot be prepared: beyond the evaluation range or over its tile budgets.
+    ///   rasterize a path, or a gradient or stroke cannot be prepared: beyond the evaluation range or over its tile budgets.
     /// - [`RenderError::UnsupportedGraphics`] for a drawing command or sampling
     ///   mode, added by a newer runtime, that this adapter does not know.
     /// - [`RenderError::Graphics`] when the scene breaks an internal invariant,

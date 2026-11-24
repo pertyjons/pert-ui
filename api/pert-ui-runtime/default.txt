@@ -1008,7 +1008,7 @@ pub pert_ui_runtime::component::DrawCommand::DrawMask::turn: pert_ui_runtime::Qu
 #[non_exhaustive] pub pert_ui_runtime::component::DrawCommand::DrawShape
 pub pert_ui_runtime::component::DrawCommand::DrawShape::border: core::option::Option<pert_ui_runtime::Border>
 pub pert_ui_runtime::component::DrawCommand::DrawShape::clip: core::option::Option<pert_ui_runtime::Rect>
-pub pert_ui_runtime::component::DrawCommand::DrawShape::fill: core::option::Option<pert_ui_runtime::Paint>
+pub pert_ui_runtime::component::DrawCommand::DrawShape::fill: core::option::Option<pert_ui_runtime::RecordedPaint>
 pub pert_ui_runtime::component::DrawCommand::DrawShape::geometry: pert_ui_runtime::ShapeGeometry
 pub pert_ui_runtime::component::DrawCommand::DrawVector
 pub pert_ui_runtime::component::DrawCommand::DrawVector::clip: core::option::Option<pert_ui_runtime::Rect>
@@ -1036,11 +1036,13 @@ impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::DrawCommand
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::DrawCommand
 #[non_exhaustive] pub enum pert_ui_runtime::component::DrawError
 pub pert_ui_runtime::component::DrawError::CoverageTooLarge
+pub pert_ui_runtime::component::DrawError::Gradient(pert_ui_runtime::GradientError)
 pub pert_ui_runtime::component::DrawError::InvalidColor
 pub pert_ui_runtime::component::DrawError::InvalidImage
 pub pert_ui_runtime::component::DrawError::InvalidImage::bytes: usize
 pub pert_ui_runtime::component::DrawError::InvalidImage::height: u32
 pub pert_ui_runtime::component::DrawError::InvalidImage::width: u32
+pub pert_ui_runtime::component::DrawError::MissingGradient(pert_ui_runtime::GradientId)
 pub pert_ui_runtime::component::DrawError::MissingImage(pert_ui_runtime::ImageId)
 pub pert_ui_runtime::component::DrawError::MissingMask(pert_ui_runtime::MaskId)
 pub pert_ui_runtime::component::DrawError::MissingVector(pert_ui_runtime::VectorId)
@@ -1084,6 +1086,8 @@ impl core::convert::From<pert_ui_runtime::FontError> for pert_ui_runtime::DrawEr
 pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::FontError) -> Self
 impl core::convert::From<pert_ui_runtime::GeometryError> for pert_ui_runtime::DrawError
 pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::GeometryError) -> Self
+impl core::convert::From<pert_ui_runtime::GradientError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::GradientError) -> Self
 impl core::convert::From<pert_ui_runtime::LayoutError> for pert_ui_runtime::DrawError
 pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::LayoutError) -> Self
 impl core::convert::From<pert_ui_runtime::NumberInputError> for pert_ui_runtime::DrawError
@@ -2691,6 +2695,8 @@ impl core::clone::Clone for pert_ui_runtime::Color
 pub fn pert_ui_runtime::Color::clone(&self) -> Self
 impl core::cmp::PartialEq for pert_ui_runtime::Color
 pub fn pert_ui_runtime::Color::eq(&self, &Self) -> bool
+impl core::convert::From<pert_ui_runtime::Color> for pert_ui_runtime::Paint
+pub fn pert_ui_runtime::Paint::from(pert_ui_runtime::Color) -> Self
 impl core::convert::From<pert_ui_runtime::OpaqueColor> for pert_ui_runtime::Color
 pub fn pert_ui_runtime::Color::from(pert_ui_runtime::OpaqueColor) -> Self
 impl core::convert::TryFrom<pert_ui_runtime::Color> for pert_ui_runtime::OpaqueColor
@@ -2860,6 +2866,8 @@ pub struct pert_ui_runtime::component::DisplayList
 impl pert_ui_runtime::DisplayList
 pub const fn pert_ui_runtime::DisplayList::background(&self) -> pert_ui_runtime::Color
 pub fn pert_ui_runtime::DisplayList::commands(&self) -> &[pert_ui_runtime::DrawCommand]
+pub fn pert_ui_runtime::DisplayList::gradient(&self, pert_ui_runtime::GradientId) -> core::option::Option<&pert_ui_runtime::Gradient>
+pub fn pert_ui_runtime::DisplayList::gradients(&self) -> &[pert_ui_runtime::Gradient]
 pub fn pert_ui_runtime::DisplayList::image(&self, pert_ui_runtime::ImageId) -> core::option::Option<&pert_ui_runtime::RasterImage>
 pub fn pert_ui_runtime::DisplayList::images(&self) -> &[pert_ui_runtime::RasterImage]
 pub fn pert_ui_runtime::DisplayList::is_empty(&self) -> bool
@@ -3508,7 +3516,7 @@ pub fn pert_ui_runtime::Painter::draw_image_tinted(&mut self, &pert_ui_runtime::
 pub fn pert_ui_runtime::Painter::draw_image_turned(&mut self, &pert_ui_runtime::RasterImage, pert_ui_runtime::Rect, pert_ui_runtime::ImageSampling, pert_ui_runtime::Color, pert_ui_runtime::QuarterTurn)
 pub fn pert_ui_runtime::Painter::draw_mask(&mut self, &pert_ui_runtime::MaskImage, pert_ui_runtime::Rect, pert_ui_runtime::Color)
 pub fn pert_ui_runtime::Painter::draw_mask_turned(&mut self, &pert_ui_runtime::MaskImage, pert_ui_runtime::Rect, pert_ui_runtime::Color, pert_ui_runtime::QuarterTurn)
-pub fn pert_ui_runtime::Painter::fill_rect(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Color)
+pub fn pert_ui_runtime::Painter::fill_rect(&mut self, pert_ui_runtime::Rect, impl core::convert::Into<pert_ui_runtime::Paint>)
 pub fn pert_ui_runtime::Painter::focus_within(&self) -> bool
 pub fn pert_ui_runtime::Painter::icon(&mut self, impl core::convert::Into<pert_ui_runtime::IconSource>, pert_ui_runtime::Rect, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::icon_turned(&mut self, impl core::convert::Into<pert_ui_runtime::IconSource>, pert_ui_runtime::Rect, pert_ui_runtime::Color, pert_ui_runtime::QuarterTurn) -> core::result::Result<(), pert_ui_runtime::DrawError>
@@ -3522,7 +3530,7 @@ pub fn pert_ui_runtime::Painter::viewport(&self) -> pert_ui_runtime::Viewport
 pub fn pert_ui_runtime::Painter::with_clip<T>(&mut self, pert_ui_runtime::Rect, impl core::ops::function::FnOnce(&mut Self) -> T) -> T
 impl pert_ui_runtime::Painter
 pub fn pert_ui_runtime::Painter::draw_shape(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Shape, pert_ui_runtime::ShapeStyle) -> core::result::Result<(), pert_ui_runtime::DrawError>
-pub fn pert_ui_runtime::Painter::fill_shape(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Shape, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
+pub fn pert_ui_runtime::Painter::fill_shape(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Shape, impl core::convert::Into<pert_ui_runtime::Paint>) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::fill_triangle(&mut self, [pert_ui_runtime::Point; 3], pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::stroke_arc(&mut self, pert_ui_runtime::Point, pert_ui_runtime::Length, f32, f32, pert_ui_runtime::Length, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::stroke_shape(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Shape, pert_ui_runtime::Length, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
@@ -3907,17 +3915,16 @@ impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Shape
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Shape
 pub struct pert_ui_runtime::component::ShapeStyle
 impl pert_ui_runtime::ShapeStyle
-pub const fn pert_ui_runtime::ShapeStyle::border(pert_ui_runtime::Length, pert_ui_runtime::Color) -> Self
-pub const fn pert_ui_runtime::ShapeStyle::fill(pert_ui_runtime::Color) -> Self
-pub const fn pert_ui_runtime::ShapeStyle::with_border(self, pert_ui_runtime::Length, pert_ui_runtime::Color) -> Self
-pub const fn pert_ui_runtime::ShapeStyle::with_fill(self, pert_ui_runtime::Color) -> Self
+pub fn pert_ui_runtime::ShapeStyle::border(pert_ui_runtime::Length, impl core::convert::Into<pert_ui_runtime::Paint>) -> Self
+pub fn pert_ui_runtime::ShapeStyle::fill(impl core::convert::Into<pert_ui_runtime::Paint>) -> Self
+pub fn pert_ui_runtime::ShapeStyle::with_border(self, pert_ui_runtime::Length, impl core::convert::Into<pert_ui_runtime::Paint>) -> Self
+pub fn pert_ui_runtime::ShapeStyle::with_fill(self, impl core::convert::Into<pert_ui_runtime::Paint>) -> Self
 impl core::clone::Clone for pert_ui_runtime::ShapeStyle
 pub fn pert_ui_runtime::ShapeStyle::clone(&self) -> Self
 impl core::cmp::PartialEq for pert_ui_runtime::ShapeStyle
 pub fn pert_ui_runtime::ShapeStyle::eq(&self, &Self) -> bool
 impl core::fmt::Debug for pert_ui_runtime::ShapeStyle
 pub fn pert_ui_runtime::ShapeStyle::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
-impl core::marker::Copy for pert_ui_runtime::ShapeStyle
 impl core::marker::StructuralPartialEq for pert_ui_runtime::ShapeStyle
 impl core::marker::Freeze for pert_ui_runtime::ShapeStyle
 impl core::marker::Send for pert_ui_runtime::ShapeStyle
@@ -9647,11 +9654,13 @@ impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::CursorIcon
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::CursorIcon
 #[non_exhaustive] pub enum pert_ui_runtime::host::DrawError
 pub pert_ui_runtime::host::DrawError::CoverageTooLarge
+pub pert_ui_runtime::host::DrawError::Gradient(pert_ui_runtime::GradientError)
 pub pert_ui_runtime::host::DrawError::InvalidColor
 pub pert_ui_runtime::host::DrawError::InvalidImage
 pub pert_ui_runtime::host::DrawError::InvalidImage::bytes: usize
 pub pert_ui_runtime::host::DrawError::InvalidImage::height: u32
 pub pert_ui_runtime::host::DrawError::InvalidImage::width: u32
+pub pert_ui_runtime::host::DrawError::MissingGradient(pert_ui_runtime::GradientId)
 pub pert_ui_runtime::host::DrawError::MissingImage(pert_ui_runtime::ImageId)
 pub pert_ui_runtime::host::DrawError::MissingMask(pert_ui_runtime::MaskId)
 pub pert_ui_runtime::host::DrawError::MissingVector(pert_ui_runtime::VectorId)
@@ -9695,6 +9704,8 @@ impl core::convert::From<pert_ui_runtime::FontError> for pert_ui_runtime::DrawEr
 pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::FontError) -> Self
 impl core::convert::From<pert_ui_runtime::GeometryError> for pert_ui_runtime::DrawError
 pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::GeometryError) -> Self
+impl core::convert::From<pert_ui_runtime::GradientError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::GradientError) -> Self
 impl core::convert::From<pert_ui_runtime::LayoutError> for pert_ui_runtime::DrawError
 pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::LayoutError) -> Self
 impl core::convert::From<pert_ui_runtime::NumberInputError> for pert_ui_runtime::DrawError
@@ -9881,6 +9892,9 @@ impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::KeyCode
 pub pert_ui_runtime::host::LimitError::FrameSize
 pub pert_ui_runtime::host::LimitError::FrameSize::height: u32
 pub pert_ui_runtime::host::LimitError::FrameSize::width: u32
+pub pert_ui_runtime::host::LimitError::GradientRecords
+pub pert_ui_runtime::host::LimitError::GradientRecords::bytes: u64
+pub pert_ui_runtime::host::LimitError::GradientRecords::max: u64
 pub pert_ui_runtime::host::LimitError::ResourceExtent
 pub pert_ui_runtime::host::LimitError::ResourceExtent::height: u32
 pub pert_ui_runtime::host::LimitError::ResourceExtent::kind: pert_ui_runtime::ResourceKind
@@ -10270,6 +10284,8 @@ pub struct pert_ui_runtime::host::DisplayList
 impl pert_ui_runtime::DisplayList
 pub const fn pert_ui_runtime::DisplayList::background(&self) -> pert_ui_runtime::Color
 pub fn pert_ui_runtime::DisplayList::commands(&self) -> &[pert_ui_runtime::DrawCommand]
+pub fn pert_ui_runtime::DisplayList::gradient(&self, pert_ui_runtime::GradientId) -> core::option::Option<&pert_ui_runtime::Gradient>
+pub fn pert_ui_runtime::DisplayList::gradients(&self) -> &[pert_ui_runtime::Gradient]
 pub fn pert_ui_runtime::DisplayList::image(&self, pert_ui_runtime::ImageId) -> core::option::Option<&pert_ui_runtime::RasterImage>
 pub fn pert_ui_runtime::DisplayList::images(&self) -> &[pert_ui_runtime::RasterImage]
 pub fn pert_ui_runtime::DisplayList::is_empty(&self) -> bool
@@ -11309,6 +11325,9 @@ impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Invalidation
 pub pert_ui_runtime::inspection::LimitError::FrameSize
 pub pert_ui_runtime::inspection::LimitError::FrameSize::height: u32
 pub pert_ui_runtime::inspection::LimitError::FrameSize::width: u32
+pub pert_ui_runtime::inspection::LimitError::GradientRecords
+pub pert_ui_runtime::inspection::LimitError::GradientRecords::bytes: u64
+pub pert_ui_runtime::inspection::LimitError::GradientRecords::max: u64
 pub pert_ui_runtime::inspection::LimitError::ResourceExtent
 pub pert_ui_runtime::inspection::LimitError::ResourceExtent::height: u32
 pub pert_ui_runtime::inspection::LimitError::ResourceExtent::kind: pert_ui_runtime::ResourceKind
@@ -16381,6 +16400,8 @@ impl core::clone::Clone for pert_ui_runtime::Color
 pub fn pert_ui_runtime::Color::clone(&self) -> Self
 impl core::cmp::PartialEq for pert_ui_runtime::Color
 pub fn pert_ui_runtime::Color::eq(&self, &Self) -> bool
+impl core::convert::From<pert_ui_runtime::Color> for pert_ui_runtime::Paint
+pub fn pert_ui_runtime::Paint::from(pert_ui_runtime::Color) -> Self
 impl core::convert::From<pert_ui_runtime::OpaqueColor> for pert_ui_runtime::Color
 pub fn pert_ui_runtime::Color::from(pert_ui_runtime::OpaqueColor) -> Self
 impl core::convert::TryFrom<pert_ui_runtime::Color> for pert_ui_runtime::OpaqueColor
@@ -23361,11 +23382,13 @@ impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Detail
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Detail
 #[non_exhaustive] pub enum pert_ui_runtime::testing::DrawError
 pub pert_ui_runtime::testing::DrawError::CoverageTooLarge
+pub pert_ui_runtime::testing::DrawError::Gradient(pert_ui_runtime::GradientError)
 pub pert_ui_runtime::testing::DrawError::InvalidColor
 pub pert_ui_runtime::testing::DrawError::InvalidImage
 pub pert_ui_runtime::testing::DrawError::InvalidImage::bytes: usize
 pub pert_ui_runtime::testing::DrawError::InvalidImage::height: u32
 pub pert_ui_runtime::testing::DrawError::InvalidImage::width: u32
+pub pert_ui_runtime::testing::DrawError::MissingGradient(pert_ui_runtime::GradientId)
 pub pert_ui_runtime::testing::DrawError::MissingImage(pert_ui_runtime::ImageId)
 pub pert_ui_runtime::testing::DrawError::MissingMask(pert_ui_runtime::MaskId)
 pub pert_ui_runtime::testing::DrawError::MissingVector(pert_ui_runtime::VectorId)
@@ -23409,6 +23432,8 @@ impl core::convert::From<pert_ui_runtime::FontError> for pert_ui_runtime::DrawEr
 pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::FontError) -> Self
 impl core::convert::From<pert_ui_runtime::GeometryError> for pert_ui_runtime::DrawError
 pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::GeometryError) -> Self
+impl core::convert::From<pert_ui_runtime::GradientError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::GradientError) -> Self
 impl core::convert::From<pert_ui_runtime::LayoutError> for pert_ui_runtime::DrawError
 pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::LayoutError) -> Self
 impl core::convert::From<pert_ui_runtime::NumberInputError> for pert_ui_runtime::DrawError
@@ -24962,6 +24987,7 @@ pub fn pert_ui_runtime::FloatingWindow::position(self, pert_ui_runtime::Point) -
 pub fn pert_ui_runtime::FloatingWindow::resizable(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
 pub fn pert_ui_runtime::FloatingWindow::size_limits(self, pert_ui_runtime::SizeLimits) -> Self
 pub fn pert_ui_runtime::FloatingWindow::title_action(self, pert_ui_runtime::Element) -> Self
+pub fn pert_ui_runtime::FloatingWindow::title_paint(self, impl core::convert::Into<pert_ui_runtime::Paint>) -> Self
 impl core::convert::From<pert_ui_runtime::FloatingWindow> for pert_ui_runtime::Element
 pub fn pert_ui_runtime::Element::from(pert_ui_runtime::FloatingWindow) -> Self
 impl core::fmt::Debug for pert_ui_runtime::FloatingWindow
@@ -26795,7 +26821,7 @@ pub pert_ui_runtime::DrawCommand::DrawMask::turn: pert_ui_runtime::QuarterTurn
 #[non_exhaustive] pub pert_ui_runtime::DrawCommand::DrawShape
 pub pert_ui_runtime::DrawCommand::DrawShape::border: core::option::Option<pert_ui_runtime::Border>
 pub pert_ui_runtime::DrawCommand::DrawShape::clip: core::option::Option<pert_ui_runtime::Rect>
-pub pert_ui_runtime::DrawCommand::DrawShape::fill: core::option::Option<pert_ui_runtime::Paint>
+pub pert_ui_runtime::DrawCommand::DrawShape::fill: core::option::Option<pert_ui_runtime::RecordedPaint>
 pub pert_ui_runtime::DrawCommand::DrawShape::geometry: pert_ui_runtime::ShapeGeometry
 pub pert_ui_runtime::DrawCommand::DrawVector
 pub pert_ui_runtime::DrawCommand::DrawVector::clip: core::option::Option<pert_ui_runtime::Rect>
@@ -26823,11 +26849,13 @@ impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::DrawCommand
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::DrawCommand
 #[non_exhaustive] pub enum pert_ui_runtime::DrawError
 pub pert_ui_runtime::DrawError::CoverageTooLarge
+pub pert_ui_runtime::DrawError::Gradient(pert_ui_runtime::GradientError)
 pub pert_ui_runtime::DrawError::InvalidColor
 pub pert_ui_runtime::DrawError::InvalidImage
 pub pert_ui_runtime::DrawError::InvalidImage::bytes: usize
 pub pert_ui_runtime::DrawError::InvalidImage::height: u32
 pub pert_ui_runtime::DrawError::InvalidImage::width: u32
+pub pert_ui_runtime::DrawError::MissingGradient(pert_ui_runtime::GradientId)
 pub pert_ui_runtime::DrawError::MissingImage(pert_ui_runtime::ImageId)
 pub pert_ui_runtime::DrawError::MissingMask(pert_ui_runtime::MaskId)
 pub pert_ui_runtime::DrawError::MissingVector(pert_ui_runtime::VectorId)
@@ -26871,6 +26899,8 @@ impl core::convert::From<pert_ui_runtime::FontError> for pert_ui_runtime::DrawEr
 pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::FontError) -> Self
 impl core::convert::From<pert_ui_runtime::GeometryError> for pert_ui_runtime::DrawError
 pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::GeometryError) -> Self
+impl core::convert::From<pert_ui_runtime::GradientError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::GradientError) -> Self
 impl core::convert::From<pert_ui_runtime::LayoutError> for pert_ui_runtime::DrawError
 pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::LayoutError) -> Self
 impl core::convert::From<pert_ui_runtime::NumberInputError> for pert_ui_runtime::DrawError
@@ -27604,6 +27634,79 @@ impl core::marker::Unpin for pert_ui_runtime::GeometryError
 impl core::marker::UnsafeUnpin for pert_ui_runtime::GeometryError
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::GeometryError
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::GeometryError
+pub enum pert_ui_runtime::GradientError
+pub pert_ui_runtime::GradientError::Geometry
+pub pert_ui_runtime::GradientError::OutOfRange
+pub pert_ui_runtime::GradientError::Stops
+impl core::clone::Clone for pert_ui_runtime::GradientError
+pub fn pert_ui_runtime::GradientError::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::GradientError
+impl core::cmp::PartialEq for pert_ui_runtime::GradientError
+pub fn pert_ui_runtime::GradientError::eq(&self, &Self) -> bool
+impl core::convert::From<pert_ui_runtime::GradientError> for pert_ui_runtime::DrawError
+pub fn pert_ui_runtime::DrawError::from(pert_ui_runtime::GradientError) -> Self
+impl core::error::Error for pert_ui_runtime::GradientError
+impl core::fmt::Debug for pert_ui_runtime::GradientError
+pub fn pert_ui_runtime::GradientError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui_runtime::GradientError
+pub fn pert_ui_runtime::GradientError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::GradientError
+impl core::marker::StructuralPartialEq for pert_ui_runtime::GradientError
+impl core::marker::Freeze for pert_ui_runtime::GradientError
+impl core::marker::Send for pert_ui_runtime::GradientError
+impl core::marker::Sync for pert_ui_runtime::GradientError
+impl core::marker::Unpin for pert_ui_runtime::GradientError
+impl core::marker::UnsafeUnpin for pert_ui_runtime::GradientError
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::GradientError
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::GradientError
+pub enum pert_ui_runtime::GradientExtend
+pub pert_ui_runtime::GradientExtend::Pad
+pub pert_ui_runtime::GradientExtend::Reflect
+pub pert_ui_runtime::GradientExtend::Repeat
+impl core::clone::Clone for pert_ui_runtime::GradientExtend
+pub fn pert_ui_runtime::GradientExtend::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::GradientExtend
+impl core::cmp::PartialEq for pert_ui_runtime::GradientExtend
+pub fn pert_ui_runtime::GradientExtend::eq(&self, &Self) -> bool
+impl core::default::Default for pert_ui_runtime::GradientExtend
+pub fn pert_ui_runtime::GradientExtend::default() -> Self
+impl core::fmt::Debug for pert_ui_runtime::GradientExtend
+pub fn pert_ui_runtime::GradientExtend::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::GradientExtend
+pub fn pert_ui_runtime::GradientExtend::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for pert_ui_runtime::GradientExtend
+impl core::marker::StructuralPartialEq for pert_ui_runtime::GradientExtend
+impl core::marker::Freeze for pert_ui_runtime::GradientExtend
+impl core::marker::Send for pert_ui_runtime::GradientExtend
+impl core::marker::Sync for pert_ui_runtime::GradientExtend
+impl core::marker::Unpin for pert_ui_runtime::GradientExtend
+impl core::marker::UnsafeUnpin for pert_ui_runtime::GradientExtend
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::GradientExtend
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::GradientExtend
+pub enum pert_ui_runtime::GradientSpace
+pub pert_ui_runtime::GradientSpace::Linear
+pub pert_ui_runtime::GradientSpace::Oklab
+pub pert_ui_runtime::GradientSpace::Srgb
+impl core::clone::Clone for pert_ui_runtime::GradientSpace
+pub fn pert_ui_runtime::GradientSpace::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::GradientSpace
+impl core::cmp::PartialEq for pert_ui_runtime::GradientSpace
+pub fn pert_ui_runtime::GradientSpace::eq(&self, &Self) -> bool
+impl core::default::Default for pert_ui_runtime::GradientSpace
+pub fn pert_ui_runtime::GradientSpace::default() -> Self
+impl core::fmt::Debug for pert_ui_runtime::GradientSpace
+pub fn pert_ui_runtime::GradientSpace::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::GradientSpace
+pub fn pert_ui_runtime::GradientSpace::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for pert_ui_runtime::GradientSpace
+impl core::marker::StructuralPartialEq for pert_ui_runtime::GradientSpace
+impl core::marker::Freeze for pert_ui_runtime::GradientSpace
+impl core::marker::Send for pert_ui_runtime::GradientSpace
+impl core::marker::Sync for pert_ui_runtime::GradientSpace
+impl core::marker::Unpin for pert_ui_runtime::GradientSpace
+impl core::marker::UnsafeUnpin for pert_ui_runtime::GradientSpace
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::GradientSpace
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::GradientSpace
 #[non_exhaustive] pub enum pert_ui_runtime::HeldCancellation
 pub pert_ui_runtime::HeldCancellation::FocusLost
 pub pert_ui_runtime::HeldCancellation::InputFailure
@@ -28187,6 +28290,9 @@ impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::LayoutError
 pub pert_ui_runtime::LimitError::FrameSize
 pub pert_ui_runtime::LimitError::FrameSize::height: u32
 pub pert_ui_runtime::LimitError::FrameSize::width: u32
+pub pert_ui_runtime::LimitError::GradientRecords
+pub pert_ui_runtime::LimitError::GradientRecords::bytes: u64
+pub pert_ui_runtime::LimitError::GradientRecords::max: u64
 pub pert_ui_runtime::LimitError::ResourceExtent
 pub pert_ui_runtime::LimitError::ResourceExtent::height: u32
 pub pert_ui_runtime::LimitError::ResourceExtent::kind: pert_ui_runtime::ResourceKind
@@ -28649,23 +28755,28 @@ impl core::marker::Unpin for pert_ui_runtime::OverlapPolicy
 impl core::marker::UnsafeUnpin for pert_ui_runtime::OverlapPolicy
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::OverlapPolicy
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::OverlapPolicy
-#[non_exhaustive] pub enum pert_ui_runtime::Paint
+#[non_exhaustive] pub enum pert_ui_runtime::Paint<G>
+pub pert_ui_runtime::Paint::Gradient(G)
 pub pert_ui_runtime::Paint::Solid(pert_ui_runtime::Color)
-impl core::clone::Clone for pert_ui_runtime::Paint
-pub fn pert_ui_runtime::Paint::clone(&self) -> Self
-impl core::cmp::PartialEq for pert_ui_runtime::Paint
-pub fn pert_ui_runtime::Paint::eq(&self, &Self) -> bool
-impl core::fmt::Debug for pert_ui_runtime::Paint
-pub fn pert_ui_runtime::Paint::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
-impl core::marker::Copy for pert_ui_runtime::Paint
-impl core::marker::StructuralPartialEq for pert_ui_runtime::Paint
-impl core::marker::Freeze for pert_ui_runtime::Paint
-impl core::marker::Send for pert_ui_runtime::Paint
-impl core::marker::Sync for pert_ui_runtime::Paint
-impl core::marker::Unpin for pert_ui_runtime::Paint
-impl core::marker::UnsafeUnpin for pert_ui_runtime::Paint
-impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Paint
-impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Paint
+impl core::convert::From<pert_ui_runtime::Color> for pert_ui_runtime::Paint
+pub fn pert_ui_runtime::Paint::from(pert_ui_runtime::Color) -> Self
+impl core::convert::From<pert_ui_runtime::Gradient> for pert_ui_runtime::Paint
+pub fn pert_ui_runtime::Paint::from(pert_ui_runtime::Gradient) -> Self
+impl<G: core::clone::Clone> core::clone::Clone for pert_ui_runtime::Paint<G>
+pub fn pert_ui_runtime::Paint<G>::clone(&self) -> Self
+impl<G: core::cmp::PartialEq> core::cmp::PartialEq for pert_ui_runtime::Paint<G>
+pub fn pert_ui_runtime::Paint<G>::eq(&self, &Self) -> bool
+impl<G: core::cmp::PartialEq> core::marker::StructuralPartialEq for pert_ui_runtime::Paint<G>
+impl<G: core::fmt::Debug> core::fmt::Debug for pert_ui_runtime::Paint<G>
+pub fn pert_ui_runtime::Paint<G>::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl<G: core::marker::Copy> core::marker::Copy for pert_ui_runtime::Paint<G>
+impl<G> core::marker::Freeze for pert_ui_runtime::Paint<G> where G: core::marker::Freeze
+impl<G> core::marker::Send for pert_ui_runtime::Paint<G> where G: core::marker::Send
+impl<G> core::marker::Sync for pert_ui_runtime::Paint<G> where G: core::marker::Sync
+impl<G> core::marker::Unpin for pert_ui_runtime::Paint<G> where G: core::marker::Unpin
+impl<G> core::marker::UnsafeUnpin for pert_ui_runtime::Paint<G> where G: core::marker::UnsafeUnpin
+impl<G> core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Paint<G> where G: core::panic::unwind_safe::RefUnwindSafe
+impl<G> core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Paint<G> where G: core::panic::unwind_safe::UnwindSafe
 pub enum pert_ui_runtime::PathElement
 pub pert_ui_runtime::PathElement::Close
 pub pert_ui_runtime::PathElement::Cubic(pert_ui_runtime::Point, pert_ui_runtime::Point, pert_ui_runtime::Point)
@@ -31275,8 +31386,8 @@ impl !core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Banner
 impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Banner
 pub struct pert_ui_runtime::Border
 impl pert_ui_runtime::Border
-pub const fn pert_ui_runtime::Border::new(pert_ui_runtime::Length, pert_ui_runtime::Paint) -> Self
-pub const fn pert_ui_runtime::Border::paint(self) -> pert_ui_runtime::Paint
+pub const fn pert_ui_runtime::Border::new(pert_ui_runtime::Length, pert_ui_runtime::RecordedPaint) -> Self
+pub const fn pert_ui_runtime::Border::paint(self) -> pert_ui_runtime::RecordedPaint
 pub const fn pert_ui_runtime::Border::width(self) -> pert_ui_runtime::Length
 impl core::clone::Clone for pert_ui_runtime::Border
 pub fn pert_ui_runtime::Border::clone(&self) -> Self
@@ -32073,6 +32184,8 @@ impl core::clone::Clone for pert_ui_runtime::Color
 pub fn pert_ui_runtime::Color::clone(&self) -> Self
 impl core::cmp::PartialEq for pert_ui_runtime::Color
 pub fn pert_ui_runtime::Color::eq(&self, &Self) -> bool
+impl core::convert::From<pert_ui_runtime::Color> for pert_ui_runtime::Paint
+pub fn pert_ui_runtime::Paint::from(pert_ui_runtime::Color) -> Self
 impl core::convert::From<pert_ui_runtime::OpaqueColor> for pert_ui_runtime::Color
 pub fn pert_ui_runtime::Color::from(pert_ui_runtime::OpaqueColor) -> Self
 impl core::convert::TryFrom<pert_ui_runtime::Color> for pert_ui_runtime::OpaqueColor
@@ -33254,6 +33367,8 @@ pub struct pert_ui_runtime::DisplayList
 impl pert_ui_runtime::DisplayList
 pub const fn pert_ui_runtime::DisplayList::background(&self) -> pert_ui_runtime::Color
 pub fn pert_ui_runtime::DisplayList::commands(&self) -> &[pert_ui_runtime::DrawCommand]
+pub fn pert_ui_runtime::DisplayList::gradient(&self, pert_ui_runtime::GradientId) -> core::option::Option<&pert_ui_runtime::Gradient>
+pub fn pert_ui_runtime::DisplayList::gradients(&self) -> &[pert_ui_runtime::Gradient]
 pub fn pert_ui_runtime::DisplayList::image(&self, pert_ui_runtime::ImageId) -> core::option::Option<&pert_ui_runtime::RasterImage>
 pub fn pert_ui_runtime::DisplayList::images(&self) -> &[pert_ui_runtime::RasterImage]
 pub fn pert_ui_runtime::DisplayList::is_empty(&self) -> bool
@@ -34546,6 +34661,7 @@ pub fn pert_ui_runtime::FloatingWindow::position(self, pert_ui_runtime::Point) -
 pub fn pert_ui_runtime::FloatingWindow::resizable(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> Self
 pub fn pert_ui_runtime::FloatingWindow::size_limits(self, pert_ui_runtime::SizeLimits) -> Self
 pub fn pert_ui_runtime::FloatingWindow::title_action(self, pert_ui_runtime::Element) -> Self
+pub fn pert_ui_runtime::FloatingWindow::title_paint(self, impl core::convert::Into<pert_ui_runtime::Paint>) -> Self
 impl core::convert::From<pert_ui_runtime::FloatingWindow> for pert_ui_runtime::Element
 pub fn pert_ui_runtime::Element::from(pert_ui_runtime::FloatingWindow) -> Self
 impl core::fmt::Debug for pert_ui_runtime::FloatingWindow
@@ -34799,6 +34915,77 @@ impl core::marker::Unpin for pert_ui_runtime::FrameMapping
 impl core::marker::UnsafeUnpin for pert_ui_runtime::FrameMapping
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FrameMapping
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FrameMapping
+pub struct pert_ui_runtime::Gradient
+impl pert_ui_runtime::Gradient
+pub const pert_ui_runtime::Gradient::MAX_STOPS: usize
+pub fn pert_ui_runtime::Gradient::components(&self) -> &[[f32; 4]]
+pub fn pert_ui_runtime::Gradient::extend(&self) -> pert_ui_runtime::GradientExtend
+pub fn pert_ui_runtime::Gradient::inner(&self) -> core::option::Option<f32>
+pub fn pert_ui_runtime::Gradient::linear(pert_ui_runtime::Point, pert_ui_runtime::Point, impl core::convert::AsRef<[(f32, pert_ui_runtime::Color)]>) -> core::result::Result<Self, pert_ui_runtime::GradientError>
+pub fn pert_ui_runtime::Gradient::prepare(&self, &pert_ui_runtime::FrameMapping) -> core::result::Result<pert_ui_runtime::GradientMapping, pert_ui_runtime::GradientError>
+pub fn pert_ui_runtime::Gradient::radial(pert_ui_runtime::Point, pert_ui_runtime::Size, f32, impl core::convert::AsRef<[(f32, pert_ui_runtime::Color)]>) -> core::result::Result<Self, pert_ui_runtime::GradientError>
+pub fn pert_ui_runtime::Gradient::ramp_key(&self) -> u64
+pub fn pert_ui_runtime::Gradient::sample(&self, pert_ui_runtime::GradientMapping, u32, u32) -> [f32; 4]
+pub fn pert_ui_runtime::Gradient::space(&self) -> pert_ui_runtime::GradientSpace
+pub fn pert_ui_runtime::Gradient::stops(&self) -> &[(f32, pert_ui_runtime::Color)]
+pub fn pert_ui_runtime::Gradient::with_extend(self, pert_ui_runtime::GradientExtend) -> Self
+pub fn pert_ui_runtime::Gradient::with_space(self, pert_ui_runtime::GradientSpace) -> Self
+impl core::clone::Clone for pert_ui_runtime::Gradient
+pub fn pert_ui_runtime::Gradient::clone(&self) -> Self
+impl core::cmp::PartialEq for pert_ui_runtime::Gradient
+pub fn pert_ui_runtime::Gradient::eq(&self, &Self) -> bool
+impl core::convert::From<pert_ui_runtime::Gradient> for pert_ui_runtime::Paint
+pub fn pert_ui_runtime::Paint::from(pert_ui_runtime::Gradient) -> Self
+impl core::fmt::Debug for pert_ui_runtime::Gradient
+pub fn pert_ui_runtime::Gradient::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::Gradient
+impl core::marker::Freeze for pert_ui_runtime::Gradient
+impl core::marker::Send for pert_ui_runtime::Gradient
+impl core::marker::Sync for pert_ui_runtime::Gradient
+impl core::marker::Unpin for pert_ui_runtime::Gradient
+impl core::marker::UnsafeUnpin for pert_ui_runtime::Gradient
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::Gradient
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Gradient
+pub struct pert_ui_runtime::GradientId(_)
+impl pert_ui_runtime::GradientId
+pub const fn pert_ui_runtime::GradientId::index(self) -> usize
+impl core::clone::Clone for pert_ui_runtime::GradientId
+pub fn pert_ui_runtime::GradientId::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::GradientId
+impl core::cmp::PartialEq for pert_ui_runtime::GradientId
+pub fn pert_ui_runtime::GradientId::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::GradientId
+pub fn pert_ui_runtime::GradientId::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::GradientId
+pub fn pert_ui_runtime::GradientId::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for pert_ui_runtime::GradientId
+impl core::marker::StructuralPartialEq for pert_ui_runtime::GradientId
+impl core::marker::Freeze for pert_ui_runtime::GradientId
+impl core::marker::Send for pert_ui_runtime::GradientId
+impl core::marker::Sync for pert_ui_runtime::GradientId
+impl core::marker::Unpin for pert_ui_runtime::GradientId
+impl core::marker::UnsafeUnpin for pert_ui_runtime::GradientId
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::GradientId
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::GradientId
+pub struct pert_ui_runtime::GradientMapping
+impl pert_ui_runtime::GradientMapping
+pub fn pert_ui_runtime::GradientMapping::axis(self) -> [f32; 2]
+pub fn pert_ui_runtime::GradientMapping::coefficients(self) -> [f32; 4]
+impl core::clone::Clone for pert_ui_runtime::GradientMapping
+pub fn pert_ui_runtime::GradientMapping::clone(&self) -> Self
+impl core::cmp::PartialEq for pert_ui_runtime::GradientMapping
+pub fn pert_ui_runtime::GradientMapping::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::GradientMapping
+pub fn pert_ui_runtime::GradientMapping::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::GradientMapping
+impl core::marker::StructuralPartialEq for pert_ui_runtime::GradientMapping
+impl core::marker::Freeze for pert_ui_runtime::GradientMapping
+impl core::marker::Send for pert_ui_runtime::GradientMapping
+impl core::marker::Sync for pert_ui_runtime::GradientMapping
+impl core::marker::Unpin for pert_ui_runtime::GradientMapping
+impl core::marker::UnsafeUnpin for pert_ui_runtime::GradientMapping
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::GradientMapping
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::GradientMapping
 pub struct pert_ui_runtime::Grid
 impl pert_ui_runtime::Grid
 pub fn pert_ui_runtime::Grid::gap(self, impl core::convert::Into<pert_ui_runtime::Spacing>) -> Self
@@ -37550,7 +37737,7 @@ pub fn pert_ui_runtime::Painter::draw_image_tinted(&mut self, &pert_ui_runtime::
 pub fn pert_ui_runtime::Painter::draw_image_turned(&mut self, &pert_ui_runtime::RasterImage, pert_ui_runtime::Rect, pert_ui_runtime::ImageSampling, pert_ui_runtime::Color, pert_ui_runtime::QuarterTurn)
 pub fn pert_ui_runtime::Painter::draw_mask(&mut self, &pert_ui_runtime::MaskImage, pert_ui_runtime::Rect, pert_ui_runtime::Color)
 pub fn pert_ui_runtime::Painter::draw_mask_turned(&mut self, &pert_ui_runtime::MaskImage, pert_ui_runtime::Rect, pert_ui_runtime::Color, pert_ui_runtime::QuarterTurn)
-pub fn pert_ui_runtime::Painter::fill_rect(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Color)
+pub fn pert_ui_runtime::Painter::fill_rect(&mut self, pert_ui_runtime::Rect, impl core::convert::Into<pert_ui_runtime::Paint>)
 pub fn pert_ui_runtime::Painter::focus_within(&self) -> bool
 pub fn pert_ui_runtime::Painter::icon(&mut self, impl core::convert::Into<pert_ui_runtime::IconSource>, pert_ui_runtime::Rect, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::icon_turned(&mut self, impl core::convert::Into<pert_ui_runtime::IconSource>, pert_ui_runtime::Rect, pert_ui_runtime::Color, pert_ui_runtime::QuarterTurn) -> core::result::Result<(), pert_ui_runtime::DrawError>
@@ -37564,7 +37751,7 @@ pub fn pert_ui_runtime::Painter::viewport(&self) -> pert_ui_runtime::Viewport
 pub fn pert_ui_runtime::Painter::with_clip<T>(&mut self, pert_ui_runtime::Rect, impl core::ops::function::FnOnce(&mut Self) -> T) -> T
 impl pert_ui_runtime::Painter
 pub fn pert_ui_runtime::Painter::draw_shape(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Shape, pert_ui_runtime::ShapeStyle) -> core::result::Result<(), pert_ui_runtime::DrawError>
-pub fn pert_ui_runtime::Painter::fill_shape(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Shape, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
+pub fn pert_ui_runtime::Painter::fill_shape(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Shape, impl core::convert::Into<pert_ui_runtime::Paint>) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::fill_triangle(&mut self, [pert_ui_runtime::Point; 3], pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::stroke_arc(&mut self, pert_ui_runtime::Point, pert_ui_runtime::Length, f32, f32, pert_ui_runtime::Length, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
 pub fn pert_ui_runtime::Painter::stroke_shape(&mut self, pert_ui_runtime::Rect, pert_ui_runtime::Shape, pert_ui_runtime::Length, pert_ui_runtime::Color) -> core::result::Result<(), pert_ui_runtime::DrawError>
@@ -39861,17 +40048,16 @@ impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::ShapeCoverage
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::ShapeCoverage
 pub struct pert_ui_runtime::ShapeStyle
 impl pert_ui_runtime::ShapeStyle
-pub const fn pert_ui_runtime::ShapeStyle::border(pert_ui_runtime::Length, pert_ui_runtime::Color) -> Self
-pub const fn pert_ui_runtime::ShapeStyle::fill(pert_ui_runtime::Color) -> Self
-pub const fn pert_ui_runtime::ShapeStyle::with_border(self, pert_ui_runtime::Length, pert_ui_runtime::Color) -> Self
-pub const fn pert_ui_runtime::ShapeStyle::with_fill(self, pert_ui_runtime::Color) -> Self
+pub fn pert_ui_runtime::ShapeStyle::border(pert_ui_runtime::Length, impl core::convert::Into<pert_ui_runtime::Paint>) -> Self
+pub fn pert_ui_runtime::ShapeStyle::fill(impl core::convert::Into<pert_ui_runtime::Paint>) -> Self
+pub fn pert_ui_runtime::ShapeStyle::with_border(self, pert_ui_runtime::Length, impl core::convert::Into<pert_ui_runtime::Paint>) -> Self
+pub fn pert_ui_runtime::ShapeStyle::with_fill(self, impl core::convert::Into<pert_ui_runtime::Paint>) -> Self
 impl core::clone::Clone for pert_ui_runtime::ShapeStyle
 pub fn pert_ui_runtime::ShapeStyle::clone(&self) -> Self
 impl core::cmp::PartialEq for pert_ui_runtime::ShapeStyle
 pub fn pert_ui_runtime::ShapeStyle::eq(&self, &Self) -> bool
 impl core::fmt::Debug for pert_ui_runtime::ShapeStyle
 pub fn pert_ui_runtime::ShapeStyle::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
-impl core::marker::Copy for pert_ui_runtime::ShapeStyle
 impl core::marker::StructuralPartialEq for pert_ui_runtime::ShapeStyle
 impl core::marker::Freeze for pert_ui_runtime::ShapeStyle
 impl core::marker::Send for pert_ui_runtime::ShapeStyle
@@ -48297,3 +48483,4 @@ pub fn pert_ui_runtime::TreeItems::text(&self, &str) -> core::option::Option<all
 pub fn pert_ui_runtime::check_redescription(&mut pert_ui_runtime::Runtime, pert_ui_runtime::Element, pert_ui_runtime::Element, pert_ui_runtime::Element) -> core::result::Result<pert_ui_runtime::Redescribed, pert_ui_runtime::RedescriptionError>
 pub fn pert_ui_runtime::list_directory(&std::path::Path) -> core::result::Result<alloc::vec::Vec<pert_ui_runtime::DirectoryEntry>, pert_ui_runtime::ListingError>
 pub fn pert_ui_runtime::redescribe(&mut pert_ui_runtime::Runtime, pert_ui_runtime::Element, pert_ui_runtime::Element) -> core::result::Result<pert_ui_runtime::Redescribed, pert_ui_runtime::RedescriptionError>
+pub type pert_ui_runtime::RecordedPaint = pert_ui_runtime::Paint<pert_ui_runtime::GradientId>

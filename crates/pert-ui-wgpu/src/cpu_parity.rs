@@ -1028,6 +1028,27 @@ fn gradient_corpus() -> Result<Vec<Case>, Box<dyn std::error::Error>> {
             )?);
         }
     }
+    // The runtime's independent exact-color tests cover these same pixel
+    // centers. Retain them in the hardware corpus as well.
+    for radial in [false, true] {
+        cases.push(shapes(
+            "gradient exact hard-stop side",
+            false,
+            1.,
+            move |p| {
+                let black = Color::from_srgb8(0, 0, 0, 255);
+                let stops = [(0., black), (0.5, black), (0.5, Color::WHITE)];
+                let origin = Point::new(0.5, 0.5)?;
+                let gradient = if radial {
+                    Gradient::radial(origin, Size::from([74, 74]), 0., stops)?
+                } else {
+                    Gradient::linear(origin, Point::new(2.5, 12.5)?, stops)?
+                };
+                p.fill_rect(Rect::new(0., 0., 50., 45.)?, gradient);
+                Ok(())
+            },
+        )?);
+    }
     Ok(cases)
 }
 
@@ -1229,6 +1250,30 @@ impl ApplicationHandler<Notice> for Parity {
                 Renderer::new(window.clone(), PhysicalExtent::new(SIZE, SIZE), |_| {})?;
             let info = renderer.adapter.get_info();
             println!("Parity adapter: {} ({:?})", info.name, info.backend);
+            for x in [0., 4.] {
+                let case = shapes("move one of two gradient fills", false, 1., move |p| {
+                    let stops = [(0., Color::ACCENT), (1., Color::WHITE)];
+                    for origin in [x, 30.] {
+                        let gradient = pert_ui_runtime::Gradient::linear(
+                            Point::new(origin, 0.)?,
+                            Point::new(origin + 20., 0.)?,
+                            stops,
+                        )?;
+                        p.fill_rect(Rect::new(origin, 0., 20., 15.)?, gradient);
+                    }
+                    Ok(())
+                })?;
+                renderer.render_offscreen(case.scene)?;
+                let (placement, stops) = renderer.gradients.uploaded();
+                println!(
+                    "Gradient uploads at x={x}: {placement} placement bytes and {stops} stop bytes"
+                );
+                if x == 0. {
+                    assert_eq!((placement, stops), (96, 96));
+                } else {
+                    assert_eq!((placement, stops), (4, 0));
+                }
+            }
             let mut cpu = pert_ui_cpu::CpuRenderer::new();
             let mut failures = Vec::new();
             let mut edge_tier = 0;

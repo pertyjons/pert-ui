@@ -33,7 +33,7 @@ fn boundary_side(phase:f32, displacement:vec2f, axis:vec4f, coeff:vec2f)->f32 {
     let minor=min(axis.x,axis.y);
     let radius=(axis.z+phase*(1.-axis.z))*minor;
     if radius<0. {return 1.;}
-    let uv=displacement*(vec2f(minor)/axis.xy);
+    let uv=select(displacement*(vec2f(minor)/axis.xy),displacement,axis.xy==vec2f(minor));
     let norm=max(abs(radius),max(abs(uv.x),abs(uv.y)));
     if norm>1e15 || (norm>0. && norm<1e-15) {
         return dot(uv/norm,uv/norm)-(radius/norm)*(radius/norm);

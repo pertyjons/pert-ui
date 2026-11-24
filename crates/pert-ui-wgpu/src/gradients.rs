@@ -6,6 +6,8 @@ use pert_ui_runtime::{FrameMapping, Gradient, GradientExtend, GradientSpace};
 struct Storage {
     buffer: Option<wgpu::Buffer>,
     previous: Vec<u8>,
+    #[cfg(test)]
+    uploaded: usize,
 }
 
 impl Storage {
@@ -34,6 +36,10 @@ impl Storage {
         } else {
             changed_bytes(&self.previous, &bytes)
         };
+        #[cfg(test)]
+        {
+            self.uploaded = upload.len();
+        }
         if let Some(buffer) = &self.buffer
             && !upload.is_empty()
         {
@@ -145,6 +151,10 @@ impl Table {
             }));
         }
         Ok(())
+    }
+    #[cfg(test)]
+    pub(super) fn uploaded(&self) -> (usize, usize) {
+        (self.paints.uploaded, self.ramps.uploaded)
     }
     pub(super) fn binding(&self) -> Result<&wgpu::BindGroup, RenderError> {
         self.binding

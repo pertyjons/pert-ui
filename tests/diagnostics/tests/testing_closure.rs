@@ -83,6 +83,7 @@ const EXCLUSIONS: &[(&str, &str)] = &[
     // The identities of a scene's resources, which `DrawError`'s
     // `MissingVector`, `MissingMask` and `MissingImage` hold: a test matches
     // the variant, and the identities come from a scene it does not build.
+    ("GradientId", "crate root"),
     ("VectorId", "component"),
     ("MaskId", "component"),
     ("ImageId", "component"),
