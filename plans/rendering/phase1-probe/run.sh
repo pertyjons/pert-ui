@@ -109,6 +109,9 @@ unexpected_cfgs = "allow"
 
 [workspace]
 EOF
+  if [ "${PROBE_UPLOADS:-0}" = 1 ]; then
+    python3 "$here/../gradient-probe/instrument.py" "$co" "$out/src/probe.rs"
+  fi
   cp "$co/Cargo.lock" "$out/Cargo.lock"
   (cd "$out" && cargo build --release --target-dir "$work/target-$label")
   echo "$label=$rev ($(git -C "$repo" rev-parse --short "$rev"))" >> "$results/checkouts.txt"

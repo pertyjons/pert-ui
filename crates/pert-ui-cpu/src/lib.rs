@@ -7,7 +7,9 @@ use pert_ui_runtime::{
     RasterImage, Runtime, ShapeCoverage, ShapePrepareError, VectorRasterizer,
 };
 
+mod gradients;
 mod srgb;
+use gradients::ShapePaint;
 
 /// Why a scene could not be rendered.
 ///
@@ -275,7 +277,12 @@ impl CpuRenderer {
                 }
             } else if matches!(command, DrawCommand::DrawShape { .. }) {
                 if let Some((shape, fill, border)) = shapes.next().flatten() {
-                    frame.draw_shape(&shape, fill, border);
+                    match (fill, border) {
+                        (ShapePaint::Solid(f), ShapePaint::Solid(b)) => {
+                            frame.draw_shape(&shape, f, b)
+                        }
+                        _ => frame.draw_gradient_shape(&scene, &shape, fill, border),
+                    }
                 }
             } else {
                 frame.draw(&scene, command)?;
@@ -335,7 +342,7 @@ impl CpuRenderer {
 
 /// A shape ready to draw with its premultiplied fill and border paints, or
 /// `None` for one that draws nothing.
-type Shape = Option<(PreparedShape, [f32; 4], [f32; 4])>;
+type Shape = Option<(PreparedShape, ShapePaint, ShapePaint)>;
 
 /// Rejects a command this renderer cannot draw or whose resource is missing.
 /// For a `DrawShape` it returns the shape's preparation, which is its
@@ -354,13 +361,10 @@ fn check(
             clip,
             ..
         } => {
-            let fill = fill.map(solid).transpose()?.unwrap_or([0.0; 4]);
-            let paint = border
-                .map(|border| solid(border.paint()))
-                .transpose()?
-                .unwrap_or([0.0; 4]);
+            let fill = ShapePaint::new(scene, *fill, mapping)?;
+            let paint = ShapePaint::new(scene, border.map(|b| b.paint()), mapping)?;
             let shape = PreparedShape::new(geometry, border.as_ref(), *clip, mapping)?;
-            let visible = fill[3] != 0.0 || paint[3] != 0.0;
+            let visible = fill.visible() || paint.visible();
             return Ok(Some(
                 shape.filter(|_| visible).map(|shape| (shape, fill, paint)),
             ));
@@ -387,14 +391,6 @@ fn check(
         _ => Err(CpuRenderError::Unsupported),
     }
     .map(|()| None)
-}
-
-/// The premultiplied color of a paint this renderer knows.
-fn solid(paint: Paint) -> Result<[f32; 4], CpuRenderError> {
-    match paint {
-        Paint::Solid(color) => Ok(premultiplied(color)),
-        _ => Err(CpuRenderError::Unsupported),
-    }
 }
 
 /// A straight linear color premultiplied by its alpha.

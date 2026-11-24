@@ -58,6 +58,12 @@ pub enum DrawError {
     /// message names the ID's index.
     #[error("a command refers to image {} missing from its scene", .0.0)]
     MissingImage(crate::ImageId),
+    /// Gradient resource is absent from the owning scene.
+    #[error("missing gradient resource {0:?}")]
+    MissingGradient(crate::GradientId),
+    /// Gradient description or placement is invalid.
+    #[error(transparent)]
+    Gradient(#[from] crate::GradientError),
     /// A vector path or stroke style was rejected.
     #[error(transparent)]
     Path(#[from] crate::PathError),
@@ -851,7 +857,7 @@ pub enum HexColorError {
 
 // IEC 61966-2-1 sRGB decoding of one color channel within 0..=1, computed in
 // f64 so 8-bit values round-trip exactly through the f32 result.
-fn srgb_decode(encoded: f64) -> f32 {
+pub(crate) fn srgb_decode(encoded: f64) -> f32 {
     let linear = if encoded <= 0.040_45 {
         encoded / 12.92
     } else {
@@ -862,7 +868,7 @@ fn srgb_decode(encoded: f64) -> f32 {
 }
 
 // IEC 61966-2-1 sRGB encoding of one linear channel within 0..=1.
-fn srgb_encode(linear: f64) -> f64 {
+pub(crate) fn srgb_encode(linear: f64) -> f64 {
     let encoded = if linear <= 0.003_130_8 {
         linear * 12.92
     } else {
@@ -1195,7 +1201,7 @@ pub enum DrawCommand {
         /// What to draw, in window logical coordinates.
         geometry: crate::ShapeGeometry,
         /// The paint of the silhouette's interior.
-        fill: Option<crate::Paint>,
+        fill: Option<crate::RecordedPaint>,
         /// A rectangle's border, inside its edges.
         border: Option<crate::Border>,
         /// Additional window-coordinate clipping rectangle.
@@ -1332,6 +1338,7 @@ pub struct DisplayList {
     pub(crate) fills: Vec<DrawCommand>,
     pub(crate) masks: crate::resources::Arena<MaskImage>,
     pub(crate) images: crate::resources::Arena<crate::RasterImage>,
+    pub(crate) gradients: Option<Box<crate::resources::Arena<crate::Gradient>>>,
     pub(crate) vectors: crate::resources::Arena<crate::VectorGeometry>,
 }
 impl Default for DisplayList {
@@ -1342,11 +1349,29 @@ impl Default for DisplayList {
             fills: Vec::new(),
             masks: crate::resources::Arena::default(),
             images: crate::resources::Arena::default(),
+            gradients: None,
             vectors: crate::resources::Arena::default(),
         }
     }
 }
 impl DisplayList {
+    /// Positioned gradient descriptions owned by this scene, in ID order.
+    pub fn gradients(&self) -> &[crate::Gradient] {
+        self.gradients
+            .as_deref()
+            .map_or(&[], crate::resources::Arena::items)
+    }
+    /// Resolves an ID within this scene. Foreign IDs may name different paints.
+    pub fn gradient(&self, id: crate::GradientId) -> Option<&crate::Gradient> {
+        self.gradients().get(id.index())
+    }
+    pub(crate) fn intern_gradient(&mut self, g: &crate::Gradient) -> crate::GradientId {
+        crate::GradientId(
+            self.gradients
+                .get_or_insert_with(Default::default)
+                .intern(g),
+        )
+    }
     /// Preserved vector resources, indexed by [`crate::VectorId`].
     pub fn vectors(&self) -> &[crate::VectorGeometry] {
         self.vectors.items()
@@ -1810,13 +1835,34 @@ impl Painter {
     pub const fn view_scale(&self) -> f32 {
         self.view_scale
     }
-    /// Appends a solid rectangle. Later commands draw over earlier commands.
+    /// Fills a rectangle with a solid color or a component-local gradient.
+    /// A gradient uses the analytic rectangle's pixel-center coverage. Its
+    /// positions stay anchored when the rectangle or ancestor clip changes.
+    /// Later commands draw over earlier commands.
     ///
-    /// The rectangle is intersected with the active clip when recorded and only the
+    /// A solid rectangle is intersected with the active clip when recorded and only the
     /// result is kept, since intersecting a rectangle with a rectangle is exact. An
     /// empty intersection is a zero-area rectangle, never a negative one, and
     /// produces no pixels. Compare [`Self::draw_mask`], which must carry its clip.
-    pub fn fill_rect(&mut self, rect: Rect, color: Color) {
+    pub fn fill_rect(&mut self, rect: Rect, paint: impl Into<crate::Paint>) {
+        let color = match paint.into() {
+            crate::Paint::Solid(c) => c,
+            crate::Paint::Gradient(g) => {
+                if !rect.is_empty() {
+                    let fill = crate::Paint::Gradient(self.list.intern_gradient(&g));
+                    self.list.fills.push(DrawCommand::DrawShape {
+                        geometry: crate::ShapeGeometry::Rect {
+                            rect,
+                            shape: crate::Shape::RECTANGLE,
+                        },
+                        fill: Some(fill),
+                        border: None,
+                        clip: self.clip,
+                    });
+                }
+                return;
+            }
+        };
         let rect = self.clip.map_or(rect, |clip| rect.intersection(clip));
         self.list.fills.push(DrawCommand::FillRect { rect, color });
     }

@@ -141,7 +141,7 @@ impl RetainedGeometry {
             let vertices =
                 u32::try_from(next.bytes.len() / 32).map_err(|_| LimitError::VertexCount)?;
             for batch in chunk.2.iter().flatten() {
-                let offset = if batch.source == Source::Shape {
+                let offset = if matches!(batch.source, Source::Shape | Source::GradientShape) {
                     records
                 } else {
                     vertices

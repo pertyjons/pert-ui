@@ -472,6 +472,14 @@ pub(crate) fn floating_windows(ui: &Runtime) -> Result<Element, AppError> {
             .padding(MetricRole::GroupPadding),
         ),
     )
+    .title_paint(
+        pert_ui::Gradient::linear(
+            Point::default(),
+            Point::new(40., 0.)?,
+            [(0., pert_ui::Color::ACCENT), (1., pert_ui::Color::SURFACE)],
+        )
+        .map_err(pert_ui::DrawError::from)?,
+    )
     .position(Point::new(20.0, 20.0)?)?
     .initial_size(Size::from([340, 240]))?
     .size_limits(SizeLimits::at_least(Size::from([280, 180])))

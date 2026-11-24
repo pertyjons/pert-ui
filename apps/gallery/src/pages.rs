@@ -4,6 +4,7 @@
 pub(crate) mod chips;
 pub(crate) mod controls;
 pub(crate) mod data;
+pub(crate) mod gradients;
 pub(crate) mod layout;
 pub(crate) mod properties;
 pub(crate) mod surfaces;

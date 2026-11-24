@@ -50,13 +50,14 @@ pub(super) const RECORD_BYTES: usize = 144;
 pub(super) const MIN_SOLID_BOX_PIXELS: u64 = if cfg!(test) { 256 } else { 4096 };
 
 /// The premultiplied linear color of a paint this renderer knows.
-fn solid(paint: Option<Paint>) -> Result<[f32; 4], RenderError> {
+fn solid(paint: Option<pert_ui_runtime::RecordedPaint>) -> Result<[f32; 4], RenderError> {
     match paint {
         None => Ok([0.0; 4]),
         Some(Paint::Solid(color)) => {
             let [red, green, blue, alpha] = color.channels();
             Ok([red * alpha, green * alpha, blue * alpha, alpha])
         }
+        Some(Paint::Gradient(id)) => Ok([id.index() as f32, 0., 0., -1.]),
         Some(_) => Err(RenderError::UnsupportedGraphics("unknown paint".into())),
     }
 }
@@ -108,7 +109,7 @@ impl SolidBox {
 /// draws.
 pub(super) fn append(
     geometry: &ShapeGeometry,
-    fill: Option<Paint>,
+    fill: Option<pert_ui_runtime::RecordedPaint>,
     border: Option<Border>,
     clip: Option<Rect>,
     mapping: &FrameMapping,
@@ -203,7 +204,10 @@ pub(super) fn append(
     let large = |[left, top, right, bottom]: &[u32; 4]| {
         u64::from(right - left) * u64::from(bottom - top) >= MIN_SOLID_BOX_PIXELS
     };
-    let Some([left, top, right, bottom]) = shape.solid_box().filter(large) else {
+    let Some([left, top, right, bottom]) = shape
+        .solid_box()
+        .filter(|r| fill[3] >= 0. && stroke[3] >= 0. && large(r))
+    else {
         push([x0, y0, x1, y1]);
         return Ok((count, None));
     };
@@ -240,13 +244,22 @@ pub(super) fn check_records(bytes: usize, max: u64) -> Result<(), LimitError> {
 pub(super) struct Pipeline {
     pub(super) pipeline: wgpu::RenderPipeline,
     layout: wgpu::BindGroupLayout,
+    pub(super) gradient_pipeline: wgpu::RenderPipeline,
+    pub(super) gradient_layout: wgpu::BindGroupLayout,
 }
 
 impl Pipeline {
     pub(super) fn new(device: &wgpu::Device, format: wgpu::TextureFormat) -> Self {
         let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: Some("pert-ui shapes"),
-            source: wgpu::ShaderSource::Wgsl(include_str!("shapes.wgsl").into()),
+            source: wgpu::ShaderSource::Wgsl(
+                concat!(
+                    include_str!("shapes.wgsl"),
+                    "\n",
+                    include_str!("gradients.wgsl")
+                )
+                .into(),
+            ),
         });
         let layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             label: Some("pert-ui shape records"),
@@ -261,38 +274,63 @@ impl Pipeline {
                 count: None,
             }],
         });
-        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: Some("pert-ui shapes"),
-            bind_group_layouts: &[Some(&layout)],
-            immediate_size: 0,
+        let make_pipeline = |layouts: &[Option<&wgpu::BindGroupLayout>], fragment: &str| {
+            let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+                label: Some("pert-ui shapes"),
+                bind_group_layouts: layouts,
+                immediate_size: 0,
+            });
+            device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+                label: Some("pert-ui shapes"),
+                layout: Some(&pipeline_layout),
+                vertex: wgpu::VertexState {
+                    module: &shader,
+                    entry_point: Some("vertex"),
+                    compilation_options: Default::default(),
+                    buffers: &[],
+                },
+                fragment: Some(wgpu::FragmentState {
+                    module: &shader,
+                    entry_point: Some(fragment),
+                    compilation_options: Default::default(),
+                    // The fragment's color is premultiplied by its coverage.
+                    targets: &[Some(wgpu::ColorTargetState {
+                        format,
+                        blend: Some(wgpu::BlendState::PREMULTIPLIED_ALPHA_BLENDING),
+                        write_mask: wgpu::ColorWrites::ALL,
+                    })],
+                }),
+                primitive: Default::default(),
+                depth_stencil: None,
+                multisample: Default::default(),
+                multiview_mask: None,
+                cache: None,
+            })
+        };
+        let gradient_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            label: Some("gradient paints"),
+            entries: &[wgpu::BindGroupLayoutEntry {
+                binding: 0,
+                visibility: wgpu::ShaderStages::FRAGMENT,
+                ty: wgpu::BindingType::Buffer {
+                    ty: wgpu::BufferBindingType::Storage { read_only: true },
+                    has_dynamic_offset: false,
+                    min_binding_size: None,
+                },
+                count: None,
+            }],
         });
-        let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: Some("pert-ui shapes"),
-            layout: Some(&pipeline_layout),
-            vertex: wgpu::VertexState {
-                module: &shader,
-                entry_point: Some("vertex"),
-                compilation_options: Default::default(),
-                buffers: &[],
-            },
-            fragment: Some(wgpu::FragmentState {
-                module: &shader,
-                entry_point: Some("fragment"),
-                compilation_options: Default::default(),
-                // The fragment's color is premultiplied by its coverage.
-                targets: &[Some(wgpu::ColorTargetState {
-                    format,
-                    blend: Some(wgpu::BlendState::PREMULTIPLIED_ALPHA_BLENDING),
-                    write_mask: wgpu::ColorWrites::ALL,
-                })],
-            }),
-            primitive: Default::default(),
-            depth_stencil: None,
-            multisample: Default::default(),
-            multiview_mask: None,
-            cache: None,
-        });
-        Self { pipeline, layout }
+        let pipeline = make_pipeline(&[Some(&layout)], "fragment");
+        let gradient_pipeline = make_pipeline(
+            &[Some(&layout), Some(&gradient_layout)],
+            "gradient_fragment",
+        );
+        Self {
+            pipeline,
+            layout,
+            gradient_layout,
+            gradient_pipeline,
+        }
     }
 
     /// Binds `buffer`, which holds the frame's records.
@@ -432,7 +470,9 @@ mod tests {
         let style = ShapeStyle::fill(fill).with_border(Length::new(2.0)?, line);
         let shape = Shape::rounded(Length::new(6.0)?);
         let rect = Rect::new(10.3, 5.0, 150.0, 80.0)?;
-        let scene = scene(200.0, 100.0, 1.0, move |p| p.draw_shape(rect, shape, style))?;
+        let scene = scene(200.0, 100.0, 1.0, move |p| {
+            p.draw_shape(rect, shape, style.clone())
+        })?;
         let extent = PhysicalExtent::new(200, 100);
         let mapping = frame_mapping(&scene, extent).ok_or("no frame mapping")?;
         let encoded = RetainedGeometry::default().prepare_for(&scene, Some(mapping), u64::MAX)?;

@@ -7,6 +7,7 @@ compile_error!(
 
 #[cfg(test)]
 mod cpu_parity;
+mod gradients;
 #[cfg(test)]
 mod native_smoke;
 #[cfg(test)]
@@ -31,6 +32,7 @@ use std::{cell::RefCell, collections::HashMap, rc::Rc, sync::Arc, time::Duration
 enum Source {
     Fill,
     Shape,
+    GradientShape,
     Stroke(u32),
     Mask(usize),
     Image { index: usize, filter: usize },
@@ -278,6 +280,7 @@ pub struct Renderer {
     // The storage buffer of shape records and its binding.
     records: Option<(wgpu::Buffer, wgpu::BindGroup)>,
     // The coverage pages and record buffers of the frame's strokes.
+    gradients: gradients::Table,
     atlas: strokes::Atlas,
     batches: Vec<Batch>,
     scene: Option<DisplayList>,
@@ -507,6 +510,7 @@ impl Renderer {
             pipelines,
             vertices: None,
             records: None,
+            gradients: Default::default(),
             atlas: Default::default(),
             mapping: None,
             batches: Vec::new(),
@@ -628,11 +632,16 @@ impl Renderer {
                 let pipelines = &self.pipelines;
                 for batch in &self.batches {
                     match batch.source {
-                        Source::Shape => {
+                        Source::Shape | Source::GradientShape => {
                             let (_, records) = self.records.as_ref().ok_or_else(|| {
                                 RenderError::Graphics("shape records are missing".into())
                             })?;
-                            pass.set_pipeline(&pipelines.shapes.pipeline);
+                            if batch.source == Source::GradientShape {
+                                pass.set_pipeline(&pipelines.shapes.gradient_pipeline);
+                                pass.set_bind_group(1, self.gradients.binding()?, &[]);
+                            } else {
+                                pass.set_pipeline(&pipelines.shapes.pipeline);
+                            }
                             pass.set_bind_group(0, records, &[]);
                             // One quad per record, in the batch's record range.
                             pass.draw(0..6, batch.range.clone());
@@ -864,11 +873,26 @@ impl Renderer {
         let mapping = self.extent.and_then(|extent| frame_mapping(&scene, extent));
         if !prepared_for(self.scene.as_ref(), self.mapping, &scene, mapping) {
             // Every failed preparation must force a full rebuild on the next call.
+            let update_gradients = self.mapping != mapping
+                || self
+                    .scene
+                    .as_ref()
+                    .is_none_or(|old| old.gradients() != scene.gradients());
             self.scene = None;
             let limits = self.device.limits();
             let record_budget = limits
                 .max_storage_buffer_binding_size
                 .min(limits.max_buffer_size);
+            if update_gradients {
+                self.gradients.prepare(
+                    &self.device,
+                    &self.queue,
+                    &self.pipelines.shapes.gradient_layout,
+                    scene.gradients(),
+                    mapping.as_ref(),
+                    record_budget,
+                )?;
+            }
             let encoded = self.encoded.prepare_for(&scene, mapping, record_budget)?;
             let bytes = &encoded.bytes;
             let mut upload = changed_bytes(&self.encoded.bytes, bytes);
@@ -1034,16 +1058,25 @@ fn geometry_commands(
                 Some(mapping) => shapes::append(geometry, *fill, *border, *clip, mapping, records)?,
                 None => (0, None),
             };
+            let source = if matches!(fill, Some(pert_ui_runtime::Paint::Gradient(_)))
+                || matches!(
+                    border.map(|b| b.paint()),
+                    Some(pert_ui_runtime::Paint::Gradient(_))
+                ) {
+                Source::GradientShape
+            } else {
+                Source::Shape
+            };
             if count > 0 {
                 let end = start.checked_add(count).ok_or(LimitError::VertexCount)?;
                 if let Some(last) = batches.last_mut()
-                    && last.source == Source::Shape
+                    && last.source == source
                 {
                     last.range.end = end;
                 } else {
                     batches.push(Batch {
                         range: start..end,
-                        source: Source::Shape,
+                        source,
                     });
                 }
             }
@@ -1568,6 +1601,7 @@ impl Renderer {
             pipelines,
             vertices: None,
             records: None,
+            gradients: Default::default(),
             atlas: Default::default(),
             mapping: None,
             batches: Vec::new(),

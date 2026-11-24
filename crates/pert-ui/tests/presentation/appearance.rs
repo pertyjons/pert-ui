@@ -313,7 +313,7 @@ fn coverage(scene: &DisplayList, x: f32, y: f32) -> f32 {
     let mapping =
         FrameMapping::new(frame(viewport.width()), frame(viewport.height()), viewport).unwrap();
     let pixel = |value: f32| (f64::from(value) * scale).floor() as u32;
-    let alpha_of = |paint: Paint| match paint {
+    let alpha_of = |paint: pert_ui::RecordedPaint| match paint {
         Paint::Solid(color) => color.alpha(),
         _ => panic!("unexpected paint"),
     };

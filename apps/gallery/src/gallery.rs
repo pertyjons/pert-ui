@@ -352,6 +352,11 @@ impl Gallery {
                 "Appearance & tools",
                 [
                     places.page("theme", "Themes", themes(ui)),
+                    places.page(
+                        "gradients",
+                        "Gradients",
+                        crate::pages::gradients::gradients()?,
+                    ),
                     places.page("workspace", "Workspace", workspace_page(ui)),
                     places.page("profiling", "Profiler", profiling(ui)),
                     places.page("overlay", "Debug overlay", debug_overlay(ui)),

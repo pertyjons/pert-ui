@@ -105,6 +105,14 @@ pub enum LimitError {
         /// The device's maximum storage buffer binding size in bytes.
         max: u64,
     },
+    /// Gradient records exceed the storage buffer binding limit of the device.
+    #[error("{bytes} bytes of gradient records exceed the device limit {max}")]
+    GradientRecords {
+        /// Bytes needed by the visible scene's positioned gradients.
+        bytes: u64,
+        /// Maximum permitted buffer binding size in bytes.
+        max: u64,
+    },
     /// A scene's stroke segment records exceed what the device binds as one
     /// storage buffer, as for [`Self::ShapeRecords`].
     #[error(

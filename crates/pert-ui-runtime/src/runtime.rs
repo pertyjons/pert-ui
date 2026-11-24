@@ -3850,6 +3850,7 @@ struct Entry {
     drawing: Vec<crate::DrawCommand>,
     masks: Vec<crate::MaskImage>,
     images: Vec<crate::RasterImage>,
+    gradients: Option<Box<crate::resources::Arena<crate::Gradient>>>,
     vectors: Vec<crate::VectorGeometry>,
     foreground: usize,
     paint_dirty: Cell<bool>,

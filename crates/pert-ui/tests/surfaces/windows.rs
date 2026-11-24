@@ -1113,3 +1113,51 @@ fn placement_builders_work_during_update_and_keep_an_extracted_controller() {
     settle(&mut ui);
     assert_eq!(area(&ui, &window), [70.0, 80.0, 250.0, 150.0]);
 }
+
+#[cfg(feature = "cpu")]
+#[test]
+fn title_gradient_keeps_forty_logical_pixels_on_resize_and_clip()
+-> Result<(), Box<dyn std::error::Error>> {
+    for scale in [1., 1.25, 2.] {
+        let mut ui = Runtime::new();
+        ui.set_viewport(Viewport::new(640., 200., scale)?)?;
+        let black = Color::from_srgb8(0, 0, 0, 255);
+        let paint = Gradient::linear(
+            Point::default(),
+            Point::new(40., 0.)?,
+            [(0., black), (1., Color::WHITE)],
+        )?
+        .with_space(GradientSpace::Srgb);
+        let window = FloatingWindow::new(&ui, "example", "Title", leaf())
+            .position(Point::new(16., 16.)?)?
+            .initial_size(Size::from([320, 120]))?
+            .title_paint(paint);
+        let state = window.controller();
+        let root = ui.mount_tree(Element::new("layer", WindowLayer::new([window])))?;
+        settle(&mut ui);
+        let id = widget(&ui, &root, "example");
+        let mut cpu = pert_ui::cpu::CpuRenderer::new();
+        for (width, viewport) in [(320, 640.), (500, 640.), (500, 176.)] {
+            state.set_size(Size::from([width, 120]))?;
+            ui.set_viewport(Viewport::new(viewport, 200., scale)?)?;
+            settle(&mut ui);
+            let [x, y, _, _] = area(&ui, &id);
+            let scene = ui.paint()?;
+            assert_eq!(scene.gradients().len(), 1);
+            let frame = cpu.render(&scene)?;
+            let row = ((f64::from(y) + 5.) * scale) as usize;
+            for logical in [10., 20., 30., 40., 60., 100.] {
+                let col = ((f64::from(x) + logical) * scale) as usize;
+                let t = ((col as f64 + 0.5) / scale - f64::from(x)) / 40.;
+                let expected = (t.clamp(0., 1.) * 255.).round() as u8;
+                let index = (row * frame.width() as usize + col) * 4;
+                assert!(
+                    frame.pixels()[index].abs_diff(expected) <= 1,
+                    "scale {scale}, width {width}, viewport {viewport}, x {x}, y {y}, column {col}: {} vs {expected}",
+                    frame.pixels()[index]
+                );
+            }
+        }
+    }
+    Ok(())
+}

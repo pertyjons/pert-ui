@@ -345,6 +345,7 @@ impl VectorRasterizer {
 
     fn lower(&mut self, scene: &DisplayList, keep_strokes: bool) -> Result<DisplayList, DrawError> {
         let mut result = DisplayList {
+            gradients: scene.gradients.clone(),
             background: scene.background,
             viewport: scene.viewport,
             ..Default::default()

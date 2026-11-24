@@ -200,6 +200,7 @@ pub struct FloatingWindow {
     actions: Vec<Element>,
     drag_area: Option<Element>,
     decorated: bool,
+    title_paint: Option<Paint>,
     closable: bool,
     minimizable: bool,
     movable: Permission,
@@ -252,6 +253,7 @@ impl FloatingWindow {
                 origin: Rc::new(Cell::new(None)),
             },
             decorated: true,
+            title_paint: None,
             closable: true,
             minimizable: false,
             movable: Permission::allowed(),
@@ -321,6 +323,26 @@ impl FloatingWindow {
     /// Content minima are handled by the internal scroll viewport.
     pub fn size_limits(mut self, limits: SizeLimits) -> Self {
         self.limits = limits;
+        self
+    }
+    /// Sets the decorated title surface to a fixed paint in window-local logical
+    /// pixels. The origin is the upper left of this floating window. Resizing
+    /// crops or extends the surface while preserving the paint's geometry.
+    /// The override remains visible on hover. By default the base and hover
+    /// surfaces follow the theme. Describing the window again replaces or
+    /// removes an earlier override.
+    ///
+    /// ```
+    /// use pert_ui_runtime::{Color, Element, FloatingWindow, Gradient, Label, Point, Runtime};
+    /// let ui = Runtime::new();
+    /// let ramp = Gradient::linear(Point::default(), Point::new(40., 0.)?,
+    ///     [(0., Color::ACCENT), (1., Color::SURFACE)])?;
+    /// let window = FloatingWindow::new(&ui, "output", "Output",
+    ///     Element::new("content", Label::new("Ready"))).title_paint(ramp);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn title_paint(mut self, paint: impl Into<Paint>) -> Self {
+        self.title_paint = Some(paint.into());
         self
     }
     /// Enables/disables the frame and standard title bar. Default true.
@@ -619,6 +641,7 @@ impl FloatingWindow {
                 chrome,
                 children,
                 decorated: self.decorated,
+                title_paint: self.title_paint,
                 has_bar,
                 movable: true,
                 move_permission: self.movable,
@@ -756,6 +779,7 @@ struct WindowFrame {
     chrome: Rc<RefCell<WindowController>>,
     children: Vec<Element>,
     decorated: bool,
+    title_paint: Option<Paint>,
     has_bar: bool,
     /// Whether moving is allowed now, read from `move_permission` at update.
     movable: bool,
@@ -922,6 +946,8 @@ impl Component for WindowFrame {
         // The frame does not draw the title, but its name follows it.
         let title = std::mem::replace(&mut next.title, Caption::new(""));
         let layout = self.title.reconcile(title) | layout;
+        let repaint = self.title_paint != next.title_paint;
+        self.title_paint = next.title_paint.take();
         self.decorated = next.decorated;
         self.has_bar = next.has_bar;
         self.move_permission = next.move_permission.clone();
@@ -936,7 +962,9 @@ impl Component for WindowFrame {
         if self.on_frame.is_none() {
             self.pending_frame = None;
         }
-        layout.then_some(Invalidation::Layout)
+        layout
+            .then_some(Invalidation::Layout)
+            .or(repaint.then_some(Invalidation::Paint))
     }
     fn workspace_state(&self) -> Result<Option<crate::ViewState>, crate::WorkspaceError> {
         let placement = self.state.current_placement()?;
@@ -1192,9 +1220,11 @@ impl Component for WindowFrame {
             p.fill_shape(
                 Rect::new(0.0, 0.0, g.size.width(), g.title.y() + g.title.height())?,
                 Shape::rounded_top(Length::new(p.metric(MetricRole::CornerRadius))?),
-                p.color(ColorRole::SurfaceContainer),
+                self.title_paint
+                    .clone()
+                    .unwrap_or_else(|| p.color(ColorRole::SurfaceContainer).into()),
             )?;
-            if self.hover == Some(false) {
+            if self.title_paint.is_none() && self.hover == Some(false) {
                 p.fill_rect(g.title, p.color(ColorRole::SurfaceHover));
             }
         }

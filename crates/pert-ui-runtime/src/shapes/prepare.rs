@@ -432,9 +432,33 @@ pub enum ShapePrepareError {
 /// What fills a shape or its border.
 #[derive(Clone, Copy, Debug, PartialEq)]
 #[non_exhaustive]
-pub enum Paint {
+pub enum Paint<G = crate::Gradient> {
     /// One straight-alpha linear color.
     Solid(Color),
+    /// Spatial paint. Authoring uses an owned [`crate::Gradient`]; a recorded
+    /// command uses an ID in its owning display list.
+    Gradient(G),
+}
+/// Compact paint recorded in a display list. Resolve gradient IDs against its
+/// [`DisplayList::gradients`](crate::DisplayList::gradients) table.
+pub type RecordedPaint = Paint<crate::GradientId>;
+impl From<Color> for Paint {
+    fn from(color: Color) -> Self {
+        Self::Solid(color)
+    }
+}
+impl From<crate::Gradient> for Paint {
+    fn from(g: crate::Gradient) -> Self {
+        Self::Gradient(g)
+    }
+}
+impl Paint {
+    pub(crate) fn record(self, scene: &mut crate::DisplayList) -> RecordedPaint {
+        match self {
+            Self::Solid(c) => Paint::Solid(c),
+            Self::Gradient(g) => Paint::Gradient(scene.intern_gradient(&g)),
+        }
+    }
 }
 
 /// A rectangle's border: a width in logical pixels and a paint. It lies
@@ -443,13 +467,13 @@ pub enum Paint {
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Border {
     width: Length,
-    paint: Paint,
+    paint: RecordedPaint,
 }
 
 impl Border {
     /// A border of `width` logical pixels.
     #[must_use]
-    pub const fn new(width: Length, paint: Paint) -> Self {
+    pub const fn new(width: Length, paint: RecordedPaint) -> Self {
         Self { width, paint }
     }
 
@@ -461,7 +485,7 @@ impl Border {
 
     /// What the border is painted with.
     #[must_use]
-    pub const fn paint(self) -> Paint {
+    pub const fn paint(self) -> RecordedPaint {
         self.paint
     }
 }
@@ -469,42 +493,42 @@ impl Border {
 /// What [`Painter::draw_shape`](crate::Painter::draw_shape) paints: a fill, a
 /// border, or both as one silhouette. A later fill or border replaces the
 /// earlier one; neither accumulates.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct ShapeStyle {
     pub(crate) fill: Option<Paint>,
-    pub(crate) border: Option<Border>,
+    pub(crate) border: Option<(Length, Paint)>,
 }
 
 impl ShapeStyle {
     /// A fill and no border.
     #[must_use]
-    pub const fn fill(color: Color) -> Self {
+    pub fn fill(paint: impl Into<Paint>) -> Self {
         Self {
-            fill: Some(Paint::Solid(color)),
+            fill: Some(paint.into()),
             border: None,
         }
     }
 
     /// A border of `width` logical pixels and no fill.
     #[must_use]
-    pub const fn border(width: Length, color: Color) -> Self {
+    pub fn border(width: Length, paint: impl Into<Paint>) -> Self {
         Self {
             fill: None,
-            border: Some(Border::new(width, Paint::Solid(color))),
+            border: Some((width, paint.into())),
         }
     }
 
     /// Sets the fill, replacing an earlier one.
     #[must_use]
-    pub const fn with_fill(mut self, color: Color) -> Self {
-        self.fill = Some(Paint::Solid(color));
+    pub fn with_fill(mut self, paint: impl Into<Paint>) -> Self {
+        self.fill = Some(paint.into());
         self
     }
 
     /// Sets the border, replacing an earlier one.
     #[must_use]
-    pub const fn with_border(mut self, width: Length, color: Color) -> Self {
-        self.border = Some(Border::new(width, Paint::Solid(color)));
+    pub fn with_border(mut self, width: Length, paint: impl Into<Paint>) -> Self {
+        self.border = Some((width, paint.into()));
         self
     }
 }

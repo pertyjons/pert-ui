@@ -176,6 +176,7 @@ impl Runtime {
                 entry.drawing = painter.list.fills;
                 entry.masks = painter.list.masks.into_items();
                 entry.images = painter.list.images.into_items();
+                entry.gradients = painter.list.gradients;
                 entry.vectors = painter.list.vectors.into_items();
                 entry.paint_dirty.set(false);
             }
@@ -349,7 +350,33 @@ impl Runtime {
                         if clip.is_some_and(|clip| geometry.misses(clip, viewport)) {
                             continue;
                         }
-                        let border = border.map(|border| border.scaled(view)).transpose()?;
+                        let mut place_paint = |p: crate::RecordedPaint| -> Result<
+                            crate::RecordedPaint,
+                            crate::DrawError,
+                        > {
+                            Ok(match p {
+                                crate::Paint::Solid(c) => crate::Paint::Solid(c),
+                                crate::Paint::Gradient(id) => {
+                                    let g = entry
+                                        .gradients
+                                        .as_ref()
+                                        .and_then(|a| a.items().get(id.index()))
+                                        .ok_or(crate::DrawError::MissingGradient(id))?;
+                                    crate::Paint::Gradient(
+                                        scene.intern_gradient(&g.placed(origin, view)),
+                                    )
+                                }
+                            })
+                        };
+                        let fill = fill.map(&mut place_paint).transpose()?;
+                        let border = border
+                            .map(|b| -> Result<_, crate::DrawError> {
+                                Ok(crate::Border::new(
+                                    b.scaled(view)?.width(),
+                                    place_paint(b.paint())?,
+                                ))
+                            })
+                            .transpose()?;
                         crate::DrawCommand::DrawShape {
                             geometry,
                             fill,

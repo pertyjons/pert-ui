@@ -18,7 +18,7 @@ use pert_ui::{
 /// The solid colors a rectangle, mask or shape command paints with: a
 /// shape's fill and then its border. Other commands give none.
 pub fn paints(command: &DrawCommand) -> Vec<Color> {
-    let solid = |paint: Paint| match paint {
+    let solid = |paint: pert_ui::RecordedPaint| match paint {
         Paint::Solid(color) => Some(color),
         _ => None,
     };

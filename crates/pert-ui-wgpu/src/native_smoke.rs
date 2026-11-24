@@ -718,11 +718,16 @@ impl Renderer {
                 {
                     for batch in &self.batches {
                         match batch.source {
-                            Source::Shape => {
+                            Source::Shape | Source::GradientShape => {
                                 let (_, records) = self.records.as_ref().ok_or_else(|| {
                                     RenderError::Graphics("shape records are missing".into())
                                 })?;
-                                pass.set_pipeline(&self.pipelines.shapes.pipeline);
+                                if batch.source == Source::GradientShape {
+                                    pass.set_pipeline(&self.pipelines.shapes.gradient_pipeline);
+                                    pass.set_bind_group(1, self.gradients.binding()?, &[]);
+                                } else {
+                                    pass.set_pipeline(&self.pipelines.shapes.pipeline);
+                                }
                                 pass.set_bind_group(0, records, &[]);
                                 pass.draw(0..6, batch.range.clone());
                                 continue;

@@ -986,6 +986,51 @@ fn checker() -> Result<RasterImage, DrawError> {
     RasterImage::from_srgba8(4, 4, pixels)
 }
 
+fn gradient_corpus() -> Result<Vec<Case>, Box<dyn std::error::Error>> {
+    use pert_ui_runtime::{Gradient, GradientExtend, GradientSpace};
+    let mut cases = Vec::new();
+    for scale in [1., 1.25, 2.] {
+        for space in [
+            GradientSpace::Oklab,
+            GradientSpace::Linear,
+            GradientSpace::Srgb,
+        ] {
+            cases.push(shapes(
+                "gradient shape and border",
+                false,
+                scale,
+                move |p| {
+                    let stops = [
+                        (0., Color::from_srgb8(200, 22, 130, 30)),
+                        (0.5, Color::ACCENT),
+                        (0.5, Color::SURFACE),
+                        (1., Color::from_srgb8(12, 200, 35, 215)),
+                    ];
+                    let fill = Gradient::linear(Point::new(4., 0.)?, Point::new(44., 0.)?, stops)?
+                        .with_space(space)
+                        .with_extend(GradientExtend::Repeat);
+                    let border = Gradient::radial(
+                        Point::new(12.25, 12.5)?,
+                        Size::new(17., 13.)?,
+                        0.25,
+                        stops,
+                    )?
+                    .with_space(space)
+                    .with_extend(GradientExtend::Reflect);
+                    p.with_clip(Rect::new(2., 0., 48., 46.)?, |p| {
+                        p.draw_shape(
+                            Rect::new(0., 0., 52., 43.)?,
+                            Shape::rounded(Length::new(5.)?),
+                            ShapeStyle::fill(fill).with_border(Length::new(4.)?, border),
+                        )
+                    })
+                },
+            )?);
+        }
+    }
+    Ok(cases)
+}
+
 fn corpus() -> Result<Vec<Case>, Box<dyn std::error::Error>> {
     // Exact sRGB bytes, so encoding them back is exact on every backend.
     let red = Color::from_srgb8(230, 40, 20, 255);
@@ -1190,6 +1235,7 @@ impl ApplicationHandler<Notice> for Parity {
             for case in corpus()?
                 .into_iter()
                 .chain(fill_corpus()?)
+                .chain(gradient_corpus()?)
                 .chain(shape_corpus()?)
                 .chain(stroke_corpus()?)
             {

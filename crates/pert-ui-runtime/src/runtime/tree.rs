@@ -1355,6 +1355,7 @@ impl Runtime {
             drawing: Vec::new(),
             masks: Vec::new(),
             images: Vec::new(),
+            gradients: None,
             vectors: Vec::new(),
             foreground: 0,
             paint_dirty: Cell::new(true),

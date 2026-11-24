@@ -6,8 +6,8 @@ mod prepare;
 mod stroke;
 pub use prepare::{
     ArcGeometry, Border, Boundary, Corner, CornerKind, CornerPosition, FrameMapping, Inner, Paint,
-    PreparedCorner, PreparedShape, Shape, ShapeCoverage, ShapeGeometry, ShapeParameters,
-    ShapePrepareError, ShapeStyle, TriangleGeometry,
+    PreparedCorner, PreparedShape, RecordedPaint, Shape, ShapeCoverage, ShapeGeometry,
+    ShapeParameters, ShapePrepareError, ShapeStyle, TriangleGeometry,
 };
 pub use stroke::{PreparedStroke, StrokeCoverage, StrokePrepareError, StrokeSegment};
 
@@ -132,7 +132,12 @@ impl Painter {
     ///
     /// # Errors
     /// As [`Self::draw_shape`].
-    pub fn fill_shape(&mut self, rect: Rect, shape: Shape, color: Color) -> Result<(), DrawError> {
+    pub fn fill_shape(
+        &mut self,
+        rect: Rect,
+        shape: Shape,
+        color: impl Into<Paint>,
+    ) -> Result<(), DrawError> {
         let square = [
             CornerPosition::TopLeft,
             CornerPosition::TopRight,
@@ -198,13 +203,15 @@ impl Painter {
         style: ShapeStyle,
     ) -> Result<(), DrawError> {
         let [_, _, w, h] = rect.values();
-        let border = style.border.filter(|border| border.width().get() > 0.0);
+        let border = style.border.filter(|(width, _)| width.get() > 0.0);
         if w == 0.0 || h == 0.0 || (style.fill.is_none() && border.is_none()) {
             return Ok(());
         }
+        let fill = style.fill.map(|p| p.record(&mut self.list));
+        let border = border.map(|(w, p)| Border::new(w, p.record(&mut self.list)));
         self.list.fills.push(DrawCommand::DrawShape {
             geometry: ShapeGeometry::Rect { rect, shape },
-            fill: style.fill,
+            fill,
             border,
             clip: self.clip,
         });
@@ -344,7 +351,9 @@ mod tests {
                         border: Some(border),
                         ..
                     } => {
-                        let Paint::Solid(color) = border.paint();
+                        let Paint::Solid(color) = border.paint() else {
+                            return None;
+                        };
                         Some(color)
                     }
                     _ => None,

@@ -38,6 +38,7 @@ Without a mode, opens the native component gallery. Modes:
                                    rendering: frames are drawn on the CPU and
                                    no GPU device is created; also combines
                                    with --interaction-check
+  --page KEY                       open the native gallery on a page, e.g. gradients
   --headless                       check the parameter, key and inspection
                                    contracts without a window
   --multi-window                   open the three-window fixture
@@ -63,6 +64,7 @@ Without a mode, opens the native component gallery. Modes:
 enum Mode {
     Gallery,
     SoftwareGallery,
+    Page(String, bool),
     Headless,
     MultiWindow,
     LiveBenchmark,
@@ -93,6 +95,14 @@ fn mode(arguments: impl IntoIterator<Item = OsString>) -> Result<Mode, String> {
         };
         let next = match flag {
             "--help" | "-h" => return Ok(Mode::Help),
+            "--page" => Mode::Page(
+                arguments
+                    .next()
+                    .and_then(|v| v.into_string().ok())
+                    .filter(|v| !v.is_empty() && !v.starts_with("--"))
+                    .ok_or("--page requires a page key")?,
+                false,
+            ),
             "--headless" => Mode::Headless,
             "--multi-window" => Mode::MultiWindow,
             "--live-benchmark" => Mode::LiveBenchmark,
@@ -174,6 +184,7 @@ fn mode(arguments: impl IntoIterator<Item = OsString>) -> Result<Mode, String> {
     }
     match (chosen.unwrap_or(Mode::Gallery), software) {
         (mode, false) => Ok(mode),
+        (Mode::Page(key, _), true) => Ok(Mode::Page(key, true)),
         (Mode::Gallery, true) => Ok(Mode::SoftwareGallery),
         (Mode::InteractionCheck, true) => Ok(Mode::SoftwareInteractionCheck),
         (_, true) => Err("--cpu applies to the native gallery and --interaction-check".into()),
@@ -334,7 +345,7 @@ fn live_smoke() -> Result<(), Box<dyn Error>> {
     joined(result.map_err(Into::into), &producer)
 }
 
-fn native_gallery(software: bool) -> Result<(), Box<dyn Error>> {
+fn native_gallery(software: bool, page: Option<String>) -> Result<(), Box<dyn Error>> {
     let gallery = gallery::Gallery::new()?;
     let producer = gallery.producer();
     let title = if software {
@@ -342,7 +353,24 @@ fn native_gallery(software: bool) -> Result<(), Box<dyn Error>> {
     } else {
         "pert-ui — Component gallery"
     };
-    let app = pert_ui::App::new(title, move |ui| gallery.mount(ui).map(|_| ()));
+    let app = pert_ui::App::new(title, move |ui| {
+        let root = gallery.mount(ui)?;
+        if let Some(key) = page {
+            ui.flush(Duration::ZERO)?;
+            let target = interaction_check::page(ui, &root, &key)
+                .map_err(|e| pert_ui::ApplicationError::new(std::io::Error::other(e)))?;
+            let outcome = ui.reveal(&target)?;
+            if !outcome.is_revealed() {
+                return Err(
+                    pert_ui::ApplicationError::new(std::io::Error::other(format!(
+                        "could not reveal {key}: {outcome:?}"
+                    )))
+                    .into(),
+                );
+            }
+        }
+        Ok(())
+    });
     let app = if software {
         app.software_rendering()
     } else {
@@ -354,8 +382,9 @@ fn native_gallery(software: bool) -> Result<(), Box<dyn Error>> {
 
 fn run(mode: Mode) -> Result<(), Box<dyn Error>> {
     match mode {
-        Mode::Gallery => native_gallery(false),
-        Mode::SoftwareGallery => native_gallery(true),
+        Mode::Gallery => native_gallery(false, None),
+        Mode::Page(key, software) => native_gallery(software, Some(key)),
+        Mode::SoftwareGallery => native_gallery(true, None),
         Mode::Headless => {
             let summary = headless()?;
             writeln!(std::io::stdout().lock(), "{summary}")?;

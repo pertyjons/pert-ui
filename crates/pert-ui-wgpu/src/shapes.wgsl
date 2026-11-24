@@ -92,7 +92,9 @@ fn boundary(p: vec2<f32>, edges: vec4<f32>, sizes: vec4<f32>, kinds: u32) -> f32
 }
 
 @fragment fn fragment(input: VertexOutput) -> @location(0) vec4<f32> {
-    let shape = shapes[input.record];
+    return shade(shapes[input.record],input);
+}
+fn shade(shape:Shape,input:VertexOutput)->vec4f {
     // The pixel center, relative to the span's origin.
     let p = input.position.xy - shape.origin.xy;
     if shape.flags.x == 0u {

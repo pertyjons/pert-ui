@@ -203,9 +203,9 @@ pub use geometry::{
 };
 pub use shapes::{
     ArcGeometry, Border, Boundary, Corner, CornerKind, CornerPosition, FrameMapping, Inner, Paint,
-    PreparedCorner, PreparedShape, PreparedStroke, Shape, ShapeCoverage, ShapeGeometry,
-    ShapeParameters, ShapePrepareError, ShapeStyle, StrokeCoverage, StrokePrepareError,
-    StrokeSegment, TriangleGeometry,
+    PreparedCorner, PreparedShape, PreparedStroke, RecordedPaint, Shape, ShapeCoverage,
+    ShapeGeometry, ShapeParameters, ShapePrepareError, ShapeStyle, StrokeCoverage,
+    StrokePrepareError, StrokeSegment, TriangleGeometry,
 };
 pub use vector_scene::{VectorGeometry, VectorId, VectorRasterizer, VectorStyle};
 mod color_picker;
@@ -227,10 +227,12 @@ pub use file_browser::{
 mod color_swatch;
 pub use color_swatch::ColorSwatch;
 mod drawing;
+mod gradient;
 pub use drawing::{
     Color, DisplayList, DrawCommand, DrawError, HexColorError, MaskId, MaskImage, OpaqueColor,
     Painter, PhysicalExtent, Rect, TranslucentColorError, Viewport,
 };
+pub use gradient::{Gradient, GradientError, GradientExtend, GradientId, GradientSpace};
 mod image;
 pub use image::{Image, ImageFit};
 mod resources;
