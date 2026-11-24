@@ -203,11 +203,12 @@ pub(crate) fn toolbar_page(
                     ui,
                     snap.clone(),
                     [
-                        Choice::new("bar", "Bar"),
-                        Choice::new("1/4", "1/4"),
-                        Choice::new("1/8", "1/8"),
-                        Choice::new("1/16", "1/16"),
-                        Choice::new("off", "Off"),
+                        Choice::new("bar", "Bar").with_description("Align to the start of a bar."),
+                        Choice::new("1/4", "1/4").with_description("Align to quarter notes."),
+                        Choice::new("1/8", "1/8").with_description("Align to eighth notes."),
+                        Choice::new("1/16", "1/16").with_description("Align to sixteenth notes."),
+                        Choice::new("off", "Off")
+                            .with_description("Move freely between grid lines."),
                     ],
                 )?
                 .label("Snap"),

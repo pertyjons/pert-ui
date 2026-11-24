@@ -3889,6 +3889,7 @@ impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::RichText
 pub pert_ui_runtime::component::SemanticItem::actions: alloc::vec::Vec<pert_ui_runtime::SemanticAction>
 pub pert_ui_runtime::component::SemanticItem::bounds: core::option::Option<[f32; 4]>
 pub pert_ui_runtime::component::SemanticItem::checked: core::option::Option<bool>
+pub pert_ui_runtime::component::SemanticItem::description: core::option::Option<alloc::string::String>
 pub pert_ui_runtime::component::SemanticItem::disabled: bool
 pub pert_ui_runtime::component::SemanticItem::expanded: core::option::Option<bool>
 pub pert_ui_runtime::component::SemanticItem::name: core::option::Option<alloc::string::String>
@@ -12619,6 +12620,7 @@ impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Rect
 pub pert_ui_runtime::inspection::SemanticItem::actions: alloc::vec::Vec<pert_ui_runtime::SemanticAction>
 pub pert_ui_runtime::inspection::SemanticItem::bounds: core::option::Option<[f32; 4]>
 pub pert_ui_runtime::inspection::SemanticItem::checked: core::option::Option<bool>
+pub pert_ui_runtime::inspection::SemanticItem::description: core::option::Option<alloc::string::String>
 pub pert_ui_runtime::inspection::SemanticItem::disabled: bool
 pub pert_ui_runtime::inspection::SemanticItem::expanded: core::option::Option<bool>
 pub pert_ui_runtime::inspection::SemanticItem::name: core::option::Option<alloc::string::String>
@@ -16541,6 +16543,7 @@ impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Chip
 pub struct pert_ui_runtime::prelude::Choice<T>
 impl<T> pert_ui_runtime::Choice<T>
 pub fn pert_ui_runtime::Choice<T>::content(&self) -> &pert_ui_runtime::RichText
+pub fn pert_ui_runtime::Choice<T>::description(&self) -> core::option::Option<&str>
 pub fn pert_ui_runtime::Choice<T>::disabled(self) -> Self
 pub fn pert_ui_runtime::Choice<T>::icon(T, impl core::convert::Into<pert_ui_runtime::IconSource>, impl core::convert::Into<alloc::string::String>) -> Self
 pub fn pert_ui_runtime::Choice<T>::is_enabled(&self) -> bool
@@ -16550,6 +16553,7 @@ pub fn pert_ui_runtime::Choice<T>::new(T, impl core::convert::Into<alloc::string
 pub fn pert_ui_runtime::Choice<T>::rich_label(self, pert_ui_runtime::RichText) -> Self
 pub fn pert_ui_runtime::Choice<T>::trailing_icon(self, impl core::convert::Into<pert_ui_runtime::IconSource>) -> Self
 pub fn pert_ui_runtime::Choice<T>::value(&self) -> &T
+pub fn pert_ui_runtime::Choice<T>::with_description(self, impl core::convert::Into<alloc::string::String>) -> Self
 impl<T: core::clone::Clone> core::clone::Clone for pert_ui_runtime::Choice<T>
 pub fn pert_ui_runtime::Choice<T>::clone(&self) -> Self
 impl<T: core::cmp::Eq> core::cmp::Eq for pert_ui_runtime::Choice<T>
@@ -24821,6 +24825,7 @@ impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Rect
 pub pert_ui_runtime::testing::SemanticItem::actions: alloc::vec::Vec<pert_ui_runtime::SemanticAction>
 pub pert_ui_runtime::testing::SemanticItem::bounds: core::option::Option<[f32; 4]>
 pub pert_ui_runtime::testing::SemanticItem::checked: core::option::Option<bool>
+pub pert_ui_runtime::testing::SemanticItem::description: core::option::Option<alloc::string::String>
 pub pert_ui_runtime::testing::SemanticItem::disabled: bool
 pub pert_ui_runtime::testing::SemanticItem::expanded: core::option::Option<bool>
 pub pert_ui_runtime::testing::SemanticItem::name: core::option::Option<alloc::string::String>
@@ -32550,6 +32555,7 @@ impl !core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::Chip
 pub struct pert_ui_runtime::Choice<T>
 impl<T> pert_ui_runtime::Choice<T>
 pub fn pert_ui_runtime::Choice<T>::content(&self) -> &pert_ui_runtime::RichText
+pub fn pert_ui_runtime::Choice<T>::description(&self) -> core::option::Option<&str>
 pub fn pert_ui_runtime::Choice<T>::disabled(self) -> Self
 pub fn pert_ui_runtime::Choice<T>::icon(T, impl core::convert::Into<pert_ui_runtime::IconSource>, impl core::convert::Into<alloc::string::String>) -> Self
 pub fn pert_ui_runtime::Choice<T>::is_enabled(&self) -> bool
@@ -32559,6 +32565,7 @@ pub fn pert_ui_runtime::Choice<T>::new(T, impl core::convert::Into<alloc::string
 pub fn pert_ui_runtime::Choice<T>::rich_label(self, pert_ui_runtime::RichText) -> Self
 pub fn pert_ui_runtime::Choice<T>::trailing_icon(self, impl core::convert::Into<pert_ui_runtime::IconSource>) -> Self
 pub fn pert_ui_runtime::Choice<T>::value(&self) -> &T
+pub fn pert_ui_runtime::Choice<T>::with_description(self, impl core::convert::Into<alloc::string::String>) -> Self
 impl<T: core::clone::Clone> core::clone::Clone for pert_ui_runtime::Choice<T>
 pub fn pert_ui_runtime::Choice<T>::clone(&self) -> Self
 impl<T: core::cmp::Eq> core::cmp::Eq for pert_ui_runtime::Choice<T>
@@ -40592,6 +40599,7 @@ impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::SelectionChange
 pub pert_ui_runtime::SemanticItem::actions: alloc::vec::Vec<pert_ui_runtime::SemanticAction>
 pub pert_ui_runtime::SemanticItem::bounds: core::option::Option<[f32; 4]>
 pub pert_ui_runtime::SemanticItem::checked: core::option::Option<bool>
+pub pert_ui_runtime::SemanticItem::description: core::option::Option<alloc::string::String>
 pub pert_ui_runtime::SemanticItem::disabled: bool
 pub pert_ui_runtime::SemanticItem::expanded: core::option::Option<bool>
 pub pert_ui_runtime::SemanticItem::name: core::option::Option<alloc::string::String>

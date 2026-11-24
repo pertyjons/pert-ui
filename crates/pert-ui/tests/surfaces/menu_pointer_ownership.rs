@@ -1542,3 +1542,113 @@ fn a_right_release_after_motion_leaves_the_pointer_its_highlight() {
         key_edge(ui, KeyCode::ArrowRight, KeyAction::Release);
     });
 }
+
+#[test]
+fn inline_help_follows_the_active_identity_without_moving_rows_or_writing() {
+    let mut ui = ui();
+    let value = ui.signal(1_u8);
+    let source = ui.signal(vec![
+        Choice::new(1, "One").with_description("First help"),
+        Choice::new(2, "Two")
+            .with_description("Second help wraps across several lines inside the footer."),
+        Choice::new(3, "Three"),
+    ]);
+    let element = Element::new(
+        "mode",
+        InlineSelect::bound(&ui, value.clone(), source.read_only()),
+    );
+    let select = mount_select(&mut ui, element);
+    select.open(&mut ui);
+    let help = |ui: &mut Runtime| {
+        semantics(ui, &select.options)
+            .items
+            .into_iter()
+            .find(|item| item.selected)
+            .and_then(|item| item.description)
+    };
+    let first = row(&mut ui, &select.options, "One");
+    let bounds = ui.bounds(&select.options).unwrap().unwrap();
+    let [_, last_y, _, last_height] = semantics(&mut ui, &select.options)
+        .items
+        .last()
+        .unwrap()
+        .bounds
+        .unwrap();
+    let footer_top = last_y + last_height;
+    assert!(footer_top < bounds.y() + bounds.height());
+    // Compare the actual text masks in the footer clip, excluding row labels.
+    let footer_masks = |ui: &mut Runtime| {
+        ui.paint()
+            .unwrap()
+            .commands()
+            .iter()
+            .filter_map(|command| match command {
+                DrawCommand::DrawMask {
+                    rect,
+                    clip: Some(clip),
+                    ..
+                } if (clip.y() - footer_top).abs() < 0.01 => Some(*rect),
+                _ => None,
+            })
+            .collect::<Vec<_>>()
+    };
+    let first_masks = footer_masks(&mut ui);
+    assert!(!first_masks.is_empty());
+    assert_eq!(help(&mut ui).as_deref(), Some("First help"));
+    press(&mut ui, KeyCode::ArrowDown);
+    assert!(help(&mut ui).unwrap().starts_with("Second help"));
+    let second_masks = footer_masks(&mut ui);
+    assert!(!second_masks.is_empty());
+    assert_ne!(second_masks, first_masks);
+    assert_eq!(first, row(&mut ui, &select.options, "One"));
+    let third = row(&mut ui, &select.options, "Three");
+    move_to(&mut ui, third);
+    assert_eq!(help(&mut ui), None);
+    assert!(footer_masks(&mut ui).is_empty());
+    assert_eq!(bounds, ui.bounds(&select.options).unwrap().unwrap());
+    move_to(&mut ui, first);
+    source
+        .set(vec![
+            Choice::new(2, "Two"),
+            Choice::new(1, "One").with_description("Updated help"),
+        ])
+        .unwrap();
+    settle(&mut ui);
+    assert_eq!(value.get().unwrap(), 1);
+    press(&mut ui, KeyCode::End);
+    assert_eq!(help(&mut ui).as_deref(), Some("Updated help"));
+    ui.paint().unwrap();
+}
+
+#[test]
+fn wide_select_help_wraps_at_the_allocated_width_and_excludes_footer_clicks() {
+    let mut ui = ui();
+    let value = ui.signal(0_u8);
+    let choices = options(20).into_iter().map(|option| option.with_description(
+        "This description fits the wide anchor but wraps at the preferred width of a short option label."
+    ));
+    let element = Element::new(
+        "mode",
+        InlineSelect::new(&ui, value.clone(), choices)
+            .unwrap()
+            .width_hint(
+                "A wide control with plenty of room for option descriptions and several words",
+            ),
+    );
+    let select = mount_select(&mut ui, element);
+    select.open(&mut ui);
+    let items = semantics(&mut ui, &select.options).items;
+    assert_eq!(items.iter().filter(|item| item.bounds.is_some()).count(), 8);
+    let [x, y, w, h] = items[7].bounds.unwrap();
+    let list = ui.bounds(&select.options).unwrap().unwrap();
+    let at = (x + w / 2.0, (y + h + list.y() + list.height()) / 2.0);
+    assert!(at.1 > y + h);
+    host(&mut ui, at, PointerKind::Press(PointerButton::Primary));
+    host(&mut ui, at, PointerKind::Release(PointerButton::Primary));
+    assert!(shown(&ui, &select.options));
+    assert_eq!(value.get().unwrap(), 0);
+    press(&mut ui, KeyCode::End);
+    let items = semantics(&mut ui, &select.options).items;
+    assert_eq!(items.last().unwrap().bounds, Some([x, y, w, h]));
+    assert!(items[0].bounds.is_none());
+}

@@ -63,6 +63,12 @@ guarantee this document does not state.
 
 ### Choice sources
 
+A `Select` or `InlineSelect` exposes each option's optional description on
+its semantic item. While open, it shows help for the highlighted value below
+the scrolling rows. The list reserves space for the longest wrapped help
+when measured, so browsing alone does not move the rows. A constrained popup
+prioritizes one row and clips excess help. Browsing does not submit an edit.
+
 Choice controls choose their option ownership at construction: fixed `new`
 lists validate immediately, reactive `bound` lists validate during update, and
 `for_parameter` takes options only from the parameter specification. No builder
@@ -800,7 +806,9 @@ description, including the constructor's, and a later `on_change` or
 Parameter identities are independent of labels, order and numeric value.
 `ParameterSpec<T>` defines a validated domain and default. Normalized positions
 are finite values in `0.0..=1.0`; presentation formatting does not change the
-canonical value. Cloning a `NumberFormat` preserves its callback identity: an
+canonical value. Backspace on a numeric control and double-click on a knob
+preview and commit the typed default directly, even for nonlinear mappings.
+Cloning a `NumberFormat` preserves its callback identity: an
 unchanged clone on a numeric control retains layout during redescription. New
 callbacks or changed format metadata request new measurement. This is an
 invalidation contract, not a measured rendering-speed guarantee.

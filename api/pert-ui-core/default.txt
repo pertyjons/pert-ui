@@ -435,9 +435,11 @@ impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_core::ChoiceId
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_core::ChoiceId
 pub struct pert_ui_core::ChoiceOption
 impl pert_ui_core::ChoiceOption
+pub fn pert_ui_core::ChoiceOption::description(&self) -> core::option::Option<&str>
 pub fn pert_ui_core::ChoiceOption::id(&self) -> &pert_ui_core::ChoiceId
 pub fn pert_ui_core::ChoiceOption::label(&self) -> &str
 pub fn pert_ui_core::ChoiceOption::new(pert_ui_core::ChoiceId, impl core::convert::Into<alloc::string::String>) -> Self
+pub fn pert_ui_core::ChoiceOption::with_description(self, impl core::convert::Into<alloc::string::String>) -> Self
 impl core::clone::Clone for pert_ui_core::ChoiceOption
 pub fn pert_ui_core::ChoiceOption::clone(&self) -> Self
 impl core::cmp::Eq for pert_ui_core::ChoiceOption

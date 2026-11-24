@@ -16,6 +16,7 @@ use std::rc::Rc;
 pub struct Choice<T> {
     value: T,
     label: String,
+    description: String,
     content: RichText,
     caption: RichText,
     leading: Option<IconSource>,
@@ -37,6 +38,7 @@ impl<T> Choice<T> {
         Self {
             value,
             label: content.plain_text(),
+            description: String::new(),
             caption: content.clone(),
             content,
             leading: None,
@@ -78,6 +80,38 @@ impl<T> Choice<T> {
     pub fn disabled(mut self) -> Self {
         self.enabled = false;
         self
+    }
+    /// Replaces the help for this option in an open selection list. Empty text clears it.
+    ///
+    /// An open [`Select`] or [`InlineSelect`] shows the highlighted option’s
+    /// text below its rows. Browsing keeps the current value until selection.
+    ///
+    /// ```
+    /// # use pert_ui_runtime as pert_ui;
+    /// use pert_ui::{Choice, InlineSelect, Runtime};
+    /// let ui = Runtime::new();
+    /// let subdivision = ui.signal(4);
+    /// let control = InlineSelect::new(&ui, subdivision, [
+    ///     Choice::new(4, "Quarter").with_description("Snap to quarter notes."),
+    ///     Choice::new(8, "Eighth").with_description("Snap to eighth notes."),
+    /// ])?;
+    /// # Ok::<(), pert_ui::ChoiceError>(())
+    /// ```
+    pub fn with_description(mut self, description: impl Into<String>) -> Self {
+        self.description = description.into();
+        self
+    }
+
+    /// The option's browsing help, absent by default.
+    #[must_use]
+    pub fn description(&self) -> Option<&str> {
+        (!self.description.is_empty()).then_some(self.description.as_str())
+    }
+
+    pub(crate) fn semantic_item(&self) -> crate::SemanticItem {
+        let mut item = crate::SemanticItem::new(self.label());
+        item.description = self.description().map(str::to_owned);
+        item
     }
     /// Stable application value associated with this option.
     pub fn value(&self) -> &T {

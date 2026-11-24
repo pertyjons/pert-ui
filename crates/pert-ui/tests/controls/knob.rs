@@ -12,14 +12,18 @@ struct Setup {
 }
 
 fn setup(knob: impl FnOnce(Parameter<f32>) -> Knob) -> Setup {
+    setup_spec(
+        ParameterSpec::new("Value", -100.0, 100.0, 0.0).unwrap(),
+        knob,
+    )
+}
+
+fn setup_spec(spec: ParameterSpec<f32>, knob: impl FnOnce(Parameter<f32>) -> Knob) -> Setup {
     let mut ui = Runtime::new();
     ui.set_viewport(Viewport::new(400.0, 400.0, 1.0).unwrap())
         .unwrap();
     let (parameter, host) = ui
-        .parameter(
-            ParameterId::new(1, 1, "value").unwrap(),
-            ParameterSpec::new("Value", -100.0, 100.0, 0.0).unwrap(),
-        )
+        .parameter(ParameterId::new(1, 1, "value").unwrap(), spec)
         .unwrap();
     let root = ui
         .mount_tree(Element::new(
@@ -785,5 +789,59 @@ fn each_face_uses_live_theme_roles_for_hover_focus_conflict_and_disabled_state()
         assert!(uses(&disabled, ColorRole::Muted));
         assert!(!uses(&disabled, ColorRole::Primary));
         assert!(!uses(&disabled, ColorRole::SurfaceHover));
+    }
+}
+
+#[test]
+fn nonlinear_reset_previews_and_commits_the_exact_typed_default() {
+    for (min, max, default, mapping) in [
+        (
+            0.0,
+            128.0,
+            1.0,
+            ParameterMapping::Power(PowerExponent::new(2.0).unwrap()),
+        ),
+        (20.0, 20_000.0, 440.0, ParameterMapping::Logarithmic),
+    ] {
+        let spec = ParameterSpec::new("Value", min, max, default)
+            .unwrap()
+            .with_mapping(mapping)
+            .unwrap();
+        let Setup {
+            mut ui,
+            parameter,
+            host,
+            knob,
+            center,
+            ..
+        } = setup_spec(spec, Knob::new);
+        ui.focus(&knob).unwrap();
+        for double_click in [false, true] {
+            host.write_base(min).unwrap();
+            ui.flush(Duration::from_millis(10)).unwrap();
+            let before = parameter.snapshot().get().unwrap().revision.get();
+            if double_click {
+                for time in [20, 200] {
+                    ui.flush(Duration::from_millis(time)).unwrap();
+                    pointer(&mut ui, center, PointerKind::Press(PointerButton::Primary));
+                    pointer(
+                        &mut ui,
+                        center,
+                        PointerKind::Release(PointerButton::Primary),
+                    );
+                }
+            } else {
+                ui.key_input(KeyCode::Backspace, KeyAction::Press).unwrap();
+                let snapshot = parameter.snapshot().get().unwrap();
+                assert_eq!((snapshot.base, snapshot.preview), (min, Some(default)));
+                ui.key_input(KeyCode::Backspace, KeyAction::Release)
+                    .unwrap();
+            }
+            let snapshot = parameter.snapshot().get().unwrap();
+            assert_eq!(
+                (snapshot.base, snapshot.preview, snapshot.revision.get()),
+                (default, None, before + 1)
+            );
+        }
     }
 }

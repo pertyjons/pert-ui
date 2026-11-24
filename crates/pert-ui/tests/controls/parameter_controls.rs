@@ -980,12 +980,16 @@ fn parameter_selects_are_named_after_the_specification() -> TestResult {
         "Oscillator shape",
         [
             ChoiceOption::new(id("sine")?, "Sine"),
-            ChoiceOption::new(id("saw")?, "Saw"),
+            ChoiceOption::new(id("saw")?, "Saw").with_description("Bright and buzzy."),
         ],
         id("sine")?,
     )?;
     host.replace_spec(renamed)?;
     frame(&mut ui);
+    assert_eq!(
+        semantics(&ui, "select")?.items[1].description.as_deref(),
+        Some("Bright and buzzy.")
+    );
     assert_eq!(
         semantics(&ui, "select")?.name.as_deref(),
         Some("Oscillator shape")

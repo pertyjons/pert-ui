@@ -412,6 +412,12 @@ pub enum SemanticAction {
 pub struct SemanticItem {
     /// The row's presented name; absent when it has none, never empty.
     pub name: Option<String>,
+    /// Help describing this item while browsing. Empty text is absent in inspections.
+    #[cfg_attr(
+        feature = "serde",
+        serde(default, skip_serializing_if = "Option::is_none")
+    )]
+    pub description: Option<String>,
     /// Whether this row is the chosen or highlighted one.
     pub selected: bool,
     /// Whether this row cannot be acted on. A disabled row offers no actions.
@@ -476,6 +482,7 @@ impl SemanticItem {
     pub fn new(name: impl Into<String>) -> Self {
         Self {
             name: Some(name.into()).filter(|name| !name.is_empty()),
+            description: None,
             selected: false,
             disabled: false,
             expanded: None,
@@ -602,6 +609,9 @@ impl SemanticItem {
     pub(crate) fn normalize(&mut self) {
         if self.name.as_deref() == Some("") {
             self.name = None;
+        }
+        if self.description.as_deref() == Some("") {
+            self.description = None;
         }
         normalize_actions(&mut self.actions, self.disabled);
     }
@@ -1227,15 +1237,15 @@ impl InspectionSnapshot {
     /// It changes when a field is added, removed or reinterpreted, not with the
     /// crate version. With the `serde` feature, deserializing a snapshot or a
     /// [`QueryResult`](crate::QueryResult) whose `schema_version` is any other
-    /// revision fails with the message "inspection schema version 17 is not
-    /// supported (this build writes 18)", naming the version found; unknown
+    /// revision fails with the message "inspection schema version 18 is not
+    /// supported (this build writes 19)", naming the version found; unknown
     /// fields are rejected as before. A document whose version is not its
     /// first field, as a format or an intermediate map may reorder it, can
     /// fail on an unknown or missing field of the other revision first. An
     /// external inspector that reads several revisions compares the version
     /// before decoding and treats an unknown revision as unsupported rather
     /// than reinterpreting it.
-    pub const SCHEMA_VERSION: u32 = 18;
+    pub const SCHEMA_VERSION: u32 = 19;
     /// The most events history retains. Recording one more evicts the oldest
     /// and counts it in [`Self::dropped_events`].
     pub const MAX_EVENTS: usize = 256;

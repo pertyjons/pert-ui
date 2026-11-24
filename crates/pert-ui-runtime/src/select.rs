@@ -136,6 +136,7 @@ pub(crate) struct OptionList<T> {
     pub(crate) menu: Option<MenuRows>,
     text: RefCell<Vec<TextLayout>>,
     pub(crate) geometry: Rc<RowGeometry>,
+    descriptions: RefCell<Vec<Option<TextLayout>>>,
     viewport: Cell<Size>,
 }
 impl<T: Clone + Eq + 'static> OptionList<T> {
@@ -176,8 +177,133 @@ impl<T: Clone + Eq + 'static> OptionList<T> {
                 separators: RefCell::new(separators),
                 ..RowGeometry::default()
             }),
+            descriptions: RefCell::default(),
             viewport: Cell::new(Size::ZERO),
         }
+    }
+    fn description_layouts(
+        &self,
+        cx: &MeasureContext<'_>,
+        width: f32,
+    ) -> Result<Vec<Option<TextLayout>>, RuntimeError> {
+        if !self
+            .options
+            .iter()
+            .any(|option| option.description().is_some())
+        {
+            return Ok(Vec::new());
+        }
+        let width = (width - 2.0 * cx.metric(MetricRole::ControlPaddingX)).max(0.0);
+        self.options
+            .iter()
+            .map(|choice| {
+                choice
+                    .description()
+                    .map(|text| cx.text(text, Some(width), TextStyle::Caption))
+                    .transpose()
+            })
+            .collect()
+    }
+
+    fn footer_height(descriptions: &[Option<TextLayout>], cx: &MeasureContext<'_>) -> f32 {
+        descriptions
+            .iter()
+            .flatten()
+            .map(|text| text.size().height() + 2.0 * cx.metric(MetricRole::ControlPaddingY))
+            .fold(0.0, f32::max)
+    }
+
+    fn paint_rows(&self, p: &mut Painter) -> Result<(), DrawError> {
+        let size = self.viewport.get();
+        let geometry = &self.geometry;
+        let h = geometry.row.get();
+        let offset = geometry.offset.get();
+        let pad = p.metric(MetricRole::ControlPaddingX);
+        let band = geometry.band.get();
+        for index in geometry.separators.borrow().iter() {
+            let top = geometry.top(*index) - band - offset;
+            if top + band <= 0.0 || top >= size.height() {
+                continue;
+            }
+            let line = p.metric(MetricRole::BorderWidth).min(band);
+            p.fill_rect(
+                rect(0.0, top + (band - line) / 2.0, size.width(), line)?,
+                p.color(ColorRole::Divider),
+            );
+        }
+        let lead = if self.menu.as_ref().is_some_and(MenuRows::marked) {
+            p.metric(MetricRole::IconSize) + p.metric(MetricRole::IconGap)
+        } else {
+            0.0
+        };
+        let shortcuts = self.menu.as_ref().map(|menu| menu.shortcut_text.borrow());
+        for (i, (c, text)) in self
+            .options
+            .iter()
+            .zip(self.text.borrow().iter())
+            .enumerate()
+        {
+            let top = geometry.top(i) - offset;
+            if top + h <= 0.0 || top >= size.height() {
+                continue;
+            }
+            let active = self.active.as_ref() == Some(c.value());
+            let rect = rect(0.0, top, size.width(), h)?;
+            if active {
+                p.fill_rect(rect, p.color(ColorRole::Primary));
+            }
+            let color = p.color(if !self.editable || !c.is_enabled() {
+                ColorRole::Muted
+            } else if active {
+                ColorRole::OnPrimary
+            } else {
+                ColorRole::OnSurface
+            });
+            text.paint(
+                p,
+                crate::Point::new(pad + lead, top + (h - text.size().height()) / 2.0)?,
+                color,
+            )?;
+            if let Some(extra) = self.menu.as_ref().and_then(|menu| menu.extras.get(i))
+                && extra.checked
+                && let Some(mark) = &extra.mark
+            {
+                let side = p.metric(MetricRole::IconSize).min(h);
+                match mark.style {
+                    MarkStyle::Check => p.icon(
+                        Icon::Check,
+                        Rect::new(pad, top + (h - side) / 2.0, side, side)?,
+                        color,
+                    )?,
+                    MarkStyle::Radio => {
+                        let dot = side * 0.4;
+                        p.fill_shape(
+                            Rect::new(pad + (side - dot) / 2.0, top + (h - dot) / 2.0, dot, dot)?,
+                            rounded(dot / 2.0)?,
+                            color,
+                        )?;
+                    }
+                }
+            }
+            if let Some(Some(shortcut)) = shortcuts.as_ref().and_then(|all| all.get(i)) {
+                shortcut.paint(
+                    p,
+                    crate::Point::new(
+                        size.width() - pad - shortcut.size().width(),
+                        top + (h - shortcut.size().height()) / 2.0,
+                    )?,
+                    p.color(if active && self.editable && c.is_enabled() {
+                        ColorRole::OnPrimary
+                    } else {
+                        ColorRole::Muted
+                    }),
+                )?;
+            }
+            if active && self.input.focused {
+                focus_ring(p, rect)?;
+            }
+        }
+        Ok(())
     }
     fn max_offset(&self) -> f32 {
         (self.geometry.top(self.options.len()) - self.viewport.get().height()).max(0.0)
@@ -204,6 +330,9 @@ impl<T: Clone + Eq + 'static> OptionList<T> {
             return None;
         }
         let local = cx.to_local(e.position())?;
+        if local.y() >= self.viewport.get().height() {
+            return None;
+        }
         let index = self
             .geometry
             .index_at(local.y() + self.geometry.offset.get(), self.options.len())?;
@@ -486,7 +615,11 @@ impl<T: Clone + Eq + 'static> Component for OptionList<T> {
             self.geometry.offset.set(0.0);
         }
     }
-    fn measure(&self, cx: &MeasureContext<'_>, _: Constraints) -> Result<Size, RuntimeError> {
+    fn measure(
+        &self,
+        cx: &MeasureContext<'_>,
+        available: Constraints,
+    ) -> Result<Size, RuntimeError> {
         let mut label: f32 = 0.0;
         let mut h = cx.metric(MetricRole::ControlHeight);
         for c in &self.options {
@@ -498,6 +631,8 @@ impl<T: Clone + Eq + 'static> Component for OptionList<T> {
         let width = cx
             .metric(MetricRole::ControlWidth)
             .max(2.0 * cx.metric(MetricRole::ControlPaddingX) + lead + label + trail);
+        let descriptions = self.description_layouts(cx, available.width().unwrap_or(width))?;
+        let footer = Self::footer_height(&descriptions, cx);
         // Up to eight rows show before the list scrolls, with their separators.
         let shown = self.options.len().clamp(1, 8);
         let bands = self
@@ -509,7 +644,7 @@ impl<T: Clone + Eq + 'static> Component for OptionList<T> {
             .count();
         Ok(Size::new(
             width,
-            h * shown as f32 + bands as f32 * cx.metric(MetricRole::ItemGap),
+            footer + h * shown as f32 + bands as f32 * cx.metric(MetricRole::ItemGap),
         )?)
     }
     fn arrange(&self, cx: &mut ArrangeContext<'_>, s: Size) -> Result<(), RuntimeError> {
@@ -533,7 +668,12 @@ impl<T: Clone + Eq + 'static> Component for OptionList<T> {
                 }),
         );
         self.geometry.band.set(m.metric(MetricRole::ItemGap));
-        self.viewport.set(s);
+        let descriptions = self.description_layouts(m, s.width())?;
+        let footer = Self::footer_height(&descriptions, m)
+            .min((s.height() - self.geometry.row.get()).max(0.0));
+        *self.descriptions.borrow_mut() = descriptions;
+        self.viewport
+            .set(Size::new(s.width(), s.height() - footer)?);
         *self.text.borrow_mut() = texts;
         if let Some(menu) = &self.menu {
             let shortcuts = menu
@@ -550,7 +690,7 @@ impl<T: Clone + Eq + 'static> Component for OptionList<T> {
             *menu.shortcut_text.borrow_mut() = shortcuts;
         }
         self.geometry.count.set(self.options.len());
-        self.geometry.settle(s.height());
+        self.geometry.settle(self.viewport.get().height());
         Ok(())
     }
     fn pointer_input(
@@ -762,96 +902,41 @@ impl<T: Clone + Eq + 'static> Component for OptionList<T> {
         self.pointer_owns = false;
     }
     fn paint(&self, p: &mut Painter) -> Result<(), DrawError> {
-        let size = p.size();
-        let geometry = &self.geometry;
-        let h = geometry.row.get();
-        let offset = geometry.offset.get();
-        let pad = p.metric(MetricRole::ControlPaddingX);
-        let band = geometry.band.get();
-        for index in geometry.separators.borrow().iter() {
-            let top = geometry.top(*index) - band - offset;
-            if top + band <= 0.0 || top >= size.height() {
-                continue;
-            }
-            let line = p.metric(MetricRole::BorderWidth).min(band);
+        let rows = self.viewport.get();
+        if rows.height() >= p.size().height() {
+            return self.paint_rows(p);
+        }
+        p.with_clip(Rect::from_size(rows), |p| self.paint_rows(p))?;
+        let footer = rect(
+            0.0,
+            rows.height(),
+            rows.width(),
+            p.size().height() - rows.height(),
+        )?;
+        p.with_clip(footer, |p| {
             p.fill_rect(
-                rect(0.0, top + (band - line) / 2.0, size.width(), line)?,
+                rect(
+                    0.0,
+                    rows.height(),
+                    rows.width(),
+                    p.metric(MetricRole::BorderWidth),
+                )?,
                 p.color(ColorRole::Divider),
             );
-        }
-        let lead = if self.menu.as_ref().is_some_and(MenuRows::marked) {
-            p.metric(MetricRole::IconSize) + p.metric(MetricRole::IconGap)
-        } else {
-            0.0
-        };
-        let shortcuts = self.menu.as_ref().map(|menu| menu.shortcut_text.borrow());
-        for (i, (c, text)) in self
-            .options
-            .iter()
-            .zip(self.text.borrow().iter())
-            .enumerate()
-        {
-            let top = geometry.top(i) - offset;
-            if top + h <= 0.0 || top >= size.height() {
-                continue;
-            }
-            let active = self.active.as_ref() == Some(c.value());
-            let rect = rect(0.0, top, size.width(), h)?;
-            if active {
-                p.fill_rect(rect, p.color(ColorRole::Primary));
-            }
-            let color = p.color(if !self.editable || !c.is_enabled() {
-                ColorRole::Muted
-            } else if active {
-                ColorRole::OnPrimary
-            } else {
-                ColorRole::OnSurface
-            });
-            text.paint(
-                p,
-                crate::Point::new(pad + lead, top + (h - text.size().height()) / 2.0)?,
-                color,
-            )?;
-            if let Some(extra) = self.menu.as_ref().and_then(|menu| menu.extras.get(i))
-                && extra.checked
-                && let Some(mark) = &extra.mark
+            if let Some(index) = self.active_index()
+                && let Some(Some(text)) = self.descriptions.borrow().get(index)
             {
-                let side = p.metric(MetricRole::IconSize).min(h);
-                match mark.style {
-                    MarkStyle::Check => p.icon(
-                        Icon::Check,
-                        Rect::new(pad, top + (h - side) / 2.0, side, side)?,
-                        color,
-                    )?,
-                    MarkStyle::Radio => {
-                        let dot = side * 0.4;
-                        p.fill_shape(
-                            Rect::new(pad + (side - dot) / 2.0, top + (h - dot) / 2.0, dot, dot)?,
-                            rounded(dot / 2.0)?,
-                            color,
-                        )?;
-                    }
-                }
-            }
-            if let Some(Some(shortcut)) = shortcuts.as_ref().and_then(|all| all.get(i)) {
-                shortcut.paint(
+                text.paint(
                     p,
-                    crate::Point::new(
-                        size.width() - pad - shortcut.size().width(),
-                        top + (h - shortcut.size().height()) / 2.0,
+                    Point::new(
+                        p.metric(MetricRole::ControlPaddingX),
+                        rows.height() + p.metric(MetricRole::ControlPaddingY),
                     )?,
-                    p.color(if active && self.editable && c.is_enabled() {
-                        ColorRole::OnPrimary
-                    } else {
-                        ColorRole::Muted
-                    }),
+                    p.color(ColorRole::OnSurface),
                 )?;
             }
-            if active && self.input.focused {
-                focus_ring(p, rect)?;
-            }
-        }
-        Ok(())
+            Ok(())
+        })
     }
     fn inspect(&self) -> ComponentDetails {
         let mut d = ComponentDetails::default();
@@ -880,7 +965,8 @@ impl<T: Clone + Eq + 'static> Component for OptionList<T> {
         // value. A row that opens a submenu expands instead of running.
         let open = self.menu.as_ref().and_then(MenuRows::open_key);
         let items = self.options.iter().enumerate().map(|(index, option)| {
-            let mut item = SemanticItem::new(option.label())
+            let mut item = option
+                .semantic_item()
                 .selected(active == Some(index))
                 .disabled(!self.editable || !option.is_enabled());
             if let Ok(bounds) = rect(
@@ -1424,7 +1510,8 @@ impl<T: Clone + Eq + 'static> Component for SelectAnchor<T> {
                     label: chosen.map(|index| self.options[index].label().to_owned()),
                 })
                 .items(self.options.iter().enumerate().map(|(index, option)| {
-                    SemanticItem::new(option.label())
+                    option
+                        .semantic_item()
                         .selected(chosen == Some(index))
                         .disabled(!self.focusable() || !option.is_enabled())
                         .action(SemanticAction::Select)
@@ -1861,7 +1948,7 @@ impl<T: Clone + Eq + 'static> Component for Select<T> {
         self.popover.measure(cx, a)
     }
     fn arrange(&self, cx: &mut ArrangeContext<'_>, s: Size) -> Result<(), RuntimeError> {
-        self.popover.arrange(cx, s)
+        crate::popover::arrange_select(cx, s)
     }
     fn keyboard_event(
         &mut self,

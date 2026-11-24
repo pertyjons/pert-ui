@@ -127,12 +127,23 @@ pub(crate) fn measure_anchor(
     }
 }
 pub(crate) fn arrange_surface(cx: &mut ArrangeContext<'_>, size: Size) -> Result<(), RuntimeError> {
-    arrange_popup(cx, size, true)
+    arrange_popup(cx, size, PopupWidth::AtLeastAnchor)
 }
+pub(crate) fn arrange_select(cx: &mut ArrangeContext<'_>, size: Size) -> Result<(), RuntimeError> {
+    arrange_popup(cx, size, PopupWidth::SelectionList)
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum PopupWidth {
+    AtLeastAnchor,
+    SelectionList,
+    Intrinsic,
+}
+
 fn arrange_popup(
     cx: &mut ArrangeContext<'_>,
     size: Size,
-    anchor_width_minimum: bool,
+    width_policy: PopupWidth,
 ) -> Result<(), RuntimeError> {
     if cx.len() > 2 {
         return Err(LayoutError::InvalidChild.into());
@@ -144,19 +155,24 @@ fn arrange_popup(
         let viewport = cx.measurement().viewport();
         let available = Constraints::new(Some(viewport.width()), Some(viewport.height()))?;
         let popup = cx.measure(1, available)?;
+        let width = match width_policy {
+            PopupWidth::AtLeastAnchor | PopupWidth::SelectionList => {
+                popup.width().max(size.width())
+            }
+            PopupWidth::Intrinsic => popup.width(),
+        }
+        .min(viewport.width());
+        // The panel subtracts its own padding before measuring the list. Its
+        // help wraps at the allocated width even when the anchor widens it.
+        let height = if width_policy == PopupWidth::SelectionList && width < viewport.width() {
+            cx.measure(1, Constraints::new(Some(width), available.height())?)?
+                .height()
+        } else {
+            popup.height()
+        };
         cx.place(
             1,
-            rect(
-                0.0,
-                size.height(),
-                if anchor_width_minimum {
-                    popup.width().max(size.width())
-                } else {
-                    popup.width()
-                }
-                .min(viewport.width()),
-                popup.height().min(viewport.height()),
-            )?,
+            rect(0.0, size.height(), width, height.min(viewport.height()))?,
         )?;
     }
     Ok(())
@@ -491,7 +507,7 @@ impl Component for Tooltip {
         measure_anchor(cx, a)
     }
     fn arrange(&self, cx: &mut ArrangeContext<'_>, s: Size) -> Result<(), RuntimeError> {
-        arrange_popup(cx, s, false)
+        arrange_popup(cx, s, PopupWidth::Intrinsic)
     }
     fn keyboard_event(
         &mut self,
