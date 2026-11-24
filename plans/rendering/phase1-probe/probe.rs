@@ -56,7 +56,8 @@
 //! bytes at scale 1, printed as `j1-page: <key>`), `PROBE_CAPTURES` (a
 //! directory for CPU captures of every page at every scale), `PROBE_TMP`
 //! (a directory for the diagram editor's files) and `PROBE_ONLY=cards` (only
-//! the gallery's zoom workload, to isolate it).
+//! the gallery's zoom workload) or `PROBE_ONLY=mixer-diagram` (the solid
+//! application controls for phase 2).
 use pert_ui::cpu::CpuRenderer;
 use pert_ui::parameter::*;
 use pert_ui::{
@@ -912,6 +913,13 @@ impl Probe {
         if std::env::var("PROBE_ONLY").as_deref() == Ok("cards") {
             let cards = self.cards()?;
             self.series_table("Gallery zoom workload (64 cards)", &cards);
+            return Ok(());
+        }
+        if std::env::var("PROBE_ONLY").as_deref() == Ok("mixer-diagram") {
+            let mixer = self.mixer()?;
+            self.series_table("Mixer with live data", &[mixer]);
+            let diagram = self.diagram()?;
+            self.series_table("Diagram editor zoom and pan", &diagram);
             return Ok(());
         }
         let mut heaviest = String::new();

@@ -1,0 +1,19 @@
+cohort	run	scenario	CPU_ms	present_ms	offscreen_readback_ms	new_mask_KiB
+solid-repeats	1	mixer: one tick per frame	1.093636	0.35233200000000003	1.9218	0
+solid-repeats	1	diagram: pan 7 px per frame	2.063215	0.862555	3.613808	0
+solid-repeats	2	mixer: one tick per frame	1.1766050000000001	0.386677	1.981735	0
+solid-repeats	2	diagram: pan 7 px per frame	8.26983	1.822386	6.942144	0
+solid-repeats	3	mixer: one tick per frame	2.237902	0.693646	4.5313039999999996	0
+solid-repeats	3	diagram: pan 7 px per frame	7.0310939999999995	1.7780829999999999	7.4331689999999995	0
+solid-repeats	4	mixer: one tick per frame	1.213039	0.385074	1.912063	0
+solid-repeats	4	diagram: pan 7 px per frame	1.982888	0.80318	3.460914	0
+solid-repeats	5	mixer: one tick per frame	1.0794730000000001	0.339256	1.904413	0
+solid-repeats	5	diagram: pan 7 px per frame	2.007207	0.829306	3.4613449999999997	0
+solid-repeats	6	mixer: one tick per frame	1.101368	0.355294	1.929638	0
+solid-repeats	6	diagram: pan 7 px per frame	2.001191	0.8431569999999999	3.516829	0
+solid-retry	1	mixer: one tick per frame	1.130706	0.36860499999999996	1.917721	0
+solid-retry	1	diagram: pan 7 px per frame	2.0594849999999996	0.859533	3.521419	0
+solid-retry	2	mixer: one tick per frame	1.149902	0.364322	1.93049	0
+solid-retry	2	diagram: pan 7 px per frame	2.2510160000000003	0.9392820000000001	3.695969	0
+solid-retry	3	mixer: one tick per frame	1.613883	0.51614	2.231477	0
+solid-retry	3	diagram: pan 7 px per frame	3.810997	1.627815	4.681869	0

@@ -1,0 +1,13 @@
+[package]
+name = "gradient-probe"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+bytemuck = { version = "1", features = ["derive"] }
+wgpu = { version = "30.0.1", default-features = false, features = ["std", "wgsl", "vulkan"] }
+pollster = "1"
+num-traits = "0.2"
+
+[workspace]

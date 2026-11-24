@@ -1,0 +1,111 @@
+adapter: AdapterInfo { name: "Intel(R) UHD Graphics 770 (ADL-S GT1)", vendor: 32902, device: 18048, device_type: IntegratedGpu, device_pci_bus_id: "0000:00:02.0", driver: "Intel open-source Mesa driver", driver_info: "Mesa 26.2.7", backend: Vulkan, subgroup_min_size: 8, subgroup_max_size: 32, transient_saves_memory: Some(false), limit_bucket: None }
+check dark-undithered          1024x64 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (30, 0, 0)] channels>1=[0, 0]
+check dark-dithered            1024x64 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (0, 0, 0)] channels>1=[0, 0]
+check dark-table               1024x64 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (0, 0, 0)] channels>1=[0, 0]
+check dark-repeated            1024x64 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (0, 0, 0)] channels>1=[0, 0]
+banding tile RMS 0.26067 -> 0.05440; ratio 0.2087; capture identical true
+check title                    320x16 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (11, 0, 0)] channels>1=[0, 0]
+check title-overlay            320x16 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (11, 0, 0)] channels>1=[0, 0]
+check title-expanded           640x16 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (11, 0, 0)] channels>1=[0, 0]
+check title-resized            20x16 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (11, 0, 0)] channels>1=[0, 0]
+check geom0-extend0            93x61 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (50, 0, 0)] channels>1=[0, 0]
+check geom0-extend1            93x61 bg=1 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (12, 0, 1)] channels>1=[0, 0]
+check geom0-extend2            93x61 bg=-1 worst(ref,cpu/gpu)=[1, 1] locations=[(75, 12, 3), (6, 0, 1)] channels>1=[0, 0]
+check geom1-extend0            93x61 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (0, 0, 0)] channels>1=[0, 0]
+check geom1-extend1            93x61 bg=1 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (0, 0, 2)] channels>1=[0, 0]
+check geom1-extend2            93x61 bg=-1 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (5, 0, 1)] channels>1=[0, 0]
+check geom2-extend0            93x61 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (0, 0, 0)] channels>1=[0, 0]
+check geom2-extend1            93x61 bg=1 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (7, 0, 2)] channels>1=[0, 0]
+check geom2-extend2            93x61 bg=-1 worst(ref,cpu/gpu)=[1, 1] locations=[(32, 0, 3), (0, 0, 0)] channels>1=[0, 0]
+check title                    400x20 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (38, 0, 0)] channels>1=[0, 0]
+check title-overlay            400x20 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (38, 0, 0)] channels>1=[0, 0]
+check title-expanded           800x20 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (38, 0, 0)] channels>1=[0, 0]
+check title-resized            25x20 bg=0 worst(ref,cpu/gpu)=[0, 0] locations=[(0, 0, 0), (0, 0, 0)] channels>1=[0, 0]
+check geom0-extend0            116x76 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (68, 0, 1)] channels>1=[0, 0]
+check geom0-extend1            116x76 bg=1 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (7, 0, 1)] channels>1=[0, 0]
+check geom0-extend2            116x76 bg=-1 worst(ref,cpu/gpu)=[1, 1] locations=[(90, 22, 3), (0, 0, 2)] channels>1=[0, 0]
+check geom1-extend0            116x76 bg=0 worst(ref,cpu/gpu)=[1, 1] locations=[(6, 28, 0), (0, 0, 0)] channels>1=[0, 0]
+check geom1-extend1            116x76 bg=1 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (1, 0, 2)] channels>1=[0, 0]
+check geom1-extend2            116x76 bg=-1 worst(ref,cpu/gpu)=[1, 1] locations=[(6, 28, 0), (7, 0, 0)] channels>1=[0, 0]
+check geom2-extend0            116x76 bg=0 worst(ref,cpu/gpu)=[1, 1] locations=[(33, 66, 0), (0, 0, 0)] channels>1=[0, 0]
+check geom2-extend1            116x76 bg=1 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (4, 0, 2)] channels>1=[0, 0]
+check geom2-extend2            116x76 bg=-1 worst(ref,cpu/gpu)=[1, 1] locations=[(91, 1, 1), (0, 0, 0)] channels>1=[0, 0]
+check title                    640x32 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (16, 0, 0)] channels>1=[0, 0]
+check title-overlay            640x32 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (16, 0, 0)] channels>1=[0, 0]
+check title-expanded           1280x32 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (16, 0, 0)] channels>1=[0, 0]
+check title-resized            40x32 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (16, 0, 0)] channels>1=[0, 0]
+check geom0-extend0            186x122 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (94, 0, 0)] channels>1=[0, 0]
+check geom0-extend1            186x122 bg=1 worst(ref,cpu/gpu)=[1, 1] locations=[(143, 19, 2), (0, 0, 1)] channels>1=[0, 0]
+check geom0-extend2            186x122 bg=-1 worst(ref,cpu/gpu)=[1, 1] locations=[(135, 52, 3), (6, 0, 0)] channels>1=[0, 0]
+check geom1-extend0            186x122 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (0, 0, 0)] channels>1=[0, 0]
+check geom1-extend1            186x122 bg=1 worst(ref,cpu/gpu)=[1, 1] locations=[(127, 13, 0), (2, 0, 2)] channels>1=[0, 0]
+check geom1-extend2            186x122 bg=-1 worst(ref,cpu/gpu)=[1, 1] locations=[(171, 27, 0), (4, 0, 0)] channels>1=[0, 0]
+check geom2-extend0            186x122 bg=0 worst(ref,cpu/gpu)=[1, 1] locations=[(11, 3, 1), (0, 0, 0)] channels>1=[0, 0]
+check geom2-extend1            186x122 bg=1 worst(ref,cpu/gpu)=[1, 1] locations=[(53, 80, 0), (3, 0, 1)] channels>1=[0, 0]
+check geom2-extend2            186x122 bg=-1 worst(ref,cpu/gpu)=[1, 1] locations=[(11, 3, 1), (0, 0, 0)] channels>1=[0, 0]
+check mixed-border             257x8 bg=-1 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (7, 0, 2)] channels>1=[0, 0]
+check alpha                    257x8 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (1, 0, 2)] channels>1=[0, 0]
+check alpha                    257x8 bg=1 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (5, 0, 0)] channels>1=[0, 0]
+check alpha                    257x8 bg=-1 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (1, 0, 2)] channels>1=[0, 0]
+check mixed-border             257x8 bg=-1 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (7, 0, 2)] channels>1=[0, 0]
+check alpha                    257x8 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (1, 0, 2)] channels>1=[0, 0]
+check alpha                    257x8 bg=1 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (5, 0, 0)] channels>1=[0, 0]
+check alpha                    257x8 bg=-1 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (1, 0, 2)] channels>1=[0, 0]
+check mixed-border             257x8 bg=-1 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (7, 0, 2)] channels>1=[0, 0]
+check alpha                    257x8 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (1, 0, 2)] channels>1=[0, 0]
+check alpha                    257x8 bg=1 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (5, 0, 0)] channels>1=[0, 0]
+check alpha                    257x8 bg=-1 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (1, 0, 2)] channels>1=[0, 0]
+check alpha-scrim              1024x64 bg=0.014443843596092545 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (13, 0, 0)] channels>1=[0, 0]
+check alpha-scrim-dither       1024x64 bg=0.014443843596092545 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (13, 0, 0)] channels>1=[0, 0]
+black scrim bg=0.014443843596092545: 8280 changed channel bytes with RGB dither
+check alpha-scrim              1024x64 bg=1 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (3, 0, 0)] channels>1=[0, 0]
+check alpha-scrim-dither       1024x64 bg=1 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (3, 0, 0)] channels>1=[0, 0]
+black scrim bg=1: 552 changed channel bytes with RGB dither
+check zoom-local               257x8 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (27, 0, 0)] channels>1=[0, 0]
+check zoom-rebased             257x8 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (27, 0, 0)] channels>1=[0, 0]
+check near-transparent-table   65x3 bg=-1 worst(ref,cpu/gpu)=[0, 0] locations=[(0, 0, 0), (0, 0, 0)] channels>1=[0, 0]
+check near-transparent-table   65x3 bg=-1 worst(ref,cpu/gpu)=[0, 0] locations=[(0, 0, 0), (0, 0, 0)] channels>1=[0, 0]
+check near-transparent-table   65x3 bg=-1 worst(ref,cpu/gpu)=[0, 0] locations=[(0, 0, 0), (0, 0, 0)] channels>1=[0, 0]
+check hard0/-0.0001            129x65 bg=0 worst(ref,cpu/gpu)=[0, 0] locations=[(0, 0, 0), (0, 0, 0)] channels>1=[0, 0]
+check hard1/-0.0001            129x65 bg=0 worst(ref,cpu/gpu)=[0, 0] locations=[(0, 0, 0), (0, 0, 0)] channels>1=[0, 0]
+check hard2/-0.0001            129x65 bg=0 worst(ref,cpu/gpu)=[0, 0] locations=[(0, 0, 0), (0, 0, 0)] channels>1=[0, 0]
+check hard0/0                  129x65 bg=0 worst(ref,cpu/gpu)=[0, 0] locations=[(0, 0, 0), (0, 0, 0)] channels>1=[0, 0]
+check hard1/0                  129x65 bg=0 worst(ref,cpu/gpu)=[0, 0] locations=[(0, 0, 0), (0, 0, 0)] channels>1=[0, 0]
+check hard2/0                  129x65 bg=0 worst(ref,cpu/gpu)=[0, 0] locations=[(0, 0, 0), (0, 0, 0)] channels>1=[0, 0]
+check hard0/0.0001             129x65 bg=0 worst(ref,cpu/gpu)=[0, 0] locations=[(0, 0, 0), (0, 0, 0)] channels>1=[0, 0]
+check hard1/0.0001             129x65 bg=0 worst(ref,cpu/gpu)=[0, 0] locations=[(0, 0, 0), (0, 0, 0)] channels>1=[0, 0]
+check hard2/0.0001             129x65 bg=0 worst(ref,cpu/gpu)=[0, 0] locations=[(0, 0, 0), (0, 0, 0)] channels>1=[0, 0]
+sweep signed=false opposite-side pixels 281 including 257 exact ties; maximum distance 0.044337332 physical px / 0.0000001861 turns
+sweep signed=true opposite-side pixels 1 including 0 exact ties; maximum distance 0.000004595 physical px / 0.0000000012 turns
+segments two-stop count=24 max sampled pre-dither error=0.4897 encoded bytes
+check two-stop                 1024x64 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (41, 0, 0)] channels>1=[0, 0]
+check direct-OKLab             1024x64 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (55, 0, 0)] channels>1=[0, 0]
+row reuse segmented CPU ms 0.0498 (0.0495..0.0775)
+bench segmented            GPU ms median 0.2231 range 0.2059..0.3678 CPU ms median Some(2.949423) range Some(2.942214)..Some(2.9534890000000003) recurrent upload 0/frame
+row reuse direct-Oklab CPU ms 0.0566 (0.0565..0.0593)
+bench direct-Oklab         GPU ms median 0.1376 range 0.1242..0.3349 CPU ms median Some(3.4272959999999997) range Some(3.417661)..Some(3.517615) recurrent upload 0/frame
+segments alternating count=64 max sampled pre-dither error=15.3818 encoded bytes
+check alternating              1024x64 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (0, 0, 0)] channels>1=[0, 0]
+check direct-OKLab             1024x64 bg=0 worst(ref,cpu/gpu)=[0, 1] locations=[(0, 0, 0), (16, 0, 0)] channels>1=[0, 0]
+row reuse panel CPU ms 0.0714 (0.0713..0.0744)
+bench panel                GPU ms median 0.1786 range 0.1217..0.2466 CPU ms median Some(4.367905) range Some(4.348933)..Some(4.533817) recurrent upload 0/frame
+row reuse panel-dither CPU ms 0.9101 (0.9078..0.9116)
+bench panel-dither         GPU ms median 0.1844 range 0.1504..0.3211 CPU ms median Some(7.245001) range Some(7.24186)..Some(7.2781080000000005) recurrent upload 0/frame
+row reuse panel-table CPU ms 0.8068 (0.8035..0.8093)
+bench panel-table          GPU ms median 0.2277 range 0.2117..0.2465 CPU ms median Some(6.421788) range Some(6.4190380000000005)..Some(6.440954) recurrent upload 0/frame
+row reuse alpha-strip CPU ms 0.0145 (0.0144..0.0149)
+bench alpha-strip          GPU ms median 0.0859 range 0.0583..0.2007 CPU ms median Some(0.34437) range Some(0.344005)..Some(0.352599) recurrent upload 0/frame
+row reuse alpha-strip-dither CPU ms 0.2302 (0.2301..0.2814)
+bench alpha-strip-dither   GPU ms median 0.1423 range 0.0875..0.5080 CPU ms median Some(0.69435) range Some(0.690256)..Some(0.739471) recurrent upload 0/frame
+row reuse alpha-strip-table CPU ms 0.1978 (0.1934..0.2376)
+bench alpha-strip-table    GPU ms median 0.1692 range 0.1406..0.6517 CPU ms median Some(0.586529) range Some(0.581153)..Some(0.599692) recurrent upload 0/frame
+row reuse bars CPU ms 0.5319 (0.5275..1.3051)
+bench bars                 GPU ms median 0.3182 range 0.2799..0.5603 CPU ms median Some(15.117707) range Some(15.066709)..Some(15.742574) recurrent upload 0/frame
+row reuse bars-dither CPU ms 0.8354 (0.8230..1.3964)
+bench bars-dither          GPU ms median 0.3977 range 0.3653..0.4556 CPU ms median Some(26.137361000000002) range Some(25.558915000000002)..Some(26.490057) recurrent upload 0/frame
+row reuse bars-table CPU ms 0.7576 (0.7501..1.3466)
+bench bars-table           GPU ms median 0.8395 range 0.4502..1.7753 CPU ms median Some(22.944638) range Some(22.675435)..Some(23.790224) recurrent upload 0/frame
+bench bars-geometry        GPU ms median 0.3209 range 0.2728..0.6435 CPU ms median Some(15.438297) range Some(15.405759)..Some(16.605378) recurrent upload 64/frame
+bench bars-changing        GPU ms median 0.3405 range 0.2170..0.9686 CPU ms median Some(15.426960999999999) range Some(15.396131)..Some(15.548008000000001) recurrent upload 160/frame
+bench bars-texture         GPU ms median 0.2431 range 0.1942..1.1728 CPU ms median Some(21.811173999999998) range Some(21.780887)..Some(22.811854999999998) recurrent upload 0/frame
+total failing comparisons: 0

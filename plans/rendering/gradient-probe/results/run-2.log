@@ -1,0 +1,27 @@
+adapter: AdapterInfo { name: "Intel(R) UHD Graphics 770 (ADL-S GT1)", vendor: 32902, device: 18048, device_type: IntegratedGpu, device_pci_bus_id: "0000:00:02.0", driver: "Intel open-source Mesa driver", driver_info: "Mesa 26.2.7", backend: Vulkan, subgroup_min_size: 8, subgroup_max_size: 32, transient_saves_memory: Some(false), limit_bucket: None }
+row reuse segmented CPU ms 0.0541 (0.0539..0.0881)
+bench segmented            GPU ms median 0.2275 range 0.2034..0.4392 CPU ms median Some(3.237009) range Some(3.224211)..Some(3.25814) recurrent upload 0/frame
+row reuse direct-Oklab CPU ms 0.0655 (0.0650..0.0708)
+bench direct-Oklab         GPU ms median 0.1360 range 0.1279..0.3125 CPU ms median Some(3.944149) range Some(3.747925)..Some(3.99357) recurrent upload 0/frame
+row reuse panel CPU ms 0.0783 (0.0781..0.0805)
+bench panel                GPU ms median 0.1377 range 0.1253..0.2754 CPU ms median Some(4.9900459999999995) range Some(4.807678)..Some(5.225467999999999) recurrent upload 0/frame
+row reuse panel-dither CPU ms 0.9524 (0.9505..0.9857)
+bench panel-dither         GPU ms median 0.1899 range 0.1601..0.5112 CPU ms median Some(7.765751000000001) range Some(7.573257)..Some(8.11781) recurrent upload 0/frame
+row reuse panel-table CPU ms 0.8271 (0.8230..0.8289)
+bench panel-table          GPU ms median 0.2365 range 0.2111..0.3007 CPU ms median Some(6.604312999999999) range Some(6.563244999999999)..Some(6.86682) recurrent upload 0/frame
+row reuse alpha-strip CPU ms 0.0148 (0.0147..0.0159)
+bench alpha-strip          GPU ms median 0.0844 range 0.0782..0.0983 CPU ms median Some(0.357268) range Some(0.350939)..Some(0.46048500000000003) recurrent upload 0/frame
+row reuse alpha-strip-dither CPU ms 0.3137 (0.2720..0.3263)
+bench alpha-strip-dither   GPU ms median 0.1293 range 0.0899..0.5339 CPU ms median Some(0.7419370000000001) range Some(0.720039)..Some(0.798902) recurrent upload 0/frame
+row reuse alpha-strip-table CPU ms 0.2113 (0.2111..0.2137)
+bench alpha-strip-table    GPU ms median 0.0896 range 0.0683..0.1161 CPU ms median Some(0.6429320000000001) range Some(0.634434)..Some(0.852962) recurrent upload 0/frame
+row reuse bars CPU ms 0.5168 (0.5142..1.0786)
+bench bars                 GPU ms median 0.3130 range 0.2802..0.6208 CPU ms median Some(15.410765) range Some(14.887532)..Some(16.754822) recurrent upload 0/frame
+row reuse bars-dither CPU ms 0.7965 (0.7939..1.3483)
+bench bars-dither          GPU ms median 0.4044 range 0.3559..0.4282 CPU ms median Some(25.944224) range Some(25.204748)..Some(28.84178) recurrent upload 0/frame
+row reuse bars-table CPU ms 1.0466 (0.7148..1.8648)
+bench bars-table           GPU ms median 0.5584 range 0.4829..1.0566 CPU ms median Some(21.752769) range Some(21.287376000000002)..Some(23.774597) recurrent upload 0/frame
+bench bars-geometry        GPU ms median 0.3205 range 0.2800..0.5219 CPU ms median Some(14.395718) range Some(14.153196)..Some(15.783024) recurrent upload 64/frame
+bench bars-changing        GPU ms median 0.3215 range 0.3015..0.3320 CPU ms median Some(14.443368) range Some(14.164871000000002)..Some(14.937136) recurrent upload 160/frame
+bench bars-texture         GPU ms median 0.2262 range 0.1740..0.4958 CPU ms median Some(20.312178) range Some(19.980836)..Some(20.847112000000003) recurrent upload 0/frame
+total failing comparisons: 0
