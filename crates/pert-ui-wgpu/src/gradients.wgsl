@@ -69,7 +69,7 @@ fn gradient_color(index:u32,pixel:vec2f)->vec4f {
         let offset=stops[settings.w+i].offset.x;
         if offset!=0. && abs(offset-t)<=0.001 {
             let side=boundary_side(cycle+select(offset,1.-offset,reverse),pixel-coeff.xy,axis,coeff.zw);
-            if select(side<0.,side>0.,reverse) {break;}
+            if ((!reverse && side < 0.0) || (reverse && side > 0.0)) {break;}
         } else if offset>t {break;}
         lower=i;
     }
