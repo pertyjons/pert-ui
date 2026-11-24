@@ -338,6 +338,12 @@ Open **Appearance & tools → Gradients** or start directly on that page:
 cargo run --locked -p pert-ui-gallery -- --page gradients
 ```
 
-The swatches show a linear gradient, a concentric radial gradient and a
+In **Horizon**, drag the spectrum slider to move the sun and its reflection.
+Select **Change sky** to cycle through Afterglow, Arctic fjord and Moonrise.
+The enamel button layers a standard interactive button above a gradient.
+**Reset sun** restores the initial position and shows a gradient border
+around a solid button face.
+The material samples use reflected stops for brushed silver and repeating
+hard stops for a two-ink print. The swatches below show a linear gradient, a concentric radial gradient and a
 40-logical-pixel transition. Under **Surfaces → Floating windows**, the
 Out-1 title gradient ends at the center of its Information icon as the window resizes.

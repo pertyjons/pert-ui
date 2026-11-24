@@ -5,6 +5,66 @@ use pert_ui::testing::HostIntegration;
 use pert_ui::{DebugOverlay, Palette, TextEditError, ThemeMode, ValidationCode, Workspace};
 
 #[test]
+fn gradient_gallery_controls_change_the_rendered_landscape() {
+    let (mut ui, root) = mounted();
+    open(&mut ui, &root, "gradients");
+    let button = find(&ui, &root, "next-sky");
+    let slider = find(&ui, &root, "sun-position");
+    let landscape = find(&ui, &root, "landscape");
+    let bounds = ui.bounds(&landscape).unwrap().unwrap();
+    let sample = |ui: &mut Runtime, x: f32, y: f32| {
+        let frame = pert_ui::cpu::CpuRenderer::new()
+            .render(&ui.paint().unwrap())
+            .unwrap();
+        let col = (bounds.x() + x * bounds.width()) as usize;
+        let row = (bounds.y() + y * bounds.height()) as usize;
+        let index = (row * frame.width() as usize + col) * 4;
+        <[u8; 4]>::try_from(&frame.pixels()[index..index + 4]).unwrap()
+    };
+    let initial = sample(&mut ui, 0.5, 0.1);
+    click(&mut ui, &button);
+    assert_eq!(text(&ui, "sky-name"), ["Arctic fjord"]);
+    assert_ne!(sample(&mut ui, 0.5, 0.1), initial);
+    click(&mut ui, &button);
+    assert_eq!(text(&ui, "sky-name"), ["Moonrise"]);
+    click(&mut ui, &button);
+    assert_eq!(sample(&mut ui, 0.5, 0.1), initial);
+    let previous_sun = sample(&mut ui, 0.637, 0.266);
+    let rail = ui.bounds(&slider).unwrap().unwrap();
+    pointer_click(
+        &mut ui,
+        Point::new(
+            rail.x() + rail.width() * 0.2,
+            rail.y() + rail.height() * 0.5,
+        )
+        .unwrap(),
+    );
+    settle(&mut ui);
+    assert_ne!(sample(&mut ui, 0.637, 0.266), previous_sun);
+    let reset = find(&ui, &root, "reset-sun");
+    click(&mut ui, &reset);
+    assert_eq!(sample(&mut ui, 0.637, 0.266), previous_sun);
+    assert!(
+        ui.paint()
+            .unwrap()
+            .commands()
+            .iter()
+            .any(|command| matches!(command,
+                pert_ui::DrawCommand::DrawShape{ fill:None, border:Some(border), .. }
+                if matches!(border.paint(),pert_ui::Paint::Gradient(_))
+            ))
+    );
+    ui.set_viewport(pert_ui::Viewport::new(320., 640., 1.25).unwrap())
+        .unwrap();
+    settle(&mut ui);
+    assert!(
+        ui.validation_report().issues.is_empty(),
+        "{:?}",
+        ui.validation_report().issues
+    );
+}
+
+#[test]
 fn profiler_controls_capture_pause_clear_and_do_not_poll() {
     let (mut ui, root) = mounted();
     open(&mut ui, &root, "profiling");

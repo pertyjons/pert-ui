@@ -86,6 +86,7 @@ pub(super) struct Gallery {
     strip_ids: [ParameterId; 3],
     id: ParameterId,
     property_id: ParameterId,
+    sun_id: ParameterId,
     spec: ParameterSpec<f32>,
     /// The live pages' producer thread, which the host joins after `App::run`.
     producer: crate::live::ProducerHandle,
@@ -101,6 +102,7 @@ impl Gallery {
             ],
             id: ParameterId::new(2, 1, "amount")?,
             property_id: ParameterId::new(2, 6, "property-level")?,
+            sun_id: ParameterId::new(2, 7, "sun-position")?,
             spec: ParameterSpec::new("Amount", -100.0, 100.0, 0.0)?,
             producer: crate::live::ProducerHandle::default(),
         })
@@ -355,7 +357,7 @@ impl Gallery {
                     places.page(
                         "gradients",
                         "Gradients",
-                        crate::pages::gradients::gradients()?,
+                        crate::pages::gradients::gradients(ui, self.sun_id)?,
                     ),
                     places.page("workspace", "Workspace", workspace_page(ui)),
                     places.page("profiling", "Profiler", profiling(ui)),
