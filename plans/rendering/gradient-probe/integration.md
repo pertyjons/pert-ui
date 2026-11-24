@@ -52,3 +52,13 @@ control pass the same reference binary twice. `summarize.py OUTPUT` reports
 the second, median and ninth ordered ratios for every scenario and metric.
 The present column is host submission time. The GPU column includes offscreen
 completion and readback. The single zoom-settle frame is descriptive.
+
+## Timing under shared machine load
+
+Ten uninstrumented pairs (reference 3448065, candidate 3d52030, cores 6 and
+8) overlapped development builds. Median candidate/reference CPU time was
+1.059 for the mixer and 1.000 for diagram pan. For GPU time it was 1.011
+and 1.000 respectively. For presentation it was 1.029 and 0.963. The
+second and ninth sorted ratios for mixer CPU were 0.961 and 1.837, so this
+run cannot resolve the proposed 5% threshold. Four attempts in an earlier
+same-binary run produced no samples because mixer ticks timed out.
