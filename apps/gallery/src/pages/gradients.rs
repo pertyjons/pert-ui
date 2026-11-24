@@ -233,7 +233,17 @@ impl Component for GradientControl {
             return Ok(());
         }
         let (bounds, stops) = match self.finish {
-            Finish::OpalBorder => return Ok(()),
+            Finish::OpalBorder if p.focus_within() => (
+                Rect::from_size(size),
+                [rgb([28, 101, 105]), rgb([62, 76, 144]), rgb([119, 51, 114])],
+            ),
+            Finish::OpalBorder => {
+                return p.fill_shape(
+                    Rect::from_size(size),
+                    Shape::rounded(Length::new(p.metric(MetricRole::CornerRadius))?),
+                    p.color(ColorRole::Button),
+                );
+            }
             Finish::SpectrumRail => {
                 let height = h.min(20.);
                 (
@@ -334,7 +344,7 @@ pub(crate) fn gradients(ui: &mut Runtime, id: ParameterId) -> Result<Element, Ap
                 GradientControl {
                     child: Some(Element::new(
                         "reset-sun",
-                        Button::new("Reset sun", move |_| host.write_base(INITIAL_SUN)),
+                        Button::new("Reset sun", move |_| host.write_base(INITIAL_SUN)).frameless(),
                     )),
                     finish: Finish::OpalBorder,
                 },

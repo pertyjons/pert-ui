@@ -5,6 +5,38 @@ use pert_ui::testing::HostIntegration;
 use pert_ui::{DebugOverlay, Palette, TextEditError, ThemeMode, ValidationCode, Workspace};
 
 #[test]
+fn reset_sun_gradient_fill_follows_keyboard_focus() {
+    let (mut ui, root) = mounted();
+    open(&mut ui, &root, "gradients");
+    let change = find(&ui, &root, "next-sky");
+    let reset = find(&ui, &root, "reset-sun");
+    let bounds = ui.bounds(&reset).unwrap().unwrap();
+    let face = |ui: &mut Runtime| {
+        let frame = pert_ui::cpu::CpuRenderer::new()
+            .render(&ui.paint().unwrap())
+            .unwrap();
+        // Inside the border and above the caption.
+        let y = (bounds.y() + 6.) as usize;
+        [0.2, 0.8].map(|fraction| {
+            let x = (bounds.x() + bounds.width() * fraction) as usize;
+            let i = 4 * (y * frame.width() as usize + x);
+            <[u8; 3]>::try_from(&frame.pixels()[i..i + 3]).unwrap()
+        })
+    };
+    ui.focus(&change).unwrap();
+    settle(&mut ui);
+    let resting = face(&mut ui);
+    assert_eq!(resting[0], resting[1]);
+    press(&mut ui, KeyCode::Tab);
+    assert_eq!(ui.focused(), Some(reset));
+    let focused = face(&mut ui);
+    assert!(focused[0][1] > focused[1][1] + 10);
+    assert!(focused[1][0] > focused[0][0] + 10);
+    press(&mut ui, KeyCode::Tab);
+    assert_eq!(face(&mut ui), resting);
+}
+
+#[test]
 fn gradient_gallery_controls_change_the_rendered_landscape() {
     let (mut ui, root) = mounted();
     open(&mut ui, &root, "gradients");
