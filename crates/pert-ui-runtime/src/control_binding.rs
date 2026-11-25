@@ -222,7 +222,10 @@ impl ValueBinding<ChoiceId> for Parameter<ChoiceId> {
             options: Some(
                 spec.options()
                     .iter()
-                    .map(|option| Choice::new(option.id().clone(), option.label()))
+                    .map(|option| {
+                        Choice::new(option.id().clone(), option.label())
+                            .with_description(option.description().unwrap_or_default())
+                    })
                     .collect(),
             ),
         })

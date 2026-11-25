@@ -395,8 +395,18 @@ impl NumericControl {
         // Candidate derives from finite geometry; this explicit control limit is the only clamp.
         let normalized = normalized.clamp(0.0, 1.0);
         let position = NormalizedValue::try_from(normalized)?;
-        if let (Some(spec), Some(edit)) = (&self.spec, &self.edit) {
-            let value = spec.denormalize(position);
+        if let Some(spec) = &self.spec {
+            self.preview_value(cx, spec.denormalize(position), normalized)?;
+        }
+        Ok(())
+    }
+    fn preview_value(
+        &mut self,
+        cx: &mut EventContext,
+        value: f32,
+        normalized: f32,
+    ) -> Result<(), RuntimeError> {
+        if let Some(edit) = &self.edit {
             let result = edit.update(value);
             if self.result(result)?.is_some() {
                 self.normalized = normalized;
@@ -471,15 +481,12 @@ impl NumericControl {
         self.drag = None;
         self.key = None;
     }
-    /// The normalized position of the parameter's default, or the current
-    /// position before a specification has been read.
-    fn default_position(&self) -> Result<f32, RuntimeError> {
-        Ok(self
-            .spec
-            .as_ref()
-            .map(|s| s.normalize(&s.default_value()).map(NormalizedValue::get))
-            .transpose()?
-            .unwrap_or(self.normalized))
+    fn preview_default(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
+        if let Some(spec) = &self.spec {
+            let value = spec.default_value();
+            self.preview_value(cx, value, spec.normalize(&value)?.get())?;
+        }
+        Ok(())
     }
     /// Paints the selected face, its readout and interaction outlines.
     fn paint_knob(
@@ -1028,8 +1035,7 @@ impl Component for NumericControl {
                         self.clicks.reset();
                         // A double-click is one complete edit to the default.
                         if self.begin(cx)? {
-                            let default = self.default_position()?;
-                            self.preview(cx, default)?;
+                            self.preview_default(cx)?;
                             self.finish(cx)?;
                         }
                         return Ok(InputOutcome::Handled);
@@ -1205,7 +1211,10 @@ impl Component for NumericControl {
         let value = match control {
             KeyCode::Home => 0.0,
             KeyCode::End => 1.0,
-            KeyCode::Backspace => self.default_position()?,
+            KeyCode::Backspace => {
+                self.preview_default(cx)?;
+                return Ok(InputOutcome::Handled);
+            }
             KeyCode::PageUp => self.normalized + step * 10.0,
             KeyCode::PageDown => self.normalized - step * 10.0,
             KeyCode::ArrowLeft | KeyCode::ArrowDown => self.normalized - step,
@@ -1402,7 +1411,7 @@ macro_rules! numeric_widget {
         /// matched release commits once. Escape, focus loss, hiding or removal
         /// cancel. External base writes/metadata changes win over an active edit.
         /// Arrows step 1% of normalized travel; Page keys step 10%; Shift reduces
-        /// either by ten. Home/End reach endpoints; Backspace restores the default.
+        /// either by ten. Home/End reach endpoints; Backspace restores the exact typed default for every mapping.
         /// Control, Alt and Super chords of these keys, including Up/Down while
         /// a typed value is edited, are left to command bindings.
         /// While focused, each nonzero vertical wheel event over the control steps

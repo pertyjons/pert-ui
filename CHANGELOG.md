@@ -7,6 +7,12 @@ history (this file at commit f5fde76).
 
 ## Unreleased
 
+- Numeric controls reset to the exact typed default with Backspace and knobs
+  also do so on double-click, including for power and logarithmic mappings.
+- Added `Choice::with_description`, `ChoiceOption::with_description` and
+  their `description` accessors. Open selects show the highlighted option’s help.
+  Inspection readers must accept schema 19 to read `SemanticItem::description`.
+
 - Added linear and concentric radial `Gradient` paints for rectangular fills,
   shape fills and borders, and `FloatingWindow::title_paint`. `GradientSpace`
   selects interpolation and `GradientExtend` selects behavior beyond the stops.

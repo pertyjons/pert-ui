@@ -95,7 +95,8 @@ impl TryFrom<String> for ChoiceId {
 /// ```
 /// # use pert_ui_core as pert_ui;
 /// use pert_ui::{ChoiceId, ChoiceOption};
-/// let option = ChoiceOption::new(ChoiceId::new("lp")?, "Low pass");
+/// let option = ChoiceOption::new(ChoiceId::new("lp")?, "Low pass").with_description("Attenuates high frequencies.");
+/// assert_eq!(option.description(), Some("Attenuates high frequencies."));
 /// assert_eq!(option.id().as_str(), "lp");
 /// assert_eq!(option.label(), "Low pass");
 /// # Ok::<(), pert_ui::ParameterError>(())
@@ -103,12 +104,13 @@ impl TryFrom<String> for ChoiceId {
 ///
 /// # Serialization
 ///
-/// With the `serde` feature an option is `{ id, label }`.
+/// With the `serde` feature an option has `id`, `label` and an optional `description`.
 #[derive(Clone, Debug, Eq, PartialEq)]
 #[must_use]
 pub struct ChoiceOption {
     id: ChoiceId,
     label: String,
+    description: String,
 }
 
 // The serde representation; the public type documents it.
@@ -135,6 +137,8 @@ mod serde_impls {
     struct OptionRepr<'a> {
         id: ChoiceId,
         label: std::borrow::Cow<'a, str>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        description: Option<std::borrow::Cow<'a, str>>,
     }
 
     impl Serialize for ChoiceOption {
@@ -142,6 +146,7 @@ mod serde_impls {
             OptionRepr {
                 id: self.id.clone(),
                 label: std::borrow::Cow::Borrowed(&self.label),
+                description: self.description().map(std::borrow::Cow::Borrowed),
             }
             .serialize(serializer)
         }
@@ -150,7 +155,8 @@ mod serde_impls {
     impl<'de> Deserialize<'de> for ChoiceOption {
         fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
             let repr = OptionRepr::deserialize(deserializer)?;
-            Ok(Self::new(repr.id, repr.label.into_owned()))
+            Ok(Self::new(repr.id, repr.label.into_owned())
+                .with_description(repr.description.unwrap_or_default().into_owned()))
         }
     }
 }
@@ -161,7 +167,20 @@ impl ChoiceOption {
         Self {
             id,
             label: label.into(),
+            description: String::new(),
         }
+    }
+
+    /// Replaces the help for this option in an open selection list. Empty text clears it.
+    pub fn with_description(mut self, description: impl Into<String>) -> Self {
+        self.description = description.into();
+        self
+    }
+
+    /// The option's browsing help, absent by default.
+    #[must_use]
+    pub fn description(&self) -> Option<&str> {
+        (!self.description.is_empty()).then_some(self.description.as_str())
     }
 
     /// Returns the stable identity.

@@ -745,13 +745,13 @@ fn with_version(text: &str, version: u32) -> String {
 }
 
 fn rejects_other_revisions<T: serde::de::DeserializeOwned + std::fmt::Debug>(text: &str) {
-    for version in [17, 19] {
+    for version in [18, 20] {
         let error = serde_json::from_str::<T>(&with_version(text, version))
             .expect_err("another revision is rejected")
             .to_string();
         assert!(
             error.starts_with(&format!(
-                "inspection schema version {version} is not supported (this build writes 18)"
+                "inspection schema version {version} is not supported (this build writes 19)"
             )),
             "{error}"
         );
@@ -759,13 +759,13 @@ fn rejects_other_revisions<T: serde::de::DeserializeOwned + std::fmt::Debug>(tex
 }
 
 #[test]
-fn snapshots_and_query_results_carry_item_bounds_and_decode_only_schema_18() -> TestResult {
-    assert_eq!(InspectionSnapshot::SCHEMA_VERSION, 18);
+fn snapshots_and_query_results_carry_item_bounds_and_decode_only_schema_19() -> TestResult {
+    assert_eq!(InspectionSnapshot::SCHEMA_VERSION, 19);
     let mut ui = ui()?;
     let rows = ui.mount_tree(Element::new("rows", TwoRows))?;
     ui.flush(Duration::ZERO)?;
     let snapshot = ui.inspect();
-    assert_eq!(snapshot.schema_version, 18);
+    assert_eq!(snapshot.schema_version, 19);
     let items = |components: &[ComponentInspection]| -> Vec<Option<[f32; 4]>> {
         components
             .iter()
@@ -782,11 +782,11 @@ fn snapshots_and_query_results_carry_item_bounds_and_decode_only_schema_18() -> 
     );
     assert_eq!(items(&round_trip(&query)?.components), expected);
 
-    // Empty envelopes decode at 18, and no other revision does.
+    // Empty envelopes decode at 19, and no other revision does.
     let empty = serde_json::to_string(&Runtime::new().inspect())?;
     assert_eq!(
         serde_json::from_str::<InspectionSnapshot>(&empty)?.schema_version,
-        18
+        19
     );
     rejects_other_revisions::<InspectionSnapshot>(&empty);
     let empty_query = serde_json::to_string(&ui.query(&InspectionQuery::new()))?;
@@ -826,18 +826,18 @@ fn the_schema_version_is_written_first_and_read_wherever_it_is() -> TestResult {
         &ui.query(&InspectionQuery::components(Selector::key("rows")).detail(Detail::Semantics)),
     )?;
     for text in [&snapshot, &query] {
-        assert!(text.starts_with(r#"{"schema_version":18,"#), "{text}");
+        assert!(text.starts_with(r#"{"schema_version":19,"#), "{text}");
     }
     // Moved to the end, the version is still checked.
     let moved = |text: &str, version: u32| {
-        let body = text.replacen(r#""schema_version":18,"#, "", 1);
+        let body = text.replacen(r#""schema_version":19,"#, "", 1);
         format!(
             r#"{},"schema_version":{version}}}"#,
             body.strip_suffix('}').unwrap_or(&body)
         )
     };
-    assert!(serde_json::from_str::<InspectionSnapshot>(&moved(&snapshot, 18)).is_ok());
-    assert!(serde_json::from_str::<QueryResult>(&moved(&query, 18)).is_ok());
+    assert!(serde_json::from_str::<InspectionSnapshot>(&moved(&snapshot, 19)).is_ok());
+    assert!(serde_json::from_str::<QueryResult>(&moved(&query, 19)).is_ok());
     assert!(serde_json::from_str::<InspectionSnapshot>(&moved(&snapshot, 17)).is_err());
     assert!(serde_json::from_str::<QueryResult>(&moved(&query, 17)).is_err());
     Ok(())
@@ -984,5 +984,23 @@ fn exposed_part_metadata_is_required_nullable_and_validated_in_both_envelopes() 
         assert!(serde_json::from_str::<InspectionSnapshot>(&blank).is_err());
         assert!(serde_json::from_str::<QueryResult>(&blank).is_err());
     }
+    Ok(())
+}
+
+#[test]
+fn choice_help_is_optional_on_the_wire() -> TestResult {
+    let legacy = r#"{"id":"lp","label":"Low pass"}"#;
+    let bare: ChoiceOption = serde_json::from_str(legacy)?;
+    assert_eq!(bare.description(), None);
+    assert_eq!(serde_json::to_string(&bare)?, legacy);
+    let described = bare.with_description("Attenuates high frequencies.");
+    assert_eq!(
+        round_trip(&described)?.description(),
+        described.description()
+    );
+    assert_eq!(
+        serde_json::to_string(&described.with_description(""))?,
+        legacy
+    );
     Ok(())
 }
