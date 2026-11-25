@@ -14351,6 +14351,51 @@ impl core::marker::Unpin for pert_ui_runtime::FileDialogStatus
 impl core::marker::UnsafeUnpin for pert_ui_runtime::FileDialogStatus
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileDialogStatus
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileDialogStatus
+#[non_exhaustive] pub enum pert_ui_runtime::prelude::FileOperation
+pub pert_ui_runtime::prelude::FileOperation::CreateFolder
+pub pert_ui_runtime::prelude::FileOperation::CreateFolder::name: alloc::string::String
+pub pert_ui_runtime::prelude::FileOperation::CreateFolder::parent: std::path::PathBuf
+impl pert_ui_runtime::FileOperation
+pub fn pert_ui_runtime::FileOperation::target(&self) -> std::path::PathBuf
+impl core::clone::Clone for pert_ui_runtime::FileOperation
+pub fn pert_ui_runtime::FileOperation::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::FileOperation
+impl core::cmp::PartialEq for pert_ui_runtime::FileOperation
+pub fn pert_ui_runtime::FileOperation::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FileOperation
+pub fn pert_ui_runtime::FileOperation::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FileOperation
+impl core::marker::Freeze for pert_ui_runtime::FileOperation
+impl core::marker::Send for pert_ui_runtime::FileOperation
+impl core::marker::Sync for pert_ui_runtime::FileOperation
+impl core::marker::Unpin for pert_ui_runtime::FileOperation
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileOperation
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileOperation
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileOperation
+#[non_exhaustive] pub enum pert_ui_runtime::prelude::FileOperationErrorKind
+pub pert_ui_runtime::prelude::FileOperationErrorKind::AlreadyExists
+pub pert_ui_runtime::prelude::FileOperationErrorKind::NotFound
+pub pert_ui_runtime::prelude::FileOperationErrorKind::Other
+pub pert_ui_runtime::prelude::FileOperationErrorKind::PermissionDenied
+pub pert_ui_runtime::prelude::FileOperationErrorKind::Unavailable
+impl core::clone::Clone for pert_ui_runtime::FileOperationErrorKind
+pub fn pert_ui_runtime::FileOperationErrorKind::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::FileOperationErrorKind
+impl core::cmp::PartialEq for pert_ui_runtime::FileOperationErrorKind
+pub fn pert_ui_runtime::FileOperationErrorKind::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FileOperationErrorKind
+pub fn pert_ui_runtime::FileOperationErrorKind::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::FileOperationErrorKind
+pub fn pert_ui_runtime::FileOperationErrorKind::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for pert_ui_runtime::FileOperationErrorKind
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FileOperationErrorKind
+impl core::marker::Freeze for pert_ui_runtime::FileOperationErrorKind
+impl core::marker::Send for pert_ui_runtime::FileOperationErrorKind
+impl core::marker::Sync for pert_ui_runtime::FileOperationErrorKind
+impl core::marker::Unpin for pert_ui_runtime::FileOperationErrorKind
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileOperationErrorKind
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileOperationErrorKind
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileOperationErrorKind
 #[non_exhaustive] pub enum pert_ui_runtime::prelude::FilterTarget
 pub pert_ui_runtime::prelude::FilterTarget::List(pert_ui_runtime::ListFilter)
 pub pert_ui_runtime::prelude::FilterTarget::Table(pert_ui_runtime::TableController)
@@ -14935,6 +14980,25 @@ impl core::marker::Unpin for pert_ui_runtime::NumberInputError
 impl core::marker::UnsafeUnpin for pert_ui_runtime::NumberInputError
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::NumberInputError
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::NumberInputError
+#[non_exhaustive] pub enum pert_ui_runtime::prelude::OperationDelivery
+pub pert_ui_runtime::prelude::OperationDelivery::Applied
+pub pert_ui_runtime::prelude::OperationDelivery::Stale
+impl core::clone::Clone for pert_ui_runtime::OperationDelivery
+pub fn pert_ui_runtime::OperationDelivery::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::OperationDelivery
+impl core::cmp::PartialEq for pert_ui_runtime::OperationDelivery
+pub fn pert_ui_runtime::OperationDelivery::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::OperationDelivery
+pub fn pert_ui_runtime::OperationDelivery::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::OperationDelivery
+impl core::marker::StructuralPartialEq for pert_ui_runtime::OperationDelivery
+impl core::marker::Freeze for pert_ui_runtime::OperationDelivery
+impl core::marker::Send for pert_ui_runtime::OperationDelivery
+impl core::marker::Sync for pert_ui_runtime::OperationDelivery
+impl core::marker::Unpin for pert_ui_runtime::OperationDelivery
+impl core::marker::UnsafeUnpin for pert_ui_runtime::OperationDelivery
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::OperationDelivery
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::OperationDelivery
 pub enum pert_ui_runtime::prelude::Orientation
 pub pert_ui_runtime::prelude::Orientation::Horizontal
 pub pert_ui_runtime::prelude::Orientation::Vertical
@@ -17743,6 +17807,7 @@ pub fn pert_ui_runtime::FileBrowserController::new_idle(&impl pert_ui_runtime::S
 pub fn pert_ui_runtime::FileBrowserController::on_open(&self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &pert_ui_runtime::DirectoryEntry) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static)
 pub fn pert_ui_runtime::FileBrowserController::path_of(&self, &str) -> core::option::Option<std::path::PathBuf>
 pub fn pert_ui_runtime::FileBrowserController::refresh(&self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileBrowserController::select_entry(&self, impl core::convert::AsRef<std::path::Path>) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileBrowserController::selected_paths(&self) -> core::result::Result<alloc::vec::Vec<std::path::PathBuf>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileBrowserController::selection(&self) -> pert_ui_runtime::ListSelection
 pub fn pert_ui_runtime::FileBrowserController::set_entry_predicate(&self, impl core::ops::function::Fn(&pert_ui_runtime::DirectoryEntry) -> bool + 'static) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
@@ -17847,7 +17912,10 @@ pub fn pert_ui_runtime::FileDialogController::accept(&self) -> core::result::Res
 pub fn pert_ui_runtime::FileDialogController::cancel(&self) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileDialogController::current(&self) -> pert_ui_runtime::ReadSignal<std::path::PathBuf>
 pub fn pert_ui_runtime::FileDialogController::deliver(&self, pert_ui_runtime::DirectoryResponse) -> core::result::Result<pert_ui_runtime::ListingDelivery, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialogController::deliver_operation(&self, pert_ui_runtime::FileOperationResponse) -> core::result::Result<pert_ui_runtime::OperationDelivery, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileDialogController::new(&impl pert_ui_runtime::StateOwner, impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::Into<std::path::PathBuf>>, impl core::ops::function::FnMut(pert_ui_runtime::DirectoryRequest) + 'static) -> core::result::Result<Self, pert_ui_runtime::FileDialogError>
+pub fn pert_ui_runtime::FileDialogController::new_folder_permission(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialogController::on_file_operation(self, impl core::ops::function::FnMut(pert_ui_runtime::FileOperationRequest) -> core::result::Result<(), pert_ui_runtime::FileOperationError> + 'static) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileDialogController::open(&self, pert_ui_runtime::FileDialogRequest) -> core::result::Result<(), pert_ui_runtime::FileDialogError>
 pub fn pert_ui_runtime::FileDialogController::places(&self) -> pert_ui_runtime::Signal<alloc::vec::Vec<pert_ui_runtime::FilePlace>>
 pub fn pert_ui_runtime::FileDialogController::status(&self) -> pert_ui_runtime::ReadSignal<pert_ui_runtime::FileDialogStatus>
@@ -17950,6 +18018,71 @@ impl core::marker::Unpin for pert_ui_runtime::FileFilter
 impl core::marker::UnsafeUnpin for pert_ui_runtime::FileFilter
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileFilter
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileFilter
+pub struct pert_ui_runtime::prelude::FileOperationError
+impl pert_ui_runtime::FileOperationError
+pub const fn pert_ui_runtime::FileOperationError::kind(&self) -> pert_ui_runtime::FileOperationErrorKind
+pub fn pert_ui_runtime::FileOperationError::message(&self) -> &str
+pub fn pert_ui_runtime::FileOperationError::new(pert_ui_runtime::FileOperationErrorKind, impl core::convert::Into<alloc::string::String>) -> Self
+impl core::clone::Clone for pert_ui_runtime::FileOperationError
+pub fn pert_ui_runtime::FileOperationError::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::FileOperationError
+impl core::cmp::PartialEq for pert_ui_runtime::FileOperationError
+pub fn pert_ui_runtime::FileOperationError::eq(&self, &Self) -> bool
+impl core::convert::From<core::io::error::Error> for pert_ui_runtime::FileOperationError
+pub fn pert_ui_runtime::FileOperationError::from(core::io::error::Error) -> Self
+impl core::error::Error for pert_ui_runtime::FileOperationError
+impl core::fmt::Debug for pert_ui_runtime::FileOperationError
+pub fn pert_ui_runtime::FileOperationError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui_runtime::FileOperationError
+pub fn pert_ui_runtime::FileOperationError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FileOperationError
+impl core::marker::Freeze for pert_ui_runtime::FileOperationError
+impl core::marker::Send for pert_ui_runtime::FileOperationError
+impl core::marker::Sync for pert_ui_runtime::FileOperationError
+impl core::marker::Unpin for pert_ui_runtime::FileOperationError
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileOperationError
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileOperationError
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileOperationError
+pub struct pert_ui_runtime::prelude::FileOperationRequest
+impl pert_ui_runtime::FileOperationRequest
+pub fn pert_ui_runtime::FileOperationRequest::generation(&self) -> u64
+pub const fn pert_ui_runtime::FileOperationRequest::operation(&self) -> &pert_ui_runtime::FileOperation
+pub fn pert_ui_runtime::FileOperationRequest::parent(&self) -> &std::path::Path
+pub fn pert_ui_runtime::FileOperationRequest::respond(self, core::result::Result<(), pert_ui_runtime::FileOperationError>) -> pert_ui_runtime::FileOperationResponse
+impl core::clone::Clone for pert_ui_runtime::FileOperationRequest
+pub fn pert_ui_runtime::FileOperationRequest::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::FileOperationRequest
+impl core::cmp::PartialEq for pert_ui_runtime::FileOperationRequest
+pub fn pert_ui_runtime::FileOperationRequest::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FileOperationRequest
+pub fn pert_ui_runtime::FileOperationRequest::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FileOperationRequest
+impl core::marker::Freeze for pert_ui_runtime::FileOperationRequest
+impl core::marker::Send for pert_ui_runtime::FileOperationRequest
+impl core::marker::Sync for pert_ui_runtime::FileOperationRequest
+impl core::marker::Unpin for pert_ui_runtime::FileOperationRequest
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileOperationRequest
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileOperationRequest
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileOperationRequest
+pub struct pert_ui_runtime::prelude::FileOperationResponse
+impl pert_ui_runtime::FileOperationResponse
+pub const fn pert_ui_runtime::FileOperationResponse::request(&self) -> &pert_ui_runtime::FileOperationRequest
+pub const fn pert_ui_runtime::FileOperationResponse::result(&self) -> core::result::Result<(), &pert_ui_runtime::FileOperationError>
+impl core::clone::Clone for pert_ui_runtime::FileOperationResponse
+pub fn pert_ui_runtime::FileOperationResponse::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::FileOperationResponse
+impl core::cmp::PartialEq for pert_ui_runtime::FileOperationResponse
+pub fn pert_ui_runtime::FileOperationResponse::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FileOperationResponse
+pub fn pert_ui_runtime::FileOperationResponse::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FileOperationResponse
+impl core::marker::Freeze for pert_ui_runtime::FileOperationResponse
+impl core::marker::Send for pert_ui_runtime::FileOperationResponse
+impl core::marker::Sync for pert_ui_runtime::FileOperationResponse
+impl core::marker::Unpin for pert_ui_runtime::FileOperationResponse
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileOperationResponse
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileOperationResponse
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileOperationResponse
 pub struct pert_ui_runtime::prelude::FilePlace
 impl pert_ui_runtime::FilePlace
 pub fn pert_ui_runtime::FilePlace::folder(&self) -> &std::path::Path
@@ -27416,6 +27549,51 @@ impl core::marker::Unpin for pert_ui_runtime::FileDialogStatus
 impl core::marker::UnsafeUnpin for pert_ui_runtime::FileDialogStatus
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileDialogStatus
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileDialogStatus
+#[non_exhaustive] pub enum pert_ui_runtime::FileOperation
+pub pert_ui_runtime::FileOperation::CreateFolder
+pub pert_ui_runtime::FileOperation::CreateFolder::name: alloc::string::String
+pub pert_ui_runtime::FileOperation::CreateFolder::parent: std::path::PathBuf
+impl pert_ui_runtime::FileOperation
+pub fn pert_ui_runtime::FileOperation::target(&self) -> std::path::PathBuf
+impl core::clone::Clone for pert_ui_runtime::FileOperation
+pub fn pert_ui_runtime::FileOperation::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::FileOperation
+impl core::cmp::PartialEq for pert_ui_runtime::FileOperation
+pub fn pert_ui_runtime::FileOperation::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FileOperation
+pub fn pert_ui_runtime::FileOperation::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FileOperation
+impl core::marker::Freeze for pert_ui_runtime::FileOperation
+impl core::marker::Send for pert_ui_runtime::FileOperation
+impl core::marker::Sync for pert_ui_runtime::FileOperation
+impl core::marker::Unpin for pert_ui_runtime::FileOperation
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileOperation
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileOperation
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileOperation
+#[non_exhaustive] pub enum pert_ui_runtime::FileOperationErrorKind
+pub pert_ui_runtime::FileOperationErrorKind::AlreadyExists
+pub pert_ui_runtime::FileOperationErrorKind::NotFound
+pub pert_ui_runtime::FileOperationErrorKind::Other
+pub pert_ui_runtime::FileOperationErrorKind::PermissionDenied
+pub pert_ui_runtime::FileOperationErrorKind::Unavailable
+impl core::clone::Clone for pert_ui_runtime::FileOperationErrorKind
+pub fn pert_ui_runtime::FileOperationErrorKind::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::FileOperationErrorKind
+impl core::cmp::PartialEq for pert_ui_runtime::FileOperationErrorKind
+pub fn pert_ui_runtime::FileOperationErrorKind::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FileOperationErrorKind
+pub fn pert_ui_runtime::FileOperationErrorKind::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::hash::Hash for pert_ui_runtime::FileOperationErrorKind
+pub fn pert_ui_runtime::FileOperationErrorKind::hash<__H: core::hash::Hasher>(&self, &mut __H)
+impl core::marker::Copy for pert_ui_runtime::FileOperationErrorKind
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FileOperationErrorKind
+impl core::marker::Freeze for pert_ui_runtime::FileOperationErrorKind
+impl core::marker::Send for pert_ui_runtime::FileOperationErrorKind
+impl core::marker::Sync for pert_ui_runtime::FileOperationErrorKind
+impl core::marker::Unpin for pert_ui_runtime::FileOperationErrorKind
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileOperationErrorKind
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileOperationErrorKind
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileOperationErrorKind
 pub enum pert_ui_runtime::FillRule
 pub pert_ui_runtime::FillRule::EvenOdd
 pub pert_ui_runtime::FillRule::NonZero
@@ -28713,6 +28891,25 @@ impl core::marker::Unpin for pert_ui_runtime::NumberLocaleError
 impl core::marker::UnsafeUnpin for pert_ui_runtime::NumberLocaleError
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::NumberLocaleError
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::NumberLocaleError
+#[non_exhaustive] pub enum pert_ui_runtime::OperationDelivery
+pub pert_ui_runtime::OperationDelivery::Applied
+pub pert_ui_runtime::OperationDelivery::Stale
+impl core::clone::Clone for pert_ui_runtime::OperationDelivery
+pub fn pert_ui_runtime::OperationDelivery::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::OperationDelivery
+impl core::cmp::PartialEq for pert_ui_runtime::OperationDelivery
+pub fn pert_ui_runtime::OperationDelivery::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::OperationDelivery
+pub fn pert_ui_runtime::OperationDelivery::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::Copy for pert_ui_runtime::OperationDelivery
+impl core::marker::StructuralPartialEq for pert_ui_runtime::OperationDelivery
+impl core::marker::Freeze for pert_ui_runtime::OperationDelivery
+impl core::marker::Send for pert_ui_runtime::OperationDelivery
+impl core::marker::Sync for pert_ui_runtime::OperationDelivery
+impl core::marker::Unpin for pert_ui_runtime::OperationDelivery
+impl core::marker::UnsafeUnpin for pert_ui_runtime::OperationDelivery
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::OperationDelivery
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::OperationDelivery
 pub enum pert_ui_runtime::Orientation
 pub pert_ui_runtime::Orientation::Horizontal
 pub pert_ui_runtime::Orientation::Vertical
@@ -29938,8 +30135,12 @@ pub pert_ui_runtime::StringRole::FileDialogAmbiguousName
 pub pert_ui_runtime::StringRole::FileDialogBack
 pub pert_ui_runtime::StringRole::FileDialogChoose
 pub pert_ui_runtime::StringRole::FileDialogChooseFolder
+pub pert_ui_runtime::StringRole::FileDialogCreate
+pub pert_ui_runtime::StringRole::FileDialogCreateFailed
+pub pert_ui_runtime::StringRole::FileDialogFolderName
 pub pert_ui_runtime::StringRole::FileDialogInvalidName
 pub pert_ui_runtime::StringRole::FileDialogName
+pub pert_ui_runtime::StringRole::FileDialogNewFolder
 pub pert_ui_runtime::StringRole::FileDialogNotAllFiles
 pub pert_ui_runtime::StringRole::FileDialogOpen
 pub pert_ui_runtime::StringRole::FileDialogPlaces
@@ -30650,6 +30851,8 @@ pub pert_ui_runtime::UiMessage::EntryFailed::name: &'a str
 pub pert_ui_runtime::UiMessage::EntryFailed::reason: &'a str
 pub pert_ui_runtime::UiMessage::FileDialogChoose
 pub pert_ui_runtime::UiMessage::FileDialogChoose::name: &'a str
+pub pert_ui_runtime::UiMessage::FileDialogCreateFailed
+pub pert_ui_runtime::UiMessage::FileDialogCreateFailed::reason: &'a str
 pub pert_ui_runtime::UiMessage::FileDialogReplaceQuestion
 pub pert_ui_runtime::UiMessage::FileDialogReplaceQuestion::name: &'a str
 pub pert_ui_runtime::UiMessage::ForwardTo
@@ -34316,6 +34519,7 @@ pub fn pert_ui_runtime::FileBrowserController::new_idle(&impl pert_ui_runtime::S
 pub fn pert_ui_runtime::FileBrowserController::on_open(&self, impl core::ops::function::FnMut(&mut pert_ui_runtime::EventContext, &pert_ui_runtime::DirectoryEntry) -> core::result::Result<(), pert_ui_runtime::RuntimeError> + 'static)
 pub fn pert_ui_runtime::FileBrowserController::path_of(&self, &str) -> core::option::Option<std::path::PathBuf>
 pub fn pert_ui_runtime::FileBrowserController::refresh(&self) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileBrowserController::select_entry(&self, impl core::convert::AsRef<std::path::Path>) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileBrowserController::selected_paths(&self) -> core::result::Result<alloc::vec::Vec<std::path::PathBuf>, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileBrowserController::selection(&self) -> pert_ui_runtime::ListSelection
 pub fn pert_ui_runtime::FileBrowserController::set_entry_predicate(&self, impl core::ops::function::Fn(&pert_ui_runtime::DirectoryEntry) -> bool + 'static) -> core::result::Result<(), pert_ui_runtime::RuntimeError>
@@ -34420,7 +34624,10 @@ pub fn pert_ui_runtime::FileDialogController::accept(&self) -> core::result::Res
 pub fn pert_ui_runtime::FileDialogController::cancel(&self) -> core::result::Result<bool, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileDialogController::current(&self) -> pert_ui_runtime::ReadSignal<std::path::PathBuf>
 pub fn pert_ui_runtime::FileDialogController::deliver(&self, pert_ui_runtime::DirectoryResponse) -> core::result::Result<pert_ui_runtime::ListingDelivery, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialogController::deliver_operation(&self, pert_ui_runtime::FileOperationResponse) -> core::result::Result<pert_ui_runtime::OperationDelivery, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileDialogController::new(&impl pert_ui_runtime::StateOwner, impl core::iter::traits::collect::IntoIterator<Item = impl core::convert::Into<std::path::PathBuf>>, impl core::ops::function::FnMut(pert_ui_runtime::DirectoryRequest) + 'static) -> core::result::Result<Self, pert_ui_runtime::FileDialogError>
+pub fn pert_ui_runtime::FileDialogController::new_folder_permission(self, impl core::convert::Into<pert_ui_runtime::Permission>) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
+pub fn pert_ui_runtime::FileDialogController::on_file_operation(self, impl core::ops::function::FnMut(pert_ui_runtime::FileOperationRequest) -> core::result::Result<(), pert_ui_runtime::FileOperationError> + 'static) -> core::result::Result<Self, pert_ui_runtime::RuntimeError>
 pub fn pert_ui_runtime::FileDialogController::open(&self, pert_ui_runtime::FileDialogRequest) -> core::result::Result<(), pert_ui_runtime::FileDialogError>
 pub fn pert_ui_runtime::FileDialogController::places(&self) -> pert_ui_runtime::Signal<alloc::vec::Vec<pert_ui_runtime::FilePlace>>
 pub fn pert_ui_runtime::FileDialogController::status(&self) -> pert_ui_runtime::ReadSignal<pert_ui_runtime::FileDialogStatus>
@@ -34544,6 +34751,71 @@ impl core::marker::Unpin for pert_ui_runtime::FileFilter
 impl core::marker::UnsafeUnpin for pert_ui_runtime::FileFilter
 impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileFilter
 impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileFilter
+pub struct pert_ui_runtime::FileOperationError
+impl pert_ui_runtime::FileOperationError
+pub const fn pert_ui_runtime::FileOperationError::kind(&self) -> pert_ui_runtime::FileOperationErrorKind
+pub fn pert_ui_runtime::FileOperationError::message(&self) -> &str
+pub fn pert_ui_runtime::FileOperationError::new(pert_ui_runtime::FileOperationErrorKind, impl core::convert::Into<alloc::string::String>) -> Self
+impl core::clone::Clone for pert_ui_runtime::FileOperationError
+pub fn pert_ui_runtime::FileOperationError::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::FileOperationError
+impl core::cmp::PartialEq for pert_ui_runtime::FileOperationError
+pub fn pert_ui_runtime::FileOperationError::eq(&self, &Self) -> bool
+impl core::convert::From<core::io::error::Error> for pert_ui_runtime::FileOperationError
+pub fn pert_ui_runtime::FileOperationError::from(core::io::error::Error) -> Self
+impl core::error::Error for pert_ui_runtime::FileOperationError
+impl core::fmt::Debug for pert_ui_runtime::FileOperationError
+pub fn pert_ui_runtime::FileOperationError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::fmt::Display for pert_ui_runtime::FileOperationError
+pub fn pert_ui_runtime::FileOperationError::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FileOperationError
+impl core::marker::Freeze for pert_ui_runtime::FileOperationError
+impl core::marker::Send for pert_ui_runtime::FileOperationError
+impl core::marker::Sync for pert_ui_runtime::FileOperationError
+impl core::marker::Unpin for pert_ui_runtime::FileOperationError
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileOperationError
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileOperationError
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileOperationError
+pub struct pert_ui_runtime::FileOperationRequest
+impl pert_ui_runtime::FileOperationRequest
+pub fn pert_ui_runtime::FileOperationRequest::generation(&self) -> u64
+pub const fn pert_ui_runtime::FileOperationRequest::operation(&self) -> &pert_ui_runtime::FileOperation
+pub fn pert_ui_runtime::FileOperationRequest::parent(&self) -> &std::path::Path
+pub fn pert_ui_runtime::FileOperationRequest::respond(self, core::result::Result<(), pert_ui_runtime::FileOperationError>) -> pert_ui_runtime::FileOperationResponse
+impl core::clone::Clone for pert_ui_runtime::FileOperationRequest
+pub fn pert_ui_runtime::FileOperationRequest::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::FileOperationRequest
+impl core::cmp::PartialEq for pert_ui_runtime::FileOperationRequest
+pub fn pert_ui_runtime::FileOperationRequest::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FileOperationRequest
+pub fn pert_ui_runtime::FileOperationRequest::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FileOperationRequest
+impl core::marker::Freeze for pert_ui_runtime::FileOperationRequest
+impl core::marker::Send for pert_ui_runtime::FileOperationRequest
+impl core::marker::Sync for pert_ui_runtime::FileOperationRequest
+impl core::marker::Unpin for pert_ui_runtime::FileOperationRequest
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileOperationRequest
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileOperationRequest
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileOperationRequest
+pub struct pert_ui_runtime::FileOperationResponse
+impl pert_ui_runtime::FileOperationResponse
+pub const fn pert_ui_runtime::FileOperationResponse::request(&self) -> &pert_ui_runtime::FileOperationRequest
+pub const fn pert_ui_runtime::FileOperationResponse::result(&self) -> core::result::Result<(), &pert_ui_runtime::FileOperationError>
+impl core::clone::Clone for pert_ui_runtime::FileOperationResponse
+pub fn pert_ui_runtime::FileOperationResponse::clone(&self) -> Self
+impl core::cmp::Eq for pert_ui_runtime::FileOperationResponse
+impl core::cmp::PartialEq for pert_ui_runtime::FileOperationResponse
+pub fn pert_ui_runtime::FileOperationResponse::eq(&self, &Self) -> bool
+impl core::fmt::Debug for pert_ui_runtime::FileOperationResponse
+pub fn pert_ui_runtime::FileOperationResponse::fmt(&self, &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+impl core::marker::StructuralPartialEq for pert_ui_runtime::FileOperationResponse
+impl core::marker::Freeze for pert_ui_runtime::FileOperationResponse
+impl core::marker::Send for pert_ui_runtime::FileOperationResponse
+impl core::marker::Sync for pert_ui_runtime::FileOperationResponse
+impl core::marker::Unpin for pert_ui_runtime::FileOperationResponse
+impl core::marker::UnsafeUnpin for pert_ui_runtime::FileOperationResponse
+impl core::panic::unwind_safe::RefUnwindSafe for pert_ui_runtime::FileOperationResponse
+impl core::panic::unwind_safe::UnwindSafe for pert_ui_runtime::FileOperationResponse
 pub struct pert_ui_runtime::FilePlace
 impl pert_ui_runtime::FilePlace
 pub fn pert_ui_runtime::FilePlace::folder(&self) -> &std::path::Path

@@ -1240,12 +1240,51 @@ assert_eq!(memory.last_folder(request.context_key()), None);
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
+The dialog offers New folder when the host can create one. Give the
+controller a handler with [`FileDialogController::on_file_operation`]: it
+takes each [`FileOperationRequest`] to whatever performs it and returns an
+error when it cannot take the request, which the dialog shows at once. The
+host answers with [`FileOperationRequest::respond`] and delivers the answer
+on the UI thread with [`FileDialogController::deliver_operation`], as
+listings are delivered. [`FileDialogController::new_folder_permission`]
+binds whether creating is allowed.
+
+```rust
+use pert_ui::prelude::*;
+use std::{cell::RefCell, path::PathBuf, rc::Rc};
+
+let ui = Runtime::new();
+// A real host sends the request to a worker and delivers through a Mailbox.
+let asked = Rc::new(RefCell::new(Vec::new()));
+let queue = asked.clone();
+let files = FileDialogController::new(&ui, ["/projects"], |_request| {})?
+    .on_file_operation(move |request| {
+        if queue.borrow().len() == 8 {
+            return Err(FileOperationError::new(
+                FileOperationErrorKind::Unavailable,
+                "busy, try again",
+            ));
+        }
+        queue.borrow_mut().push(request);
+        Ok(())
+    })?;
+
+// Later, with a request the dialog made and the host has performed:
+if let Some(request) = asked.borrow_mut().pop() {
+    assert_eq!(request.operation().target(), PathBuf::from("/projects/new"));
+    let delivery = files.deliver_operation(request.respond(Ok(())))?;
+    assert_eq!(delivery, OperationDelivery::Applied);
+}
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
 A picker with another shape can be composed from the same parts: a [`Dialog`]
 around a [`FileBrowser`] whose controller comes from
 [`FileBrowserController::new_idle`], with
 [`FileBrowserController::set_entry_predicate`] for the file types and
 [`FileBrowserController::listing`] and
-[`FileBrowserController::shown_entries`] for what the folder holds and shows.
+[`FileBrowserController::shown_entries`] for what the folder holds and shows,
+and [`FileBrowserController::select_entry`] to point at an entry by its path.
 
 # Revealing, searching and navigating
 

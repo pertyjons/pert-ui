@@ -216,7 +216,9 @@ mod file_dialog;
 pub use file_dialog::{
     FileDialog, FileDialogController, FileDialogError, FileDialogFailure, FileDialogMemory,
     FileDialogMemoryError, FileDialogMode, FileDialogOutcome, FileDialogRequest,
-    FileDialogSelection, FileDialogStatus, FileFilter, FilePlace,
+    FileDialogSelection, FileDialogStatus, FileFilter, FileOperation, FileOperationError,
+    FileOperationErrorKind, FileOperationRequest, FileOperationResponse, FilePlace,
+    OperationDelivery,
 };
 mod file_browser;
 pub use file_browser::{
@@ -499,7 +501,9 @@ pub mod prelude {
         CurrentListing, DirectoryEntry, DirectoryRequest, DirectoryResponse, EntryKind,
         FileBrowserController, FileDialogController, FileDialogError, FileDialogMemory,
         FileDialogMode, FileDialogOutcome, FileDialogRequest, FileDialogStatus, FileFilter,
-        FilePlace, LinkTarget, ListingDelivery, ListingError, ListingErrorKind,
+        FileOperation, FileOperationError, FileOperationErrorKind, FileOperationRequest,
+        FileOperationResponse, FilePlace, LinkTarget, ListingDelivery, ListingError,
+        ListingErrorKind, OperationDelivery,
     };
     // Vocabulary: navigation.
     #[doc(no_inline)]

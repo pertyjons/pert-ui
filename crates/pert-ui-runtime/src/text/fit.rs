@@ -127,7 +127,7 @@ fn blank(cluster: &str) -> bool {
 /// The characters that force a line break when text is shaped (Unicode line
 /// breaking classes BK, CR, LF and NL), so a single-line fit ends its first
 /// line at any of them.
-const HARD_BREAKS: [char; 7] = [
+pub(crate) const HARD_BREAKS: [char; 7] = [
     '\n', '\r', '\u{0B}', '\u{0C}', '\u{85}', '\u{2028}', '\u{2029}',
 ];
 

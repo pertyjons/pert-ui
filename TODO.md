@@ -81,20 +81,3 @@ and lifecycle. Entries are suggestions for the maintainer to prioritize.
   a cheaper evaluation of strips without corners (CPU and GPU), and
   retaining encoded geometry across a pure translation, for the fill quads
   of the diagram's boxes that are encoded again when every node moves.
-- [ ] **LABEL-01** 2026-11-19 `crates/pert-ui-runtime/src/layout.rs`
-  `Element::with_label` with `Element::structural` — Inspection and
-  diagnostics (a composite without semantics of its own, such as a `Select`,
-  is named by its element's label through its internal part): a `Select`
-  element that is also structural leaves its control unnamed, while the same
-  element without `structural` names it. Observed in the file dialog's type
-  selector with a bound label; whether a fixed label behaves the same was
-  not checked. Either carry the label through a structural element or
-  document that `structural` drops it, with a test of both forms.
-- [ ] **BROWSER-01** 2026-11-20 `crates/pert-ui-runtime/src/file_browser/view.rs`
-  entry rows — Rust and data invariants (keep presentation formatting
-  separate from canonical values): a listed name with a Unicode line
-  separator (U+2028) is laid out on two lines and reports
-  `ExceedsFixedHeight` in the fixed-height row, seen in the file dialog test
-  `a_name_the_field_cannot_show_is_neither_suggested_nor_copied`. Show such
-  names on one line, for example by presenting line and paragraph separators
-  as a replacement glyph, without changing the entry's path, and test it.

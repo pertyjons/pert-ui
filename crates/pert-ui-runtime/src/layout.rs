@@ -468,7 +468,9 @@ impl Element {
     /// reports [`Semantics`](crate::Semantics) without a name of its own, so a
     /// control that has no visible label, such as a search field or a list, can
     /// still be named where it is described. A name the component reports
-    /// itself always wins, and a blank label names nothing.
+    /// itself always wins, and a blank label names nothing. On a composite
+    /// without semantics of its own, the label names its unnamed structural
+    /// control even when the composite itself is [structural](Self::structural).
     ///
     /// ```
     /// # use pert_ui_runtime as pert_ui;

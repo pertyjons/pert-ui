@@ -1607,7 +1607,8 @@ handles. Typed semantics report roles, names, values and supported actions.
 A component without a name of its own is named by its element's label
 (`Element::with_label`) or by a wrapping `Field`; for a composite that reports
 no semantics itself, such as a `Select`, either reaches the internal part that
-represents it. A naming parent (`Semantics::names_children`) also describes
+represents it. This also applies when the composite itself is structural.
+A naming parent (`Semantics::names_children`) also describes
 its children: a child's own description, such as an editor's unsaved-draft
 note, is kept over ordinary text such as help, but an invalid parent's error
 and a parent's warning (`Semantics::warning`) replace it, so a `Field`'s error
@@ -2161,6 +2162,32 @@ exposes as a signal, shown beside the browser with the recent folders as the
 session found them; they are not stored in the memory. Each listed folder
 keeps its key while it is listed, so reordering the list never retargets a
 held press.
+
+Creating a folder is a host operation, like a listing: the dialog hands a
+`FileOperationRequest` to the handler from `on_file_operation` and applies the
+answer from `deliver_operation` under the
+[host-loaded data](#host-loaded-data) ticket rules, one request outstanding
+at most. The New folder button needs a handler, a `new_folder_permission`
+that reads true and a listed folder. Permissions given to the controller
+compose with `Permission::and`; the effective permission is read again when
+the request is handed over and when the answer arrives, so a revoked
+permission sends nothing and applies nothing, and revoking it while a folder
+is named or awaited returns the dialog to its browser. The name is validated
+as one file name before the host is asked. A handler that returns an error
+could not take the request: it is shown at once and nothing is pending.
+
+An answer is applied only while its session is open, the user has neither
+gone back nor opened another folder, and the permission holds; otherwise it
+is stale and neither selects nor opens anything, also when the folder was
+created. A delivery the phase refuses leaves the request awaited, so the same
+response can be delivered again. An applied success lists the folder again
+and, when the answer to that very request arrives, makes the new folder
+active if the list shows it as a folder; another listing, or one the user's
+navigation superseded, points at nothing. That listing is the browser's own
+request: its failure is shown as a failed listing and creates nothing again.
+Focus moves into the name field when it appears and back to the New folder
+button, or into the browser, when it goes. Creating a folder ends no session,
+ends the opening's search for a remembered folder, and is not remembered.
 
 A `FileDialog` described again reconciles its anchor and keeps its session.
 Described with another controller under the same key, it dismisses the mounted

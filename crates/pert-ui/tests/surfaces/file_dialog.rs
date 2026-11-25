@@ -52,6 +52,16 @@ fn stage_with(memory: &FileDialogMemory) -> Stage {
     stage_from(Viewport::new(1000.0, 800.0, 1.0).unwrap(), Some(memory))
 }
 fn stage_from(viewport: Viewport, memory: Option<&FileDialogMemory>) -> Stage {
+    stage_built(viewport, |_, dialog| match memory {
+        Some(memory) => dialog.with_memory(memory),
+        None => dialog,
+    })
+}
+/// A stage whose controller `build` configures before the dialog mounts.
+fn stage_built(
+    viewport: Viewport,
+    build: impl FnOnce(&Runtime, FileDialogController) -> FileDialogController,
+) -> Stage {
     let mut ui = Runtime::new();
     ui.set_viewport(viewport).unwrap();
     let requests = Rc::new(RefCell::new(Vec::new()));
@@ -59,10 +69,7 @@ fn stage_from(viewport: Viewport, memory: Option<&FileDialogMemory>) -> Stage {
     let dialog =
         FileDialogController::new(&ui, ["/r"], move |request| queue.borrow_mut().push(request))
             .unwrap();
-    let dialog = match memory {
-        Some(memory) => dialog.with_memory(memory),
-        None => dialog,
-    };
+    let dialog = build(&ui, dialog);
     let root = ui
         .mount_tree(Element::new(
             "open",
@@ -2189,4 +2196,562 @@ fn recent_folders_that_share_a_name_are_shown_by_their_paths() {
     assert_eq!(name(&stage, "recent-0"), "/r/a/src");
     assert_eq!(name(&stage, "recent-1"), "/r/b/src");
     assert_eq!(name(&stage, "recent-2"), "docs");
+}
+
+// New folder: an operation the host performs and answers.
+
+/// The operation requests a stage's host received, and a switch that makes
+/// the host refuse to take the next ones.
+struct Host {
+    asked: Rc<RefCell<Vec<FileOperationRequest>>>,
+    refusing: Rc<std::cell::Cell<bool>>,
+}
+impl Host {
+    /// Gives `stage`'s dialog a host that can perform file operations.
+    fn of(stage: &Stage) -> Self {
+        let host = Self {
+            asked: Rc::default(),
+            refusing: Rc::default(),
+        };
+        let (asked, refusing) = (host.asked.clone(), host.refusing.clone());
+        let _ = stage
+            .dialog
+            .clone()
+            .on_file_operation(move |request| {
+                if refusing.get() {
+                    return Err(FileOperationError::new(
+                        FileOperationErrorKind::Unavailable,
+                        "busy",
+                    ));
+                }
+                asked.borrow_mut().push(request);
+                Ok(())
+            })
+            .unwrap();
+        host
+    }
+    #[track_caller]
+    fn take(&self) -> FileOperationRequest {
+        self.asked.borrow_mut().pop().expect("an operation request")
+    }
+}
+
+impl Stage {
+    /// Whether the content's part `name` is presented.
+    fn shows(&self, name: &str) -> bool {
+        let wanted = self.ui.inspection_id(&self.part(name)).unwrap();
+        self.ui
+            .inspect()
+            .components
+            .into_iter()
+            .find(|component| component.id == wanted)
+            .is_some_and(|component| component.visible)
+    }
+    /// Presses New folder and types `name` into the field that appears.
+    fn name_folder(&mut self, name: &str) {
+        let button = self.part("new-folder");
+        self.click(&button);
+        // Focus has moved into the field: typing needs no further step.
+        self.ui.text_input(name).unwrap();
+        settle(&mut self.ui);
+    }
+    /// Types `text` into the folder-name field, which is showing.
+    fn name_folder_text(&mut self, text: &str) {
+        let field = self.part("folder-name");
+        self.ui.focus(&field).unwrap();
+        self.ui.text_input(text).unwrap();
+        settle(&mut self.ui);
+    }
+    /// Empties the folder-name field by going back and starting again.
+    fn clear_folder_name(&mut self) {
+        let back = self.part("cancel");
+        self.click(&back);
+        let button = self.part("new-folder");
+        self.click(&button);
+    }
+    fn deliver_operation(&mut self, response: FileOperationResponse) -> OperationDelivery {
+        let delivery = self.dialog.deliver_operation(response).unwrap();
+        settle(&mut self.ui);
+        delivery
+    }
+}
+
+#[test]
+fn new_folder_is_offered_only_with_a_host_that_can_and_a_permission() {
+    let mut stage = stage();
+    stage.opened(request(FileDialogMode::ChooseFolder));
+    assert!(!stage.shows("new-folder"), "no host capability");
+    let _host = Host::of(&stage);
+    settle(&mut stage.ui);
+    assert!(stage.shows("new-folder"));
+    assert!(!stage.shows("folder-name"));
+    assert_eq!(stage.text_of("new-folder"), "New folder");
+
+    // With the capability and a permission that reads false: not offered.
+    let allowed: Rc<RefCell<Option<Signal<bool>>>> = Rc::default();
+    let slot = allowed.clone();
+    let mut stage = stage_built(
+        Viewport::new(1000.0, 800.0, 1.0).unwrap(),
+        move |ui, dialog| {
+            let signal = ui.signal(false);
+            *slot.borrow_mut() = Some(signal.clone());
+            dialog.new_folder_permission(&signal).unwrap()
+        },
+    );
+    let _host = Host::of(&stage);
+    stage.opened(request(FileDialogMode::ChooseFolder));
+    assert!(!stage.shows("new-folder"));
+    allowed.borrow().as_ref().unwrap().set(true).unwrap();
+    settle(&mut stage.ui);
+    assert!(stage.shows("new-folder"));
+}
+
+#[test]
+fn a_created_folder_is_listed_again_and_made_active() {
+    let mut stage = stage();
+    let host = Host::of(&stage);
+    stage.opened(request(FileDialogMode::ChooseFolder));
+    stage.name_folder("new");
+    assert!(stage.shows("folder-name"));
+    assert!(!stage.shows("new-folder"));
+    assert_eq!(stage.text_of("accept"), "Create");
+    assert_eq!(stage.text_of("cancel"), "Back");
+    assert!(!stage.confirm(), "creating a folder ends no session");
+    let asked = host.take();
+    assert_eq!(
+        asked.operation(),
+        &FileOperation::CreateFolder {
+            parent: "/r".into(),
+            name: "new".to_owned()
+        }
+    );
+    assert_eq!(asked.operation().target(), PathBuf::from("/r/new"));
+    // The host works: a second submission is refused.
+    assert!(!stage.enabled("accept"));
+    assert!(!stage.confirm());
+    assert!(host.asked.borrow().is_empty());
+
+    assert_eq!(
+        stage.deliver_operation(asked.respond(Ok(()))),
+        OperationDelivery::Applied
+    );
+    assert!(!stage.shows("folder-name"));
+    assert!(stage.shows("new-folder"));
+    let mut entries = listing();
+    entries.push(dir("/r/new"));
+    stage.answer("/r", entries);
+    // The new folder is the active one: confirm chooses it.
+    assert!(stage.confirm());
+    assert_eq!(stage.accepted(), [PathBuf::from("/r/new")]);
+}
+
+#[test]
+fn a_folder_name_is_validated_before_the_host_is_asked() {
+    let mut stage = stage();
+    let host = Host::of(&stage);
+    stage.opened(request(FileDialogMode::SaveFile));
+    let button = stage.part("new-folder");
+    stage.click(&button);
+    assert!(
+        !stage.shows("name"),
+        "the save name gives way to the folder name"
+    );
+    assert!(!stage.enabled("accept"), "no name yet");
+    for name in ["a/b", ".."] {
+        stage.name_folder_text(name);
+        assert!(!stage.confirm());
+        assert_eq!(
+            stage.text_of("refusal"),
+            "Enter a file name without folder separators",
+            "{name}"
+        );
+        assert!(host.asked.borrow().is_empty(), "{name}");
+        stage.clear_folder_name();
+    }
+    assert_eq!(stage.status(), FileDialogStatus::Open);
+}
+
+#[test]
+fn a_failed_creation_is_shown_and_can_be_tried_again() {
+    let mut stage = stage();
+    let host = Host::of(&stage);
+    stage.opened(request(FileDialogMode::ChooseFolder));
+    stage.name_folder("sub");
+    assert!(!stage.confirm());
+    let refused = host.take().respond(Err(FileOperationError::new(
+        FileOperationErrorKind::AlreadyExists,
+        "it exists already",
+    )));
+    assert_eq!(stage.deliver_operation(refused), OperationDelivery::Applied);
+    assert_eq!(
+        stage.text_of("refusal"),
+        "The folder could not be created: it exists already"
+    );
+    assert!(
+        stage.shows("folder-name"),
+        "the name is still there to change"
+    );
+    assert!(stage.enabled("accept"));
+    // Trying again asks the host again, for the same name.
+    assert!(!stage.confirm());
+    assert_eq!(host.take().operation().target(), PathBuf::from("/r/sub"));
+    assert_eq!(stage.text_of("refusal"), "");
+}
+
+#[test]
+fn a_request_the_host_cannot_take_is_shown_at_once() {
+    let mut stage = stage();
+    let host = Host::of(&stage);
+    stage.opened(request(FileDialogMode::ChooseFolder));
+    host.refusing.set(true);
+    stage.name_folder("new");
+    assert!(!stage.confirm());
+    assert_eq!(
+        stage.text_of("refusal"),
+        "The folder could not be created: busy"
+    );
+    assert!(stage.enabled("accept"), "nothing is pending");
+    host.refusing.set(false);
+    assert!(!stage.confirm());
+    assert_eq!(host.asked.borrow().len(), 1);
+}
+
+#[test]
+fn an_answer_that_is_no_longer_waited_for_changes_nothing() {
+    // The user went back.
+    let mut stage = stage();
+    let host = Host::of(&stage);
+    stage.opened(request(FileDialogMode::ChooseFolder));
+    stage.name_folder("new");
+    assert!(!stage.confirm());
+    let asked = host.take();
+    let back = stage.part("cancel");
+    stage.click(&back);
+    assert_eq!(stage.status(), FileDialogStatus::Open, "back, not cancel");
+    assert!(stage.shows("new-folder"));
+    let waiting = stage.requests.borrow().len();
+    assert_eq!(
+        stage.deliver_operation(asked.respond(Ok(()))),
+        OperationDelivery::Stale
+    );
+    assert_eq!(
+        stage.requests.borrow().len(),
+        waiting,
+        "nothing is listed again"
+    );
+
+    // The session was cancelled, and then opened again.
+    stage.name_folder("other");
+    assert!(!stage.confirm());
+    let asked = host.take();
+    assert!(stage.dialog.cancel().unwrap());
+    assert_eq!(
+        stage.deliver_operation(asked.clone().respond(Ok(()))),
+        OperationDelivery::Stale
+    );
+    let _ = stage.outcome();
+    settle(&mut stage.ui);
+    stage.opened(request(FileDialogMode::ChooseFolder));
+    assert!(
+        !stage.shows("folder-name"),
+        "a new session starts in its browser"
+    );
+    assert_eq!(
+        stage.deliver_operation(asked.respond(Ok(()))),
+        OperationDelivery::Stale
+    );
+    assert_eq!(stage.current(), PathBuf::from("/r"));
+}
+
+#[test]
+fn leaving_the_folder_ends_a_creation_in_it() {
+    let mut stage = stage();
+    let host = Host::of(&stage);
+    stage
+        .dialog
+        .places()
+        .set(vec![
+            FilePlace::new("Samples", "/r/samples").unwrap(),
+            FilePlace::new("Root", "/r").unwrap(),
+        ])
+        .unwrap();
+    stage.opened(request(FileDialogMode::ChooseFolder));
+    stage.name_folder("new");
+    assert!(!stage.confirm());
+    let asked = host.take();
+    let place = widget(&stage.ui, &stage.root, "place-0");
+    stage.click(&place);
+    assert!(
+        !stage.shows("folder-name"),
+        "the naming ended with the visit"
+    );
+    stage.answer("/r/samples", vec![dir("/r/samples/new")]);
+    // Back in the folder the request was made in: it is another visit.
+    let root = widget(&stage.ui, &stage.root, "place-1");
+    stage.click(&root);
+    stage.answer("/r", listing());
+    let waiting = stage.requests.borrow().len();
+    assert_eq!(
+        stage.deliver_operation(asked.respond(Ok(()))),
+        OperationDelivery::Stale
+    );
+    assert_eq!(
+        stage.requests.borrow().len(),
+        waiting,
+        "nothing is listed again"
+    );
+    assert!(stage.confirm());
+    assert_eq!(
+        stage.accepted(),
+        [PathBuf::from("/r")],
+        "nothing became active"
+    );
+}
+
+#[test]
+fn a_refresh_that_fails_after_a_creation_creates_nothing_again() {
+    let mut stage = stage();
+    let host = Host::of(&stage);
+    stage.opened(request(FileDialogMode::ChooseFolder));
+    stage.name_folder("new");
+    assert!(!stage.confirm());
+    assert_eq!(
+        stage.deliver_operation(host.take().respond(Ok(()))),
+        OperationDelivery::Applied
+    );
+    stage.fail("/r", ListingErrorKind::Other);
+    assert!(!stage.shows("folder-name"), "creating is over");
+    assert!(!stage.confirm(), "the folder shown failed to list");
+    assert!(
+        host.asked.borrow().is_empty(),
+        "the host is not asked again"
+    );
+    // Listing the folder again is all a retry does.
+    stage
+        .dialog
+        .places()
+        .set(vec![FilePlace::new("Root", "/r").unwrap()])
+        .unwrap();
+    settle(&mut stage.ui);
+    let pending = stage.requests.borrow().len();
+    let place = widget(&stage.ui, &stage.root, "place-0");
+    stage.click(&place);
+    assert_eq!(stage.requests.borrow().len(), pending + 1);
+    assert!(host.asked.borrow().is_empty());
+    let mut entries = listing();
+    entries.push(dir("/r/new"));
+    stage.answer("/r", entries);
+    assert!(stage.confirm());
+    assert_eq!(
+        stage.accepted(),
+        [PathBuf::from("/r")],
+        "a later listing points at nothing"
+    );
+}
+
+#[test]
+fn revoking_the_permission_takes_the_dialog_back_to_its_browser() {
+    let allowed: Rc<RefCell<Option<Signal<bool>>>> = Rc::default();
+    let slot = allowed.clone();
+    let mut stage = stage_built(
+        Viewport::new(1000.0, 800.0, 1.0).unwrap(),
+        move |ui, dialog| {
+            let signal = ui.signal(true);
+            *slot.borrow_mut() = Some(signal.clone());
+            dialog.new_folder_permission(&signal).unwrap()
+        },
+    );
+    let host = Host::of(&stage);
+    stage.opened(request(FileDialogMode::ChooseFolder));
+    stage.name_folder("new");
+    assert!(!stage.confirm());
+    let asked = host.take();
+    allowed.borrow().as_ref().unwrap().set(false).unwrap();
+    settle(&mut stage.ui);
+    assert!(!stage.shows("folder-name"));
+    assert!(!stage.shows("new-folder"));
+    assert_eq!(stage.text_of("accept"), "Choose “r”");
+    assert_eq!(
+        stage.deliver_operation(asked.respond(Ok(()))),
+        OperationDelivery::Stale
+    );
+}
+
+#[test]
+fn an_answer_refused_by_the_phase_can_be_delivered_again() -> TestResult {
+    let mut stage = stage();
+    let host = Host::of(&stage);
+    stage.opened(request(FileDialogMode::ChooseFolder));
+    stage.name_folder("new");
+    assert!(!stage.confirm());
+    let response = host.take().respond(Ok(()));
+    let seen: Rc<RefCell<Vec<String>>> = Rc::default();
+    let (dialog, log, early) = (stage.dialog.clone(), seen.clone(), response.clone());
+    let probe = stage.ui.mount_tree(Element::new(
+        "probe",
+        InUpdate(Some(Box::new(move || {
+            log.borrow_mut()
+                .push(format!("{:?}", dialog.deliver_operation(early)));
+        }))),
+    ))?;
+    settle(&mut stage.ui);
+    assert_eq!(*seen.borrow(), ["Err(WriteDuringUpdate)"]);
+    stage.ui.unmount(&probe)?;
+    assert!(stage.shows("folder-name"), "still awaited");
+    assert_eq!(
+        stage.deliver_operation(response.clone()),
+        OperationDelivery::Applied
+    );
+    assert_eq!(
+        stage.deliver_operation(response),
+        OperationDelivery::Stale,
+        "an answer is applied once"
+    );
+    Ok(())
+}
+
+#[test]
+fn folder_permissions_compose_and_are_checked_when_the_host_is_asked() {
+    let allowed: Rc<RefCell<Option<Signal<bool>>>> = Rc::default();
+    let slot = allowed.clone();
+    let mut stage = stage_built(
+        Viewport::new(1000.0, 800.0, 1.0).unwrap(),
+        move |ui, dialog| {
+            let signal = ui.signal(true);
+            *slot.borrow_mut() = Some(signal.clone());
+            dialog.new_folder_permission(&signal).unwrap()
+        },
+    );
+    let host = Host::of(&stage);
+    stage.opened(request(FileDialogMode::ChooseFolder));
+    stage.name_folder("new");
+    // Revoked and confirmed in one step, before the content has reacted.
+    allowed.borrow().as_ref().unwrap().set(false).unwrap();
+    assert!(!stage.dialog.accept().unwrap());
+    assert!(host.asked.borrow().is_empty(), "the host is not asked");
+    settle(&mut stage.ui);
+    assert!(!stage.shows("folder-name"));
+
+    // A later permission adds to a denial; it does not lift it.
+    let mut stage = stage_built(Viewport::new(1000.0, 800.0, 1.0).unwrap(), |_, dialog| {
+        dialog
+            .new_folder_permission(false)
+            .unwrap()
+            .new_folder_permission(true)
+            .unwrap()
+    });
+    let _host = Host::of(&stage);
+    stage.opened(request(FileDialogMode::ChooseFolder));
+    assert!(!stage.shows("new-folder"));
+    // Given to a mounted dialog, a permission is seen at once.
+    let mut stage = stage_in(Viewport::new(1000.0, 800.0, 1.0).unwrap());
+    let _host = Host::of(&stage);
+    stage.opened(request(FileDialogMode::ChooseFolder));
+    assert!(stage.shows("new-folder"));
+    let _ = stage.dialog.clone().new_folder_permission(false).unwrap();
+    settle(&mut stage.ui);
+    assert!(!stage.shows("new-folder"));
+}
+
+#[test]
+fn only_the_listing_the_creation_asked_for_points_at_the_new_folder() {
+    let mut stage = stage();
+    let host = Host::of(&stage);
+    stage.opened(request(FileDialogMode::ChooseFolder));
+    stage.name_folder("new");
+    assert!(!stage.confirm());
+    assert_eq!(
+        stage.deliver_operation(host.take().respond(Ok(()))),
+        OperationDelivery::Applied
+    );
+    stage
+        .dialog
+        .places()
+        .set(vec![FilePlace::new("Root", "/r").unwrap()])
+        .unwrap();
+    settle(&mut stage.ui);
+    let refresh = stage.take_request(Path::new("/r"));
+    let place = widget(&stage.ui, &stage.root, "place-0");
+    stage.click(&place);
+    // The user asked for the folder again: the creation's own listing is
+    // superseded, and the later one points at nothing.
+    let mut entries = listing();
+    entries.push(dir("/r/new"));
+    assert_eq!(
+        stage
+            .dialog
+            .deliver(refresh.respond(Ok(entries.clone())))
+            .unwrap(),
+        ListingDelivery::Stale
+    );
+    stage.answer("/r", entries);
+    assert!(stage.confirm());
+    assert_eq!(stage.accepted(), [PathBuf::from("/r")]);
+
+    // What the creation's listing holds at the new path is no folder, or
+    // nothing: it is not made active.
+    for at_path in [vec![file("/r/new")], Vec::new()] {
+        let mut stage = stage_in(Viewport::new(1000.0, 800.0, 1.0).unwrap());
+        let host = Host::of(&stage);
+        stage.opened(request(FileDialogMode::OpenFile));
+        stage.name_folder("new");
+        assert!(!stage.confirm());
+        assert_eq!(
+            stage.deliver_operation(host.take().respond(Ok(()))),
+            OperationDelivery::Applied
+        );
+        stage.answer("/r", at_path);
+        assert!(!stage.enabled("accept"), "no entry is active");
+    }
+}
+
+#[test]
+fn new_folder_waits_for_the_listing_of_the_folder_shown() {
+    let mut stage = stage_with(&remembering("/r/sub"));
+    let host = Host::of(&stage);
+    stage.open(folder_in("project"));
+    assert!(!stage.shows("new-folder"), "the folder is not listed yet");
+    stage.answer("/r/sub", Vec::new());
+    assert!(stage.shows("new-folder"));
+    stage.name_folder("new");
+    assert!(!stage.confirm());
+    assert_eq!(
+        host.take().operation().target(),
+        PathBuf::from("/r/sub/new")
+    );
+}
+
+#[test]
+fn focus_follows_the_naming_of_a_folder() {
+    let mut stage = stage();
+    let host = Host::of(&stage);
+    stage.opened(request(FileDialogMode::ChooseFolder));
+    let focused = |stage: &Stage, part: &str| stage.ui.focused() == Some(stage.part(part));
+    let button = stage.part("new-folder");
+    stage.click(&button);
+    assert!(focused(&stage, "folder-name"), "into the field");
+    // Enter in the field asks the host; Enter again while it works does not.
+    stage.ui.text_input("new").unwrap();
+    press(&mut stage.ui, KeyCode::Enter);
+    settle(&mut stage.ui);
+    assert_eq!(host.asked.borrow().len(), 1);
+    press(&mut stage.ui, KeyCode::Enter);
+    settle(&mut stage.ui);
+    assert_eq!(host.asked.borrow().len(), 1, "one request is outstanding");
+    assert_eq!(
+        stage.deliver_operation(host.take().respond(Ok(()))),
+        OperationDelivery::Applied
+    );
+    assert!(focused(&stage, "new-folder"), "back to the button");
+    // Back from naming returns there too, and the session stays open.
+    stage.click(&button);
+    let back = stage.part("cancel");
+    stage.click(&back);
+    assert!(focused(&stage, "new-folder"));
+    assert_eq!(stage.status(), FileDialogStatus::Open);
+    // Escape is the dialog's cancel, also while naming.
+    stage.click(&button);
+    press(&mut stage.ui, KeyCode::Escape);
+    settle(&mut stage.ui);
+    assert_eq!(stage.outcome(), Some(FileDialogOutcome::Cancelled));
 }

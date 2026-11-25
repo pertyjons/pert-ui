@@ -1287,6 +1287,30 @@ fn whitespace_entry_and_folder_labels_are_visible_without_changing_paths() {
     stage.ui.paint().unwrap();
 }
 
+#[test]
+fn hard_breaks_in_entry_names_stay_on_one_line_and_open_the_original_path() {
+    let mut stage = stage(SelectionMode::Single);
+    let path = "/r/a\u{2028}b\u{2029}c.txt";
+    stage.answer("/r", vec![file(path)]);
+    assert_eq!(
+        row_name(&stage, "entries", path),
+        format!("{:?}", "a\u{2028}b\u{2029}c.txt")
+    );
+    #[cfg(debug_assertions)]
+    assert!(
+        stage
+            .ui
+            .validation_report()
+            .issues
+            .iter()
+            .all(|issue| issue.code != ValidationCode::ExceedsFixedHeight)
+    );
+    let entry = stage.row("entries", path);
+    stage.click(&entry);
+    stage.click(&entry);
+    assert_eq!(*stage.opened.borrow(), [PathBuf::from(path)]);
+}
+
 fn row_name(stage: &Stage, parent: &str, path: &str) -> String {
     let row = stage.row(parent, path);
     let snap = stage.ui.inspect();

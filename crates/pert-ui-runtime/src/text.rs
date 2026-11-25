@@ -8,6 +8,7 @@ mod registry;
 mod rich;
 mod tabs;
 use crate::{Color, DrawError, MaskImage, Painter, Rect, RuntimeError, Size};
+pub(crate) use fit::HARD_BREAKS;
 pub use fit::{FittedText, HighlightError, TextOverflow};
 pub use fonts::{FontData, FontError, FontId, FontRole, IconGlyph};
 pub use icons::{Icon, IconSource};

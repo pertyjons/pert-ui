@@ -71,6 +71,43 @@ fn a_composites_label_names_the_part_that_represents_it() -> TestResult {
 }
 
 #[test]
+fn structural_selects_pass_fixed_and_changing_labels_to_their_anchors() -> TestResult {
+    let mut ui = Runtime::new();
+    let mode = ui.signal(0_u8);
+    let label = ui.signal("File type".to_owned());
+    ui.mount_tree(
+        Column::new([
+            Select::new(&ui, mode.clone(), options())?
+                .key("fixed")
+                .with_label("Mode")
+                .structural(),
+            Select::new(&ui, mode, options())?
+                .key("bound")
+                .with_label(label.read_only())
+                .structural(),
+        ])
+        .key("root")
+        .with_label("Container"),
+    )?;
+    let assert_names = |ui: &Runtime, expected: &str| {
+        let anchors: Vec<_> = ui
+            .inspect()
+            .components
+            .into_iter()
+            .filter(|c| c.key == "select")
+            .map(|c| c.details.semantics.unwrap().name)
+            .collect();
+        assert_eq!(anchors, [Some("Mode".into()), Some(expected.into())]);
+    };
+    ui.flush(Duration::ZERO)?;
+    assert_names(&ui, "File type");
+    label.set("Format".to_owned())?;
+    ui.flush(Duration::ZERO)?;
+    assert_names(&ui, "Format");
+    Ok(())
+}
+
+#[test]
 fn a_field_names_a_composites_part_through_its_structure() -> TestResult {
     let mut ui = Runtime::new();
     let mode = ui.signal(0_u8);

@@ -19,8 +19,13 @@ use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
 mod memory;
+mod operations;
 mod view;
 pub use memory::{FileDialogMemory, FileDialogMemoryError};
+pub use operations::{
+    FileOperation, FileOperationError, FileOperationErrorKind, FileOperationRequest,
+    FileOperationResponse, OperationDelivery,
+};
 pub use view::FileDialog;
 
 /// What a file dialog asks the user for.
@@ -549,23 +554,41 @@ pub enum FileDialogStatus {
 }
 
 /// Why confirm was refused in place; the status line shows it.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 enum Refusal {
     Unusable,
     NotAllFiles,
     InvalidName,
     AmbiguousName,
+    /// The host could not create the folder; its message says why.
+    CreateFailed(String),
 }
 impl Refusal {
-    fn role(self) -> StringRole {
-        match self {
+    fn text(&self, strings: &crate::UiStrings) -> String {
+        let role = match self {
             Self::Unusable => StringRole::FileDialogUnusable,
             Self::NotAllFiles => StringRole::FileDialogNotAllFiles,
             Self::InvalidName => StringRole::FileDialogInvalidName,
             Self::AmbiguousName => StringRole::FileDialogAmbiguousName,
-        }
+            Self::CreateFailed(reason) => {
+                return strings.format(UiMessage::FileDialogCreateFailed { reason });
+            }
+        };
+        strings.text(role).to_owned()
     }
 }
+
+/// Where the user is in creating a folder.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Creating {
+    /// The name is being typed.
+    Naming,
+    /// The host has the request and has not answered.
+    Pending,
+}
+
+/// The handler the host takes file operations with.
+type OperationHandler = Box<dyn FnMut(FileOperationRequest) -> Result<(), FileOperationError>>;
 
 /// What confirm does in the dialog's present state.
 #[derive(Clone, Debug, PartialEq)]
@@ -719,6 +742,23 @@ struct Inner {
     places: Signal<Vec<FilePlace>>,
     /// The memory's recent folders as the session found them.
     recent: Signal<Vec<PathBuf>>,
+    /// `Some` while the user creates a folder.
+    creating: Signal<Option<Creating>>,
+    folder_name: Signal<String>,
+    /// The host's capability to perform file operations, if it has one. It
+    /// is taken out while it runs.
+    operations: RefCell<Option<OperationHandler>>,
+    /// Whether the host has that capability.
+    can_operate: Cell<bool>,
+    new_folder: RefCell<crate::Permission>,
+    /// Counts changes of the capability and the permission, so the mounted
+    /// content reads them again.
+    capability: Signal<u64>,
+    /// The one operation the dialog waits for.
+    operation_requests: crate::RequestTracker<()>,
+    /// A created folder to make active when the listing its creation asked
+    /// for arrives; shared with the request sink, which notes that request.
+    reveal: Rc<RefCell<Option<Reveal>>>,
     /// The memory the open session started from and writes to when accepted.
     session_memory: RefCell<Option<FileDialogMemory>>,
     /// The opening's search for the remembered folder; shared with the
@@ -743,6 +783,8 @@ struct Texts {
     message: ReadSignal<String>,
     question: ReadSignal<String>,
     name_label: ReadSignal<String>,
+    folder_label: ReadSignal<String>,
+    new_folder: ReadSignal<String>,
     type_label: ReadSignal<String>,
     choices: ReadSignal<Vec<crate::Choice<String>>>,
     shortcuts: ReadSignal<Rc<Shortcuts>>,
@@ -762,6 +804,17 @@ struct Search {
     root_tried: bool,
     /// Whether nothing follows `folder`: the first root after the ancestors.
     last: bool,
+}
+
+/// A created folder waiting for the one listing that was requested to show
+/// it.
+#[derive(Clone, Debug)]
+struct Reveal {
+    created: PathBuf,
+    parent: PathBuf,
+    generation: Option<u64>,
+    /// While the refresh hands out its request.
+    capturing: bool,
 }
 
 /// What the list beside the browser shows.
@@ -887,6 +940,22 @@ fn chosen<'a>(
 /// session opened, and the application's [places](Self::places) beside the
 /// browser; activating one opens its folder.
 ///
+/// # Creating a folder
+///
+/// The dialog performs no file operation itself. With a handler from
+/// [`Self::on_file_operation`] it shows a New folder button, in every mode,
+/// once the folder it shows is listed: the user types a name, which must be
+/// one file name, and confirm hands the host a [`FileOperationRequest`] for
+/// that folder. While the host works, confirm is unavailable, so nothing is
+/// sent twice. Back returns to the browser, and so does opening another
+/// folder; either makes a later answer stale. The host's answer arrives
+/// through [`Self::deliver_operation`]: after a success the folder is listed
+/// again and the new folder made active when that listing shows it, and a
+/// failure is shown with the name kept. An answer the dialog no longer
+/// waits for changes nothing. Starting to name a folder ends the search for
+/// a remembered folder. Creating a folder never ends a session and writes
+/// nothing to the memory.
+///
 /// ```
 /// # use pert_ui_runtime as pert_ui;
 /// use pert_ui::{
@@ -962,7 +1031,8 @@ impl FileDialogController {
         let roots: Vec<PathBuf> = roots.into_iter().map(Into::into).collect();
         let first_root = roots.first().cloned().ok_or(FileDialogError::NoRoots)?;
         let search: Rc<RefCell<Option<Search>>> = Rc::default();
-        let (noted, mut request) = (search.clone(), request);
+        let reveal: Rc<RefCell<Option<Reveal>>> = Rc::default();
+        let (noted, shown, mut request) = (search.clone(), reveal.clone(), request);
         let browser = FileBrowserController::new_idle(
             ui,
             ListSelection::new(ui, SelectionMode::Single),
@@ -975,6 +1045,15 @@ impl FileDialogController {
                         && asked.directory() == search.folder
                     {
                         search.generation = Some(asked.generation());
+                    }
+                }
+                {
+                    let mut reveal = shown.borrow_mut();
+                    if let Some(reveal) = reveal.as_mut()
+                        && reveal.capturing
+                        && asked.directory() == reveal.parent
+                    {
+                        reveal.generation = Some(asked.generation());
                     }
                 }
                 request(asked);
@@ -993,6 +1072,9 @@ impl FileDialogController {
             DialogStatus::Open => FileDialogStatus::Open,
             DialogStatus::Finished(_) => FileDialogStatus::Finished,
         })?;
+        let creating = ui.signal(None::<Creating>);
+        let folder_name = ui.signal(String::new());
+        let capability = ui.signal(0_u64);
         let strings = ui.ui_settings().strings_binding()?;
         let text = |role: StringRole| strings.map(move |table| table.text(role).to_owned());
         let selection = browser.selection();
@@ -1005,10 +1087,14 @@ impl FileDialogController {
                 &browser.shown_entries(),
                 &selection.active(),
                 &browser.current(),
+                &creating,
             ),
-            move |(config, strings, question, shown, active, current)| {
+            move |(config, strings, question, shown, active, current, creating)| {
                 if question.is_some() {
                     return strings.text(StringRole::FileDialogReplace).to_owned();
+                }
+                if creating.is_some() {
+                    return strings.text(StringRole::FileDialogCreate).to_owned();
                 }
                 if let Some(label) = &config.0.accept_label {
                     return label.clone();
@@ -1044,19 +1130,22 @@ impl FileDialogController {
                     .to_owned()
             })
         })?;
-        let cancel = ReadSignal::combine((&question, &strings), |(question, strings)| {
-            strings
-                .text(if question.is_some() {
-                    StringRole::FileDialogBack
-                } else {
-                    StringRole::DialogCancel
-                })
-                .to_owned()
-        })?;
+        let cancel = ReadSignal::combine(
+            (&question, &creating, &strings),
+            |(question, creating, strings)| {
+                strings
+                    .text(if question.is_some() || creating.is_some() {
+                        StringRole::FileDialogBack
+                    } else {
+                        StringRole::DialogCancel
+                    })
+                    .to_owned()
+            },
+        )?;
         let message_text = ReadSignal::combine((&message, &strings), |(message, strings)| {
-            message.map_or_else(String::new, |refusal| {
-                strings.text(refusal.role()).to_owned()
-            })
+            message
+                .as_ref()
+                .map_or_else(String::new, |refusal| refusal.text(strings))
         })?;
         let question_text = ReadSignal::combine((&question, &strings), |(question, strings)| {
             question.as_ref().map_or_else(String::new, |candidate| {
@@ -1092,6 +1181,8 @@ impl FileDialogController {
             message: message_text,
             question: question_text,
             name_label: text(StringRole::FileDialogName)?,
+            folder_label: text(StringRole::FileDialogFolderName)?,
+            new_folder: text(StringRole::FileDialogNewFolder)?,
             type_label: text(StringRole::FileDialogType)?,
             choices,
         };
@@ -1118,8 +1209,21 @@ impl FileDialogController {
                 &selection.active(),
                 &selection.selected(),
                 &name,
+                &creating,
+                &folder_name,
             ),
-            move |(status, question, config, listing, shown, active, selected, name)| {
+            move |(
+                status,
+                question,
+                config,
+                listing,
+                shown,
+                active,
+                selected,
+                name,
+                creating,
+                folder_name,
+            )| {
                 let is_shown = |key: &String| {
                     judging
                         .path_of(key)
@@ -1130,6 +1234,15 @@ impl FileDialogController {
                 }
                 if question.is_some() {
                     return true;
+                }
+                // Creating a folder: a name to send, and nothing sent yet.
+                match creating {
+                    Some(Creating::Naming) => {
+                        return !folder_name.is_empty()
+                            && matches!(listing, CurrentListing::Loaded(_));
+                    }
+                    Some(Creating::Pending) => return false,
+                    None => {}
                 }
                 if !matches!(listing, CurrentListing::Loaded(_)) {
                     return false;
@@ -1153,6 +1266,14 @@ impl FileDialogController {
             message,
             question,
             origin: RefCell::new(None),
+            creating,
+            folder_name,
+            operations: RefCell::new(None),
+            can_operate: Cell::new(false),
+            new_folder: RefCell::new(crate::Permission::from(true)),
+            capability,
+            operation_requests: crate::RequestTracker::new(),
+            reveal,
             memory: RefCell::new(None),
             places,
             recent,
@@ -1187,6 +1308,264 @@ impl FileDialogController {
     pub fn with_memory(self, memory: &FileDialogMemory) -> Self {
         *self.0.memory.borrow_mut() = Some(memory.clone());
         self
+    }
+
+    /// Gives the dialog the host's capability to perform file operations,
+    /// replacing an earlier handler; with it the dialog offers a New folder
+    /// button. It applies to every clone of the controller.
+    ///
+    /// `handler` receives each [`FileOperationRequest`] and hands it to
+    /// whatever performs it, typically a worker; it must not call back into
+    /// this controller. It returns `Err` when it could not take the request,
+    /// which the dialog shows at once, the name still in its field. The
+    /// answer comes later through [`Self::deliver_operation`].
+    ///
+    /// # Errors
+    /// The runtime's refusal to record the capability, such as a phase write
+    /// error or `Closed` after shutdown.
+    pub fn on_file_operation(
+        self,
+        handler: impl FnMut(FileOperationRequest) -> Result<(), FileOperationError> + 'static,
+    ) -> Result<Self, RuntimeError> {
+        self.0
+            .capability
+            .update(|revision| *revision = revision.wrapping_add(1))?;
+        self.0.can_operate.set(true);
+        *self.0.operations.borrow_mut() = Some(Box::new(handler));
+        Ok(self)
+    }
+
+    /// Restricts creating folders; allowed by default. Restrictions compose:
+    /// each call adds to the earlier ones ([`Permission::and`](crate::Permission::and)),
+    /// so a later call never lifts an earlier denial. The New folder button
+    /// shows only while a handler is installed and the permission reads
+    /// true, and the permission is read again when a request is handed to
+    /// the host and when its answer arrives: a request is not sent, and an
+    /// answer is [`OperationDelivery::Stale`], once it reads false. Revoking
+    /// it while the user names a folder, or while the host works on one,
+    /// takes the dialog back to its browser. It applies to every clone of
+    /// the controller and to a mounted dialog.
+    ///
+    /// # Errors
+    /// The runtime's refusal to record the change, such as a phase write
+    /// error or `Closed` after shutdown; the permission is then unchanged.
+    pub fn new_folder_permission(
+        self,
+        permission: impl Into<crate::Permission>,
+    ) -> Result<Self, RuntimeError> {
+        self.0
+            .capability
+            .update(|revision| *revision = revision.wrapping_add(1))?;
+        let earlier = self.0.new_folder.replace(crate::Permission::from(true));
+        *self.0.new_folder.borrow_mut() = earlier.and(permission);
+        Ok(self)
+    }
+    /// Whether the host can create folders and the application allows it.
+    pub(super) fn may_create(&self) -> Result<bool, RuntimeError> {
+        Ok(self.0.can_operate.get() && self.0.new_folder.borrow().get()?)
+    }
+
+    /// Applies the host's answer to a [`FileOperationRequest`].
+    ///
+    /// The answer is applied while the dialog still waits for that request:
+    /// the session it was made in is open, the user has not gone back or
+    /// opened another folder, and creating folders is still permitted. A
+    /// created folder is then shown: the dialog requests the listing of the
+    /// folder again and, when that very listing arrives, makes the new folder
+    /// active if the list shows it as a folder. A failure is shown with the
+    /// name still in its field. Any other answer is
+    /// [`OperationDelivery::Stale`] and changes nothing: it neither selects
+    /// nor opens a folder, also when the operation succeeded.
+    ///
+    /// # Errors
+    /// The runtime's read and write errors, such as a phase write error. The
+    /// request then stays awaited, so the same response can be delivered
+    /// again. `Exhausted` if request generations run out when the folder is
+    /// listed again; the answer is applied then, and only the listing is
+    /// missing.
+    pub fn deliver_operation(
+        &self,
+        response: FileOperationResponse,
+    ) -> Result<OperationDelivery, RuntimeError> {
+        let inner = &self.0;
+        let ticket = &response.request.ticket;
+        if inner.operation_requests.status(ticket) != crate::TicketStatus::Current
+            || inner.status.get()? != FileDialogStatus::Open
+            || inner.creating.get()? != Some(Creating::Pending)
+        {
+            return Ok(OperationDelivery::Stale);
+        }
+        let current = inner.browser.current().get()?;
+        if !self.may_create()? || response.request.parent() != current {
+            self.end_folder()?;
+            return Ok(OperationDelivery::Stale);
+        }
+        // The writes come first: a refused one leaves the ticket current.
+        match &response.result {
+            Err(error) => {
+                inner.creating.set(Some(Creating::Naming))?;
+                inner
+                    .message
+                    .set(Some(Refusal::CreateFailed(error.message().to_owned())))?;
+                inner.operation_requests.complete(ticket);
+            }
+            Ok(()) => {
+                inner.creating.set(None)?;
+                inner.message.set(None)?;
+                inner.operation_requests.complete(ticket);
+                // The listing is the browser's own request, noted so that
+                // only its answer points at the new folder.
+                *inner.reveal.borrow_mut() = Some(Reveal {
+                    created: response.request.operation.target(),
+                    parent: current,
+                    generation: None,
+                    capturing: true,
+                });
+                let refreshed = inner.browser.refresh();
+                let mut reveal = inner.reveal.borrow_mut();
+                match reveal.as_mut() {
+                    Some(waiting) if refreshed.is_ok() && waiting.generation.is_some() => {
+                        waiting.capturing = false;
+                    }
+                    _ => *reveal = None,
+                }
+                drop(reveal);
+                refreshed?;
+            }
+        }
+        Ok(OperationDelivery::Applied)
+    }
+    /// The New folder button: asks for the new folder's name. A folder is
+    /// created in a folder the dialog has listed, so the button waits for
+    /// the listing; pressing it ends the opening's search for a remembered
+    /// folder, since the user has chosen to work where the dialog is.
+    pub(super) fn begin_folder(&self) -> Result<(), RuntimeError> {
+        let inner = &self.0;
+        if inner.status.get()? != FileDialogStatus::Open
+            || inner.question.get()?.is_some()
+            || inner.creating.get()?.is_some()
+            || !self.may_create()?
+            || !matches!(inner.browser.listing().get()?, CurrentListing::Loaded(_))
+        {
+            return Ok(());
+        }
+        inner.folder_name.set(String::new())?;
+        inner.message.set(None)?;
+        inner.creating.set(Some(Creating::Naming))?;
+        *inner.search.borrow_mut() = None;
+        Ok(())
+    }
+    /// Leaves folder creation: a request the host still holds becomes stale.
+    pub(super) fn end_folder(&self) -> Result<(), RuntimeError> {
+        if self.0.creating.get()?.is_some() {
+            self.0.creating.set(None)?;
+            self.0.message.set(None)?;
+        }
+        self.0.operation_requests.cancel(&());
+        Ok(())
+    }
+    /// Confirm while a folder is being named: validates the name and hands
+    /// the request to the host. A request already with the host is not sent
+    /// again.
+    fn create_folder(&self, creating: Creating) -> Result<bool, RuntimeError> {
+        let inner = &self.0;
+        if creating == Creating::Pending {
+            return Ok(false);
+        }
+        if !self.may_create()? {
+            self.end_folder()?;
+            return Ok(false);
+        }
+        let name = inner.folder_name.get()?;
+        if name.is_empty() || !matches!(inner.browser.listing().get()?, CurrentListing::Loaded(_)) {
+            return Ok(false);
+        }
+        if !valid_name(&name) {
+            inner.message.set(Some(Refusal::InvalidName))?;
+            return Ok(false);
+        }
+        let parent = inner.browser.current().get()?;
+        // The writes come first: a refused one issues no ticket.
+        inner.message.set(None)?;
+        inner.creating.set(Some(Creating::Pending))?;
+        let ticket = match inner.operation_requests.issue(()) {
+            Ok(ticket) => ticket,
+            Err(error) => {
+                inner.creating.set(Some(Creating::Naming))?;
+                return Err(error);
+            }
+        };
+        let request = FileOperationRequest {
+            ticket: ticket.clone(),
+            operation: FileOperation::CreateFolder { parent, name },
+        };
+        // Taken out while it runs, so the handler may install its successor.
+        let handler = inner.operations.borrow_mut().take();
+        let handed = match handler {
+            Some(mut handler) => {
+                let handed = handler(request);
+                let mut slot = inner.operations.borrow_mut();
+                if slot.is_none() {
+                    *slot = Some(handler);
+                }
+                handed
+            }
+            None => Err(FileOperationError::new(
+                FileOperationErrorKind::Unavailable,
+                String::new(),
+            )),
+        };
+        // A refusal counts only while this request is still the awaited one.
+        if let Err(error) = handed
+            && inner.operation_requests.status(&ticket) == crate::TicketStatus::Current
+        {
+            inner.operation_requests.cancel(&());
+            inner.creating.set(Some(Creating::Naming))?;
+            inner
+                .message
+                .set(Some(Refusal::CreateFailed(error.message().to_owned())))?;
+        }
+        Ok(false)
+    }
+    /// Makes a created folder active when the listing its creation asked for
+    /// was applied and shows it as a folder. Any other listing leaves the
+    /// wait alone; that listing ends it whatever it holds, so a failed or
+    /// changed folder is shown as it is and nothing is created again.
+    fn reveal_created(
+        &self,
+        directory: &Path,
+        generation: u64,
+        listed: bool,
+    ) -> Result<(), RuntimeError> {
+        let inner = &self.0;
+        let waiting = {
+            let mut reveal = inner.reveal.borrow_mut();
+            if !reveal.as_ref().is_some_and(|waiting| {
+                waiting.parent == directory && waiting.generation == Some(generation)
+            }) {
+                return Ok(());
+            }
+            reveal.take()
+        };
+        let Some(waiting) = waiting else {
+            return Ok(());
+        };
+        if !listed
+            || inner.status.get()? != FileDialogStatus::Open
+            || inner.browser.current().get()? != waiting.parent
+        {
+            return Ok(());
+        }
+        let is_folder_now = inner
+            .browser
+            .shown_entries()
+            .get()?
+            .iter()
+            .any(|entry| entry.path() == waiting.created && is_folder(entry));
+        if is_folder_now {
+            inner.browser.select_entry(&waiting.created)?;
+        }
+        Ok(())
     }
 
     /// The places the dialog offers beside its browser, which the
@@ -1225,6 +1604,9 @@ impl FileDialogController {
         *self.0.failure.borrow_mut() = None;
         *self.0.origin.borrow_mut() = None;
         *self.0.search.borrow_mut() = None;
+        *self.0.reveal.borrow_mut() = None;
+        // An operation of the earlier session is no longer waited for.
+        self.0.operation_requests.cancel(&());
         if let Err(error) = self.start(request) {
             *self.0.failure.borrow_mut() = Some(error.clone());
             // The reservation stands, so the session ends rather than vanishes.
@@ -1277,6 +1659,7 @@ impl FileDialogController {
             })?;
         inner.message.set(None)?;
         inner.question.set(None)?;
+        inner.creating.set(None)?;
         // Only a remembered folder is searched for: it may be gone since.
         let remembered = match (&request.start, &memory) {
             (None, Some(memory)) => memory.last_folder(context),
@@ -1335,6 +1718,7 @@ impl FileDialogController {
     pub fn deliver(&self, response: DirectoryResponse) -> Result<ListingDelivery, RuntimeError> {
         let asked = response.request();
         let (directory, generation) = (asked.directory().to_owned(), asked.generation());
+        let listed = response.listing().is_ok();
         let missing = response.listing().is_err_and(|error| {
             matches!(
                 error.kind(),
@@ -1344,6 +1728,7 @@ impl FileDialogController {
         let delivery = self.0.browser.deliver(response)?;
         if delivery == ListingDelivery::Applied {
             self.search_on(&directory, generation, missing)?;
+            self.reveal_created(&directory, generation, listed)?;
         }
         // A copied name's tie to its file ends when a listing of the folder
         // no longer has the file; the file appearing again does not restore it.
@@ -1430,6 +1815,8 @@ impl FileDialogController {
             return Ok(());
         }
         *inner.search.borrow_mut() = None;
+        // Leaving the folder ends a folder creation in it.
+        self.end_folder()?;
         inner.message.set(None)?;
         inner.browser.navigate(folder)
     }
@@ -1498,6 +1885,9 @@ impl FileDialogController {
         let inner = &self.0;
         if inner.status.get()? != FileDialogStatus::Open {
             return Ok(false);
+        }
+        if let Some(creating) = inner.creating.get()? {
+            return self.create_folder(creating);
         }
         let config = inner.config.get()?;
         let listing = inner.browser.listing().get()?;
@@ -1597,7 +1987,10 @@ impl FileDialogController {
     /// The browser reported an activated entry that is not a folder.
     fn activated(&self, entry: &DirectoryEntry) -> Result<(), RuntimeError> {
         let inner = &self.0;
-        if inner.status.get()? != FileDialogStatus::Open || inner.question.get()?.is_some() {
+        if inner.status.get()? != FileDialogStatus::Open
+            || inner.question.get()?.is_some()
+            || inner.creating.get()?.is_some()
+        {
             return Ok(());
         }
         let mode = inner.config.get()?.0.mode;
@@ -1639,6 +2032,9 @@ impl FileDialogController {
         if self.0.question.get()?.is_some() {
             return self.0.question.set(None);
         }
+        if self.0.creating.get()?.is_some() {
+            return self.end_folder();
+        }
         self.cancel().map(|_| ())
     }
     /// The user changed what confirm is judged from: the refusal shown no
@@ -1663,6 +2059,11 @@ impl FileDialogController {
                 .is_some_and(|origin| origin.text != name);
         if edited || change.current {
             *inner.origin.borrow_mut() = None;
+        }
+        // The application withdrew the permission to create folders, or the
+        // user left the folder one was being created in.
+        if change.revoked || change.current {
+            self.end_folder()?;
         }
         // The user went elsewhere: the opening's search is over.
         if change.current {

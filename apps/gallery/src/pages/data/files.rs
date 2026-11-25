@@ -73,15 +73,74 @@ pub(crate) fn listing(directory: &Path) -> Result<Vec<DirectoryEntry>, ListingEr
 /// mailbox is full the response joins `backlog`, which the mailbox handler
 /// delivers after the queued values. A closed mailbox means the page and its
 /// browser are gone, so the response has nowhere to go and is dropped.
-pub(crate) fn send_or_keep(
-    sender: &UiSender<DirectoryResponse>,
-    backlog: &RefCell<Vec<DirectoryResponse>>,
-    response: DirectoryResponse,
+pub(crate) fn send_or_keep<T: Send + 'static>(
+    sender: &UiSender<T>,
+    backlog: &RefCell<Vec<T>>,
+    response: T,
 ) {
     match sender.send(response) {
         Ok(()) | Err(SendError::Closed(_)) => {}
         Err(SendError::Full(refused)) => backlog.borrow_mut().push(refused),
     }
+}
+
+/// Lists a folder of the library together with the folders the page created
+/// in it. A created folder lists as empty, apart from what was created in it.
+pub(crate) fn listing_with(
+    directory: &Path,
+    created: &[std::path::PathBuf],
+) -> Result<Vec<DirectoryEntry>, ListingError> {
+    let made = || {
+        created
+            .iter()
+            .filter(|path| path.parent() == Some(directory))
+            .map(|path| DirectoryEntry::new(path, EntryKind::Directory))
+    };
+    match listing(directory) {
+        Ok(mut entries) => {
+            entries.extend(made());
+            Ok(entries)
+        }
+        Err(error)
+            if error.kind() == ListingErrorKind::NotFound
+                && created.iter().any(|path| path == directory) =>
+        {
+            Ok(made().collect())
+        }
+        Err(error) => Err(error),
+    }
+}
+
+/// The page as host: creates `target` in its list of created folders, by the
+/// rules a filesystem would apply. The parent must list, so a folder that
+/// cannot be read is refused, and a name that is taken is refused.
+pub(crate) fn create_folder(
+    created: &mut Vec<std::path::PathBuf>,
+    operation: &FileOperation,
+) -> Result<(), FileOperationError> {
+    let FileOperation::CreateFolder { parent, .. } = operation else {
+        return Err(FileOperationError::new(
+            FileOperationErrorKind::Other,
+            "the page only creates folders",
+        ));
+    };
+    let target = operation.target();
+    let entries = listing_with(parent, created).map_err(|error| {
+        let kind = match error.kind() {
+            ListingErrorKind::PermissionDenied => FileOperationErrorKind::PermissionDenied,
+            ListingErrorKind::NotFound => FileOperationErrorKind::NotFound,
+            _ => FileOperationErrorKind::Other,
+        };
+        FileOperationError::new(kind, error.message())
+    })?;
+    if entries.iter().any(|entry| entry.path() == target) {
+        return Err(FileOperationError::new(
+            FileOperationErrorKind::AlreadyExists,
+            "something of that name is there already",
+        ));
+    }
+    created.push(target);
+    Ok(())
 }
 
 pub(crate) fn file_browser(ui: &mut Runtime) -> Result<Element, AppError> {
@@ -234,11 +293,39 @@ fn file_dialog(ui: &mut Runtime) -> Result<Element, AppError> {
         Ok(())
     })?;
     let sender = mailbox.sender();
+    // The folders the dialog created: the synthetic library has no disk, so
+    // the page keeps them and lists them with the library.
+    let created: Rc<RefCell<Vec<std::path::PathBuf>>> = Rc::default();
+    let listed = created.clone();
     let dialog = FileDialogController::new(ui, [ROOT], move |request| {
-        let listing = listing(request.directory());
+        let listing = listing_with(request.directory(), &listed.borrow());
         send_or_keep(&sender, &backlog, request.respond(listing));
     })
     .map_err(ApplicationError::new)?;
+    // The host's side of New folder: perform the operation, here against
+    // the page's own list, and answer through a mailbox as a worker would.
+    // The operation is done before it is answered, so an answer the mailbox
+    // cannot take yet is kept and delivered later, never reported as a
+    // request the host could not take.
+    let (answers, kept) = (slot.clone(), Rc::new(RefCell::new(Vec::new())));
+    let held = kept.clone();
+    let operations = ui.mailbox(Capacity::new(8)?, move |response: FileOperationResponse| {
+        let Some(dialog) = answers.get() else {
+            return Ok(());
+        };
+        let queued = std::mem::take(&mut *held.borrow_mut());
+        for response in std::iter::once(response).chain(queued) {
+            dialog.deliver_operation(response)?;
+        }
+        Ok(())
+    })?;
+    let answer = operations.sender();
+    let dialog = dialog.on_file_operation(move |request| {
+        let result = create_folder(&mut created.borrow_mut(), request.operation());
+        send_or_keep(&answer, &kept, request.respond(result));
+        Ok(())
+    })?;
+    ui.keep_alive(operations);
     // The memory is the application's: a host decodes it from its settings
     // at startup and stores `encode()` after an accepted outcome. The page
     // shows that document instead of writing a file.
@@ -338,7 +425,7 @@ fn file_dialog(ui: &mut Runtime) -> Result<Element, AppError> {
         [
             label(
                 "dialog-help",
-                "Each button opens the same dialog with another request: one file of a chosen type, several files, a folder, or a name to save under. The dialog is modal to the window and hands each outcome to the page when the session ends. Each button is a purpose of its own: the dialog remembers the folder and the file type per purpose, lists the folders of accepted sessions as recent ones beside the two places the page supplies, and the text under the result is the memory document a host would store. Save as suggests notes, which completes to the existing notes.txt, so confirming asks before replacing it; choose another type to save under another extension. damaged.bin and Old link cannot be opened and are refused in place.",
+                "Each button opens the same dialog with another request: one file of a chosen type, several files, a folder, or a name to save under. The dialog is modal to the window and hands each outcome to the page when the session ends. Each button is a purpose of its own: the dialog remembers the folder and the file type per purpose, lists the folders of accepted sessions as recent ones beside the two places the page supplies, and the text under the result is the memory document a host would store. New folder asks the page, as the host, to create a folder; the page keeps what was created for as long as it runs and refuses a name that is taken. Save as suggests notes, which completes to the existing notes.txt, so confirming asks before replacing it; choose another type to save under another extension. damaged.bin and Old link cannot be opened and are refused in place.",
             ),
             Element::new(
                 "file-dialog",

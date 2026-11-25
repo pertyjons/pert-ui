@@ -63,10 +63,9 @@ use std::rc::Rc;
 /// description, and one without `folder_filter` denies it, hiding the field.
 /// Its generated parts mount even while hidden,
 /// so content search and workspace capture include them before first reveal.
-/// Breadcrumbs, list rows and tree rows quote or escape names consisting only
-/// of whitespace,
-/// making legal filesystem names visible without changing path identity or
-/// navigation. Other names retain their ordinary presentation.
+/// Breadcrumbs, list rows and tree rows show names consisting only of
+/// whitespace or containing a hard line break as quoted strings with escapes.
+/// Opening or selecting an entry uses its original path.
 /// Tree and list rows have a fixed height, so their text stays on one line: a
 /// name too long for the row keeps its start and its end around "…"
 /// ([`TextOverflow::MiddleEllipsis`](crate::TextOverflow::MiddleEllipsis)),
@@ -390,10 +389,10 @@ pub(super) fn placeholder(
     Element::new(key, label)
 }
 
-// Presentation alone escapes unnamed-looking paths; filtering and identities
+// Presentation alone escapes whitespace and hard breaks; filtering and identities
 // continue to use the original name and canonical path.
 fn visible_name(name: &str) -> String {
-    if name.trim().is_empty() {
+    if name.trim().is_empty() || name.contains(crate::text::HARD_BREAKS) {
         format!("{name:?}")
     } else {
         name.to_owned()

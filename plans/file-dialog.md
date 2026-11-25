@@ -2,7 +2,7 @@
 
 Status: slices 0, 1 (0.3.123, repairs in 0.3.124) and 2 (0.3.125) done.
 Slice 3 (the own window) is deferred until an application needs it
-(decision 13); slices 4 and 5 do not depend on it and are not started. Every type and method this plan
+(decision 13). Slice 4 (0.3.126) is done; slice 5 is not started. Every type and method this plan
 names is a proposal until a slice implements and documents it. The
 [decisions](#decisions) were settled on 2026-11-19. An independent Codex
 review of the first draft (2026-11-19, read-only, static) found two blockers
@@ -392,6 +392,10 @@ below understates the work.
   Platform claims are qualified by that evidence.
 
 ### 4. New folder
+
+Status: implemented in 0.3.126 on `file-dialog-slice-4`;
+[file-dialog-design.md](file-dialog-design.md) section 10c has what was
+decided while implementing and what is not tested.
 
 - An optional host capability: a `FileOperationRequest` ticket the host
   answers, as it answers listings and by the

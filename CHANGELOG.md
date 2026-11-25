@@ -14,6 +14,9 @@ history (this file at commit f5fde76).
   it at runtime. Display-list consumers resolve `RecordedPaint` gradient
   handles (`GradientId`) against the list and prepare a `GradientMapping`
   for their frame. Handle gradient validation and preparation errors.
+- A structural composite's element label now names its internal control in
+  inspection. File browser rows and breadcrumbs escape hard line breaks in
+  file and folder names while keeping the original path for navigation.
 
 - Fixed a one-pixel shift of the decimal point at fractional scale when a
   fixed-width Knob or Slider readout gains a digit.
@@ -24,6 +27,22 @@ history (this file at commit f5fde76).
   `TextStyle::MonospaceCaption` to restore the former size.
 - Added `MetricRole::MicroSize` and `TextSpan::style`. Exhaustive matches on
   `TextStyle` must handle the new `Micro` and `MonospaceMicro` variants.
+
+## 0.3.126 (2026-11-20): New folder in the file dialog
+
+- Added: the file dialog offers New folder when the host can create one.
+  `FileDialogController::on_file_operation` installs the handler that takes
+  each `FileOperationRequest`; the host answers with `respond` and delivers
+  the `FileOperationResponse` with `deliver_operation`, which reports an
+  `OperationDelivery`. `FileOperation`, `FileOperationError` and
+  `FileOperationErrorKind` describe the operation and its failure, and
+  `new_folder_permission` restricts it. After a success the folder is listed
+  again and the new folder made active when that listing shows it as a
+  folder; a failure is shown in the dialog.
+- Added: `FileBrowserController::select_entry`, which makes a shown entry
+  active and selected by its path.
+- Added: `StringRole` entries for New folder, its name field, its confirm
+  caption and its failure message, with `UiMessage::FileDialogCreateFailed`.
 
 ## 0.3.125 (2026-11-20): File dialog memory and places
 

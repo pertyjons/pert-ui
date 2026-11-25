@@ -828,6 +828,32 @@ impl FileBrowserController {
         self.0.paths.borrow().path(key).cloned()
     }
 
+    /// Makes the entry at `path` the active and only selected one, and
+    /// returns whether it did. It does nothing and returns `false` unless the
+    /// entry list shows the entry: an entry of another folder, one a filter
+    /// hides and a path the folder does not hold are left alone. A picker
+    /// uses it to point at an entry it knows by path, such as a folder that
+    /// was just created.
+    ///
+    /// # Errors
+    /// The selection's write errors, such as `WriteDuringUpdate`.
+    pub fn select_entry(&self, path: impl AsRef<Path>) -> Result<bool, RuntimeError> {
+        let path = path.as_ref();
+        if !self
+            .shown_entries()
+            .get()?
+            .iter()
+            .any(|entry| entry.path() == path)
+        {
+            return Ok(false);
+        }
+        let key = self.key_of(path);
+        let selection = self.selection();
+        selection.set_active(Some(key.clone()))?;
+        selection.select([key])?;
+        Ok(true)
+    }
+
     /// Shows `directory` in the entry list and requests its listing.
     ///
     /// The filter and the entry selection are cleared. When the directory is

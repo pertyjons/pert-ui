@@ -746,6 +746,46 @@ fn the_file_page_saves_through_its_dialog_and_reports_the_outcome() {
     settle(&mut ui);
     assert!(ui.find_descendant(&dialog, "recent-0").unwrap().is_some());
     assert!(ui.find_descendant(&dialog, "place-1").unwrap().is_some());
+    // New folder goes to the page as the host, and the folder is listed.
+    let part = |ui: &Runtime, name: &str| ui.find_exposed_part(&picker, name).unwrap().unwrap();
+    let rows = |ui: &Runtime| {
+        let entries = ui.find_descendant(&dialog, "entries").unwrap().unwrap();
+        ui.children(&entries).unwrap().len()
+    };
+    let before = rows(&ui);
+    let begin = part(&ui, "new-folder");
+    ui.focus(&begin).unwrap();
+    press(&mut ui, KeyCode::Enter);
+    settle(&mut ui);
+    let field = part(&ui, "folder-name");
+    ui.focus(&field).unwrap();
+    ui.text_input("Takes").unwrap();
+    press(&mut ui, KeyCode::Enter);
+    // The answer and then the refreshed listing arrive through mailboxes.
+    settle(&mut ui);
+    settle(&mut ui);
+    assert_eq!(rows(&ui), before + 1, "the created folder is listed");
+    let shown = |ui: &Runtime, name: &str| {
+        ui.inspect().components.iter().any(|item| {
+            matches!(item.details.properties.get("text"), Some(InspectValue::Text(text)) if text == name)
+        })
+    };
+    assert!(shown(&ui, "Takes"), "by its name");
+    // The same name again is refused by the page, and said in the dialog.
+    let begin = part(&ui, "new-folder");
+    ui.focus(&begin).unwrap();
+    press(&mut ui, KeyCode::Enter);
+    settle(&mut ui);
+    let field = part(&ui, "folder-name");
+    ui.focus(&field).unwrap();
+    ui.text_input("Takes").unwrap();
+    press(&mut ui, KeyCode::Enter);
+    settle(&mut ui);
+    settle(&mut ui);
+    assert_eq!(rows(&ui), before + 1);
+    let said = text(&ui, "refusal").join(" ");
+    assert!(said.contains("could not be created"), "{said}");
+    // Escape cancels the session, also while a folder is named.
     press(&mut ui, KeyCode::Escape);
     settle(&mut ui);
     assert!(ui.validation_report().issues.is_empty());
@@ -894,4 +934,58 @@ fn each_collection_reports_its_selection_changes_with_their_origin() {
             "{report}"
         );
     }
+}
+
+#[test]
+fn the_file_page_creates_folders_as_a_filesystem_would() {
+    use crate::pages::data::files::{ROOT, create_folder, listing_with};
+    use std::path::Path;
+    let folder = |parent: &Path, name: &str| FileOperation::CreateFolder {
+        parent: parent.to_owned(),
+        name: name.to_owned(),
+    };
+    let root = Path::new(ROOT);
+    let mut created = Vec::new();
+    create_folder(&mut created, &folder(root, "Takes")).unwrap();
+    assert_eq!(created, [root.join("Takes")]);
+    assert!(
+        listing_with(root, &created)
+            .unwrap()
+            .iter()
+            .any(|entry| entry.path() == root.join("Takes"))
+    );
+    // The created folder can be opened, and created in.
+    assert!(
+        listing_with(&root.join("Takes"), &created)
+            .unwrap()
+            .is_empty()
+    );
+    create_folder(&mut created, &folder(&root.join("Takes"), "One")).unwrap();
+    assert_eq!(
+        listing_with(&root.join("Takes"), &created).unwrap().len(),
+        1
+    );
+    // A taken name, a folder that may not be read and one that is not there.
+    let refused = |created: &mut Vec<_>, parent: &Path, name: &str| {
+        create_folder(created, &folder(parent, name))
+            .unwrap_err()
+            .kind()
+    };
+    assert_eq!(
+        refused(&mut created, root, "Takes"),
+        FileOperationErrorKind::AlreadyExists
+    );
+    assert_eq!(
+        refused(&mut created, root, "Drums"),
+        FileOperationErrorKind::AlreadyExists
+    );
+    assert_eq!(
+        refused(&mut created, &root.join("Locked"), "New"),
+        FileOperationErrorKind::PermissionDenied
+    );
+    assert_eq!(
+        refused(&mut created, &root.join("Nowhere"), "New"),
+        FileOperationErrorKind::NotFound
+    );
+    assert_eq!(created.len(), 2, "a refusal creates nothing");
 }

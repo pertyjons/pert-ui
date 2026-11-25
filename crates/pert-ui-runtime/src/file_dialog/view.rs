@@ -24,6 +24,8 @@ pub(super) struct Change {
     pub(super) name: bool,
     /// The folder shown changed.
     pub(super) current: bool,
+    /// Creating folders was forbidden while the user was creating one.
+    pub(super) revoked: bool,
 }
 
 /// The modal scope of a mounted file dialog.
@@ -78,7 +80,9 @@ enum Scope {
 /// test operates are [exposed parts](Element::expose_part) of the content:
 /// `accept` and `cancel` for the buttons, `name` for the name field, `filter`
 /// for the type selector, `refusal` for the line that says why confirm was
-/// refused and `question` for the replace question. The places and recent
+/// refused and `question` for the replace question, and, when the host can
+/// create folders, `new-folder` for the button and `folder-name` for the
+/// field that takes the new folder's name. The places and recent
 /// folders are buttons under the content's `shortcuts` segment, keyed
 /// `place-N` and `recent-N`. The number stays with a folder while it is
 /// listed and says nothing of its position: a list that starts empty
@@ -306,6 +310,28 @@ impl FileDialog {
             .structural()
             .expose_part("name"),
         );
+        let create = controller.clone();
+        parts.push(
+            Element::new(
+                "folder-name",
+                TextField::new(inner.folder_name.clone())
+                    .on_submit(move |_, _| create.accept().map(|_| ())),
+            )
+            .with_label(inner.texts.folder_label.clone())
+            .structural()
+            .expose_part("folder-name"),
+        );
+        let begin = controller.clone();
+        parts.push(
+            Element::new(
+                "new-folder",
+                Button::new(inner.texts.new_folder.clone(), move |_| {
+                    begin.begin_folder()
+                }),
+            )
+            .structural()
+            .expose_part("new-folder"),
+        );
         if let Some(selector) = self.selector.take() {
             parts.push(
                 Element::new("type", selector)
@@ -354,6 +380,7 @@ impl FileDialog {
                 pending: Change::default(),
                 notifier: None,
                 shows: Shows::default(),
+                focus: None,
             },
         );
         Element::new(format!("controller-{}", inner.id), Pass(vec![picker])).structural()
@@ -529,6 +556,10 @@ impl Component for Pass {
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 struct Shows {
     shortcuts: bool,
+    /// The New folder button.
+    new_folder: bool,
+    /// The field for a new folder's name.
+    folder_name: bool,
     name: bool,
     filter: bool,
     question: bool,
@@ -544,6 +575,7 @@ struct Seen {
     text_filter: String,
     filter: String,
     name: String,
+    folder_name: String,
 }
 
 /// The dialog's content: the browser over a footer of fixed-height rows.
@@ -556,6 +588,9 @@ struct Picker {
     pending: Change,
     notifier: Option<Notifier>,
     shows: Shows,
+    /// A part to move focus to after settling, and whether to the first
+    /// focusable component inside it rather than to the part itself.
+    focus: Option<(crate::WidgetId, bool)>,
 }
 impl Picker {
     /// The widest the column of places and recent folders gets, in logical
@@ -583,17 +618,58 @@ impl Component for Picker {
             text_filter: cx.read(&inner.browser.filter().read_only())?,
             filter: cx.read(&inner.filter.read_only())?,
             name: cx.read(&inner.name.read_only())?,
+            folder_name: cx.read(&inner.folder_name.read_only())?,
             session: session.clone(),
         };
+        let creating = cx.read(&inner.creating.read_only())?.is_some();
+        // The revision is read for its subscription: the capability and the
+        // permission themselves are replaced through the controller.
+        let _ = cx.read(&inner.capability.read_only())?;
+        let may_create = inner.can_operate.get() && inner.new_folder.borrow().read_paint(cx)?;
+        let listed = matches!(
+            cx.read(&inner.browser.listing())?,
+            crate::CurrentListing::Loaded(_)
+        );
+        if creating && !may_create && !self.pending.revoked {
+            self.pending.revoked = true;
+            self.notifier.get_or_insert_with(|| cx.notifier()).request();
+        }
         let shows = Shows {
             shortcuts: !cx.read(&inner.texts.shortcuts)?.is_empty() && !question,
-            name: session.0.mode == FileDialogMode::SaveFile && !question,
+            new_folder: may_create && listed && !creating && !question,
+            folder_name: creating && !question,
+            name: session.0.mode == FileDialogMode::SaveFile && !question && !creating,
             filter: !session.0.filters.is_empty()
                 && session.0.mode != FileDialogMode::ChooseFolder
-                && !question,
+                && !question
+                && !creating,
             question,
         };
         if shows != self.shows {
+            // Focus follows the naming: into the field when it appears, and
+            // when it goes away to the button that opened it or, where that
+            // is not offered, into the browser.
+            let child = |key: &str| {
+                cx.children()
+                    .iter()
+                    .find(|child| child.key() == key)
+                    .map(|child| child.id().clone())
+            };
+            let focus = if shows.folder_name && !self.shows.folder_name {
+                child("folder-name").map(|field| (field, false))
+            } else if !shows.folder_name && self.shows.folder_name && !shows.question {
+                if shows.new_folder {
+                    child("new-folder").map(|button| (button, false))
+                } else {
+                    child("browser").map(|browser| (browser, true))
+                }
+            } else {
+                None
+            };
+            if focus.is_some() {
+                self.focus = focus;
+                self.notifier.get_or_insert_with(|| cx.notifier()).request();
+            }
             self.shows = shows;
             cx.request_layout();
         }
@@ -612,8 +688,18 @@ impl Component for Picker {
         self.seen = Some(seen);
         Ok(())
     }
-    fn deliver_notifications(&mut self, _: &mut EventContext) -> Result<(), RuntimeError> {
+    fn deliver_notifications(&mut self, cx: &mut EventContext) -> Result<(), RuntimeError> {
+        if let Some((target, within)) = self.focus.take() {
+            if within {
+                cx.request_focus_within(&target)?;
+            } else {
+                cx.request_focus_for(&target)?;
+            }
+        }
         let change = std::mem::take(&mut self.pending);
+        if change == Change::default() {
+            return Ok(());
+        }
         self.controller.observed(change)
     }
     fn child_visible(&self, key: &str) -> bool {
@@ -621,6 +707,8 @@ impl Component for Picker {
             "browser" => !self.shows.question,
             "shortcuts" => self.shows.shortcuts,
             "name" => self.shows.name,
+            "folder-name" => self.shows.folder_name,
+            "new-folder" => self.shows.new_folder,
             "type" => self.shows.filter,
             "question" => self.shows.question,
             _ => true,
@@ -653,24 +741,41 @@ impl Component for Picker {
         // The action row: the status line, then cancel and confirm.
         let actions = (height - row).max(0.0);
         let mut right = width;
+        // With New folder in the row the buttons share it more tightly, so
+        // the refusal line always keeps a part of it.
+        let crowded = index(cx, "new-folder")?.is_some();
+        let most = if crowded { 0.28 } else { 0.35 };
         for key in ["accept", "cancel"] {
             if let Some(button) = index(cx, key)? {
                 // Neither button may take the row from the other and the
                 // refusal line.
-                let wide = natural(cx, button, (width * 0.35).min(right))?;
+                let wide = natural(cx, button, (width * most).min(right))?;
                 right -= wide;
                 cx.place(button, rect(right, actions, wide, row)?)?;
                 right = (right - gap).max(0.0);
             }
         }
+        // The New folder button leads the row; the status line has the rest.
+        let mut left = 0.0;
+        if let Some(button) = index(cx, "new-folder")? {
+            let wide = natural(cx, button, (width * 0.22).min(right))?;
+            cx.place(button, rect(0.0, actions, wide, row)?)?;
+            left = (wide + gap).min(right);
+        }
         if let Some(status) = index(cx, "refusal")? {
-            cx.place(status, rect(0.0, actions, right, row)?)?;
+            cx.place(status, rect(left, actions, right - left, row)?)?;
         }
         let mut bottom = (actions - gap).max(0.0);
         if let Some(question) = index(cx, "question")? {
             cx.place(question, rect(0.0, 0.0, width, bottom)?)?;
         }
-        // The footer row: the name field, then the type selector.
+        // The footer row holds the new folder's name while one is created.
+        if let Some(folder) = index(cx, "folder-name")? {
+            let top = (bottom - row).max(0.0);
+            cx.place(folder, rect(0.0, top, width, row)?)?;
+            bottom = (top - gap).max(0.0);
+        }
+        // Otherwise: the name field, then the type selector.
         let name = index(cx, "name")?;
         let filter = index(cx, "type")?;
         if name.is_some() || filter.is_some() {

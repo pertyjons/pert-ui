@@ -112,8 +112,8 @@ impl Runtime {
 
     /// The name an element label gives a component that reports none: its own
     /// element's label, or, for internal structure a composite built
-    /// (`Element::structural`), the label of the nearest described ancestor
-    /// when that ancestor reports no semantics of its own, so the label an
+    /// (`Element::structural`), the nearest nonblank label along the structural chain
+    /// when its owner reports no semantics of its own, so the label an
     /// application puts on a composite reaches the part that represents it.
     pub(super) fn element_label_name(&self, entry: &Entry) -> Option<String> {
         let named = |entry: &Entry| {
@@ -129,8 +129,13 @@ impl Runtime {
         let mut current = entry;
         while current.addressing == crate::layout::Addressing::Structural {
             current = self.entries.get(&current.node.logical_parent_serial()?)?;
-            if current.addressing != crate::layout::Addressing::Structural {
-                return named(current).filter(|_| current.component.inspect().semantics.is_none());
+            if let Some(label) = named(current) {
+                return current
+                    .component
+                    .inspect()
+                    .semantics
+                    .is_none()
+                    .then_some(label);
             }
         }
         None

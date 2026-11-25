@@ -114,6 +114,10 @@ pub(crate) fn swedish() -> Result<UiStrings, RuntimeError> {
         (FileDialogType, "Filtyp"),
         (FileDialogPlaces, "Platser"),
         (FileDialogRecent, "Senaste"),
+        (FileDialogNewFolder, "Ny mapp"),
+        (FileDialogFolderName, "Mappnamn"),
+        (FileDialogCreate, "Skapa"),
+        (FileDialogCreateFailed, "Mappen kunde inte skapas: {reason}"),
         (
             FileDialogReplaceQuestion,
             "”{name}” finns redan. Vill du ersätta den?",

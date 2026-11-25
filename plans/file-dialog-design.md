@@ -764,9 +764,9 @@ status line is kept. The content cannot tell that change from the user's.
 Tests added after the review also pin two things section 11 assumed: a
 session opened under a hidden owner stays open and unpresented until the
 owner is shown, and the type selector operated by keyboard filters the list
-and is reported. The second found that a structural element's label does not
-name a `Select`'s control (TODO.md LABEL-01), so the selector keeps an
-address segment, `type`.
+and is reported. At review time a structural element's label did not name
+a `Select`'s control, so the selector kept the address segment `type`.
+Structural composites now pass their labels to the control as well.
 
 Still without a test after the review: a start that fails after the
 reservation, the Windows name rule, a listing that changes while the replace
@@ -872,6 +872,75 @@ overtaken by opening the parent in the browser. Not tested: a workspace
 capture with places shown, Tab traversal through the list (focus and Enter
 on an item scrolled out of view are), Windows path prefixes in the ancestor
 walk, and anything native. The repairs after the review have had no further
+independent review.
+
+## 10c. As implemented in slice 4 (0.3.126)
+
+The contract is in `FileDialogController`'s rustdoc and in
+[contracts](../docs/contracts.md#file-dialog-sessions). Decided while
+implementing:
+
+- **The capability is a handler** (`on_file_operation`) that returns
+  `Result`: an error is the handoff failure the plan names, shown at once.
+  The plan's "ticket the host answers" is `FileOperationRequest` over the
+  general `RequestTracker`, with one outstanding request per controller.
+- **`FileOperation` is a non-exhaustive enum** with `CreateFolder` only, so
+  a later operation needs no new request type. The answer carries no path:
+  the created folder is the parent joined with the name.
+- **The name is typed in the footer row**, in place of the save name and the
+  type selector, with the browser still shown; confirm reads Create and
+  cancel reads Back, as for the replace question.
+- **New folder is offered in every mode**, also when opening files.
+- **Opening another folder ends the creation**, as Back does: the plan's
+  "navigation generation" is kept by ending the interaction at the
+  navigation, so a late answer is stale also after the user came back.
+- **The permission composes** (`Permission::and`) across calls and is read
+  again at handoff and at delivery; a change is seen by a mounted dialog.
+- **New folder waits for the listing** of the folder shown, and starting to
+  name a folder ends the opening's search for a remembered folder.
+- **`FileBrowserController::select_entry` is public**, so a hand-built
+  picker can point at an entry by path as the dialog does.
+- **"Retry only refreshes"**: after a success the dialog is back in its
+  browser, so a failed refresh is the browser's failed listing and no path
+  leads to a second creation. The dialog adds no retry control of its own.
+
+Codex reviewed the slice on 2026-11-20 (read-only; it ran formatting checks
+only) and found two blockers and eleven further points, repaired before the
+commit:
+
+- `deliver_operation` completed its ticket before its writes, so a delivery
+  the phase refused could never be repeated, and `create_folder` issued a
+  ticket before its writes: the writes come first in both;
+- the permission could be widened by a second call and was not read at
+  handoff or delivery: it composes, and both places read it;
+- any applied listing consumed the wait for the new folder, and a file at
+  the new path was selected: the wait is bound to the request the creation
+  made, and only a folder is made active;
+- an answer was matched by the parent's path, so it applied in a later visit
+  to the same folder: navigation ends the creation;
+- a creation could overtake the search for a remembered folder: the button
+  waits for the listing and naming ends the search;
+- the handler ran under a borrow: it is taken out while it runs;
+- focus did not follow the naming: it moves into the field and back;
+- the gallery reported a refused handoff after creating the folder, could
+  not open a folder it created and created under an unreadable parent: its
+  host is one lookup now, with a kept answer on a full mailbox;
+- request and response equality, a narrower promise on `FileOperation`'s
+  name, a tighter action row so the refusal line keeps room, a compiled
+  guide example and qualified changelog wording.
+
+Tested: the button's presence by capability and permission, the round trip
+with the folder made active, name validation, a host failure and a second
+attempt, a refused handoff, answers after Back, after cancel and after
+reopening, navigation ending a creation and a later visit, a failed refresh
+followed by a real re-listing, revocation while naming and while pending,
+composed permissions and one given to a mounted dialog, a delivery refused by
+the phase and repeated, the listing bound to the creation's request, a file
+or nothing at the new path, the button waiting for the listing, focus and
+Enter and Escape while naming, and the gallery host's rules. Not tested: a
+handler that installs its successor while it runs, the action row at the
+minimum width with long captions, a response from another controller, and
+anything native. The repairs after the review have had no further
 independent review.
 
 ## 11. Assumed, not yet tested

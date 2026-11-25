@@ -245,6 +245,15 @@ pub enum StringRole {
     FileDialogPlaces,
     /// The heading over a file dialog's recent folders.
     FileDialogRecent,
+    /// The file dialog's button that starts creating a folder.
+    FileDialogNewFolder,
+    /// The name of the field for a new folder's name in the file dialog.
+    FileDialogFolderName,
+    /// The file dialog's confirm caption while a folder is named.
+    FileDialogCreate,
+    /// The file dialog's message when the host could not create a folder:
+    /// `{reason}` is the host's message.
+    FileDialogCreateFailed,
     /// The file dialog's question before an existing file is replaced:
     /// `{name}` is the file.
     FileDialogReplaceQuestion,
@@ -291,7 +300,8 @@ crate::tables::variant_list! {
         ToolWindowDock, ToolWindowFloat, ToolWindowOpenWindow, NotANumber,
         NotAWholeNumber, NumberOutOfRange, NumberOffStep, FileDialogOpen,
         FileDialogChooseFolder, FileDialogChoose, FileDialogSave, FileDialogName,
-        FileDialogType, FileDialogPlaces, FileDialogRecent, FileDialogReplaceQuestion, FileDialogReplace, FileDialogBack,
+        FileDialogType, FileDialogPlaces, FileDialogRecent, FileDialogNewFolder,
+        FileDialogFolderName, FileDialogCreate, FileDialogCreateFailed, FileDialogReplaceQuestion, FileDialogReplace, FileDialogBack,
         FileDialogUnusable, FileDialogNotAllFiles, FileDialogInvalidName,
         FileDialogAmbiguousName,
     ];
@@ -322,6 +332,7 @@ impl StringRole {
             Self::NumberOutOfRange => &["min", "max"],
             Self::NumberOffStep => &["step"],
             Self::FileDialogChoose | Self::FileDialogReplaceQuestion => &["name"],
+            Self::FileDialogCreateFailed => &["reason"],
             _ => &[],
         }
     }
@@ -467,6 +478,13 @@ const ENGLISH: [(StringRole, &str); STRING_ROLE_COUNT] = [
     (StringRole::FileDialogType, "File type"),
     (StringRole::FileDialogPlaces, "Places"),
     (StringRole::FileDialogRecent, "Recent"),
+    (StringRole::FileDialogNewFolder, "New folder"),
+    (StringRole::FileDialogFolderName, "Folder name"),
+    (StringRole::FileDialogCreate, "Create"),
+    (
+        StringRole::FileDialogCreateFailed,
+        "The folder could not be created: {reason}",
+    ),
     (
         StringRole::FileDialogReplaceQuestion,
         "“{name}” already exists. Replace it?",
@@ -860,6 +878,11 @@ pub enum UiMessage<'a> {
         /// The file's display name.
         name: &'a str,
     },
+    /// [`StringRole::FileDialogCreateFailed`].
+    FileDialogCreateFailed {
+        /// The host's message.
+        reason: &'a str,
+    },
 }
 
 impl UiMessage<'_> {
@@ -886,6 +909,7 @@ impl UiMessage<'_> {
             Self::NumberOffStep { .. } => StringRole::NumberOffStep,
             Self::FileDialogChoose { .. } => StringRole::FileDialogChoose,
             Self::FileDialogReplaceQuestion { .. } => StringRole::FileDialogReplaceQuestion,
+            Self::FileDialogCreateFailed { .. } => StringRole::FileDialogCreateFailed,
         }
     }
 
@@ -922,6 +946,7 @@ impl UiMessage<'_> {
             (Self::NumberOutOfRange { min, .. }, "min") => out.push_str(min),
             (Self::NumberOutOfRange { max, .. }, "max") => out.push_str(max),
             (Self::NumberOffStep { step }, "step") => out.push_str(step),
+            (Self::FileDialogCreateFailed { reason }, "reason") => out.push_str(reason),
             (
                 Self::FileDialogChoose { name: entry }
                 | Self::FileDialogReplaceQuestion { name: entry },
@@ -969,6 +994,7 @@ mod tests {
             UiMessage::NumberOffStep { step: "x" },
             UiMessage::FileDialogChoose { name: "x" },
             UiMessage::FileDialogReplaceQuestion { name: "x" },
+            UiMessage::FileDialogCreateFailed { reason: "x" },
         ];
         for message in messages {
             let text = strings.format(message);
