@@ -99,25 +99,28 @@ fn page_changes_are_visits_and_back_and_forward_cross_categories() {
     let (mut ui, root) = mounted();
     let start = shown(&ui);
     assert!(disabled(&ui, "back"), "nothing to go back to yet");
-    invoke(&mut ui, "Go to: Controls");
-    invoke(&mut ui, "Go to: Text input");
+    invoke(&mut ui, "Go to: Choices & toggles");
+    invoke(&mut ui, "Go to: Fonts & icons");
     // The user's own tab selection is a visit too.
-    let strip = strip_of(&ui, &root, "editing");
+    let strip = strip_of(&ui, &root, "fonts");
     ui.focus(&strip).unwrap();
     press(&mut ui, KeyCode::ArrowRight);
-    assert_eq!(shown(&ui), place("text-category", "numbers"));
+    assert_eq!(shown(&ui), place("text-graphics", "theme"));
     let back = part(&ui, &root, "back");
     pointer_click_on(&mut ui, &back);
-    assert_eq!(shown(&ui), place("text-category", "editing"));
-    assert_eq!(text(&ui, "status"), ["Returned to Text › Text input."]);
+    assert_eq!(shown(&ui), place("text-graphics", "fonts"));
+    assert_eq!(
+        text(&ui, "status"),
+        ["Returned to Text, graphics & appearance › Fonts & icons."]
+    );
     pointer_click_on(&mut ui, &back);
-    assert_eq!(shown(&ui), place("controls-category", "controls"));
+    assert_eq!(shown(&ui), place("controls-forms", "controls"));
     // The restorations are reveals, not visits: forward still leads on.
     assert!(!disabled(&ui, "forward"));
     let forward = part(&ui, &root, "forward");
     pointer_click_on(&mut ui, &forward);
     pointer_click_on(&mut ui, &forward);
-    assert_eq!(shown(&ui), place("text-category", "numbers"));
+    assert_eq!(shown(&ui), place("text-graphics", "theme"));
     assert!(disabled(&ui, "forward"));
     // Going all the way back reaches the page the gallery opened on.
     while !disabled(&ui, "back") {
@@ -130,7 +133,7 @@ fn page_changes_are_visits_and_back_and_forward_cross_categories() {
 #[test]
 fn the_history_list_searches_and_returns_to_a_place() {
     let (mut ui, root) = mounted();
-    invoke(&mut ui, "Go to: Chips & breadcrumbs");
+    invoke(&mut ui, "Go to: Chips & multiple choice");
     invoke(&mut ui, "Go to: Text input");
     invoke(&mut ui, "Go to: Themes");
     let list = part(&ui, &root, "history");
@@ -149,7 +152,7 @@ fn the_history_list_searches_and_returns_to_a_place() {
     // The choice queued the restoration during that flush; the next one
     // delivers it.
     settle(&mut ui);
-    assert_eq!(shown(&ui), place("controls-category", "chips"));
+    assert_eq!(shown(&ui), place("controls-forms", "chips"));
     // Going to an entry moves the history there without a new branch, so the
     // later places are still ahead.
     assert!(!disabled(&ui, "forward"));
@@ -159,7 +162,7 @@ fn the_history_list_searches_and_returns_to_a_place() {
 #[test]
 fn the_mouse_side_buttons_move_through_the_history() {
     let (mut ui, root) = mounted();
-    invoke(&mut ui, "Go to: Chips & breadcrumbs");
+    invoke(&mut ui, "Go to: Chips & multiple choice");
     invoke(&mut ui, "Go to: Text input");
     let status = find(&ui, &root, "status");
     let (x, y) = center_of(&ui, &status);
@@ -171,7 +174,7 @@ fn the_mouse_side_buttons_move_through_the_history() {
         pointer_at(&mut ui, x, y, PointerKind::Press(button));
         pointer_at(&mut ui, x, y, PointerKind::Release(button));
     }
-    assert_eq!(shown(&ui), place("controls-category", "chips"));
+    assert_eq!(shown(&ui), place("controls-forms", "chips"));
 }
 
 #[test]
@@ -189,13 +192,13 @@ fn the_shortcut_commands_move_through_the_history() {
     };
     assert_eq!(shortcuts("Go back"), [KeyChord::navigate_back()]);
     assert_eq!(shortcuts("Go forward"), [KeyChord::navigate_forward()]);
-    invoke(&mut ui, "Go to: Chips & breadcrumbs");
+    invoke(&mut ui, "Go to: Chips & multiple choice");
     invoke(&mut ui, "Go to: Themes");
     // The chords travel the native key path, as a window's keys do.
     navigation_chord(&mut ui, true);
-    assert_eq!(shown(&ui), place("controls-category", "chips"));
+    assert_eq!(shown(&ui), place("controls-forms", "chips"));
     navigation_chord(&mut ui, false);
-    assert_eq!(shown(&ui), place("tools-category", "theme"));
+    assert_eq!(shown(&ui), place("text-graphics", "theme"));
 }
 
 /// Presses the platform's back or forward chord through
@@ -230,18 +233,18 @@ fn navigation_chord(ui: &mut Runtime, back: bool) {
 #[test]
 fn restoring_through_a_category_showing_another_page_records_nothing() {
     let (mut ui, _) = mounted();
-    invoke(&mut ui, "Go to: Controls");
+    invoke(&mut ui, "Go to: Choices & toggles");
     invoke(&mut ui, "Go to: Text input");
     // The Controls category now shows Chips, not Controls.
-    invoke(&mut ui, "Go to: Chips & breadcrumbs");
+    invoke(&mut ui, "Go to: Chips & multiple choice");
     invoke(&mut ui, "Go back");
-    assert_eq!(shown(&ui), place("text-category", "editing"));
+    assert_eq!(shown(&ui), place("controls-forms", "editing"));
     // Revealing the Controls category passes through Chips on the way back
     // to Controls; neither step is a visit.
     invoke(&mut ui, "Go back");
-    assert_eq!(shown(&ui), place("controls-category", "controls"));
+    assert_eq!(shown(&ui), place("controls-forms", "controls"));
     invoke(&mut ui, "Go forward");
-    assert_eq!(shown(&ui), place("text-category", "editing"));
+    assert_eq!(shown(&ui), place("controls-forms", "editing"));
     invoke(&mut ui, "Go forward");
-    assert_eq!(shown(&ui), place("controls-category", "chips"));
+    assert_eq!(shown(&ui), place("controls-forms", "chips"));
 }

@@ -11,64 +11,81 @@ category keeps the page last shown there. Each page retains its own scroll
 position. Fixed views intentionally clip content below hard size minima;
 they do not move the frame to reveal controls outside it.
 
-| Category › page | What to try |
-|---|---|
-| Layout › Layout | Compare Row, Column and Wrap; resize to reflow buttons. Growth and alignment shows a tile growing into a row's spare width with a spacer pushing the last tile to the end, `Justify::SpaceBetween`, `Align::Stretch` filling a row's height and a column growing its body; in a narrow window the growing tile gives up width and wraps. Grid demonstrates content, fixed and weighted tracks. Container demonstrates padding, fill and min/max limits; groups have titled and untitled examples. Mark the bound box: its fill follows a role binding. |
-| Layout › Split panes | Three nested splits have two independent resize permissions and a permanently locked inner divider. Try equal shares, ratios, fixed first/second extents, both content-sizing rules and child min/max bounds. Change content width before/after resizing. |
-| Layout › Nested regions | Resize or lock each of the top, bottom, left and right regions, or lock them all with the layout-wide switch: an edge resizes only while both its own and the layout-wide permission allow it. The center contains another RegionLayout with a retained counter. A lone-region example has no empty-slot divider. Shrink the window to exercise overflow access. |
-| Layout › Scrolling | Compare a fixed View (clipped at local zero) with vertical (default), horizontal and two-axis ScrollArea. Tab to offscreen actions to reveal them, including the bottom-right cell of the large grid. |
-| Layout › Sections | Click a section header, or focus it and press Enter or Space, to show or hide its content. Type in the note, collapse and expand it again: the draft survives. The bound section follows the page's switch and is left out of saved workspaces. In the accordions, Up/Down/Home/End move between headers; the first keeps one section open, the second opens them independently. |
-| Layout › Tool windows | Compare the full-width open and locked layouts, which share a selected sample file: select it in Files or Search and see the main views and Properties update. In the open layout, use a stripe button (or Tab, arrows and Enter) to expand a panel; Escape returns focus to the main view. Drag a divider to resize, move a stripe button to another edge or position, or use a panel's ⋮ menu to move, overlay, float or open it in its own native window; closing that window returns it to the stripe. Notes starts as an overlay and hides when focus leaves it. The locked layout prevents user toggling, resizing, moving, floating and detaching, while the button below can still open Properties through a controller. The switch shows names on the stripes. Below, a tool window holds a nested layout with its own left stripe. |
-| Layout › Transforms | On the `ZoomView` canvas the wheel pans and zooms at the pointer with Control (Command on macOS), dragging the background or with the middle button pans, and once it is focused arrows pan, = and - zoom, 0 shows 100% and Home fits everything; Fit and Reset do the same from application code through a `ZoomController`. The cards are ordinary controls that keep working at every zoom, with text prepared for the size it is shown at; during a continuous zoom it is stretched and sharpens once the zoom rests. A pinch zooms too where the platform delivers one (macOS). Below it, a timeline zooms time with Control and the wheel or a pinch, zooms amplitude with Shift added to either, pans by dragging and shows the whole hour on Home, while rows, labels and the trace's stroke keep their size. Compare quarter-turned labels, which exchange width and height, and one path mapped by rotations and by a per-axis data fit that keeps its stroke width. |
-| Layout › State & tabs | Increment a counter, hide/show its View and switch tabs without losing state. Start the scheduled sample; hidden content suspends updates. Detach a single ordinary View with its button or Primary+D. Nested tabs have independent counters and a scrollable title strip. |
-| Layout › Navigation | Links reveal a button at the end of a hidden tab, with and without focus (hover a link for its underline and pointing-hand cursor), and one in a closed accordion section; see a view the application hides refuse until its toggle is on; select a tab by key through a command; jump to Data & media › Collections through an always-underlined link, which opens two strips at once, beside a disabled link. A line above the strip reports each selection change with its origin: a click or key is the user's, a link is a reveal. Below, open the history strip's places one after another, then use the back and forward arrows (hover them for the place they lead to) or the clock icon's searchable list to return to one; returning reveals the tab without recording a new visit. A drawer the gallery writes itself opens when a link reveals the setting inside it, through the same public hook the built-in containers use. A nonmodal palette opens beside its button with the gallery's own matcher: every typed word must begin a word of a command's name. The jump links include one with rich content, an icon and a styled span. |
-| Controls › Text & buttons | Compare Body, Heading, Caption and Monospace. Noto Sans Mono appears in real Grid cells. Change bound text, increment/reset a counter, try a disabled button, and cancel an armed click. A custom Painter sample shows rectangles, clipping and coverage masks. |
-| Controls › Controls | Checkbox and Toggle share a boolean; RadioGroup and Select share a typed choice. Try menus, delayed help and a popover that escapes the page clip. Escape/outside press cancel; focus returns to the opener. |
-| Controls › Input & parameters | Focus the key area and hold multiple keys or modifiers. Horizontal and vertical sliders, three knobs (one filling its arc from the default, one with an application-formatted readout) and two button-based editors share one numeric parameter. Try a cancelled preview, an effective-value override, read-only rejection and an authoritative host reset; outcomes appear in the footer. |
-| Controls › Parameter families | Continuous (logarithmic and power-mapped), stepped, boolean and choice parameters created from descriptors, each bound to its standard and inline controls; the power mapping gives Drive's low end more travel. Every committed edit reaches an application undo stack through the host's terminal notification; Undo writes the recorded value back. |
-| Controls › Toolbar | A global toolbar with icon actions, latched toggles, a stepped tempo, a snap select, an icon choice, an editable name and read-only readouts; an inline numeric row with slider, integer, decimal, custom millisecond formatting and Reset; a channel strip with inline pan/send sliders, mute/solo and a decibel level; and a status bar attached below. Compare the small muted captions with full-size values, units and action text, including while editing a number. Narrow the window to move groups behind the More button. |
-| Controls › Property grid | Two accordion sections hold one property grid each, with text, checkbox, select, stepped number, knob, color and toggle editors. Drag the gap between labels and editors, or Tab to a grid and press Left or Right (Shift for larger steps): both grids share one label width and stay aligned; Escape cancels a resize and Reset label width restores it. The long last label wraps in its column. Clear the name and press Check: the error appears under its editor, which receives focus. |
-| Controls › Adaptive forms | Resize the split panel to reflow field columns while retaining text and numeric drafts; small allocations scroll. |
-| Controls › Field status | Leave the name empty and press Check: the application's rule publishes an error that outlines the control, replaces the help line and receives focus, while long notes produce a warning. Clear status restores the help text. |
-| Controls › Progress | Press Start for activity with no known extent, the only status that animates; Step reports a known fraction, which schedules nothing; Succeed, Fail and Cancel end the task, and Fail or Cancel after a Step keeps the fraction it reached. Switch tabs while it runs to see the animation stop and resume. A spinner beside the caption follows the task, and a second one has its own Busy switch. Below, every status that does not animate, described rather than bound, including a failure and a cancellation at three of eight. Start the clock: an application timer ticks once a second, also while another control has focus, until Stop. |
-| Controls › Colors | Swatches show opaque and translucent colors, the latter over a checkerboard. Type hexadecimal sRGB (`#rgb`, `#rgba`, `#rrggbb` or `#rrggbbaa`) and press Enter or move focus away: valid text is saved in canonical lowercase form and recolors the swatch beside it, whose sRGB bytes and linear channels appear below; invalid text is refused with the parser's reason. Tab to the swatch and press Enter or Space, or click it, to activate it as a picker would open. Below, a color picker edits the same color: drag the area or a strip and the swatch changes on release, Escape cancels a drag, arrow keys step a focused part (finer with Shift), and dragging to black and back keeps the hue. The next section opens a second picker in a popover from its swatch. The last one opens a nonmodal quick pick over named colors: type to filter, Up/Down and Enter or a click choose one and recolor the swatch, each row shows its hexadecimal value and whether it is warm, cool or neutral, and the disabled Ultraviolet row is refused with a message while the picker stays open. |
-| Controls › Chips & breadcrumbs | Static chips beside removable tags. Focus a tag and press Delete or Backspace, or click its × button: the page removes the tag and focus moves to the next one, then the previous one, then back to the page. Reset tags restores them. Two multi-select choosers pick instruments: open one with Enter, Down or a click, type to filter, move the highlight with Up and Down while focus stays in the search field, and toggle with Enter or a click; Escape clears the query, then closes. The first writes every toggle, the second only when its popup closes by a click outside or Tab, and Escape discards its draft. Below the tags, `Each` lists them by key and `Show` adds a note once none is left. Two breadcrumbs follow one sample folder: activate a folder to navigate up, and compare the narrow one, which collapses its middle folders behind a … menu; Open mixes returns to the deepest folder. |
-| Text › Text input | Single-line body text, a taller single-line field beside a same-height button for alignment, multiline monospace, read-only mirror, disabled field, proportional override and external replacement. Write a line break into the refusing field: it keeps its text and `on_binding_refusal` reports why, until a single line is written. Double-click a word; triple-click selects all text. Right-click or press Shift+F10 in any field for Copy, Cut, Paste and the spaced Paste Before/Paste After; inapplicable actions are grayed out. Below the editors, compare `Field` around a text editor in each `FieldStatus`: normal with help text, warning, error, an error with an empty message, a long wrapping message on a multiline editor, a read-only control and a field without a label. The first field is live: press Enter to apply the gallery's own rule. A search field filters a list once typing pauses, highlighting what matched: Up/Down move the highlight while focus stays in the field, Enter chooses and Escape clears the query. Below it, a sign-in form shows the input states: placeholders, required markers, length limits with counters, a concealed password with an eye button (or Alt+F8) and a name check that shows a pending spinner until you finish it. A × button clears a field, a dot in the corner marks an unsaved draft and the summary counts unsaved fields. A refused entry keeps its draft: type `ab` in User name and press Enter, then press Revert, which discards the drafts (`FormFields::discard_drafts`) and clears the error and pending marks; the delay field shows an icon and a unit around its text. |
-| Text › Number input | Edit integer/decimal drafts, save with Enter or focus loss, cancel with Escape, and compare fixed precision with saved-value mirrors. Try external replacement, read-only and disabled fields. A field with a `NumberFormat` shows a fraction as a percentage at rest and edits the plain percentage while focused. |
-| Text › Fonts & icons | Compare labels cut to one line in boxes of three widths, with an ellipsis at the end or in the middle of a path; rest the pointer on a cut label for its full text. Combine fonts and colors, try icon buttons with tooltips, change the default text font and select expand icon, restore defaults, and inspect a composed panel header/footer. |
-| Text › Text rendering | Switch between the default and phase-aware text masks, edit the field, and scroll the sample. Compare appearance at different zoom levels and themes. The same setting is in Settings › Text rendering. |
-| Surfaces › Dialogs & notifications | Open a form and its nested confirmation, compare window/view modality, try safe Cancel focus, right-click or Shift+F10, navigate nested menus, dismiss/restore the banner, and post timed/actionable toasts. Hover/focus pauses the visible toast stack; hidden started toasts expire on return. |
-| Surfaces › Floating windows | Move and overlap decorated windows, resize from the bottom-right grip, minimize/restore, use a fixed undecorated palette, and exercise nested tabs, splits and a dialog. Open the local dialog from Properties › General: its panel is centered within the General view and its Close dialog button receives focus. |
-| Surfaces › Menu bar | Press File or View, then point at the other title to switch menus. Focus the document and press F10: Left/Right move between titles, Down opens, Left/Right inside a menu move to the neighboring one, and Escape closes one level. File › New sketch (Primary+N) enables Save (Primary+S) through the command's own binding; both shortcuts also work with the menus closed. View shows a check-mark toggle and radio rows, whose `on_change` reports your own choice on the status line, and About is a title that runs an action. The synchronize button at the right of the bar is in its trailing slot: Tab reaches it, F10 and the title arrows skip it. |
-| Data & media › Virtual list | Scroll a `VirtualList` of 100,000 rows that mounts only the rows near its viewport, Tab through mounted buttons, and jump to the first, middle or last row by key; the line below reports each jump's outcome, including a key no row has. |
-| Data & media › Collections | Three consumers of one virtualized list and one keyed selection. In the grid, arrows move by item and by line, Shift extends a range, Control moves without selecting and Space toggles. In the tree, Right expands and then enters a folder and Left collapses and then leaves it; the hierarchy has over two million nodes that exist only once their parent opens. In the table, click Sample to sort 100,000 rows, drag a column edge to resize, drag the middle column titles or press Alt with Left or Right to reorder them, scroll the overflowing columns, and move the active cell with the arrows before pressing Enter; the Note column is edited in place (Enter, F2, a double-click or typing begins, Enter saves, Escape cancels, Tab moves to the next row's note; the rows are tall enough for the editor at every density Settings › Density offers), and the last column, Progress, draws a growing bar beside its percentage: drag its edge narrower and the bar gives up width while the percentage stays in the cell. The last list has rows of their own wrapped height over an estimate. A line under each collection reports its selection changes and whether you or the application made them. Type in the filter above the grid, the tree or the table to show only matching items: the grid keeps selected items selected while they are hidden and Down moves from the filter into it; the tree shows matches of its first three levels with the folders above them, and Escape in the filter clears it and brings back your own expansion. |
-| Data & media › File browser | Browse a synthetic sample library that the page answers through a mailbox, as a host answers from a worker thread; the browser never reads the disk. Click a folder in the tree or expand it, double-click or press Enter on an entry, filter the entries by name and the folder tree from the field above it (it searches only folders already listed, so it never asks for a listing), press Backspace in a list for the parent folder and use the path bar above. Locked fails with an error row, Latest project is a link to a folder, Old link is broken and damaged.bin unreadable. Turn on slow listing to see loading rows and open another folder before one arrives: the late result is counted as stale and dropped. |
-| Data & media › Drag & drop | Two reorderable lists exchange tracks, with a multiple selection dragged together and the copy modifier copying; custom chips carry their own payload to one bin that accepts it as a move, a copy or a link, as the modifiers ask, and one that refuses it. The reorderable tree takes a track before or after another, or into a folder, even an empty one, and forbids moving a folder into itself; Alt with an arrow does the same from the keyboard. |
-| Data & media › Static & live | Start the synthetic waveform and level beside 1,000 independent checkboxes; consumer components draw them from the library's series sources. Scroll, toggle a checkbox, hide/show the visuals and switch tabs. Reset measurements before a run and inspect the Profiler afterward. |
-| Data & media › Level & trace | The library's `Trace` and `LevelMeter` on the same producer thread's two series, each scaled by a `ParameterSpec`. Press Run: the trace sweeps over its grid, the horizontal meter holds its peak marker for a second and the vertical meter reads the same source. Stop it or leave the page and nothing is drained. |
-| Data & media › Vector shapes | Paths drawn through the public `Painter` API: a self-overlapping star filled with the nonzero and even-odd rules, butt, square and round caps over a guide at their endpoints, miter, bevel and round joins, a filled and a stroked ellipse, a rounded rectangle and a sampled trace. Switch themes or zoom to see them re-rasterize sharply. |
-| Data & media › Images | A translucent PNG, decoded once when the page is built, in the three fits: Contain shows all of it, Cover fills the box and clips, Fill stretches. Its soft edge blends without a dark fringe in both themes. An 8x8 image built in code is magnified with Nearest and Linear sampling. "Decode on a worker" decodes the PNG with `Runtime::spawn`, which delivers it on the UI thread to the image beside the button; each press is numbered, and a result overtaken by a later press is dropped. SVG drawings show one monochrome mark at several sizes, each rasterized for the pixels it covers and tinted by a theme color, beside a drawing that keeps its own colors. The last line lists the decoders this build enables; of the raster formats the gallery enables only `png`, and it enables `svg`. |
-| Appearance & tools › Themes | Switch dark/light palettes and inspect semantic color overrides. |
-| Appearance & tools › Workspace | Drag the sample's divider, pick a tab and scroll the list, then Capture: the document covers the whole gallery's arrangement and settings, not only this page. Rearrange and Restore to put it back, or edit the document text first when it fits the editor. The page writes no file; a host stores the document where it keeps its settings. |
-| Appearance & tools › Profiler | Exercise any page, then Refresh snapshot to see calls, total/self/max elapsed UI time. Pause/Enable/Clear are explicit; no polling is scheduled. |
-| Appearance & tools › Debug overlay | Choose Settings › Debug overlay › Validation issues, then switch "Arrange the sample wrongly" on: the overlapping and the escaping button are outlined in red and reported once on stderr. Component boxes outlines every border box and padded content box instead. Both need a build with debug assertions and schedule no frames. |
+Use **Help › Search the gallery** to look up a component by API name,
+including `MultiSelect` and `FileDialog`. Choose a Page result to open its
+example. Page introductions give an action and its expected result. Related
+links connect composed examples to their controls. Expand the help in a
+sample for details, using Tab and Enter or Space from the keyboard.
 
-For alignment checks, narrow **Sample** after sorting it on **Data & media ›
+| Category › page | Launch key for `--page` | What to try |
+|---|---|---|
+| Layout & navigation › Rows, columns & grids | `layout` | Resize the window and compare how rows, wrapping items and grid tracks share the available space. |
+| Layout & navigation › Split panes | `splits` | Drag a divider, lock it, then change the content width to compare the sizing rules. |
+| Layout & navigation › Nested regions | `shells` | Resize an edge and watch the center adjust. Lock the edge and try the same drag again. |
+| Layout & navigation › Scrolling | `scroll` | Tab to a control below the viewport and watch the scroll area reveal it. |
+| Layout & navigation › Sections | `sections` | Type a note and collapse its section. Expand it again to find the same draft. |
+| Layout & navigation › Transforms | `transforms` | Zoom the canvas at the pointer. The controls on the cards remain interactive. |
+| Layout & navigation › State & tabs | `state` | Increment a counter, switch tabs and return. The view remembers its value. |
+| Layout & navigation › Navigation | `navigation` | Follow a link to a hidden control, then use the history arrows to revisit a page. |
+| Layout & navigation › Breadcrumbs | `breadcrumbs` | Open a parent folder in either breadcrumb. Both paths follow the same location. |
+| Layout & navigation › Physical keys | `keyboard` | Focus the key area and hold two keys together. Moving focus away clears the held keys. |
+| Controls & forms › Buttons | `buttons` | Activate a button by keyboard, then change the bound caption. The disabled example skips focus. |
+| Controls & forms › Choices & toggles | `controls` | Change a checkbox or choose a radio option and watch the control beside it follow. |
+| Controls & forms › Chips & multiple choice | `chips` | Remove a tag or compare when the two instrument choosers commit their selections. |
+| Controls & forms › Text input | `editing` | Edit the text, then try the read-only mirror. A rejected write leaves the previous value visible. |
+| Controls & forms › Number entry | `numbers` | Type a number and press Escape, then try Enter. Watch the saved value beside the field. |
+| Controls & forms › Knobs & sliders | `input` | Drag Bakelite and compare the readouts. Double-click a knob to restore the shared default. |
+| Controls & forms › Parameter families | `families` | Edit a value and use Undo. The host records committed changes across control types. |
+| Controls & forms › Field status | `fields` | Leave the name empty and press Check. The editor receives focus and displays the reason. |
+| Controls & forms › Adaptive forms | `forms` | Drag the divider while editing a field. The columns reflow and the draft survives. |
+| Controls & forms › Sign-in form | `sign-in` | Enter a short user name and submit it. Revert clears the refused draft. |
+| Controls & forms › Property grid | `properties` | Resize the label column in either section. Both grids stay aligned. |
+| Controls & forms › Color controls | `colors` | Edit the hex value or drag in the picker. Both views show the saved color. |
+| Controls & forms › Toolbar | `toolbar` | Narrow the toolbar to move groups into More. The actions and their values remain available. |
+| Menus, windows & feedback › Menu bar | `menus` | Activate New sketch in File and observe Save become available. F10 focuses the menu bar. |
+| Menus, windows & feedback › Popups & help | `popups` | Open the popover, then press Escape. Focus returns to its opener. |
+| Menus, windows & feedback › Dialogs & notifications | `surfaces` | Open the nested confirmation and cancel it. The parent form remains open. |
+| Menus, windows & feedback › Floating windows | `windows` | Drag the Out-1 title and resize its frame. Its controls keep their values. |
+| Menus, windows & feedback › Tool windows | `tool-windows` | Select a file, then open Properties. The panels share the same selection. |
+| Menus, windows & feedback › Progress | `progress` | Start the task, report a step and cancel. The final status retains the fraction reached. |
+| Lists, tables & files › Collections | `collections` | Choose a row, then filter the data. Compare selection in a grid, a tree and an editable table. |
+| Lists, tables & files › File browser | `files` | Open a folder in the sample library. Slow listing lets you see late results being discarded. |
+| Lists, tables & files › File dialog | `file-dialog` | Choose a file and reopen the same request. It remembers the last accepted folder. |
+| Lists, tables & files › Drag & drop | `dragdrop` | Drag a track from one list to the other. Use the copy modifier to keep the original. |
+| Lists, tables & files › Virtual list | `virtual` | Jump to the last keyed row, then back to the first. Only nearby rows are mounted. |
+| Text, graphics & appearance › Typography & drawing | `text` | Resize the window to wrap a label. Compare the bundled type styles and the custom drawing below. |
+| Text, graphics & appearance › Fonts & icons | `fonts` | Change the default font, inspect a truncated label and compare icons inside rich text. |
+| Text, graphics & appearance › Themes | `theme` | Override the active accent, switch mode and return. Each mode keeps its own palette. |
+| Text, graphics & appearance › Images | `images` | Compare the same image fitted, cropped and stretched. Then compare nearest and linear sampling. |
+| Text, graphics & appearance › Vector shapes | `shapes` | Compare the joins and caps, then zoom to inspect their edges. |
+| Text, graphics & appearance › Gradients | `gradients` | Compare the linear and radial swatches, then move the sun in Horizon to change the composed scene. |
+| Text, graphics & appearance › Level & trace | `meters` | Start the producer. Both meters read the same signal and the trace shows the recent samples. |
+| Tools & runtime › Workspace | `workspace` | Capture an arrangement, change the divider and restore. The saved layout returns. |
+| Tools & runtime › Profiler | `profiling` | Enable profiling, interact with a page and refresh the snapshot to see which work ran. |
+| Tools & runtime › Debug overlay | `overlay` | Enable validation issues in Settings and arrange the sample wrongly to see the affected bounds. |
+| Tools & runtime › Static & live | `live` | Start the producer beside the static checkboxes. Stop it to let the page go idle. |
+| Tools & runtime › Text rendering | `text-rendering` | Change text rendering mode, scroll the sample and compare letter edges at the same zoom. |
+
+For a custom in-place editor, see the public
+[DraftEditor example](../../crates/pert-ui-runtime/src/text_fields/draft.rs).
+The Text input and Sign-in form pages demonstrate the ready-made editors.
+
+For alignment checks, narrow **Sample** after sorting it on **Lists, tables & files ›
 Collections**; its heading should stop before the sort arrow. Resize the window
-and post an actionable notification on **Surfaces › Dialogs & notifications** to
-see its buttons stack in a narrow viewport. On **Text › Text input**, compare
-the tall field with the button beside it. On **Controls › Toolbar**, compare
+and post an actionable notification on **Menus, windows & feedback › Dialogs & notifications** to
+see its buttons stack in a narrow viewport. On **Controls & forms › Text input**, compare
+the tall field with the button beside it. On **Controls & forms › Toolbar**, compare
 inline captions, values and units before and during value editing. Hover a
-movable tab in the nested strip on **Layout › State & tabs** to compare its title
+movable tab in the nested strip on **Layout & navigation › State & tabs** to compare its title
 and detach icon.
 
 For hover feedback, sweep the pointer over sliders and inline values on
-**Controls › Input & parameters** and **Controls › Toolbar**, fields on
-**Text › Text input**, rows and header grips on **Data & media › Collections**,
-tab overflow arrows on **Layout › State & tabs**, notification action and
-dismiss buttons on **Surfaces › Dialogs & notifications**, and window title and
-corner grips on **Surfaces › Floating windows**. The expander in the tree on
-**Data & media › Collections** highlights independently of its row.
+**Controls & forms › Knobs & sliders** and **Controls & forms › Toolbar**, fields on
+**Controls & forms › Text input**, rows and header grips on **Lists, tables & files › Collections**,
+tab overflow arrows on **Layout & navigation › State & tabs**, notification action and
+dismiss buttons on **Menus, windows & feedback › Dialogs & notifications**, and window title and
+corner grips on **Menus, windows & feedback › Floating windows**. The expander in the tree on
+**Lists, tables & files › Collections** highlights independently of its row.
 
 Settings › Motion › Reduced stills the Progress page's indeterminate bar and
 spinner; they then schedule nothing.
@@ -80,7 +97,7 @@ categories; Escape clears the query and then closes the palette.
 
 Press Ctrl+Shift+F (Cmd+Shift+F on macOS), or choose Help › Search the gallery,
 to search the gallery's content and commands in one list, each row labelled
-Content or Command: type a button's text, a label or a field's value from any
+Page, Content or Command: type a button's text, a label or a field's value from any
 page, including pages and sections that are not shown, and press Enter to open
 the page and focus it.
 
@@ -119,7 +136,7 @@ also covered by public library tests; the native gallery does not supply a tree
 editor or a remote inspection service.
 
 The manual CPU probe covers 120 split moves followed by clicking the fixed
-**Controls** category header. It includes the demo's enabled profiling overhead:
+**Controls & forms** category header. It includes the demo's enabled profiling overhead:
 
 ```sh
 cargo test -p pert-ui-gallery split_drag_timings -- --ignored --nocapture
@@ -265,6 +282,11 @@ close the window afterward. The five-second limit applies only to this smoke
 mode. The normal gallery remains interactive with explicit Run and Show controls.
 See the workload record for native tracing instructions, results and limitations.
 
+Older gallery workspaces are translated by page key on import. When two formerly
+separate strips now share a category, the visible selection takes precedence,
+followed by the selection of the original category that still owns that family.
+New pages use their defaults.
+
 ## Native workspace restart check
 
 Run these as separate processes in a supported desktop session. The first opens
@@ -332,7 +354,7 @@ cargo run --locked -p pert-ui-gallery -- --screenshot - region:0,0,640,200 top.p
 
 ## Gradients
 
-Open **Appearance & tools → Gradients** or start directly on that page:
+Open **Text, graphics & appearance → Gradients** or start directly on that page:
 
 ```sh
 cargo run --locked -p pert-ui-gallery -- --page gradients
@@ -346,6 +368,6 @@ around a solid button face. Tab to it to see the fill shift from teal through
 blue to plum. Tab away to restore the solid fill. Moving the pointer over the button adds an amber-to-turquoise wash. Moving it
 away restores the focused or resting fill. The focus ring stays visible.
 The material samples use reflected stops for brushed silver and repeating
-hard stops for a two-ink print. The swatches below show a linear gradient, a concentric radial gradient and a
-40-logical-pixel transition. Under **Surfaces → Floating windows**, the
+hard stops for a two-ink print. The introductory swatches show a linear gradient, a concentric radial gradient and a
+40-logical-pixel transition. Under **Menus, windows & feedback → Floating windows**, the
 Out-1 title gradient ends at the center of its Information icon as the window resizes.

@@ -381,7 +381,8 @@ pub(crate) fn gradients(ui: &mut Runtime, id: ParameterId) -> Result<Element, Ap
             finish: Finish::SpectrumRail,
         },
     );
-    let mut sections = vec![section(
+    let mut sections = swatches()?;
+    sections.push(section(
         "landscape-demo",
         "Horizon",
         [
@@ -390,7 +391,7 @@ pub(crate) fn gradients(ui: &mut Runtime, id: ParameterId) -> Result<Element, Ap
             Element::new("sun-label", Label::new("Sun position")),
             slider,
         ],
-    )];
+    ));
 
     let metal = Gradient::linear(
         Point::default(),
@@ -433,6 +434,5 @@ pub(crate) fn gradients(ui: &mut Runtime, id: ParameterId) -> Result<Element, Ap
             ]),
         )],
     ));
-    sections.extend(swatches()?);
     Ok(page(sections))
 }

@@ -23,7 +23,7 @@ const CONTENT_LIMIT: usize = 5_000;
 #[derive(Clone)]
 pub(crate) enum SearchTarget {
     Content(ContentTarget),
-    Command(CommandId),
+    Command(CommandId, CommandContext),
 }
 
 /// The targets of the open search, by row position in its keys.
@@ -37,6 +37,7 @@ pub(crate) fn search_items(
     context: &CommandContext,
     own: Option<&CommandId>,
     places: &GalleryHistory,
+    destinations: &std::collections::HashMap<CommandId, (&str, &crate::catalogue::Entry)>,
 ) -> Result<(Vec<PickItem>, Vec<SearchTarget>), RuntimeError> {
     let mut items = Vec::new();
     let mut targets = Vec::new();
@@ -76,11 +77,19 @@ pub(crate) fn search_items(
         if Some(&entry.id) == own {
             continue;
         }
+        if let Some((category, page)) = destinations.get(&entry.id) {
+            items.push(
+                PickItem::new(format!("page-{}", targets.len()), page.title)
+                    .detail(format!("{} · {}", category, page.components))
+                    .kind("Page"),
+            );
+            targets.push(SearchTarget::Command(entry.id.clone(), context.clone()));
+        }
         let item = PickItem::new(format!("command-{}", targets.len()), entry.name.clone())
             .kind("Command")
             .disabled(!matches!(entry.enabled, Ok(true)));
         items.push(item);
-        targets.push(SearchTarget::Command(entry.id));
+        targets.push(SearchTarget::Command(entry.id, context.clone()));
     }
     Ok((items, targets))
 }
@@ -98,35 +107,49 @@ pub(crate) fn search_picker(
             .next()
             .and_then(|index| index.parse::<usize>().ok());
         let target = index.and_then(|index| targets.borrow().get(index).cloned());
-        match target {
-            Some(SearchTarget::Command(id)) => {
-                let context = cx.command_context(CommandSource::Menu);
-                let _ = cx.invoke_command(&id, context)?;
-                Ok(PickChoice::Done)
-            }
-            Some(SearchTarget::Content(target)) => {
-                // A jump flushes, so it runs in a deferred task, after the
-                // picker has closed; the picker reopens with a message if the
-                // jump is refused.
-                let outcome = cx.signal(None::<Result<(), String>>);
-                let writer = outcome.clone();
-                cx.defer(move |ui| {
-                    let result = match ui.jump_to_content(&target) {
-                        Ok(jump) => describe_jump(&jump),
-                        Err(error) => Err(error.to_string()),
-                    };
-                    writer.set(Some(result))
-                })?;
-                Ok(PickChoice::Pending(PickPending::new(
-                    outcome.read_only(),
-                    Clone::clone,
-                )))
-            }
-            None => Ok(PickChoice::Refused(
+        let Some(target) = target else {
+            return Ok(PickChoice::Refused(
                 "That result is no longer available.".to_owned(),
-            )),
-        }
+            ));
+        };
+        // Release picker modality before revealing content or dispatching a
+        // command in the context in which the visitor opened the search.
+        let outcome = cx.signal(None::<Result<(), String>>);
+        let writer = outcome.clone();
+        cx.defer(move |ui| {
+            let result = match target {
+                SearchTarget::Command(id, context) => match ui.invoke_command(&id, context) {
+                    Ok(CommandOutcome::Invoked) => Ok(()),
+                    Ok(other) => Err(format!("The command could not run: {other:?}")),
+                    Err(error) => Err(error.to_string()),
+                },
+                SearchTarget::Content(target) => match ui.jump_to_content(&target) {
+                    Ok(jump) => describe_jump(&jump),
+                    Err(error) => Err(error.to_string()),
+                },
+            };
+            writer.set(Some(result))
+        })?;
+        Ok(PickChoice::Pending(PickPending::new(
+            outcome.read_only(),
+            Clone::clone,
+        )))
     })
+    .matcher(PickMatcher::new(|query, item| {
+        if item.kind.as_deref() == Some("Page") {
+            let detail = item.detail.as_deref().unwrap_or_default();
+            if item.label.eq_ignore_ascii_case(query)
+                || detail
+                    .split_whitespace()
+                    .any(|alias| alias.eq_ignore_ascii_case(query))
+            {
+                return Some(u32::MAX);
+            }
+            return PickMatcher::fuzzy_score(query, &item.label)
+                .or_else(|| PickMatcher::fuzzy_score(query, detail));
+        }
+        PickMatcher::fuzzy_score(query, &item.label)
+    }))
     .name("Search the gallery")
     .list_name("Results")
     .placeholder("Search content and commands")

@@ -176,7 +176,7 @@ fn every_gallery_tab_strip_is_detachable_and_a_dragged_tab_moves_and_redocks() {
         panic!("expected a detach request");
     };
     assert_eq!(requested, &view);
-    assert_eq!(options.title(), "Controls");
+    assert_eq!(options.title(), "Controls & forms");
     settle(&mut ui);
     let prepared = ui.prepare_detach(requested, options.clone()).unwrap();
     let detached = ui.commit_detach(prepared).unwrap();
@@ -310,7 +310,7 @@ fn categories_group_the_pages_and_remember_the_page_last_shown() {
     open(&mut ui, &root, "input");
     assert_eq!(
         selected(&ui, &top),
-        Some(InspectValue::Text("controls-category".into()))
+        Some(InspectValue::Text("controls-forms".into()))
     );
     open(&mut ui, &root, "images");
     // Returning to Controls by its category tab alone shows Input again.
@@ -552,15 +552,32 @@ fn the_command_palette_opens_from_its_command_and_goes_to_a_page() {
     assert_eq!(palette_open(&ui), Some(InspectValue::Bool(false)));
     let chips = page(&ui, &root, "chips");
     assert!(ui.bounds(&chips).unwrap().is_some(), "the page is shown");
-    assert_eq!(text(&ui, "status"), ["Opened Chips & breadcrumbs."]);
+    assert_eq!(text(&ui, "status"), ["Opened Chips & multiple choice."]);
     assert!(ui.validation_report().issues.is_empty());
     assert!(ui.next_deadline().is_none());
 }
 
 #[test]
+fn guide_lists_each_catalogue_destination_and_its_launch_key() {
+    let guide = include_str!("../../README.md");
+    let mut keys = std::collections::BTreeSet::new();
+    for category in crate::catalogue::CATEGORIES {
+        for entry in category.pages {
+            assert!(keys.insert(entry.key), "duplicate launch key {}", entry.key);
+            let row = format!("| {} › {} | `{}` |", category.title, entry.title, entry.key);
+            assert!(guide.lines().any(|line| line.starts_with(&row)), "{row}");
+        }
+    }
+}
+
+#[test]
 fn every_go_to_command_opens_its_page() {
     let (mut ui, root) = mounted();
-    for (_, page_key, title) in crate::gallery::GO_TO_PAGES {
+    for destination in crate::catalogue::CATEGORIES
+        .iter()
+        .flat_map(|category| category.pages)
+    {
+        let (page_key, title) = (destination.key, destination.title);
         let entry = gallery_command(&mut ui, &format!("Go to: {title}"));
         let context = ui.command_context(CommandSource::Programmatic);
         assert_eq!(
@@ -570,7 +587,14 @@ fn every_go_to_command_opens_its_page() {
         );
         settle(&mut ui);
         let page = page(&ui, &root, page_key);
-        assert!(ui.bounds(&page).unwrap().is_some(), "{title} is not shown");
+        let id = ui.inspection_id(&page).unwrap();
+        assert!(
+            ui.inspect()
+                .components
+                .iter()
+                .any(|item| item.id == id && item.visible),
+            "{title} is not shown"
+        );
     }
 }
 
@@ -715,7 +739,7 @@ fn the_gallery_search_lists_content_and_commands_and_jumps_to_a_choice() {
         })
         .collect();
     assert!(
-        details.contains(&"Layout › Navigation · Content".to_owned()),
+        details.contains(&"Layout & navigation › Navigation · Content".to_owned()),
         "{details:?}"
     );
     // Enter arrives from inside a flush, as a native check's driver delivers
@@ -800,4 +824,34 @@ fn the_library_language_setting_switches_the_library_strings() {
     choose_setting(&mut ui, 4, 0);
     assert!(names(&ui).iter().any(|name| name == "Back"));
     assert!(ui.validation_report().issues.is_empty());
+}
+
+#[test]
+fn component_alias_search_opens_the_page_and_collection_links_reveal_the_control() {
+    let (mut ui, root) = mounted();
+    let search = gallery_command(&mut ui, "Search the gallery");
+    for (query, title) in [
+        ("MultiSelect", "Chips & multiple choice"),
+        ("FileDialog", "File dialog"),
+    ] {
+        let context = ui.command_context(CommandSource::Programmatic);
+        ui.invoke_command(&search.id, context).unwrap();
+        settle(&mut ui);
+        ui.text_input(query).unwrap();
+        settle(&mut ui);
+        press(&mut ui, KeyCode::Enter);
+        settle(&mut ui);
+        assert_eq!(text(&ui, "status"), [format!("Opened {title}.")]);
+    }
+    open(&mut ui, &root, "collections");
+    let links = find(&ui, &page(&ui, &root, "collections"), "related-examples");
+    let table = find(&ui, &links, "Table");
+    click(&mut ui, &table);
+    settle(&mut ui);
+    let expected = find(&ui, &root, "collections-table");
+    let bounds = ui.bounds(&expected).unwrap().unwrap();
+    assert!(
+        bounds.y() < 640. && bounds.y() + bounds.height() > 0.,
+        "table outside viewport: {bounds:?}"
+    );
 }

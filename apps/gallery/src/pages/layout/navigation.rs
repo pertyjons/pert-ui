@@ -101,13 +101,13 @@ impl NavigationTargets {
         let top = gallery_tabs(ui, root)?;
         let mut targets = self.0.borrow_mut();
         for (key, path) in Self::ADDRESSES {
-            let address = page_address("layout-category", "navigation", path);
+            let address = page_address("layout-nav", "navigation", path);
             targets.insert(key, find_at(ui, &top, &address)?);
         }
         let collections = find_at(
             ui,
             &top,
-            &["data-category", "category-pages", Self::COLLECTIONS],
+            &["lists-files", "category-pages", Self::COLLECTIONS],
         )?;
         targets.insert(Self::COLLECTIONS, collections);
         Ok(())
@@ -386,7 +386,7 @@ fn palette_demo(ui: &Runtime) -> Result<Element, RuntimeError> {
     ))
 }
 
-const JUMP_HELP: &str = "An internal link to another page, always underlined: it opens the Data & media category and its Collections page, two strips at once. A tab's view is not focusable, so focus stays here. The next link has rich content, an icon and a heading-styled span, and reveals and focuses the mixer's Output level above; its whole content is underlined and its plain text names it. Beside it, a disabled link is muted, skipped by Tab and ignores the pointer.";
+const JUMP_HELP: &str = "An internal link to another page, always underlined: it opens the Lists, tables & files category and its Collections page, two strips at once. A tab's view is not focusable, so focus stays here. The next link has rich content, an icon and a heading-styled span, and reveals and focuses the mixer's Output level above; its whole content is underlined and its plain text names it. Beside it, a disabled link is muted, skipped by Tab and ignores the pointer.";
 
 pub(crate) fn navigation(
     ui: &Runtime,
@@ -555,7 +555,7 @@ pub(crate) fn navigation(
                         Element::new(
                             "jump-collections",
                             reveal(
-                                "Go to Data & media › Collections",
+                                "Go to Lists, tables & files › Collections",
                                 NavigationTargets::COLLECTIONS,
                                 true,
                             )

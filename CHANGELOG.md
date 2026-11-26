@@ -7,6 +7,9 @@ history (this file at commit f5fde76).
 
 ## Unreleased
 
+- The gallery groups examples by task. Search by component name, follow related
+  examples and open focused pages such as Buttons, Sign-in form and File dialog.
+
 - Numeric controls reset to the exact typed default with Backspace and knobs
   also do so on double-click, including for power and logarithmic mappings.
 - Added `Choice::with_description`, `ChoiceOption::with_description` and

@@ -1,4 +1,4 @@
-//! The Appearance & tools category's pages.
+//! Theme, workspace, profiler and debug overlay examples.
 use super::support::*;
 use pert_ui::prelude::*;
 use pert_ui::testing::HostIntegration;
@@ -10,11 +10,13 @@ fn reset_sun_gradient_fill_follows_hover_and_keyboard_focus() {
     open(&mut ui, &root, "gradients");
     let change = find(&ui, &root, "next-sky");
     let reset = find(&ui, &root, "reset-sun");
-    let bounds = ui.bounds(&reset).unwrap().unwrap();
+    ui.focus(&change).unwrap();
+    settle(&mut ui);
     let face = |ui: &mut Runtime| {
         let frame = pert_ui::cpu::CpuRenderer::new()
             .render(&ui.paint().unwrap())
             .unwrap();
+        let bounds = ui.bounds(&reset).unwrap().unwrap();
         // Inside the border and above the caption.
         let y = (bounds.y() + 6.) as usize;
         [0.2, 0.8].map(|fraction| {
@@ -35,7 +37,7 @@ fn reset_sun_gradient_fill_follows_hover_and_keyboard_focus() {
     pointer_at(&mut ui, 0., 0., pert_ui::PointerKind::Move);
     assert_eq!(face(&mut ui), resting);
     press(&mut ui, KeyCode::Tab);
-    assert_eq!(ui.focused(), Some(reset));
+    assert_eq!(ui.focused(), Some(reset.clone()));
     let focused = face(&mut ui);
     assert!(focused[0][1] > focused[1][1] + 10);
     assert!(focused[1][0] > focused[0][0] + 10);
@@ -55,11 +57,13 @@ fn gradient_gallery_controls_change_the_rendered_landscape() {
     let button = find(&ui, &root, "next-sky");
     let slider = find(&ui, &root, "sun-position");
     let landscape = find(&ui, &root, "landscape");
-    let bounds = ui.bounds(&landscape).unwrap().unwrap();
+    ui.focus(&slider).unwrap();
+    settle(&mut ui);
     let sample = |ui: &mut Runtime, x: f32, y: f32| {
         let frame = pert_ui::cpu::CpuRenderer::new()
             .render(&ui.paint().unwrap())
             .unwrap();
+        let bounds = ui.bounds(&landscape).unwrap().unwrap();
         let col = (bounds.x() + x * bounds.width()) as usize;
         let row = (bounds.y() + y * bounds.height()) as usize;
         let index = (row * frame.width() as usize + col) * 4;

@@ -1,6 +1,6 @@
 //! The file browser over a synthetic sample library, answered through a
 //! mailbox as a host answers from a worker thread.
-use crate::gallery::{label, page, section, stage, toggle};
+use crate::gallery::{page, section, stage, toggle};
 use pert_ui::live::*;
 use pert_ui::prelude::*;
 use std::{
@@ -226,36 +226,33 @@ pub(crate) fn file_browser(ui: &mut Runtime) -> Result<Element, AppError> {
         format!("Listings applied: {applied}; stale results dropped: {stale}")
     })?;
     let refresh = controller.clone();
-    let dialog_section = file_dialog(ui)?;
-    Ok(page([
-        section(
-            "browser-section",
-            "A file browser over a host-supplied source",
-            [
-                label(
-                    "browser-help",
-                    "The browser asks the host for each folder and shows what arrives; it never reads the disk. Expand folders in the tree or click one to open it, double-click or press Enter on an entry, filter the entries by name, filter the folder tree from the field above it (it searches only folders already listed, so it never asks for a listing), and press Backspace in a list for the parent folder. Locked fails with an error row, Latest project is a link to a folder, and Kicks has enough samples to scroll. Turn on slow listing to see loading rows, then open another folder before one arrives: its late result is dropped as stale.",
-                ),
-                toggle("slow", "Slow listing (600 ms on a thread)", &slow)?,
+    Ok(page([section(
+        "browser-section",
+        "A file browser over a host-supplied source",
+        [
+            crate::gallery::help(
+                "browser-help",
+                "Filtering and late listings",
+                "The browser asks the host for each folder and shows what arrives; it never reads the disk. Expand folders in the tree or click one to open it, double-click or press Enter on an entry, filter the entries by name, filter the folder tree from the field above it (it searches only folders already listed, so it never asks for a listing), and press Backspace in a list for the parent folder. Locked fails with an error row, Latest project is a link to a folder, and Kicks has enough samples to scroll. Turn on slow listing to see loading rows, then open another folder before one arrives: its late result is dropped as stale.",
+            ),
+            toggle("slow", "Slow listing (600 ms on a thread)", &slow)?,
+            Element::new(
+                "refresh",
+                Button::new("Refresh", move |_| refresh.refresh()),
+            ),
+            stage(
+                "browser-stage",
+                360,
                 Element::new(
-                    "refresh",
-                    Button::new("Refresh", move |_| refresh.refresh()),
+                    "library",
+                    FileBrowser::new(&controller, 24.0)?.folder_filter(true),
                 ),
-                stage(
-                    "browser-stage",
-                    360,
-                    Element::new(
-                        "library",
-                        FileBrowser::new(&controller, 24.0)?.folder_filter(true),
-                    ),
-                ),
-                Element::new("opened", Label::new(opened.read_only())),
-                Element::new("selected", Label::new(selected)),
-                Element::new("deliveries", Label::new(counted)),
-            ],
-        ),
-        dialog_section,
-    ]))
+            ),
+            Element::new("opened", Label::new(opened.read_only())),
+            Element::new("selected", Label::new(selected)),
+            Element::new("deliveries", Label::new(counted)),
+        ],
+    )]))
 }
 
 /// What the page says about an ended file dialog session.
@@ -278,7 +275,7 @@ fn describe(outcome: FileDialogOutcome) -> String {
 }
 
 /// A file dialog over the same synthetic library, one request per button.
-fn file_dialog(ui: &mut Runtime) -> Result<Element, AppError> {
+pub(crate) fn file_dialog(ui: &mut Runtime) -> Result<Element, AppError> {
     let slot: Rc<OnceCell<FileDialogController>> = Rc::new(OnceCell::new());
     let backlog: Rc<RefCell<Vec<DirectoryResponse>>> = Rc::default();
     let (target, waiting) = (slot.clone(), backlog.clone());
@@ -423,12 +420,13 @@ fn file_dialog(ui: &mut Runtime) -> Result<Element, AppError> {
         "dialog-section",
         "A file dialog",
         [
-            label(
+            crate::gallery::help(
                 "dialog-help",
+                "Places, new folders and save confirmation",
                 "Each button opens the same dialog with another request: one file of a chosen type, several files, a folder, or a name to save under. The dialog is modal to the window and hands each outcome to the page when the session ends. Each button is a purpose of its own: the dialog remembers the folder and the file type per purpose, lists the folders of accepted sessions as recent ones beside the two places the page supplies, and the text under the result is the memory document a host would store. New folder asks the page, as the host, to create a folder; the page keeps what was created for as long as it runs and refuses a name that is taken. Save as suggests notes, which completes to the existing notes.txt, so confirming asks before replacing it; choose another type to save under another extension. damaged.bin and Old link cannot be opened and are refused in place.",
             ),
             Element::new(
-                "file-dialog",
+                "file-dialog-panel",
                 FileDialog::in_window(ui, &dialog, anchor).on_outcome(move |_, outcome| {
                     // An accepted session has written the memory: this
                     // is where a host stores the document.

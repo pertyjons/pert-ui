@@ -499,7 +499,7 @@ pub(crate) fn steps() -> Vec<Step> {
                 ensure(shown_page(ui, scene, "chips")?, || {
                     "the chips page is not shown".into()
                 })?;
-                expect_texts(ui, "status", "Opened Chips & breadcrumbs.")
+                expect_texts(ui, "status", "Opened Chips & multiple choice.")
             },
         },
         Step {
@@ -543,10 +543,9 @@ pub(crate) fn steps() -> Vec<Step> {
             },
             check: |ui, _| {
                 let shown = place(ui)?;
-                ensure(
-                    shown == ("controls-category".into(), "chips".into()),
-                    || format!("forward showed {shown:?}"),
-                )
+                ensure(shown == ("controls-forms".into(), "chips".into()), || {
+                    format!("forward showed {shown:?}")
+                })
             },
         },
         Step {
@@ -596,6 +595,7 @@ pub(crate) fn steps() -> Vec<Step> {
         Step {
             name: "password: typed text stays concealed and IME is withheld",
             act: |ui, scene| {
+                show(ui, scene, "sign-in")?;
                 let password = find(ui, &scene.root, "password-input")?;
                 ui.focus(&password).map_err(failed)?;
                 type_text(ui, "correct horse")

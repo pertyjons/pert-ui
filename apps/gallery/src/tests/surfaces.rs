@@ -1,4 +1,4 @@
-//! The Surfaces category's pages.
+//! Dialogs, notifications, floating windows and menu examples.
 use super::support::*;
 use pert_ui::prelude::*;
 

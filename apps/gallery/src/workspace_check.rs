@@ -104,9 +104,9 @@ fn sample(ui: &Runtime) -> Result<Workspace, WorkspaceError> {
             let state = if segments.last() == Some(&"gallery-tabs") {
                 state
                     .clone()
-                    .with("selected", WorkspaceValue::text("controls-category")?)?
+                    .with("selected", WorkspaceValue::text("controls-forms")?)?
             } else if segments.last() == Some(&"category-pages")
-                && segments.contains(&"controls-category")
+                && segments.contains(&"controls-forms")
             {
                 state
                     .clone()
@@ -185,9 +185,9 @@ pub(super) fn run(save: bool, path: &Path) -> Result<(), Box<dyn std::error::Err
     let expected = if save {
         None
     } else {
-        Some(Workspace::decode(&std::fs::read_to_string(path)?)?)
+        Some(crate::workspace::decode(&std::fs::read_to_string(path)?)?)
     };
-    let restore = expected.clone();
+    let restore = expected.as_ref().map(|(workspace, _)| workspace.clone());
     let capture = Capture::default();
     let report = Rc::new(RefCell::new(None));
     let painted = Rc::new(Cell::new(false));
@@ -235,7 +235,20 @@ pub(super) fn run(save: bool, path: &Path) -> Result<(), Box<dyn std::error::Err
     if !report.is_complete() {
         return Err(error(format!("incomplete restore: {report:?}")).into());
     }
-    if let Some(expected) = expected {
+    if let Some((expected, migrated)) = expected {
+        // A restored legacy file has no entries for newly introduced pages.
+        let actual = if migrated {
+            let paths: std::collections::BTreeSet<_> = expected.entries().map(|(p, _)| p).collect();
+            Workspace::new(
+                *actual.settings(),
+                actual
+                    .entries()
+                    .filter(|(p, _)| paths.contains(p))
+                    .map(|(p, state)| (p.clone(), state.clone())),
+            )?
+        } else {
+            actual
+        };
         if let Some(difference) = difference(&expected, &actual) {
             return Err(error(format!("restored capture differs: {difference}")).into());
         }
@@ -331,6 +344,59 @@ mod tests {
             fresh.ui_settings().zoom().unwrap(),
             UiZoom::new(1.25).unwrap()
         );
+    }
+
+    #[test]
+    fn original_gallery_restores_into_the_new_catalogue() {
+        let (document, migrated) =
+            crate::workspace::decode(include_str!("tests/fixtures/original-gallery.workspace"))
+                .unwrap();
+        assert!(migrated);
+        let mut ui = mounted();
+        let report = ui.restore_workspace(&document).unwrap();
+        assert!(report.is_complete(), "{report:?}");
+        ui.flush(ui.now()).unwrap();
+        let restored = ui.capture_workspace().unwrap();
+        let actual: BTreeMap<_, _> = restored.entries().collect();
+        for (path, state) in document.entries() {
+            assert_eq!(actual.get(path), Some(&state), "{path}");
+        }
+        assert_eq!(restored.settings(), document.settings());
+    }
+
+    #[test]
+    fn visible_legacy_page_wins_when_categories_converge() {
+        let text = include_str!("tests/fixtures/original-gallery.workspace").replace(
+            "tabs selected=\"controls-category\"",
+            "tabs selected=\"text-category\"",
+        );
+        let (document, _) = crate::workspace::decode(&text).unwrap();
+        let selected = |suffix: &str| {
+            document
+                .entries()
+                .find(|(path, _)| path.to_string().ends_with(suffix))
+                .and_then(|(_, state)| state.get("selected")?.as_text())
+        };
+        assert_eq!(selected("/gallery-tabs"), Some("controls-forms"));
+        assert_eq!(selected("/controls-forms/category-pages"), Some("editing"));
+    }
+
+    #[test]
+    fn legacy_migration_rejects_pages_outside_the_original_category() {
+        let original = include_str!("tests/fixtures/original-gallery.workspace");
+        for key in ["workspace", "file-dialog"] {
+            let selection = original.replace(
+                "tabs selected=\"forms\"",
+                &format!("tabs selected=\"{key}\""),
+            );
+            let descendant = original.replace(
+                "controls-category/category-pages/chips/viewport",
+                &format!("controls-category/category-pages/{key}/viewport"),
+            );
+            for text in [selection, descendant] {
+                assert!(crate::workspace::decode(&text).is_err(), "{key}");
+            }
+        }
     }
 
     #[test]

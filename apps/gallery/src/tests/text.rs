@@ -1,4 +1,4 @@
-//! The Text category's pages.
+//! Text editing, number entry, fonts and icon examples.
 use super::support::*;
 use pert_ui::prelude::*;
 use pert_ui::testing::HostIntegration;
@@ -124,7 +124,7 @@ fn the_search_example_filters_highlights_chooses_and_clears() {
 #[test]
 fn the_sign_in_example_conceals_limits_and_shows_a_pending_check() {
     let (mut ui, root) = mounted();
-    open(&mut ui, &root, "editing");
+    open(&mut ui, &root, "sign-in");
     let user = find(&ui, &root, "user-input");
     ui.focus(&user).unwrap();
     settle(&mut ui);
@@ -204,7 +204,7 @@ fn the_sign_in_examples_revert_discards_a_refused_draft_and_clears_its_marks() {
             .properties
     };
     let (mut ui, root) = mounted();
-    open(&mut ui, &root, "editing");
+    open(&mut ui, &root, "sign-in");
     let user = find(&ui, &root, "user-input");
     ui.focus(&user).unwrap();
     settle(&mut ui);

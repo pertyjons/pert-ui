@@ -1,0 +1,470 @@
+//! Navigation, searchable API names and the first action to try on each gallery page.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Page {
+    Layout,
+    Splits,
+    Shells,
+    Scroll,
+    Sections,
+    Transforms,
+    State,
+    Navigation,
+    Breadcrumbs,
+    Keyboard,
+    Buttons,
+    Controls,
+    Chips,
+    Editing,
+    Numbers,
+    Input,
+    Families,
+    Fields,
+    Forms,
+    SignIn,
+    Properties,
+    Colors,
+    Toolbar,
+    Menus,
+    Popups,
+    Surfaces,
+    Windows,
+    ToolWindows,
+    Progress,
+    Collections,
+    Files,
+    FileDialog,
+    Dragdrop,
+    Virtual,
+    Text,
+    Fonts,
+    Theme,
+    Images,
+    Shapes,
+    Gradients,
+    Meters,
+    Workspace,
+    Profiling,
+    Overlay,
+    Live,
+    TextRendering,
+}
+
+pub(crate) struct Entry {
+    pub(crate) page: Page,
+    pub(crate) key: &'static str,
+    pub(crate) title: &'static str,
+    pub(crate) components: &'static str,
+    pub(crate) help: &'static str,
+}
+
+pub(crate) struct Category {
+    pub(crate) key: &'static str,
+    pub(crate) title: &'static str,
+    pub(crate) pages: &'static [Entry],
+}
+
+pub(crate) const CATEGORIES: &[Category] = &[
+    Category {
+        key: "layout-nav",
+        title: "Layout & navigation",
+        pages: &[
+            Entry {
+                page: Page::Layout,
+                key: "layout",
+                title: "Rows, columns & grids",
+                components: "Row Column Wrap Grid Container",
+                help: "Resize the window and compare how rows, wrapping items and grid tracks share the available space.",
+            },
+            Entry {
+                page: Page::Splits,
+                key: "splits",
+                title: "Split panes",
+                components: "SplitPane",
+                help: "Drag a divider, lock it, then change the content width to compare the sizing rules.",
+            },
+            Entry {
+                page: Page::Shells,
+                key: "shells",
+                title: "Nested regions",
+                components: "RegionLayout",
+                help: "Resize an edge and watch the center adjust. Lock the edge and try the same drag again.",
+            },
+            Entry {
+                page: Page::Scroll,
+                key: "scroll",
+                title: "Scrolling",
+                components: "View ScrollArea",
+                help: "Tab to a control below the viewport and watch the scroll area reveal it.",
+            },
+            Entry {
+                page: Page::Sections,
+                key: "sections",
+                title: "Sections",
+                components: "Collapsible Accordion",
+                help: "Type a note and collapse its section. Expand it again to find the same draft.",
+            },
+            Entry {
+                page: Page::Transforms,
+                key: "transforms",
+                title: "Transforms",
+                components: "ZoomView AxisMapping",
+                help: "Zoom the canvas at the pointer. The controls on the cards remain interactive.",
+            },
+            Entry {
+                page: Page::State,
+                key: "state",
+                title: "State & tabs",
+                components: "Tabs View",
+                help: "Increment a counter, switch tabs and return. The view remembers its value.",
+            },
+            Entry {
+                page: Page::Navigation,
+                key: "navigation",
+                title: "Navigation",
+                components: "Link NavigationHistory",
+                help: "Follow a link to a hidden control, then use the history arrows to revisit a page.",
+            },
+            Entry {
+                page: Page::Breadcrumbs,
+                key: "breadcrumbs",
+                title: "Breadcrumbs",
+                components: "Breadcrumb",
+                help: "Open a parent folder in either breadcrumb. Both paths follow the same location.",
+            },
+            Entry {
+                page: Page::Keyboard,
+                key: "keyboard",
+                title: "Physical keys",
+                components: "KeyEvent KeyboardState",
+                help: "Focus the key area and hold two keys together. Moving focus away clears the held keys.",
+            },
+        ],
+    },
+    Category {
+        key: "controls-forms",
+        title: "Controls & forms",
+        pages: &[
+            Entry {
+                page: Page::Buttons,
+                key: "buttons",
+                title: "Buttons",
+                components: "Button",
+                help: "Activate a button by keyboard, then change the bound caption. The disabled example skips focus.",
+            },
+            Entry {
+                page: Page::Controls,
+                key: "controls",
+                title: "Choices & toggles",
+                components: "Checkbox Toggle RadioGroup Select",
+                help: "Change a checkbox or choose a radio option and watch the control beside it follow.",
+            },
+            Entry {
+                page: Page::Chips,
+                key: "chips",
+                title: "Chips & multiple choice",
+                components: "Chip MultiSelect",
+                help: "Remove a tag or compare when the two instrument choosers commit their selections.",
+            },
+            Entry {
+                page: Page::Editing,
+                key: "editing",
+                title: "Text input",
+                components: "TextField TextArea SearchField DraftEditor",
+                help: "Edit the text, then try the read-only mirror. A rejected write leaves the previous value visible.",
+            },
+            Entry {
+                page: Page::Numbers,
+                key: "numbers",
+                title: "Number entry",
+                components: "IntegerInput DecimalInput NumberFormat",
+                help: "Type a number and press Escape, then try Enter. Watch the saved value beside the field.",
+            },
+            Entry {
+                page: Page::Input,
+                key: "input",
+                title: "Knobs & sliders",
+                components: "Knob Slider KnobVariant",
+                help: "Drag Bakelite and compare the readouts. Double-click a knob to restore the shared default.",
+            },
+            Entry {
+                page: Page::Families,
+                key: "families",
+                title: "Parameter families",
+                components: "ParameterSpec ChoiceOption",
+                help: "Edit a value and use Undo. The host records committed changes across control types.",
+            },
+            Entry {
+                page: Page::Fields,
+                key: "fields",
+                title: "Field status",
+                components: "Field FieldStatus",
+                help: "Leave the name empty and press Check. The editor receives focus and displays the reason.",
+            },
+            Entry {
+                page: Page::Forms,
+                key: "forms",
+                title: "Adaptive forms",
+                components: "Form",
+                help: "Drag the divider while editing a field. The columns reflow and the draft survives.",
+            },
+            Entry {
+                page: Page::SignIn,
+                key: "sign-in",
+                title: "Sign-in form",
+                components: "FormFields TextField",
+                help: "Enter a short user name and submit it. Revert clears the refused draft.",
+            },
+            Entry {
+                page: Page::Properties,
+                key: "properties",
+                title: "Property grid",
+                components: "PropertyGrid",
+                help: "Resize the label column in either section. Both grids stay aligned.",
+            },
+            Entry {
+                page: Page::Colors,
+                key: "colors",
+                title: "Color controls",
+                components: "ColorPicker ColorSwatch",
+                help: "Edit the hex value or drag in the picker. Both views show the saved color.",
+            },
+            Entry {
+                page: Page::Toolbar,
+                key: "toolbar",
+                title: "Toolbar",
+                components: "Toolbar ToolGroup InlineSlider InlineSelect",
+                help: "Narrow the toolbar to move groups into More. The actions and their values remain available.",
+            },
+        ],
+    },
+    Category {
+        key: "menus-windows",
+        title: "Menus, windows & feedback",
+        pages: &[
+            Entry {
+                page: Page::Menus,
+                key: "menus",
+                title: "Menu bar",
+                components: "MenuBar",
+                help: "Activate New sketch in File and observe Save become available. F10 focuses the menu bar.",
+            },
+            Entry {
+                page: Page::Popups,
+                key: "popups",
+                title: "Popups & help",
+                components: "Popover Tooltip Menu",
+                help: "Open the popover, then press Escape. Focus returns to its opener.",
+            },
+            Entry {
+                page: Page::Surfaces,
+                key: "surfaces",
+                title: "Dialogs & notifications",
+                components: "Dialog AlertDialog Banner ToastHost",
+                help: "Open the nested confirmation and cancel it. The parent form remains open.",
+            },
+            Entry {
+                page: Page::Windows,
+                key: "windows",
+                title: "Floating windows",
+                components: "FloatingWindow WindowLayer",
+                help: "Drag the Out-1 title and resize its frame. Its controls keep their values.",
+            },
+            Entry {
+                page: Page::ToolWindows,
+                key: "tool-windows",
+                title: "Tool windows",
+                components: "ToolWindowLayout",
+                help: "Select a file, then open Properties. The panels share the same selection.",
+            },
+            Entry {
+                page: Page::Progress,
+                key: "progress",
+                title: "Progress",
+                components: "ProgressBar Spinner",
+                help: "Start the task, report a step and cancel. The final status retains the fraction reached.",
+            },
+        ],
+    },
+    Category {
+        key: "lists-files",
+        title: "Lists, tables & files",
+        pages: &[
+            Entry {
+                page: Page::Collections,
+                key: "collections",
+                title: "Collections",
+                components: "Table Tree CollectionFilter",
+                help: "Choose a row, then filter the data. Compare selection in a grid, a tree and an editable table.",
+            },
+            Entry {
+                page: Page::Files,
+                key: "files",
+                title: "File browser",
+                components: "FileBrowser",
+                help: "Open a folder in the sample library. Slow listing lets you see late results being discarded.",
+            },
+            Entry {
+                page: Page::FileDialog,
+                key: "file-dialog",
+                title: "File dialog",
+                components: "FileDialog FileDialogMemory",
+                help: "Choose a file and reopen the same request. It remembers the last accepted folder.",
+            },
+            Entry {
+                page: Page::Dragdrop,
+                key: "dragdrop",
+                title: "Drag & drop",
+                components: "DragSource DropTarget",
+                help: "Drag a track from one list to the other. Use the copy modifier to keep the original.",
+            },
+            Entry {
+                page: Page::Virtual,
+                key: "virtual",
+                title: "Virtual list",
+                components: "VirtualList",
+                help: "Jump to the last keyed row, then back to the first. Only nearby rows are mounted.",
+            },
+        ],
+    },
+    Category {
+        key: "text-graphics",
+        title: "Text, graphics & appearance",
+        pages: &[
+            Entry {
+                page: Page::Text,
+                key: "text",
+                title: "Typography & drawing",
+                components: "Label TextStyle Painter",
+                help: "Resize the window to wrap a label. Compare the bundled type styles and the custom drawing below.",
+            },
+            Entry {
+                page: Page::Fonts,
+                key: "fonts",
+                title: "Fonts & icons",
+                components: "RichText TextSpan Icon",
+                help: "Change the default font, inspect a truncated label and compare icons inside rich text.",
+            },
+            Entry {
+                page: Page::Theme,
+                key: "theme",
+                title: "Themes",
+                components: "Palette ColorRole Density",
+                help: "Override the active accent, switch mode and return. Each mode keeps its own palette.",
+            },
+            Entry {
+                page: Page::Images,
+                key: "images",
+                title: "Images",
+                components: "Image Svg",
+                help: "Compare the same image fitted, cropped and stretched. Then compare nearest and linear sampling.",
+            },
+            Entry {
+                page: Page::Shapes,
+                key: "shapes",
+                title: "Vector shapes",
+                components: "Shape Painter VectorPath",
+                help: "Compare the joins and caps, then zoom to inspect their edges.",
+            },
+            Entry {
+                page: Page::Gradients,
+                key: "gradients",
+                title: "Gradients",
+                components: "Gradient Paint GradientExtend",
+                help: "Compare the linear and radial swatches, then move the sun in Horizon to change the composed scene.",
+            },
+            Entry {
+                page: Page::Meters,
+                key: "meters",
+                title: "Level & trace",
+                components: "LevelMeter Trace",
+                help: "Start the producer. Both meters read the same signal and the trace shows the recent samples.",
+            },
+        ],
+    },
+    Category {
+        key: "runtime-tools",
+        title: "Tools & runtime",
+        pages: &[
+            Entry {
+                page: Page::Workspace,
+                key: "workspace",
+                title: "Workspace",
+                components: "Workspace",
+                help: "Capture an arrangement, change the divider and restore. The saved layout returns.",
+            },
+            Entry {
+                page: Page::Profiling,
+                key: "profiling",
+                title: "Profiler",
+                components: "Profiler",
+                help: "Enable profiling, interact with a page and refresh the snapshot to see which work ran.",
+            },
+            Entry {
+                page: Page::Overlay,
+                key: "overlay",
+                title: "Debug overlay",
+                components: "DebugOverlay",
+                help: "Enable validation issues in Settings and arrange the sample wrongly to see the affected bounds.",
+            },
+            Entry {
+                page: Page::Live,
+                key: "live",
+                title: "Static & live",
+                components: "Trace LevelMeter",
+                help: "Start the producer beside the static checkboxes. Stop it to let the page go idle.",
+            },
+            Entry {
+                page: Page::TextRendering,
+                key: "text-rendering",
+                title: "Text rendering",
+                components: "TextRenderingMode",
+                help: "Change text rendering mode, scroll the sample and compare letter edges at the same zoom.",
+            },
+        ],
+    },
+];
+
+pub(crate) fn destination(page: Page) -> Option<(&'static Category, &'static Entry)> {
+    CATEGORIES.iter().find_map(|category| {
+        category
+            .pages
+            .iter()
+            .find(|entry| entry.page == page)
+            .map(|entry| (category, entry))
+    })
+}
+
+/// Cross-references between a component, a composed example and a named section.
+pub(crate) fn related(page: Page) -> &'static [(&'static str, Page, Option<&'static str>)] {
+    use Page::*;
+    match page {
+        Collections => &[
+            ("Grid", Collections, Some("collections-grid")),
+            ("Tree", Collections, Some("collections-tree")),
+            ("Table", Collections, Some("collections-table")),
+        ],
+        Files => &[("File dialog", FileDialog, None)],
+        FileDialog => &[("File browser", Files, None)],
+        Editing => &[("Sign-in form", SignIn, None)],
+        SignIn => &[
+            ("Text input", Editing, None),
+            ("Field status", Fields, None),
+        ],
+        Live => &[
+            ("Level & trace", Meters, None),
+            ("Profiler", Profiling, None),
+        ],
+        Meters | Profiling => &[("Static & live workload", Live, None)],
+        TextRendering => &[("Typography & drawing", Text, None)],
+        Controls => &[
+            ("Chips & multiple choice", Chips, None),
+            ("Popups & help", Popups, None),
+        ],
+        Keyboard => &[("Knobs & sliders", Input, None)],
+        Input => &[
+            ("Number entry", Numbers, None),
+            ("Physical keys", Keyboard, None),
+        ],
+        _ => &[],
+    }
+}

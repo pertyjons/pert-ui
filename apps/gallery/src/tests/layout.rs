@@ -178,7 +178,7 @@ fn content_split_drag_then_pointer_switch_to_input_settles_and_preserves_state()
             .unwrap();
         assert_eq!(
             selected.details.properties.get("selected"),
-            Some(&InspectValue::Text("controls-category".into()))
+            Some(&InspectValue::Text("controls-forms".into()))
         );
         open(&mut ui, &root, "input");
         let increase = find(&ui, &find(&ui, &root, "editor-0"), "increase");
@@ -775,22 +775,18 @@ fn the_gallery_addresses_name_the_components_its_links_and_commands_use() {
     // Each address names the one component with that key on its page, which
     // a key search confirms because these keys are unique there.
     for (key, path) in NavigationTargets::ADDRESSES {
-        let address = page_address("layout-category", "navigation", path);
+        let address = page_address("layout-nav", "navigation", path);
         let found = find_at(&ui, &top, &address).unwrap();
         assert_eq!(found, find(&ui, &demo, key), "{address:?}");
     }
     // The pages the history and the Go to commands select, and the views
     // the detach commands move.
-    for category in ["layout-category", "data-category", "text-category"] {
+    for category in ["layout-nav", "lists-files", "text-graphics"] {
         let strip = find_at(&ui, &top, &[category, "category-pages"]).unwrap();
         assert_eq!(ui.key(&strip).unwrap(), "category-pages");
     }
     for view in ["detachable-view", "guarded-view"] {
-        let address = page_address(
-            "layout-category",
-            "state",
-            &["detach-view", "content", view],
-        );
+        let address = page_address("layout-nav", "state", &["detach-view", "content", view]);
         assert_eq!(
             ui.key(&find_at(&ui, &top, &address).unwrap()).unwrap(),
             view
@@ -802,7 +798,7 @@ fn the_gallery_addresses_name_the_components_its_links_and_commands_use() {
     let missing = find_at(
         &ui,
         &top,
-        &page_address("layout-category", "navigation", &["moved"]),
+        &page_address("layout-nav", "navigation", &["moved"]),
     );
     let message = missing
         .err()
@@ -923,7 +919,10 @@ fn the_navigation_page_opens_a_nonmodal_palette_with_its_own_matcher() {
         "{rows:?}"
     );
     assert!(
-        rows.iter().all(|row| row.starts_with("Go to: Col")),
+        rows.iter().all(|row| row
+            .to_lowercase()
+            .split_whitespace()
+            .any(|word| word.starts_with("col"))),
         "{rows:?}"
     );
     // Text inside a word does not match, unlike the default fuzzy matcher.
