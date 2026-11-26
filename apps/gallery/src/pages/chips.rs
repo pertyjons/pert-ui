@@ -1,4 +1,4 @@
-//! The Controls › Chips & breadcrumbs page: static and removable chips owned
+//! The Controls › Chips & multiple choice page: static and removable chips owned
 //! by application data, and breadcrumbs over a sample folder path.
 use crate::gallery::{label, page, section};
 use pert_ui::prelude::*;
@@ -116,7 +116,10 @@ fn deepest() -> String {
     FOLDERS[FOLDERS.len() - 1].0.to_owned()
 }
 
-fn breadcrumb_section(ui: &Runtime, status: &Signal<String>) -> Result<Element, RuntimeError> {
+pub(crate) fn breadcrumb_section(
+    ui: &Runtime,
+    status: &Signal<String>,
+) -> Result<Element, RuntimeError> {
     let path = ui.signal(deepest());
     let reset = path.clone();
     let location = |key: &str, crumbs| location(key, crumbs, &path, status);
@@ -232,13 +235,12 @@ fn multi_select_section(ui: &Runtime) -> Result<Element, RuntimeError> {
     ))
 }
 
-pub(crate) fn chips_and_breadcrumbs(
+pub(crate) fn chips_and_choices(
     ui: &Runtime,
     status: &Signal<String>,
 ) -> Result<Element, RuntimeError> {
     Ok(page([
         chips_section(ui, status)?,
         multi_select_section(ui)?,
-        breadcrumb_section(ui, status)?,
     ]))
 }

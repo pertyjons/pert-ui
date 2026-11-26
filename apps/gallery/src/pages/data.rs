@@ -1,5 +1,4 @@
-//! The Data & media category: virtual lists, collections, drag and drop,
-//! images and vector shapes. The live pages are in `crate::live`.
+//! Collection, file, drag and drop, image and vector drawing examples.
 mod drag_and_drop;
 pub(crate) mod files;
 use crate::gallery::{label, page, section, stage};
@@ -427,13 +426,35 @@ pub(crate) fn collections(ui: &Runtime) -> Result<Element, RuntimeError> {
     let cell = ui.signal("Press Enter on a cell.".to_owned());
     let opened = cell.clone();
     let notes = VirtualList::estimated(ui.signal(ListSource::new(Notes(5_000))).read_only(), 40.0)?;
+    let simple = ListSelection::new(ui, SelectionMode::Single);
     Ok(page([
+        section(
+            "simple-list",
+            "Choose a row",
+            [
+                stage(
+                    "simple-stage",
+                    144,
+                    Element::new(
+                        "short-list",
+                        VirtualList::new(
+                            ui.signal(ListSource::new(Swatches(3))).read_only(),
+                            48.0,
+                        )?
+                        .selection(simple.clone()),
+                    )
+                    .with_label("Example items"),
+                ),
+                picked("simple-choice", &simple)?,
+            ],
+        ),
         section(
             "grid-section",
             "Grid: a list with five lanes, 10,000 items, multiple selection",
             [
-                label(
+                crate::gallery::help(
                     "grid-help",
+                    "Grid selection and filtering",
                     "Click an item, then use the arrows: Left and Right move by item, Up and Down by line, Page and Home/End further. Shift extends a range, Control moves without selecting and Space toggles. The filter hides items whose name does not match; selected items stay selected while hidden, and Down in the filter moves into the grid.",
                 ),
                 stage(
@@ -458,8 +479,9 @@ pub(crate) fn collections(ui: &Runtime) -> Result<Element, RuntimeError> {
             "tree-section",
             "Tree: folders asked for their children only when expanded",
             [
-                label(
+                crate::gallery::help(
                     "tree-help",
+                    "Tree navigation and filtering",
                     "Click an arrow to expand, or use the keyboard: Right expands and then enters a folder, Left collapses and then leaves it. The hierarchy has over two million nodes and none of them exists until its parent opens. Type in the filter to show the matching folders and files of the first three levels with the folders above them; your own expansion returns when the filter clears.",
                 ),
                 stage(
@@ -488,8 +510,9 @@ pub(crate) fn collections(ui: &Runtime) -> Result<Element, RuntimeError> {
             "table-section",
             "Table: 100,000 rows under a header that stays",
             [
-                label(
+                crate::gallery::help(
                     "table-help",
+                    "Editing, sorting and moving columns",
                     "Click Sample to sort; the gallery reorders its own data and hands it back. Drag a column edge to resize it. Drag the titles from Square root to Parity to reorder those columns, or press Alt with Left or Right on a cell; Sample and Note stay where they are. The columns need more than the table's width, so header and rows scroll together: use a horizontal wheel, the bar along the bottom, or move the active cell with Left and Right, which scrolls its column into view. Click a cell or use the arrows, then press Enter. Note is edited in place: Enter, F2, a double-click or typing edits it, Enter saves, Escape cancels and Tab saves and moves to the next row's note. The last column, Progress, draws a bar beside its percentage: drag its edge narrower and the bar gives up width so the percentage stays in the cell.",
                 ),
                 stage(

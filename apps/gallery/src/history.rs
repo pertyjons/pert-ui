@@ -235,6 +235,41 @@ impl GalleryHistory {
         status.set(format!("Returned to {}.", entry.label()))
     }
 
+    /// Follows a catalogue link, revealing a named control when the destination is a section.
+    pub(crate) fn follow(
+        &self,
+        ui: &mut Runtime,
+        page: crate::catalogue::Page,
+        part: Option<&str>,
+    ) -> Result<(), RuntimeError> {
+        let (category, entry) = crate::catalogue::destination(page)
+            .ok_or_else(|| ApplicationError::from("Unregistered gallery page".to_owned()))?;
+        self.show(ui, &(category.key.to_owned(), entry.key.to_owned()))?;
+        if let Some(key) = part {
+            let strip = self
+                .0
+                .strips
+                .borrow()
+                .as_ref()
+                .and_then(|s| s.pages.get(category.key))
+                .cloned()
+                .ok_or(RuntimeError::Unmounted)?;
+            let owner = ui
+                .find(&strip, &[entry.key])?
+                .ok_or(RuntimeError::Unmounted)?;
+            let target = ui
+                .find_descendant(&owner, key)?
+                .ok_or(RuntimeError::Unmounted)?;
+            let outcome = ui.reveal_and_focus(&target)?;
+            if !outcome.is_revealed() {
+                return Err(
+                    ApplicationError::from(format!("Could not reveal {key}: {outcome:?}")).into(),
+                );
+            }
+        }
+        self.record(&(category.key.to_owned(), entry.key.to_owned()))
+    }
+
     /// Opens a "Go to" destination and records it as a visit.
     pub(crate) fn go_to(
         &self,

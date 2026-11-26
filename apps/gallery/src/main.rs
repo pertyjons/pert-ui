@@ -6,6 +6,7 @@
 //! when one of them does not hold, which is how CI runs it. A usage error exits
 //! with status 2, a failed mode with status 1.
 mod brand;
+mod catalogue;
 mod gallery;
 mod history;
 mod interaction_check;
@@ -18,6 +19,7 @@ mod screenshot;
 mod search;
 #[cfg(test)]
 mod tests;
+mod workspace;
 mod workspace_check;
 use pert_ui::host::HostIntegration;
 use pert_ui::{

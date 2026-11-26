@@ -1,9 +1,8 @@
-//! The Appearance & tools category: themes, the workspace document, the
-//! profiler and the debug overlay.
+//! Theme, workspace, profiler and debug overlay examples.
 use crate::gallery::{label, page, section, stage};
 use pert_ui::prelude::*;
 use pert_ui::{
-    OpaqueColor, Palette, ProfileSnapshot, SplitAxis, SplitPane, ThemeManager, ThemeMode, Workspace,
+    OpaqueColor, Palette, ProfileSnapshot, SplitAxis, SplitPane, ThemeManager, ThemeMode,
 };
 
 /// The Violet palette preset used by the theme page and screenshot mode.
@@ -194,9 +193,9 @@ pub(crate) fn workspace_page(ui: &Runtime) -> Element {
                         status.set("Capture first, or write a document below.".to_owned())?;
                         return Ok(());
                     }
-                    match Workspace::decode(&text) {
+                    match crate::workspace::decode(&text) {
                         Err(error) => status.set(format!("Document rejected: {error}"))?,
-                        Ok(workspace) => match ui.restore_workspace(&workspace) {
+                        Ok((workspace, _)) => match ui.restore_workspace(&workspace) {
                             Err(error) => status.set(format!("Restore failed: {error}"))?,
                             Ok(report) => status.set(format!(
                                 "Applied {}, pending {}, ignored {}, rejected {}.",

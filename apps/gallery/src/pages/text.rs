@@ -1,4 +1,4 @@
-//! The Text category: text and number input, fonts and icons.
+//! Text editing, number entry, fonts and icon examples.
 use crate::gallery::{label, page, section, stage};
 use pert_ui::prelude::*;
 use pert_ui::{FontData, FontRole, GeometryError, RegionLayout, TextRenderingMode};
@@ -382,7 +382,6 @@ pub(crate) fn text_editing(ui: &Runtime) -> Result<Element, RuntimeError> {
             ),
         ),
         search_example(ui)?,
-        sign_in_example(ui)?,
         field_examples(ui),
     ]))
 }
@@ -390,7 +389,7 @@ pub(crate) fn text_editing(ui: &Runtime) -> Result<Element, RuntimeError> {
 // A sign-in style form showing the input states: placeholders, required
 // fields, length limits with a counter, a concealed password with a reveal
 // button, and a pending check the application finishes later.
-fn sign_in_example(ui: &Runtime) -> Result<Element, RuntimeError> {
+pub(crate) fn sign_in_example(ui: &Runtime) -> Result<Element, RuntimeError> {
     let form = FormFields::new(ui);
     let user = form.field("user")?;
     let password = form.field("password")?;
@@ -872,51 +871,6 @@ pub(crate) fn fonts_and_icons(ui: &Runtime) -> Result<Element, AppError> {
             ),
         ));
     }
-    let mut trailing_buttons = Vec::new();
-    for (key, title, icon, role) in [
-        ("save-right", "Save changes", Icon::Save, ColorRole::Success),
-        (
-            "download-right",
-            "Download",
-            Icon::Download,
-            ColorRole::Primary,
-        ),
-        (
-            "review-right",
-            "Review warnings",
-            Icon::Warning,
-            ColorRole::Warning,
-        ),
-        (
-            "delete-right",
-            "Delete item",
-            Icon::Delete,
-            ColorRole::Error,
-        ),
-        (
-            "search-right",
-            "Search library",
-            Icon::Search,
-            ColorRole::Primary,
-        ),
-        (
-            "continue-right",
-            "Continue",
-            Icon::ChevronRight,
-            ColorRole::Success,
-        ),
-    ] {
-        let output = status.clone();
-        // Semantic color stays in the icon; labels on neutral buttons keep OnButton.
-        let content = RichText::new()
-            .span(TextSpan::new(title))
-            .gap()
-            .tinted_icon(icon, TextColor::Role(role));
-        trailing_buttons.push(Element::new(
-            key,
-            Button::new(content, move |_| output.set(format!("{title} activated"))),
-        ));
-    }
     let inline_font = alternate.clone();
     let font_manager = fonts.clone();
     let reset_fonts = fonts.clone();
@@ -979,7 +933,11 @@ pub(crate) fn fonts_and_icons(ui: &Runtime) -> Result<Element, AppError> {
                             .gap()
                             .tinted_icon(Icon::Link, TextColor::Role(ColorRole::Primary))
                             .gap()
-                            .span(TextSpan::new("online").color_role(ColorRole::Success))
+                            .span(
+                                TextSpan::new("online")
+                                    .style(TextStyle::Micro)
+                                    .color_role(ColorRole::Success),
+                            )
                             .text(" · Checks")
                             .gap()
                             .tinted_icon(Icon::Check, TextColor::Role(ColorRole::Success))
@@ -1033,11 +991,6 @@ pub(crate) fn fonts_and_icons(ui: &Runtime) -> Result<Element, AppError> {
                     ),
                 ),
             ],
-        ),
-        section(
-            "trailing-icon-buttons",
-            "Buttons with icons on the right",
-            [Element::new("colored-actions", Wrap::new(trailing_buttons))],
         ),
         section(
             "shared-icons",
@@ -1149,4 +1102,57 @@ pub(crate) fn fonts_and_icons(ui: &Runtime) -> Result<Element, AppError> {
             ],
         ),
     ]))
+}
+
+pub(crate) fn button_adornments(status: &Signal<String>) -> Element {
+    let mut trailing_buttons = Vec::new();
+    for (key, title, icon, role) in [
+        ("save-right", "Save changes", Icon::Save, ColorRole::Success),
+        (
+            "download-right",
+            "Download",
+            Icon::Download,
+            ColorRole::Primary,
+        ),
+        (
+            "review-right",
+            "Review warnings",
+            Icon::Warning,
+            ColorRole::Warning,
+        ),
+        (
+            "delete-right",
+            "Delete item",
+            Icon::Delete,
+            ColorRole::Error,
+        ),
+        (
+            "search-right",
+            "Search library",
+            Icon::Search,
+            ColorRole::Primary,
+        ),
+        (
+            "continue-right",
+            "Continue",
+            Icon::ChevronRight,
+            ColorRole::Success,
+        ),
+    ] {
+        let output = status.clone();
+        // Semantic color stays in the icon; labels on neutral buttons keep OnButton.
+        let content = RichText::new()
+            .span(TextSpan::new(title))
+            .gap()
+            .tinted_icon(icon, TextColor::Role(role));
+        trailing_buttons.push(Element::new(
+            key,
+            Button::new(content, move |_| output.set(format!("{title} activated"))),
+        ));
+    }
+    section(
+        "trailing-icon-buttons",
+        "Buttons with icons on the right",
+        [Element::new("colored-actions", Wrap::new(trailing_buttons))],
+    )
 }

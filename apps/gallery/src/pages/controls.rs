@@ -1,5 +1,4 @@
-//! The Controls category: text and buttons, standard controls, parameters,
-//! the toolbar, field status, adaptive forms, progress and colors.
+//! Controls, parameter bindings, toolbar and form examples.
 use crate::gallery::{action, counter, label, page, section, stage};
 use crate::samples::{Canvas, KeyPad};
 use pert_ui::IntervalTimer;
@@ -425,8 +424,7 @@ fn channel_strip(ui: &mut Runtime, ids: [ParameterId; 3]) -> Result<Element, App
     ))
 }
 
-pub(crate) fn typography(ui: &Runtime, status: &Signal<String>) -> Result<Element, AppError> {
-    let message = ui.signal("This label follows a signal.".to_owned());
+pub(crate) fn typography() -> Result<Element, AppError> {
     Ok(page([
         section(
             "typography",
@@ -477,6 +475,22 @@ pub(crate) fn typography(ui: &Runtime, status: &Signal<String>) -> Result<Elemen
             ],
         ),
         section(
+            "drawing",
+            "Custom drawing through Painter",
+            [
+                label(
+                    "help",
+                    "Solid fill, a clipped rectangle and a tinted coverage mask. This static example uses the public custom-component API.",
+                ),
+                Element::new("canvas", Canvas::new()?),
+            ],
+        ),
+    ]))
+}
+pub(crate) fn buttons(ui: &Runtime, status: &Signal<String>) -> Result<Element, AppError> {
+    let message = ui.signal("This label follows a signal.".to_owned());
+    Ok(page([
+        section(
             "buttons",
             "Buttons and bound labels",
             [
@@ -505,17 +519,7 @@ pub(crate) fn typography(ui: &Runtime, status: &Signal<String>) -> Result<Elemen
                 counter(ui, "counter")?,
             ],
         ),
-        section(
-            "drawing",
-            "Custom drawing through Painter",
-            [
-                label(
-                    "help",
-                    "Solid fill, a clipped rectangle and a tinted coverage mask. This static example uses the public custom-component API.",
-                ),
-                Element::new("canvas", Canvas::new()?),
-            ],
-        ),
+        crate::pages::text::button_adornments(status),
     ]))
 }
 /// The application side of the parameter-families page: host owners, their
@@ -537,8 +541,8 @@ pub(crate) fn parameter_families(
     Ok(family_page(ui, status)?)
 }
 fn family_page(ui: &mut Runtime, status: &Signal<String>) -> Result<Element, RuntimeError> {
-    let choice = |id: &str, label: &str| -> Result<ChoiceOption, ParameterError> {
-        Ok(ChoiceOption::new(ChoiceId::new(id)?, label))
+    let choice = |id: &str, label: &str, help: &str| -> Result<ChoiceOption, ParameterError> {
+        Ok(ChoiceOption::new(ChoiceId::new(id)?, label).with_description(help))
     };
     let descriptors = [
         (
@@ -570,9 +574,13 @@ fn family_page(ui: &mut Runtime, status: &Signal<String>) -> Result<Element, Run
             AnySpec::from(ParameterSpec::choices(
                 "Waveform",
                 [
-                    choice("sine", "Sine")?,
-                    choice("saw", "Saw")?,
-                    choice("square", "Square")?,
+                    choice("sine", "Sine", "A smooth cycle with a single frequency.")?,
+                    choice("saw", "Saw", "A rising ramp with an abrupt return.")?,
+                    choice(
+                        "square",
+                        "Square",
+                        "A cycle alternating between two levels.",
+                    )?,
                 ],
                 ChoiceId::new("sine")?,
             )?),
@@ -687,7 +695,6 @@ fn family_page(ui: &mut Runtime, status: &Signal<String>) -> Result<Element, Run
 }
 
 const KEY_PAD_HELP: &str = "This custom input area shows held physical keys, modifiers and repeat/release classification. Moving focus cancels its local input context.";
-const SHARED_PARAMETER_HELP: &str = "The sliders, knobs and button editors share one -100 to 100 parameter. Drag (vertically on a knob), use arrows or scroll over the focused control; Shift adjusts finely, Escape cancels, and Backspace or a double-click on a knob restores the default. The second knob fills its arc from the default instead of the minimum; the third formats its readout with an application-supplied number format. External host updates take precedence.";
 pub(crate) fn input(
     ui: &mut Runtime,
     id: ParameterId,
@@ -810,17 +817,6 @@ pub(crate) fn input(
                 .map(|value| format!("Read-only: {value}. Rejected edits appear in the footer."))?,
         ),
     ));
-    editors.push(Element::new(
-        "slider",
-        Slider::new(parameter.clone()).show_value(true).unit("%"),
-    ));
-    editors.push(Element::new(
-        "vertical-slider",
-        Slider::new(parameter.clone())
-            .orientation(Orientation::Vertical)
-            .show_value(true)
-            .unit("%"),
-    ));
     let dial = |name: &'static str, key: &'static str, knob: Knob| {
         Element::new(
             name,
@@ -830,7 +826,7 @@ pub(crate) fn input(
             ]),
         )
     };
-    editors.push(Element::new(
+    let knobs = Element::new(
         "knobs",
         Row::new([
             dial(
@@ -852,8 +848,9 @@ pub(crate) fn input(
             dial(
                 "Diode",
                 "knob-formatted",
-                Knob::new(parameter)
+                Knob::new(parameter.clone())
                     .variant(KnobVariant::Diode)
+                    .value_style(TextStyle::MonospaceCaption)
                     .show_value(true)
                     .format(
                         NumberFormat::new(
@@ -869,7 +866,7 @@ pub(crate) fn input(
                     ),
             ),
         ]),
-    ));
+    );
     let reset_status = status.clone();
     editors.push(Element::new(
         "host-reset",
@@ -880,19 +877,37 @@ pub(crate) fn input(
     ));
     Ok(page([
         section(
-            "keyboard",
-            "Multi-key input",
+            "parameter-controls",
+            "Knobs and sliders",
             [
-                label("help", KEY_PAD_HELP),
-                Element::new("key-pad", KeyPad::default()),
+                label("try-knobs", "Drag a knob up. Both sliders and the other knobs follow the same value. Double-click a knob to restore the default."),
+                knobs,
+                label("slider-label", "Horizontal"),
+                Element::new("slider", Slider::new(parameter.clone()).show_value(true).unit("%")),
+                label("vertical-label", "Vertical"),
+                Element::new("vertical-slider", Slider::new(parameter)
+                    .orientation(Orientation::Vertical).show_value(true).unit("%")),
+                Element::new("knob-help", Collapsible::new("How these controls differ",
+                    label("details", "Orbit fills its arc from the default. Diode uses a signed percentage and a larger readout. Focus a control and use the arrows to step, hold Shift for finer movement, press Escape during a drag to cancel, or press Backspace to reset."))),
             ],
         ),
         section(
             "parameters",
             "One parameter, multiple editing views",
-            std::iter::once(label("help", SHARED_PARAMETER_HELP)).chain(editors),
+            std::iter::once(label("help", "Increase one editor and watch both base values. Toggle the effective overlay to compare what the host reports with the value you edit.")).chain(editors),
         ),
     ]))
+}
+
+pub(crate) fn keyboard() -> Element {
+    page([section(
+        "keyboard",
+        "Multi-key input",
+        [
+            label("help", KEY_PAD_HELP),
+            Element::new("key-pad", KeyPad::default()),
+        ],
+    )])
 }
 
 pub(crate) fn controls(ui: &Runtime) -> Result<Element, RuntimeError> {
@@ -903,11 +918,6 @@ pub(crate) fn controls(ui: &Runtime) -> Result<Element, RuntimeError> {
         Choice::new("unavailable", "Unavailable option").disabled(),
         Choice::new("second", "Second option"),
     ];
-    let status = ui.signal("Choose an action from the menu.".to_owned());
-    let menu_status = status.clone();
-    let open = ui.signal(false);
-    let show = open.clone();
-    let close = open.clone();
     Ok(page([
         section(
             "boolean",
@@ -930,62 +940,157 @@ pub(crate) fn controls(ui: &Runtime) -> Result<Element, RuntimeError> {
                 Element::new("dropdown", Select::new(ui, mode, options)?).with_label("Mode"),
             ],
         ),
-        section(
-            "surfaces",
-            "Menus, popovers and delayed help",
-            [
-                Element::new(
-                    "action-menu",
-                    Menu::new(
-                        ui,
-                        "Actions",
-                        vec![
-                            MenuItem::new("apply", "Apply", move |_| {
-                                menu_status.set("Apply selected.".into())
-                            }),
-                            MenuItem::new("unavailable", "Unavailable", |_| Ok(())).disabled(),
-                        ],
-                    )?,
-                ),
-                Element::new("menu-status", Label::new(status.read_only())),
-                Element::new(
-                    "help-tooltip",
-                    Tooltip::new(
-                        Element::new(
-                            "help-trigger",
-                            Button::new("Hover or focus for help", |_| Ok(())),
-                        ),
-                        "Help appears after 500 ms, uses no polling and never takes focus.",
-                    ),
-                ),
-                Element::new(
-                    "popover-demo",
-                    Popover::new(
-                        open,
-                        Element::new(
-                            "popover-trigger",
-                            Button::new("Open popover", move |_| show.set(true)),
-                        ),
-                        Element::new(
-                            "popover-content",
-                            Column::new([
-                                Element::new(
-                                    "explanation",
-                                    Label::new(
-                                        "This surface escapes the page clip. Escape or an outside click closes it.",
-                                    ),
-                                ),
-                                Element::new(
-                                    "close-popover",
-                                    Button::new("Close", move |_| close.set(false)),
-                                ),
-                            ]),
-                        ),
-                    ),
-                ),
-            ],
-        ),
+        proposal_example(ui)?,
+        changing_choices(ui)?,
     ]))
+}
+
+fn proposal_example(ui: &Runtime) -> Result<Element, RuntimeError> {
+    let accepted = ui.signal(false);
+    let proposal = ui.signal(None::<bool>);
+    let writer = proposal.clone();
+    let control = Dynamic::new(&accepted, move |_, &value| {
+        let writer = writer.clone();
+        Checkbox::controlled(value, "Enable preview", move |_, proposed| {
+            writer.set(Some(proposed))
+        })
+        .key("controlled-checkbox")
+    })
+    .key("accepted-model");
+    let pending = proposal.map(Option::is_some)?;
+    let summary = proposal.map(|p| {
+        match p {
+            Some(true) => "Proposed: on",
+            Some(false) => "Proposed: off",
+            None => "No pending change",
+        }
+        .to_owned()
+    })?;
+    Ok(section(
+        "proposals",
+        "Application-controlled checkbox",
+        [
+            label(
+                "proposal-help",
+                "Check Enable preview. The proposal appears below; the check mark changes when you accept it.",
+            ),
+            control,
+            label("proposal-value", summary),
+            Element::new(
+                "accept-proposal",
+                Button::new("Accept proposal", move |_| {
+                    if let Some(value) = proposal.get()? {
+                        accepted.set(value)?;
+                        proposal.set(None)?;
+                    }
+                    Ok(())
+                })
+                .enabled(pending),
+            ),
+        ],
+    ))
+}
+
+fn changing_choices(ui: &Runtime) -> Result<Element, RuntimeError> {
+    let value = ui.signal("local");
+    let remote = ui.signal(false);
+    let options = remote.map(|available| {
+        let mut sources = vec![Choice::new("local", "Local")];
+        if *available {
+            sources.push(Choice::new("remote", "Remote"));
+        }
+        sources
+    })?;
+    Ok(section(
+        "changing-choices",
+        "A changing option list",
+        [
+            label(
+                "source-help",
+                "Press Update sources, then open the list. The Remote option appears or disappears after two seconds. The saved choice changes only when you choose an option.",
+            ),
+            Element::new(
+                "reload-sources",
+                Button::new("Update sources", move |cx| {
+                    let remote = remote.clone();
+                    cx.spawn(
+                        || std::thread::sleep(std::time::Duration::from_secs(2)),
+                        move |()| remote.set(!remote.get()?),
+                    )
+                    .map(|_| ())
+                }),
+            ),
+            Element::new("source-choice", Select::bound(ui, value.clone(), options))
+                .with_label("Source"),
+            label(
+                "saved-source",
+                value.map(|value| format!("Saved source: {value}"))?,
+            ),
+        ],
+    ))
+}
+
+pub(crate) fn popups(ui: &Runtime) -> Result<Element, RuntimeError> {
+    let status = ui.signal("Choose an action from the menu.".to_owned());
+    let menu_status = status.clone();
+    let open = ui.signal(false);
+    let show = open.clone();
+    let close = open.clone();
+    Ok(page([section(
+        "surfaces",
+        "Menus, popovers and delayed help",
+        [
+            Element::new(
+                "action-menu",
+                Menu::new(
+                    ui,
+                    "Actions",
+                    vec![
+                        MenuItem::new("apply", "Apply", move |_| {
+                            menu_status.set("Apply selected.".into())
+                        }),
+                        MenuItem::new("unavailable", "Unavailable", |_| Ok(())).disabled(),
+                    ],
+                )?,
+            ),
+            Element::new("menu-status", Label::new(status.read_only())),
+            Element::new(
+                "help-tooltip",
+                Tooltip::new(
+                    Element::new(
+                        "help-trigger",
+                        Button::new("Hover or focus for help", |_| Ok(())),
+                    ),
+                    "Help appears after 500 ms, uses no polling and never takes focus.",
+                ),
+            ),
+            Element::new(
+                "popover-demo",
+                Popover::new(
+                    open,
+                    Element::new(
+                        "popover-trigger",
+                        Button::new("Open popover", move |_| show.set(true)),
+                    ),
+                    Element::new(
+                        "popover-content",
+                        Column::new([
+                            Element::new(
+                                "explanation",
+                                Label::new(
+                                    "This surface escapes the page clip. Escape or an outside click closes it.",
+                                ),
+                            ),
+                            Element::new(
+                                "close-popover",
+                                Button::new("Close", move |_| close.set(false)),
+                            ),
+                        ]),
+                    ),
+                ),
+            ),
+        ],
+    )]))
 }
 
 // The gallery plays the application: it owns the task and publishes each step.

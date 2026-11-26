@@ -1,10 +1,30 @@
-//! The Controls category's pages.
+//! Controls, parameter bindings, toolbar and form examples.
 use super::support::*;
 use pert_ui::inspection::*;
 use pert_ui::prelude::*;
 use pert_ui::testing::HostIntegration;
 use pert_ui::{AnyValue, ChoiceId, CommandKeyInput, KeyAction};
 use std::time::Duration;
+
+#[test]
+fn keyboard_opens_and_closes_knob_help() {
+    let (mut ui, root) = mounted();
+    open(&mut ui, &root, "input");
+    let help = find(&ui, &root, "knob-help");
+    let details = ui.inspection_id(&find(&ui, &help, "details")).unwrap();
+    let shown = |ui: &Runtime| {
+        ui.inspect()
+            .components
+            .iter()
+            .any(|item| item.id == details && item.visible)
+    };
+    assert!(!shown(&ui));
+    ui.focus(&help).unwrap();
+    press(&mut ui, KeyCode::Enter);
+    assert!(shown(&ui));
+    press(&mut ui, KeyCode::Space);
+    assert!(!shown(&ui));
+}
 
 #[test]
 fn parameter_editors_share_values_cancel_and_host_reset() {
@@ -28,6 +48,7 @@ fn parameter_editors_share_values_cancel_and_host_reset() {
     let reset = find(&ui, &root, "host-reset");
     click(&mut ui, &reset);
     assert_eq!(first_parameter(&mut ui).base, 0.0);
+    open(&mut ui, &root, "keyboard");
     let pad = find(&ui, &root, "key-pad");
     ui.focus(&pad).unwrap();
     ui.key_input(KeyCode::KeyA, KeyAction::Press).unwrap();
@@ -84,6 +105,7 @@ fn standard_controls_and_owned_surfaces_work_in_the_actual_gallery() {
     assert!(ui.inspect().components.iter().any(|c| c.key == "radio"
         && c.details.properties.get("selected")
             == Some(&InspectValue::Text("Second option".into()))));
+    open(&mut ui, &root, "popups");
     let menu = find(&ui, &root, "action-menu");
     let trigger = find(&ui, &menu, "trigger");
     click(&mut ui, &trigger);
@@ -589,4 +611,64 @@ fn the_power_mapped_parameter_spreads_its_low_end() {
         panic!("a continuous parameter");
     };
     assert!((half - 2.5).abs() < 0.05, "{half}");
+}
+
+#[test]
+fn a_controlled_checkbox_waits_for_its_proposal_to_be_accepted() {
+    let (mut ui, root) = mounted();
+    open(&mut ui, &root, "controls");
+    let checkbox = find(&ui, &root, "controlled-checkbox");
+    let checked = |ui: &Runtime| {
+        ui.inspect()
+            .components
+            .into_iter()
+            .find(|c| c.key == "controlled-checkbox")
+            .unwrap()
+            .details
+            .properties["checked"]
+            .clone()
+    };
+    ui.focus(&checkbox).unwrap();
+    press(&mut ui, KeyCode::Space);
+    assert_eq!(checked(&ui), InspectValue::Bool(false));
+    assert_eq!(text(&ui, "proposal-value"), ["Proposed: on"]);
+    let accept = find(&ui, &root, "accept-proposal");
+    click(&mut ui, &accept);
+    assert_eq!(checked(&ui), InspectValue::Bool(true));
+    assert_eq!(text(&ui, "proposal-value"), ["No pending change"]);
+}
+
+#[test]
+fn the_open_source_list_accepts_a_newly_delivered_option() {
+    let (mut ui, root) = mounted();
+    open(&mut ui, &root, "controls");
+    let update = find(&ui, &root, "reload-sources");
+    click(&mut ui, &update);
+    let chooser = find(&ui, &root, "source-choice");
+    let anchor = find(&ui, &chooser, "select");
+    click(&mut ui, &anchor);
+    let deadline = std::time::Instant::now() + Duration::from_secs(10);
+    while !ui
+        .inspect()
+        .components
+        .iter()
+        .filter(|c| c.visible)
+        .any(|c| {
+            c.details
+                .semantics
+                .as_ref()
+                .is_some_and(|s| s.items.iter().any(|i| i.name.as_deref() == Some("Remote")))
+        })
+    {
+        assert!(
+            std::time::Instant::now() < deadline,
+            "the second option did not appear"
+        );
+        std::thread::sleep(Duration::from_millis(20));
+        settle(&mut ui);
+    }
+    assert_eq!(text(&ui, "saved-source"), ["Saved source: local"]);
+    press(&mut ui, KeyCode::ArrowDown);
+    press(&mut ui, KeyCode::Enter);
+    assert_eq!(text(&ui, "saved-source"), ["Saved source: remote"]);
 }

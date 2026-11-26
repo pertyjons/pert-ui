@@ -1,4 +1,4 @@
-//! The Data & media category's pages.
+//! Collection, file, drag and drop, image and vector drawing examples.
 use super::support::*;
 use pert_ui::inspection::*;
 use pert_ui::prelude::*;
@@ -705,14 +705,14 @@ fn the_file_browser_page_lists_through_a_mailbox_and_shows_failures() {
 #[test]
 fn the_file_page_saves_through_its_dialog_and_reports_the_outcome() {
     let (mut ui, root) = mounted();
-    open(&mut ui, &root, "files");
+    open(&mut ui, &root, "file-dialog");
     settle(&mut ui);
     let save = find(&ui, &root, "save");
     ui.focus(&save).unwrap();
     press(&mut ui, KeyCode::Enter);
     // The dialog's listing arrives through the page's mailbox.
     settle(&mut ui);
-    let dialog = find(&ui, &root, "file-dialog");
+    let dialog = find(&ui, &page(&ui, &root, "file-dialog"), "file-dialog-panel");
     let picker = find(&ui, &dialog, "picker");
     let accept = ui.find_exposed_part(&picker, "accept").unwrap().unwrap();
     ui.focus(&accept).unwrap();

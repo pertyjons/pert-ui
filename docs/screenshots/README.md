@@ -17,17 +17,17 @@ web download is helpful.
 
 | Screenshot | Gallery page | What it shows |
 |---|---|---|
-| [Toolbar](toolbar.png) | Controls › Toolbar | The dark Violet palette, grouped actions and readouts, an editable name, compact numeric controls and a status bar. |
-| [Tool windows](tool-windows.png) | Layout › Tool windows | Docked panel stripes, a file tree, the main file view and a shared selection. |
-| [Floating windows](floating-windows.png) | Surfaces › Floating windows | Overlapping in-view windows with controls, tabs and a resizable frame. |
-| [Input & parameters](input-parameters.png) | Controls › Input & parameters | Multi-key input and several editors bound to one numeric parameter. More editors continue below the viewport. |
-| [Controls](controls.png) | Controls › Controls | A checkbox and toggle sharing state, choice controls, and surface openers. |
-| [Collections](collections.png) | Data & media › Collections | A virtual grid and tree over a keyed data source; the table continues below the viewport. |
-| [Text input](text-input.png) | Text › Text input | Single-line and multiline editors, alignment, drafts and read-only text. |
-| [Adaptive forms](adaptive-forms.png) | Controls › Adaptive forms | A responsive form beside a resizable preview pane. |
-| [Images](images.png) | Data & media › Images | PNG fitting, pixel sampling and a worker-decoding example. |
-| [Vector shapes](vector-shapes.png) | Data & media › Vector shapes | Filled and stroked paths drawn through the public `Painter` API. |
-| [Themes](themes.png) | Appearance & tools › Themes | Surface groups and semantic color roles in the default palette. |
+| [Toolbar](toolbar.png) | Controls & forms › Toolbar | The dark Violet palette, grouped actions and readouts, an editable name, compact numeric controls and a status bar. |
+| [Tool windows](tool-windows.png) | Menus, windows & feedback › Tool windows | Docked panel stripes, a file tree, the main file view and a shared selection. |
+| [Floating windows](floating-windows.png) | Menus, windows & feedback › Floating windows | Overlapping in-view windows with controls, tabs and a resizable frame. |
+| [Input & parameters](input-parameters.png) | Controls & forms › Knobs & sliders | Knob faces and slider readouts bound to one numeric parameter. |
+| [Controls](controls.png) | Controls & forms › Choices & toggles | A checkbox and toggle sharing state alongside a controlled checkbox whose proposed change awaits acceptance. |
+| [Collections](collections.png) | Lists, tables & files › Collections | A selectable list followed by a virtual grid. Tree and table examples continue below. |
+| [Text input](text-input.png) | Controls & forms › Text input | Single-line and multiline editors, alignment, drafts and read-only text. |
+| [Adaptive forms](adaptive-forms.png) | Controls & forms › Adaptive forms | A responsive form beside a resizable preview pane. |
+| [Images](images.png) | Text, graphics & appearance › Images | PNG fitting, pixel sampling and a worker-decoding example. |
+| [Vector shapes](vector-shapes.png) | Text, graphics & appearance › Vector shapes | Filled and stroked paths drawn through the public `Painter` API. |
+| [Themes](themes.png) | Text, graphics & appearance › Themes | Surface groups and semantic color roles in the default palette. |
 
 ## Components
 

@@ -3,7 +3,7 @@
 use crate::brand::BrandMark;
 use crate::history::GalleryHistory;
 use crate::pages::{
-    chips::chips_and_breadcrumbs,
+    chips::chips_and_choices,
     controls::{
         adaptive_form, colors, controls, field_status, input, parameter_families, progress,
         toolbar_page, typography,
@@ -77,7 +77,7 @@ fn view_of(ui: &Runtime, root: &WidgetId, key: &str) -> Result<WidgetId, AppErro
     find_at(
         ui,
         &top,
-        &page_address("layout-category", "state", &["detach-view", "content", key]),
+        &page_address("layout-nav", "state", &["detach-view", "content", key]),
     )
 }
 
@@ -186,6 +186,25 @@ impl Gallery {
         // commands are visits, and back, forward and the history list in the
         // menu bar show a place again without recording it.
         let places = GalleryHistory::new(ui)?;
+        let mut destinations = std::collections::HashMap::new();
+        for (category, entry) in crate::catalogue::CATEGORIES
+            .iter()
+            .flat_map(|group| group.pages.iter().map(move |page| (group, page)))
+        {
+            let (page, title) = (entry.key, entry.title);
+            let (go_places, go_status) = (places.clone(), status.clone());
+            // The gallery keeps its commands for its whole run.
+            let command = ui.register_command(
+                format!("Go to: {title}"),
+                CommandScope::Application,
+                Vec::new(),
+                move |ui, _| {
+                    go_places.go_to(ui, category.key, page)?;
+                    go_status.set(format!("Opened {title}."))
+                },
+            )?;
+            destinations.insert(command, (category.title, entry));
+        }
         // The search lists the gallery's content and commands in one picker,
         // each row labelled by kind; typing filters it.
         let search = QuickPickController::new(ui);
@@ -199,26 +218,18 @@ impl Gallery {
             CommandScope::Application,
             vec![KeyChord::primary('f').shifted()],
             move |ui, context| {
-                let (items, targets) =
-                    search_items(ui, context, own.borrow().as_ref(), &search_places)?;
+                let (items, targets) = search_items(
+                    ui,
+                    context,
+                    own.borrow().as_ref(),
+                    &search_places,
+                    &destinations,
+                )?;
                 *opened_targets.borrow_mut() = targets;
                 search_opener.open(items)
             },
         )?;
         *own_command.borrow_mut() = Some(search_command.clone());
-        for (category, page, title) in GO_TO_PAGES {
-            let (go_places, go_status) = (places.clone(), status.clone());
-            // The gallery keeps its commands for its whole run.
-            ui.register_command(
-                format!("Go to: {title}"),
-                CommandScope::Application,
-                Vec::new(),
-                move |ui, _| {
-                    go_places.go_to(ui, category, page)?;
-                    go_status.set(format!("Opened {title}."))
-                },
-            )?;
-        }
         for (name, chord, back) in [
             ("Go back", KeyChord::navigate_back(), true),
             ("Go forward", KeyChord::navigate_forward(), false),
@@ -231,11 +242,8 @@ impl Gallery {
                 move |ui, _| step_places.step(ui, back, &step_status),
             )?;
         }
-        let menus = menu_bar(ui)?;
+
         let top_history = places.clone();
-        // Categories at the top, each with its own strip of pages. A page
-        // keeps its key, so a page moves between categories without changing
-        // its identity, and an inactive category's pages stay mounted but hidden.
         let (workload, producer) =
             crate::live::Workload::with_thread(ui, false, self.producer.clone())?;
         // The producer thread stays parked until a live page's Run toggle is on,
@@ -243,130 +251,99 @@ impl Gallery {
         workload
             .spawn(producer, None)
             .map_err(ApplicationError::new)?;
-        let tabs = Tabs::new([
-            places.category(
-                "layout-category",
-                "Layout",
-                [
-                    places.page("layout", "Layout", layout(&status)?),
-                    places.page("splits", "Split panes", splits(ui)?),
-                    places.page("shells", "Nested regions", region_layouts(ui)?),
-                    places.page("scroll", "Scrolling", scrolling(&status)?),
-                    places.page("sections", "Sections", sections(ui)?),
-                    places.page("tool-windows", "Tool windows", tool_windows(ui)?),
-                    places.page("transforms", "Transforms", transforms(ui)?),
-                    places.page(
-                        "state",
-                        "State & tabs",
-                        state(
-                            ui,
-                            [&detach_command, &guarded_command],
-                            detach_receipt.read_only(),
-                        )?,
-                    ),
-                    places.page(
-                        "navigation",
-                        "Navigation",
-                        navigation(ui, &navigation_targets, &select_by_key)?,
-                    ),
-                ],
-            ),
-            places.category(
-                "controls-category",
-                "Controls",
-                [
-                    places.page("text", "Text & buttons", typography(ui, &status)?),
-                    places.page("controls", "Controls", controls(ui)?),
-                    places.page(
-                        "input",
-                        "Input & parameters",
-                        input(ui, self.id, self.spec, &status)?,
-                    ),
-                    places.page(
-                        "families",
-                        "Parameter families",
-                        parameter_families(ui, &status)?,
-                    ),
-                    places.page(
-                        "toolbar",
-                        "Toolbar",
-                        toolbar_page(ui, self.inline_id, self.strip_ids)?,
-                    ),
-                    places.page("fields", "Field status", field_status(ui)?),
-                    places.page("forms", "Adaptive forms", adaptive_form(ui)?),
-                    places.page(
-                        "properties",
-                        "Property grid",
-                        property_grid(ui, self.property_id)?,
-                    ),
-                    places.page("progress", "Progress", progress(ui)),
-                    places.page("colors", "Colors", colors(ui)?),
-                    places.page(
-                        "chips",
-                        "Chips & breadcrumbs",
-                        chips_and_breadcrumbs(ui, &status)?,
-                    ),
-                ],
-            ),
-            places.category(
-                "text-category",
-                "Text",
-                [
-                    places.page("editing", "Text input", text_editing(ui)?),
-                    places.page("numbers", "Number input", number_inputs(ui)?),
-                    places
-                        .page("fonts", "Fonts & icons", fonts_and_icons(ui)?)
-                        .leading_icon(Icon::Settings),
-                    places.page("text-rendering", "Text rendering", text_rendering_page(ui)?),
-                ],
-            ),
-            places.category(
-                "surfaces-category",
-                "Surfaces",
-                [
-                    places.page(
-                        "surfaces",
-                        "Dialogs & notifications",
-                        transient_surfaces(ui)?,
-                    ),
-                    places.page("windows", "Floating windows", floating_windows(ui)?),
-                    places.page("menus", "Menu bar", menus),
-                ],
-            ),
-            places.category(
-                "data-category",
-                "Data & media",
-                [
-                    places.page("virtual", "Virtual list", virtual_list(ui, &status)?),
-                    places.page("collections", "Collections", collections(ui)?),
-                    places.page("files", "File browser", file_browser(ui)?),
-                    places.page("dragdrop", "Drag & drop", drag_and_drop(ui)?),
-                    places
-                        .page("live", "Static & live", workload.element()?)
-                        .fixed(),
-                    places.page("meters", "Level & trace", workload.widgets_element()?),
-                    places.page("images", "Images", images(ui)?),
-                    places.page("shapes", "Vector shapes", vector_shapes()),
-                ],
-            ),
-            places.category(
-                "tools-category",
-                "Appearance & tools",
-                [
-                    places.page("theme", "Themes", themes(ui)),
-                    places.page(
-                        "gradients",
-                        "Gradients",
-                        crate::pages::gradients::gradients(ui, self.sun_id)?,
-                    ),
-                    places.page("workspace", "Workspace", workspace_page(ui)),
-                    places.page("profiling", "Profiler", profiling(ui)),
-                    places.page("overlay", "Debug overlay", debug_overlay(ui)),
-                ],
-            ),
-        ])
-        .detachable(true)
-        .on_select(move |_, change| top_history.category_selected(change));
+        let mut categories = Vec::new();
+        for category in crate::catalogue::CATEGORIES {
+            let mut pages = Vec::new();
+            for entry in category.pages {
+                use crate::catalogue::Page;
+                let content = match entry.page {
+                    Page::Layout => layout(&status)?,
+                    Page::Splits => splits(ui)?,
+                    Page::Shells => region_layouts(ui)?,
+                    Page::Scroll => scrolling(&status)?,
+                    Page::Sections => sections(ui)?,
+                    Page::Transforms => transforms(ui)?,
+                    Page::State => state(
+                        ui,
+                        [&detach_command, &guarded_command],
+                        detach_receipt.read_only(),
+                    )?,
+                    Page::Navigation => navigation(ui, &navigation_targets, &select_by_key)?,
+                    Page::Breadcrumbs => {
+                        page([crate::pages::chips::breadcrumb_section(ui, &status)?])
+                    }
+                    Page::Keyboard => crate::pages::controls::keyboard(),
+                    Page::Buttons => crate::pages::controls::buttons(ui, &status)?,
+                    Page::Controls => controls(ui)?,
+                    Page::Chips => chips_and_choices(ui, &status)?,
+                    Page::Editing => text_editing(ui)?,
+                    Page::Numbers => number_inputs(ui)?,
+                    Page::Input => input(ui, self.id.clone(), self.spec.clone(), &status)?,
+                    Page::Families => parameter_families(ui, &status)?,
+                    Page::Fields => field_status(ui)?,
+                    Page::Forms => adaptive_form(ui)?,
+                    Page::SignIn => page([crate::pages::text::sign_in_example(ui)?]),
+                    Page::Properties => property_grid(ui, self.property_id.clone())?,
+                    Page::Colors => colors(ui)?,
+                    Page::Toolbar => {
+                        toolbar_page(ui, self.inline_id.clone(), self.strip_ids.clone())?
+                    }
+                    Page::Menus => menu_bar(ui)?,
+                    Page::Popups => crate::pages::controls::popups(ui)?,
+                    Page::Surfaces => transient_surfaces(ui)?,
+                    Page::Windows => floating_windows(ui)?,
+                    Page::ToolWindows => tool_windows(ui)?,
+                    Page::Progress => progress(ui),
+                    Page::Collections => collections(ui)?,
+                    Page::Files => file_browser(ui)?,
+                    Page::FileDialog => page([crate::pages::data::files::file_dialog(ui)?]),
+                    Page::Dragdrop => drag_and_drop(ui)?,
+                    Page::Virtual => virtual_list(ui, &status)?,
+                    Page::Text => typography()?,
+                    Page::Fonts => fonts_and_icons(ui)?,
+                    Page::Theme => themes(ui),
+                    Page::Images => images(ui)?,
+                    Page::Shapes => vector_shapes(),
+                    Page::Gradients => crate::pages::gradients::gradients(ui, self.sun_id.clone())?,
+                    Page::Meters => workload.widgets_element()?,
+                    Page::Workspace => workspace_page(ui),
+                    Page::Profiling => profiling(ui),
+                    Page::Overlay => debug_overlay(ui),
+                    Page::Live => workload.element()?,
+                    Page::TextRendering => text_rendering_page(ui)?,
+                };
+                let mut children = vec![label("page-introduction", entry.help)];
+                let links = crate::catalogue::related(entry.page);
+                if !links.is_empty() {
+                    let links = links.iter().map(|&(title, target, part)| {
+                        let places = places.clone();
+                        Element::new(
+                            title,
+                            Link::new(title, move |cx| {
+                                let places = places.clone();
+                                cx.defer(move |ui| places.follow(ui, target, part))
+                                    .map(|_| ())
+                            }),
+                        )
+                    });
+                    children.push(Element::new("related-examples", Wrap::new(links)));
+                }
+                children.push(content.with_grow(1));
+                let body = Element::new("example-page", Column::new(children)).structural();
+                let mut tab = places.page(entry.key, entry.title, body);
+                if entry.page == Page::Live {
+                    tab = tab.fixed();
+                }
+                if entry.page == Page::Fonts {
+                    tab = tab.leading_icon(Icon::Settings);
+                }
+                pages.push(tab);
+            }
+            categories.push(places.category(category.key, category.title, pages));
+        }
+        let tabs = Tabs::new(categories)
+            .detachable(true)
+            .on_select(move |_, change| top_history.category_selected(change));
         // The gallery's own menu bar holds the appearance settings and the
         // project information, with the pert-ui mark leading its title row;
         // zoom lives at the right end of the status bar.
@@ -654,7 +631,7 @@ const SHORTCUTS: &[&str] = &[
     "Right-click or Shift+F10 opens a context menu where a page offers one.",
     "Alt+Left and Alt+Right (Cmd+[ and Cmd+] on macOS), or the mouse's side buttons, go back and forward through the pages visited; the clock icon at the right of the menu bar lists them.",
     "Ctrl+D (Cmd+D on macOS) moves the single view on State & tabs into its own window.",
-    "Ctrl+Shift+P (Cmd+Shift+P on macOS) opens the command palette: type to filter, Up and Down to choose, Enter to run. Its Go to commands open each page.",
+    "Ctrl+Shift+P (Cmd+Shift+P on macOS) opens the command palette: type to filter, Up and Down to choose, Enter to run. Its Go to commands open every gallery page.",
     "Ctrl+Shift+F (Cmd+Shift+F on macOS) searches the gallery's content and commands together: choose a button, a label, a field's value or a table row on any page to open the page and focus it.",
     "Escape closes this dialog.",
 ];
@@ -662,23 +639,13 @@ const GUIDE: &[&str] = &[
     "The top strip holds categories; each category has its own strip of pages and remembers the page last shown.",
     "Drag a tab title out of its strip to open that view in its own window; closing the window docks it again.",
     "Settings changes the color theme, density, motion and text rendering and turns on the debug overlay. Zoom is at the right end of the status bar.",
-    "The status bar reports what the page examples do.",
+    "Each page starts with an action to try. Search the gallery by API name, such as MultiSelect or FileDialog, to jump to its example. The status bar reports action outcomes.",
 ];
 
-/// The pages the command palette's "Go to" commands open, as (category key,
-/// page key, title). A curated list of destinations: the palette searches
-/// commands, not every widget.
-pub(crate) const GO_TO_PAGES: [(&str, &str, &str); 9] = [
-    ("layout-category", "navigation", "Navigation"),
-    ("layout-category", "splits", "Split panes"),
-    ("controls-category", "controls", "Controls"),
-    ("controls-category", "chips", "Chips & breadcrumbs"),
-    ("text-category", "editing", "Text input"),
-    ("surfaces-category", "surfaces", "Dialogs & notifications"),
-    ("data-category", "collections", "Collections"),
-    ("tools-category", "theme", "Themes"),
-    ("tools-category", "workspace", "Workspace"),
-];
+/// Optional keyboard-accessible detail beside an example.
+pub(crate) fn help(key: &str, title: &str, body: &str) -> Element {
+    Element::new(key, Collapsible::new(title, label("explanation", body)))
+}
 
 pub(crate) fn label(key: &str, text: impl Into<TextSource>) -> Element {
     Element::new(key, Label::new(text))

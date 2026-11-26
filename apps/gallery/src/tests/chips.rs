@@ -1,4 +1,4 @@
-//! The Controls › Chips & breadcrumbs page.
+//! The Controls › Chips & multiple choice page.
 use super::support::*;
 use pert_ui::prelude::*;
 use pert_ui::{InspectValue, KeyAction};
@@ -71,7 +71,7 @@ fn collapsed(ui: &Runtime, key: &str) -> f64 {
 #[test]
 fn breadcrumbs_navigate_and_the_narrow_one_collapses_its_middle() {
     let (mut ui, root) = mounted();
-    open(&mut ui, &root, "chips");
+    open(&mut ui, &root, "breadcrumbs");
     let wide = find(&ui, &root, "wide-location");
     let narrow = find(&ui, &root, "narrow-location");
     assert_eq!(collapsed(&ui, "wide-crumbs"), 0.0);
